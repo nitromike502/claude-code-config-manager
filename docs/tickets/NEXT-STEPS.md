@@ -16,6 +16,18 @@
 
 ---
 
+## 📋 Documentation Checklists
+
+**Important:** When completing work items (tasks, bugs, stories, phases), use the [Documentation Checklists](../DOCUMENTATION-CHECKLISTS.md) to keep all documentation consistent. Takes 2-10 minutes per item and prevents inconsistencies like those fixed on 2025-10-25.
+
+**Which checklist do you need?**
+- Completing a TASK → [Task Completion Checklist](../DOCUMENTATION-CHECKLISTS.md#task-completion-checklist)
+- Completing a STORY → [Story Completion Checklist](../DOCUMENTATION-CHECKLISTS.md#story-completion-checklist)
+- Fixing a BUG → [Bug Fix Completion Checklist](../DOCUMENTATION-CHECKLISTS.md#bug-fix-completion-checklist)
+- Completing a PHASE → [Phase Completion Checklist](../DOCUMENTATION-CHECKLISTS.md#phase-completion-checklist)
+
+---
+
 ## 🚀 PRIORITY: Phase 2 Extension - Component Refactoring
 
 ### Overview
