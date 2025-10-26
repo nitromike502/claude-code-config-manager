@@ -121,77 +121,16 @@
     <!-- Sidebar Overlay -->
     <div v-if="sidebarVisible" class="sidebar-overlay" @click="sidebarVisible = false"></div>
 
-    <!-- Detail Sidebar -->
-    <div v-if="sidebarVisible" class="sidebar" @click.stop>
-      <div class="sidebar-header">
-        <div class="sidebar-header-title">
-          <i :class="typeIcon" :style="{ color: typeColor }"></i>
-          <span>{{ selectedItem?.name || selectedItem?.event || 'Item Details' }}</span>
-        </div>
-        <div class="sidebar-nav">
-          <button @click="navigatePrev" :disabled="!hasPrev" class="nav-btn">
-            <i class="pi pi-chevron-left"></i>
-          </button>
-          <button @click="navigateNext" :disabled="!hasNext" class="nav-btn">
-            <i class="pi pi-chevron-right"></i>
-          </button>
-          <button @click="sidebarVisible = false" class="close-btn">
-            <i class="pi pi-times"></i>
-          </button>
-        </div>
-      </div>
-
-      <div class="sidebar-content">
-        <div class="sidebar-section">
-          <h4>Metadata</h4>
-          <div v-if="selectedType === 'agents'">
-            <p><strong>Name:</strong> {{ selectedItem.name }}</p>
-            <p><strong>Description:</strong> {{ selectedItem.description }}</p>
-            <p><strong>Color:</strong> {{ selectedItem.color || 'Not specified' }}</p>
-            <p><strong>Model:</strong> {{ selectedItem.model || 'inherit' }}</p>
-            <p v-if="selectedItem.tools && selectedItem.tools.length > 0">
-              <strong>Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
-            </p>
-            <p v-else-if="selectedItem.tools && selectedItem.tools.length === 0">
-              <strong>Allowed Tools:</strong> None specified
-            </p>
-          </div>
-          <div v-else-if="selectedType === 'commands'">
-            <p><strong>Name:</strong> {{ selectedItem.name }}</p>
-            <p><strong>Description:</strong> {{ selectedItem.description }}</p>
-            <p v-if="selectedItem.namespace"><strong>Namespace:</strong> {{ selectedItem.namespace }}</p>
-            <p v-if="selectedItem.tools && selectedItem.tools.length > 0">
-              <strong>Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
-            </p>
-            <p v-else-if="selectedItem.tools && selectedItem.tools.length === 0">
-              <strong>Allowed Tools:</strong> None specified
-            </p>
-          </div>
-          <div v-else-if="selectedType === 'hooks'">
-            <p><strong>Event:</strong> {{ selectedItem.event }}</p>
-            <p><strong>Pattern:</strong> {{ selectedItem.pattern }}</p>
-            <p v-if="selectedItem.command"><strong>Command:</strong> {{ selectedItem.command }}</p>
-          </div>
-          <div v-else-if="selectedType === 'mcp'">
-            <p><strong>Name:</strong> {{ selectedItem.name }}</p>
-            <p><strong>Transport:</strong> {{ selectedItem.transport }}</p>
-            <p v-if="selectedItem.command"><strong>Command:</strong> {{ selectedItem.command }}</p>
-          </div>
-        </div>
-
-        <div v-if="selectedItem?.content" class="sidebar-section">
-          <h4>Content</h4>
-          <pre class="content-preview">{{ selectedItem.content }}</pre>
-        </div>
-      </div>
-
-      <div class="sidebar-footer">
-        <button @click="sidebarVisible = false" class="action-btn close-action-btn">
-          <i class="pi pi-times"></i>
-          Close
-        </button>
-      </div>
-    </div>
+    <!-- Detail Sidebar Component -->
+    <ConfigDetailSidebar
+      :visible="sidebarVisible"
+      :item="selectedItem"
+      :type="selectedType"
+      :current-items="currentItems"
+      :selected-index="currentIndex"
+      @close="sidebarVisible = false"
+      @navigate="onNavigate"
+    />
   </div>
 </template>
 
@@ -200,12 +139,16 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { userAPI } from '../frontend/js/api'
 import ConfigCard from './cards/ConfigCard.vue'
 import ConfigItemList from './cards/ConfigItemList.vue'
+import ConfigDetailSidebar from './sidebars/ConfigDetailSidebar.vue'
+import BreadcrumbNavigation from './common/BreadcrumbNavigation.vue'
 
 export default {
   name: 'UserGlobal',
   components: {
     ConfigCard,
-    ConfigItemList
+    ConfigItemList,
+    ConfigDetailSidebar,
+    BreadcrumbNavigation
   },
   setup() {
     const agents = ref([])
@@ -371,6 +314,14 @@ export default {
       }
     }
 
+    // Handle sidebar navigation from ConfigDetailSidebar component
+    const onNavigate = (direction) => {
+      if (direction === 'prev') {
+        navigatePrev()
+      } else if (direction === 'next') {
+        navigateNext()
+      }
+    }
 
     onMounted(() => {
       loadUserData()
@@ -414,13 +365,16 @@ export default {
       sidebarVisible,
       selectedItem,
       selectedType,
+      currentItems,
+      currentIndex,
       hasPrev,
       hasNext,
       typeIcon,
       typeColor,
       showDetail,
       navigatePrev,
-      navigateNext
+      navigateNext,
+      onNavigate
     }
   }
 }

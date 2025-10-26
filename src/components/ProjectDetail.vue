@@ -2,14 +2,12 @@
   <div class="project-detail">
     <div class="main-content">
       <!-- Breadcrumbs -->
-      <div class="breadcrumbs">
-        <router-link to="/" class="breadcrumb-link">
-          <i class="pi pi-home"></i>
-          Dashboard
-        </router-link>
-        <i class="pi pi-chevron-right breadcrumb-separator"></i>
-        <span class="breadcrumb-current">{{ projectName }}</span>
-      </div>
+      <BreadcrumbNavigation
+        :items="[
+          { label: 'Dashboard', route: '/', icon: 'pi pi-home' },
+          { label: projectName, route: null, icon: null }
+        ]"
+      />
 
       <!-- Project Info Bar -->
       <div class="project-info-bar">
@@ -50,274 +48,108 @@
       <!-- Config Cards Container -->
       <div v-else class="config-cards-container">
         <!-- Agents Card -->
-        <div class="config-card agents-card">
-          <div class="config-header">
-            <div class="config-header-left">
-              <i class="pi pi-users" style="color: var(--color-agents)"></i>
-              <span class="config-title">Subagents ({{ agents.length }})</span>
-            </div>
-          </div>
-
-          <div v-if="loadingAgents" class="loading-state">
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-          </div>
-
-          <div v-else-if="agents.length === 0" class="empty-state">
-            <i class="pi pi-users"></i>
-            <p>No subagents configured</p>
-          </div>
-
-          <div v-else class="items-list">
-            <div
-              v-for="(agent, index) in displayedAgents"
-              :key="index"
-              class="config-item"
-              @click="showDetail(agent, 'agents', agents)"
-            >
-              <div class="item-content">
-                <div class="item-name">{{ agent.name }}</div>
-                <div class="item-description">{{ agent.description || 'No description available' }}</div>
-              </div>
-              <button class="view-details-btn" @click.stop="showDetail(agent, 'agents', agents)">
-                <i class="pi pi-eye"></i>
-                View Details
-              </button>
-            </div>
-          </div>
-
-          <button
-            v-if="agents.length > initialDisplayCount"
-            @click="showingAllAgents = !showingAllAgents"
-            class="expand-btn"
-          >
-            {{ showingAllAgents ? 'Show Less' : `Show ${agents.length - initialDisplayCount} more...` }}
-          </button>
-        </div>
+        <ConfigCard
+          card-type="agents"
+          title="Subagents"
+          :count="agents.length"
+          icon="pi pi-users"
+          color="var(--color-agents)"
+          :loading="loadingAgents"
+          :items="agents"
+          :showing-all="showingAllAgents"
+          :initial-display-count="initialDisplayCount"
+          @toggle-show-all="showingAllAgents = !showingAllAgents"
+        >
+          <template #default="{ items }">
+            <ConfigItemList
+              :items="items"
+              item-type="agents"
+              @item-selected="(item) => showDetail(item, 'agents', agents)"
+            />
+          </template>
+        </ConfigCard>
 
         <!-- Commands Card -->
-        <div class="config-card commands-card">
-          <div class="config-header">
-            <div class="config-header-left">
-              <i class="pi pi-bolt" style="color: var(--color-commands)"></i>
-              <span class="config-title">Slash Commands ({{ commands.length }})</span>
-            </div>
-          </div>
-
-          <div v-if="loadingCommands" class="loading-state">
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-          </div>
-
-          <div v-else-if="commands.length === 0" class="empty-state">
-            <i class="pi pi-bolt"></i>
-            <p>No slash commands configured</p>
-          </div>
-
-          <div v-else class="items-list">
-            <div
-              v-for="(cmd, index) in displayedCommands"
-              :key="index"
-              class="config-item"
-              @click="showDetail(cmd, 'commands', commands)"
-            >
-              <div class="item-content">
-                <div class="item-name">{{ cmd.name }}</div>
-                <div class="item-description">{{ cmd.description || 'No description available' }}</div>
-              </div>
-              <button class="view-details-btn" @click.stop="showDetail(cmd, 'commands', commands)">
-                <i class="pi pi-eye"></i>
-                View Details
-              </button>
-            </div>
-          </div>
-
-          <button
-            v-if="commands.length > initialDisplayCount"
-            @click="showingAllCommands = !showingAllCommands"
-            class="expand-btn"
-          >
-            {{ showingAllCommands ? 'Show Less' : `Show ${commands.length - initialDisplayCount} more...` }}
-          </button>
-        </div>
+        <ConfigCard
+          card-type="commands"
+          title="Slash Commands"
+          :count="commands.length"
+          icon="pi pi-bolt"
+          color="var(--color-commands)"
+          :loading="loadingCommands"
+          :items="commands"
+          :showing-all="showingAllCommands"
+          :initial-display-count="initialDisplayCount"
+          @toggle-show-all="showingAllCommands = !showingAllCommands"
+        >
+          <template #default="{ items }">
+            <ConfigItemList
+              :items="items"
+              item-type="commands"
+              @item-selected="(item) => showDetail(item, 'commands', commands)"
+            />
+          </template>
+        </ConfigCard>
 
         <!-- Hooks Card -->
-        <div class="config-card hooks-card">
-          <div class="config-header">
-            <div class="config-header-left">
-              <i class="pi pi-link" style="color: var(--color-hooks)"></i>
-              <span class="config-title">Hooks ({{ hooks.length }})</span>
-            </div>
-          </div>
-
-          <div v-if="loadingHooks" class="loading-state">
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-          </div>
-
-          <div v-else-if="hooks.length === 0" class="empty-state">
-            <i class="pi pi-link"></i>
-            <p>No hooks configured</p>
-          </div>
-
-          <div v-else class="items-list">
-            <div
-              v-for="(hook, index) in displayedHooks"
-              :key="index"
-              class="config-item"
-              @click="showDetail(hook, 'hooks', hooks)"
-            >
-              <div class="item-content">
-                <div class="item-name">{{ hook.name || hook.event }}</div>
-                <div class="item-description">Event: {{ hook.event || 'N/A' }} • Pattern: {{ hook.pattern || 'N/A' }}</div>
-              </div>
-              <button class="view-details-btn" @click.stop="showDetail(hook, 'hooks', hooks)">
-                <i class="pi pi-eye"></i>
-                View Details
-              </button>
-            </div>
-          </div>
-
-          <button
-            v-if="hooks.length > initialDisplayCount"
-            @click="showingAllHooks = !showingAllHooks"
-            class="expand-btn"
-          >
-            {{ showingAllHooks ? 'Show Less' : `Show ${hooks.length - initialDisplayCount} more...` }}
-          </button>
-        </div>
+        <ConfigCard
+          card-type="hooks"
+          title="Hooks"
+          :count="hooks.length"
+          icon="pi pi-link"
+          color="var(--color-hooks)"
+          :loading="loadingHooks"
+          :items="hooks"
+          :showing-all="showingAllHooks"
+          :initial-display-count="initialDisplayCount"
+          @toggle-show-all="showingAllHooks = !showingAllHooks"
+        >
+          <template #default="{ items }">
+            <ConfigItemList
+              :items="items"
+              item-type="hooks"
+              @item-selected="(item) => showDetail(item, 'hooks', hooks)"
+            />
+          </template>
+        </ConfigCard>
 
         <!-- MCP Servers Card -->
-        <div class="config-card mcp-card">
-          <div class="config-header">
-            <div class="config-header-left">
-              <i class="pi pi-server" style="color: var(--color-mcp)"></i>
-              <span class="config-title">MCP Servers ({{ mcpServers.length }})</span>
-            </div>
-          </div>
-
-          <div v-if="loadingMCP" class="loading-state">
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-          </div>
-
-          <div v-else-if="mcpServers.length === 0" class="empty-state">
-            <i class="pi pi-server"></i>
-            <p>No MCP servers configured</p>
-          </div>
-
-          <div v-else class="items-list">
-            <div
-              v-for="(server, index) in displayedMcp"
-              :key="index"
-              class="config-item"
-              @click="showDetail(server, 'mcp', mcpServers)"
-            >
-              <div class="item-content">
-                <div class="item-name">{{ server.name }}</div>
-                <div class="item-description">Transport: {{ server.transport || 'N/A' }} • Command: {{ server.command || 'N/A' }}</div>
-              </div>
-              <button class="view-details-btn" @click.stop="showDetail(server, 'mcp', mcpServers)">
-                <i class="pi pi-eye"></i>
-                View Details
-              </button>
-            </div>
-          </div>
-
-          <button
-            v-if="mcpServers.length > initialDisplayCount"
-            @click="showingAllMcp = !showingAllMcp"
-            class="expand-btn"
-          >
-            {{ showingAllMcp ? 'Show Less' : `Show ${mcpServers.length - initialDisplayCount} more...` }}
-          </button>
-        </div>
+        <ConfigCard
+          card-type="mcp"
+          title="MCP Servers"
+          :count="mcpServers.length"
+          icon="pi pi-server"
+          color="var(--color-mcp)"
+          :loading="loadingMCP"
+          :items="mcpServers"
+          :showing-all="showingAllMcp"
+          :initial-display-count="initialDisplayCount"
+          @toggle-show-all="showingAllMcp = !showingAllMcp"
+        >
+          <template #default="{ items }">
+            <ConfigItemList
+              :items="items"
+              item-type="mcp"
+              @item-selected="(item) => showDetail(item, 'mcp', mcpServers)"
+            />
+          </template>
+        </ConfigCard>
       </div>
     </div>
 
     <!-- Sidebar Overlay -->
     <div v-if="sidebarVisible" class="sidebar-overlay" @click="sidebarVisible = false"></div>
 
-    <!-- Detail Sidebar (will be extracted later) -->
-    <div v-if="sidebarVisible" class="sidebar" @click.stop>
-      <div class="sidebar-header">
-        <div class="sidebar-header-title">
-          <i :class="typeIcon" :style="{ color: typeColor }"></i>
-          <span>{{ selectedItem?.name || selectedItem?.event || 'Item Details' }}</span>
-        </div>
-        <div class="sidebar-nav">
-          <button @click="navigatePrev" :disabled="!hasPrev" class="nav-btn">
-            <i class="pi pi-chevron-left"></i>
-          </button>
-          <button @click="navigateNext" :disabled="!hasNext" class="nav-btn">
-            <i class="pi pi-chevron-right"></i>
-          </button>
-          <button @click="sidebarVisible = false" class="close-btn">
-            <i class="pi pi-times"></i>
-          </button>
-        </div>
-      </div>
-
-      <div class="sidebar-content">
-        <div class="sidebar-section">
-          <h4>Metadata</h4>
-          <div v-if="selectedType === 'agents'">
-            <p><strong>Name:</strong> {{ selectedItem.name }}</p>
-            <p><strong>Description:</strong> {{ selectedItem.description }}</p>
-            <p><strong>Color:</strong> {{ selectedItem.color || 'Not specified' }}</p>
-            <p><strong>Model:</strong> {{ selectedItem.model || 'inherit' }}</p>
-            <p v-if="selectedItem.tools && selectedItem.tools.length > 0">
-              <strong>Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
-            </p>
-            <p v-else-if="selectedItem.tools && selectedItem.tools.length === 0">
-              <strong>Allowed Tools:</strong> None specified
-            </p>
-          </div>
-          <div v-else-if="selectedType === 'commands'">
-            <p><strong>Name:</strong> {{ selectedItem.name }}</p>
-            <p><strong>Description:</strong> {{ selectedItem.description }}</p>
-            <p v-if="selectedItem.namespace"><strong>Namespace:</strong> {{ selectedItem.namespace }}</p>
-            <p v-if="selectedItem.color"><strong>Color:</strong> {{ selectedItem.color }}</p>
-            <p v-if="selectedItem.argumentHint"><strong>Argument Hint:</strong> {{ selectedItem.argumentHint }}</p>
-            <p v-if="selectedItem.tools && selectedItem.tools.length > 0">
-              <strong>Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
-            </p>
-            <p v-else-if="selectedItem.tools && selectedItem.tools.length === 0">
-              <strong>Allowed Tools:</strong> None specified
-            </p>
-          </div>
-          <div v-else-if="selectedType === 'hooks'">
-            <p><strong>Event:</strong> {{ selectedItem.event }}</p>
-            <p v-if="selectedItem.type"><strong>Type:</strong> {{ selectedItem.type }}</p>
-            <p v-if="selectedItem.matcher"><strong>Matcher:</strong> {{ selectedItem.matcher }}</p>
-            <p v-if="selectedItem.command"><strong>Command:</strong> <code>{{ selectedItem.command }}</code></p>
-          </div>
-          <div v-else-if="selectedType === 'mcp'">
-            <p><strong>Name:</strong> {{ selectedItem.name }}</p>
-            <p v-if="selectedItem.transport || selectedItem.transportType"><strong>Transport:</strong> {{ selectedItem.transport || selectedItem.transportType }}</p>
-            <p v-if="selectedItem.command"><strong>Command:</strong> <code>{{ selectedItem.command }}</code></p>
-            <p v-if="selectedItem.args && selectedItem.args.length > 0"><strong>Arguments:</strong> {{ selectedItem.args.join(' ') }}</p>
-            <p v-if="selectedItem.enabled === false"><strong>Status:</strong> Disabled</p>
-          </div>
-        </div>
-
-        <div v-if="selectedItem?.content" class="sidebar-section">
-          <h4>Content</h4>
-          <pre class="content-preview">{{ selectedItem.content }}</pre>
-        </div>
-      </div>
-
-      <div class="sidebar-footer">
-        <button @click="sidebarVisible = false" class="action-btn close-action-btn">
-          <i class="pi pi-times"></i>
-          Close
-        </button>
-      </div>
-    </div>
+    <!-- Detail Sidebar Component -->
+    <ConfigDetailSidebar
+      :visible="sidebarVisible"
+      :item="selectedItem"
+      :type="selectedType"
+      :current-items="currentItems"
+      :selected-index="currentIndex"
+      @close="sidebarVisible = false"
+      @navigate="onNavigate"
+    />
   </div>
 </template>
 
@@ -325,9 +157,14 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { projectsAPI } from '../frontend/js/api'
+import ConfigCard from './cards/ConfigCard.vue'
+import ConfigItemList from './cards/ConfigItemList.vue'
+import BreadcrumbNavigation from './common/BreadcrumbNavigation.vue'
+import ConfigDetailSidebar from './sidebars/ConfigDetailSidebar.vue'
 
 export default {
   name: 'ProjectDetail',
+  components: { ConfigCard, ConfigItemList, BreadcrumbNavigation, ConfigDetailSidebar },
   props: ['id'],
   setup(props) {
     const route = useRoute()
@@ -551,6 +388,14 @@ export default {
       }
     }
 
+    // Handle sidebar navigation from ConfigDetailSidebar component
+    const onNavigate = (direction) => {
+      if (direction === 'prev') {
+        navigatePrev()
+      } else if (direction === 'next') {
+        navigateNext()
+      }
+    }
 
     // Watch for route changes
     watch(() => projectId.value, () => {
@@ -606,13 +451,16 @@ export default {
       sidebarVisible,
       selectedItem,
       selectedType,
+      currentItems,
+      currentIndex,
       hasPrev,
       hasNext,
       typeIcon,
       typeColor,
       showDetail,
       navigatePrev,
-      navigateNext
+      navigateNext,
+      onNavigate
     }
   }
 }
