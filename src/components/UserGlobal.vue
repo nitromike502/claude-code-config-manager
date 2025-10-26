@@ -29,196 +29,88 @@
       <!-- Config Cards Container -->
       <div v-else class="config-cards-container">
         <!-- Agents Card -->
-        <div class="config-card agents-card">
-          <div class="config-header">
-            <div class="config-header-left">
-              <i class="pi pi-users" style="color: var(--color-agents)"></i>
-              <span class="config-title">Subagents ({{ agents.length }})</span>
-            </div>
-            <div class="config-header-right">
-              <button
-                v-if="agents.length > initialDisplayCount"
-                @click="showingAllAgents = !showingAllAgents"
-                class="expand-btn"
-              >
-                {{ showingAllAgents ? 'Show Less' : `Show ${agents.length - initialDisplayCount} more...` }}
-              </button>
-            </div>
-          </div>
-
-          <div v-if="loadingAgents" class="loading-state">
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-          </div>
-
-          <div v-else-if="agents.length === 0" class="empty-state">
-            <i class="pi pi-users"></i>
-            <p>No user subagents configured</p>
-          </div>
-
-          <div v-else class="items-list">
-            <div
-              v-for="(agent, index) in displayedAgents"
-              :key="index"
-              class="config-item"
-              @click="showDetail(agent, 'agents', agents)"
-            >
-              <div class="item-content">
-                <div class="item-name">{{ agent.name }}</div>
-                <div class="item-description">{{ agent.description || 'No description available' }}</div>
-              </div>
-              <button class="view-details-btn" @click.stop="showDetail(agent, 'agents', agents)">
-                <i class="pi pi-eye"></i>
-                View Details
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfigCard
+          title="Subagents"
+          :count="agents.length"
+          icon="pi pi-users"
+          color="var(--color-agents)"
+          :loading="loadingAgents"
+          :items="agents"
+          :showing-all="showingAllAgents"
+          :initial-display-count="initialDisplayCount"
+          @toggle-show-all="showingAllAgents = !showingAllAgents"
+        >
+          <template #default="{ items }">
+            <ConfigItemList
+              :items="items"
+              item-type="agents"
+              @item-selected="(item) => showDetail(item, 'agents', agents)"
+            />
+          </template>
+        </ConfigCard>
 
         <!-- Commands Card -->
-        <div class="config-card commands-card">
-          <div class="config-header">
-            <div class="config-header-left">
-              <i class="pi pi-bolt" style="color: var(--color-commands)"></i>
-              <span class="config-title">Slash Commands ({{ commands.length }})</span>
-            </div>
-            <div class="config-header-right">
-              <button
-                v-if="commands.length > initialDisplayCount"
-                @click="showingAllCommands = !showingAllCommands"
-                class="expand-btn"
-              >
-                {{ showingAllCommands ? 'Show Less' : `Show ${commands.length - initialDisplayCount} more...` }}
-              </button>
-            </div>
-          </div>
-
-          <div v-if="loadingCommands" class="loading-state">
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-          </div>
-
-          <div v-else-if="commands.length === 0" class="empty-state">
-            <i class="pi pi-bolt"></i>
-            <p>No user slash commands configured</p>
-          </div>
-
-          <div v-else class="items-list">
-            <div
-              v-for="(cmd, index) in displayedCommands"
-              :key="index"
-              class="config-item"
-              @click="showDetail(cmd, 'commands', commands)"
-            >
-              <div class="item-content">
-                <div class="item-name">{{ cmd.name }}</div>
-                <div class="item-description">{{ cmd.description || 'No description available' }}</div>
-              </div>
-              <button class="view-details-btn" @click.stop="showDetail(cmd, 'commands', commands)">
-                <i class="pi pi-eye"></i>
-                View Details
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfigCard
+          title="Slash Commands"
+          :count="commands.length"
+          icon="pi pi-bolt"
+          color="var(--color-commands)"
+          :loading="loadingCommands"
+          :items="commands"
+          :showing-all="showingAllCommands"
+          :initial-display-count="initialDisplayCount"
+          @toggle-show-all="showingAllCommands = !showingAllCommands"
+        >
+          <template #default="{ items }">
+            <ConfigItemList
+              :items="items"
+              item-type="commands"
+              @item-selected="(item) => showDetail(item, 'commands', commands)"
+            />
+          </template>
+        </ConfigCard>
 
         <!-- Hooks Card -->
-        <div class="config-card hooks-card">
-          <div class="config-header">
-            <div class="config-header-left">
-              <i class="pi pi-link" style="color: var(--color-hooks)"></i>
-              <span class="config-title">Hooks ({{ hooks.length }})</span>
-            </div>
-            <div class="config-header-right">
-              <button
-                v-if="hooks.length > initialDisplayCount"
-                @click="showingAllHooks = !showingAllHooks"
-                class="expand-btn"
-              >
-                {{ showingAllHooks ? 'Show Less' : `Show ${hooks.length - initialDisplayCount} more...` }}
-              </button>
-            </div>
-          </div>
-
-          <div v-if="loadingHooks" class="loading-state">
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-          </div>
-
-          <div v-else-if="hooks.length === 0" class="empty-state">
-            <i class="pi pi-link"></i>
-            <p>No user hooks configured</p>
-          </div>
-
-          <div v-else class="items-list">
-            <div
-              v-for="(hook, index) in displayedHooks"
-              :key="index"
-              class="config-item"
-              @click="showDetail(hook, 'hooks', hooks)"
-            >
-              <div class="item-content">
-                <div class="item-name">{{ hook.name || hook.event }}</div>
-                <div class="item-description">Event: {{ hook.event || 'N/A' }} • Pattern: {{ hook.pattern || 'N/A' }}</div>
-              </div>
-              <button class="view-details-btn" @click.stop="showDetail(hook, 'hooks', hooks)">
-                <i class="pi pi-eye"></i>
-                View Details
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfigCard
+          title="Hooks"
+          :count="hooks.length"
+          icon="pi pi-link"
+          color="var(--color-hooks)"
+          :loading="loadingHooks"
+          :items="hooks"
+          :showing-all="showingAllHooks"
+          :initial-display-count="initialDisplayCount"
+          @toggle-show-all="showingAllHooks = !showingAllHooks"
+        >
+          <template #default="{ items }">
+            <ConfigItemList
+              :items="items"
+              item-type="hooks"
+              @item-selected="(item) => showDetail(item, 'hooks', hooks)"
+            />
+          </template>
+        </ConfigCard>
 
         <!-- MCP Servers Card -->
-        <div class="config-card mcp-card">
-          <div class="config-header">
-            <div class="config-header-left">
-              <i class="pi pi-server" style="color: var(--color-mcp)"></i>
-              <span class="config-title">MCP Servers ({{ mcpServers.length }})</span>
-            </div>
-            <div class="config-header-right">
-              <button
-                v-if="mcpServers.length > initialDisplayCount"
-                @click="showingAllMcp = !showingAllMcp"
-                class="expand-btn"
-              >
-                {{ showingAllMcp ? 'Show Less' : `Show ${mcpServers.length - initialDisplayCount} more...` }}
-              </button>
-            </div>
-          </div>
-
-          <div v-if="loadingMCP" class="loading-state">
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-          </div>
-
-          <div v-else-if="mcpServers.length === 0" class="empty-state">
-            <i class="pi pi-server"></i>
-            <p>No user MCP servers configured</p>
-          </div>
-
-          <div v-else class="items-list">
-            <div
-              v-for="(server, index) in displayedMcp"
-              :key="index"
-              class="config-item"
-              @click="showDetail(server, 'mcp', mcpServers)"
-            >
-              <div class="item-content">
-                <div class="item-name">{{ server.name }}</div>
-                <div class="item-description">Transport: {{ server.transport || 'N/A' }} • Command: {{ server.command || 'N/A' }}</div>
-              </div>
-              <button class="view-details-btn" @click.stop="showDetail(server, 'mcp', mcpServers)">
-                <i class="pi pi-eye"></i>
-                View Details
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfigCard
+          title="MCP Servers"
+          :count="mcpServers.length"
+          icon="pi pi-server"
+          color="var(--color-mcp)"
+          :loading="loadingMCP"
+          :items="mcpServers"
+          :showing-all="showingAllMcp"
+          :initial-display-count="initialDisplayCount"
+          @toggle-show-all="showingAllMcp = !showingAllMcp"
+        >
+          <template #default="{ items }">
+            <ConfigItemList
+              :items="items"
+              item-type="mcp"
+              @item-selected="(item) => showDetail(item, 'mcp', mcpServers)"
+            />
+          </template>
+        </ConfigCard>
       </div>
     </div>
 
@@ -302,9 +194,15 @@
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { userAPI } from '../frontend/js/api'
+import ConfigCard from './cards/ConfigCard.vue'
+import ConfigItemList from './cards/ConfigItemList.vue'
 
 export default {
   name: 'UserGlobal',
+  components: {
+    ConfigCard,
+    ConfigItemList
+  },
   setup() {
     const agents = ref([])
     const commands = ref([])
@@ -634,161 +532,6 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
   gap: 1.5rem;
-}
-
-.config-card {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
-  border-radius: 8px;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.config-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--surface-border);
-}
-
-.config-header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.config-header-left i {
-  font-size: 1.5rem;
-}
-
-.config-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.expand-btn {
-  padding: 0.25rem 0.75rem;
-  background: transparent;
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.2s;
-}
-
-.expand-btn:hover {
-  background: var(--primary-color);
-  color: white;
-}
-
-/* Loading State */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.skeleton {
-  background: linear-gradient(90deg, var(--surface-ground) 0%, var(--surface-border) 50%, var(--surface-ground) 100%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s ease-in-out infinite;
-  height: 60px;
-  border-radius: 4px;
-}
-
-@keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: 2rem 1rem;
-  color: var(--text-secondary);
-}
-
-.empty-state i {
-  font-size: 3rem;
-  opacity: 0.3;
-  margin-bottom: 0.5rem;
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: 0.95rem;
-}
-
-/* Items List */
-.items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.config-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background: var(--surface-ground);
-  border: 1px solid var(--surface-border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-  gap: 1rem;
-}
-
-.config-item:hover {
-  border-color: var(--primary-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.item-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.item-name {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.25rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.item-description {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.view-details-btn {
-  padding: 0.5rem 1rem;
-  background: transparent;
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  white-space: nowrap;
-  transition: all 0.2s;
-}
-
-.view-details-btn:hover {
-  background: var(--primary-color);
-  color: white;
 }
 
 /* Sidebar Overlay */
