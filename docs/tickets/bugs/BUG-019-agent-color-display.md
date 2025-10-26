@@ -1,7 +1,7 @@
 ---
 id: BUG-019
 title: Agent configurations not showing configured color
-status: open
+status: completed
 priority: high
 category: Data Display
 assigned_to: null

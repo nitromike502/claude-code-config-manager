@@ -1,7 +1,7 @@
 ---
 id: BUG-028
 title: Agent details sidebar missing model from YAML
-status: open
+status: completed
 priority: high
 category: Data Display
 assigned_to: null

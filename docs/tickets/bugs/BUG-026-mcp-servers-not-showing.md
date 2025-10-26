@@ -1,7 +1,7 @@
 ---
 id: BUG-026
 title: MCP servers still not showing
-status: open
+status: completed
 priority: high
 category: Data Display
 assigned_to: null

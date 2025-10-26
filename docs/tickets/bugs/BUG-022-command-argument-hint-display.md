@@ -1,7 +1,7 @@
 ---
 id: BUG-022
 title: Slash command configurations not showing argument hint
-status: open
+status: completed
 priority: high
 category: Data Display
 assigned_to: null

@@ -1,7 +1,7 @@
 ---
 id: BUG-023
 title: Hooks not showing the command field
-status: open
+status: completed
 priority: high
 category: Data Display
 assigned_to: null

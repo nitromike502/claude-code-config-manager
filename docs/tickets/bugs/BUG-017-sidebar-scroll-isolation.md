@@ -1,7 +1,7 @@
 ---
 id: BUG-017
 title: Sidebar scroll should not scroll main page
-status: open
+status: completed
 priority: medium
 category: UI/UX
 assigned_to: null

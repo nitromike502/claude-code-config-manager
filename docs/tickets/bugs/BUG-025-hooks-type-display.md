@@ -1,7 +1,7 @@
 ---
 id: BUG-025
 title: Hooks not showing the type field
-status: open
+status: completed
 priority: high
 category: Data Display
 assigned_to: null

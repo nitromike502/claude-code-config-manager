@@ -1,7 +1,7 @@
 ---
 id: BUG-034
 title: Agent model field not extracted from frontmatter in API response
-status: open
+status: completed
 priority: critical
 category: Data Display / API Response
 assigned_to: null

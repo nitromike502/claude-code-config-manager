@@ -3,7 +3,7 @@ id: BUG-011
 title: Agent parser skips agents with invalid YAML frontmatter
 severity: high
 category: parser/robustness
-status: open
+status: completed
 created: 2025-10-21
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: BUG-035
 title: User Configurations card missing from dashboard
-status: open
+status: completed
 priority: critical
 category: UI Display / Dashboard
 assigned_to: null

@@ -1,7 +1,7 @@
 ---
 id: BUG-021
 title: Slash command configurations not showing configured color
-status: open
+status: completed
 priority: high
 category: Data Display
 assigned_to: null

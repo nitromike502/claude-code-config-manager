@@ -1,7 +1,7 @@
 ---
 id: BUG-018
 title: Agent configurations not showing allowed tools
-status: open
+status: completed
 priority: high
 category: Data Display
 assigned_to: null

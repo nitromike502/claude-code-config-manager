@@ -3,7 +3,7 @@ id: BUG-010
 title: Hooks not fully populating in sidebar
 severity: high
 category: data/parser
-status: open
+status: completed
 created: 2025-10-21
 ---
 

@@ -3,7 +3,7 @@ id: BUG-015
 title: MCP Servers not loading on project view page
 severity: high
 category: data-loading
-status: open
+status: completed
 created: 2025-10-21
 ---
 

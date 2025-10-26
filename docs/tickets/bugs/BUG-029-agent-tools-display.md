@@ -1,7 +1,7 @@
 ---
 id: BUG-029
 title: Agent details sidebar missing allowed tools from YAML
-status: open
+status: completed
 priority: high
 category: Data Display
 assigned_to: null

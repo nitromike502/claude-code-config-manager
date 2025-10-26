@@ -3,7 +3,7 @@ id: BUG-012
 title: Ensure other parsers handle invalid YAML like agent parser
 severity: high
 category: parser/consistency
-status: open
+status: completed
 created: 2025-10-21
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: BUG-024
 title: Hooks not showing the matcher field
-status: open
+status: completed
 priority: high
 category: Data Display
 assigned_to: null
