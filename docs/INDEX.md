@@ -40,9 +40,7 @@ npm run test:frontend -- --watch
 
 **Important:** Both Vite frontend (port 5173) and Express backend (port 8420) must be running.
 
-**Latest Session:**
-- Fixed 14 failing tests across Test 02 (Project Detail) and Test 200 (Responsive Design)
-- Established centralized mock data pattern used by all tests
-- Updated Phase 1 selectors to Phase 2 SPA structure
-- Achieved 100% test pass rate across all 3 browsers
-- See [SESSION-2025-10-20-FINAL.md](./testing/SESSION-2025-10-20-FINAL.md) for complete details
+**Development Sessions:**
+- **Complete Archive:** [sessions/INDEX.md](sessions/INDEX.md) - Full development history, workflow analyses, lessons learned
+- **Latest Session:** [SESSION-SUMMARY-20251024.md](sessions/summaries/SESSION-SUMMARY-20251024.md) - Fixed 4 bugs (BUG-027, BUG-028, BUG-029, BUG-035)
+- **Testing Session:** [testing/SESSION-2025-10-20-FINAL.md](./testing/SESSION-2025-10-20-FINAL.md) - Fixed 14 failing tests, achieved 100% pass rate

@@ -147,7 +147,7 @@ Stories 2.1, 2.2, and 2.3 can be worked on in parallel if multiple developers av
 ## Dependencies
 
 **Prerequisites:**
-- Phase 2 (Vite migration) ✅ COMPLETE
+- Phase 2 - Vite Migration ✅ COMPLETE
 - All existing tests passing ✅ VERIFIED
 
 **Enables:**
@@ -187,7 +187,7 @@ Stories 2.1, 2.2, and 2.3 can be worked on in parallel if multiple developers av
 
 - **PRD:** `/home/claude/manager/docs/prd/PRD-Phase2-Extension-Component-Refactoring.md`
 - **Current Code:** `src/components/ProjectDetail.vue`, `src/components/UserGlobal.vue`
-- **Phase 2 PRD:** `docs/PRD-Phase2-Vite-Migration.md`
+- **Phase 2 - Vite Migration PRD:** `docs/prd/PRD-Phase2-Vite-Migration.md`
 - **CLAUDE.md:** `/home/claude/manager/CLAUDE.md`
 
 ## Next Steps
