@@ -172,6 +172,80 @@ Building with **parallel subagent teams** using the SWARM method:
 
 See subagent proposals in project `.claude/agents/` directory.
 
+## Development Strategies
+
+Different types of work require different development approaches. This project uses **three proven strategies** optimized for different task characteristics.
+
+### Strategy Overview
+
+| Strategy | Best For | Pattern | Time Impact |
+|----------|----------|---------|-------------|
+| **Development Approved** | Complex features, architectural decisions | Propose → Approve → Implement | +5-10 min discussion, saves 30-60 min rework |
+| **Rapid Iteration** | Simple changes, obvious fixes | Implement → Test → Commit | Minimal overhead, fast execution |
+| **Parallel Execution** | Multiple independent tasks | Plan → Launch All → Validate | 50-87% time savings vs sequential |
+
+### When to Use Each Strategy
+
+**Use Development Approved when:**
+- Multiple implementation approaches exist
+- Architectural decision affects multiple components
+- High rework risk if wrong approach chosen
+- User preferences or constraints unclear
+
+**Use Rapid Iteration when:**
+- Only one obvious approach exists
+- Change is trivial or routine
+- Established pattern already exists
+- Low rework risk, easy to change later
+
+**Use Parallel Execution when:**
+- 4+ independent tasks with similar scope
+- No file conflicts between tasks
+- No logical dependencies
+- Well-defined, clear requirements
+
+### Strategy Selection Command
+
+Select development strategy at session start:
+
+```bash
+/dev-strategy approved   # For complex features
+/dev-strategy rapid      # For straightforward changes
+/dev-strategy parallel   # For independent tasks
+```
+
+**Effect:** All agents adapt their workflow to selected strategy.
+
+### Real-World Evidence
+
+**October 26, 2025 - BUG-030 Fix (Development Approved):**
+- Proposal prepared: 3 options with pros/cons
+- User approval: "development approved" (6 min discussion)
+- Implementation: 30 min, zero rework
+- **Result:** 36 min total vs 70 min with wrong approach (48% faster)
+
+**October 22, 2025 - Bug Sprint (Hybrid Strategies):**
+- 16 bugs fixed in 4 organized groups
+- Simple CSS fixes: Rapid Iteration (8 min for 4 bugs)
+- Complex parser fixes: Development Approved pattern
+- **Result:** 5/5 star session, zero regressions, 100% test pass rate
+
+**October 26, 2025 - Documentation Tasks (Parallel Execution):**
+- 6 independent documentation tasks
+- Parallel execution: 15 min (longest task)
+- Sequential estimate: 2+ hours
+- **Result:** 87% time savings
+
+### Strategy Documentation
+
+**Comprehensive Guide:**
+`/home/claude/manager/.claude/templates/development-strategies.md`
+
+**Slash Command:**
+`/home/claude/manager/.claude/commands/dev-strategy.md`
+
+**Key Principle:** Right strategy for right task = maximum efficiency with minimal rework.
+
 ## Development Workflow
 
 ### Phase 1 MVP - ✅ COMPLETE
@@ -230,11 +304,144 @@ Use `[Test XXX]` format in commit messages and bug reports:
 - `test: fix [Test 100] timeout in user flow navigation`
 - `[Test 201] failing due to responsive layout issue`
 
-See `/home/claude/manager/.claude/templates/test-template.md` for detailed guidelines.
+**Test Organization:**
+- See `/home/claude/manager/docs/testing/TEST-FILE-INDEX.md` for complete index of all tests and available numbers
+- See `/home/claude/manager/.claude/templates/test-template.md` for detailed test creation guidelines
 
 **Test Reports:** All test results are saved to `/home/claude/manager/docs/testing/test-reports/`
 
 **Hard Block:** PRs cannot be created if tests fail. This prevents broken code from being merged.
+
+### Specification-Based Implementation Pattern
+
+When implementing features based on official specifications (Claude Code spec, Playwright API, MCP protocol, etc.), follow this mandatory pattern to prevent implementation errors:
+
+#### 1. Identify Specification
+
+Before coding, determine:
+- **What specification applies?** (Claude Code commands, agent definitions, MCP servers, etc.)
+- **Where is official documentation?** (External URL or codebase location)
+- **What version/date is the spec?** (Note any version requirements)
+
+**Common Specifications:**
+- **Claude Code:** https://docs.claude.com/ (slash commands, agents, hooks, file formats)
+- **MCP Protocol:** Model Context Protocol documentation
+- **Playwright API:** https://playwright.dev/docs/api/
+- **Vue 3:** https://vuejs.org/api/
+- **Pinia:** https://pinia.vuejs.org/api/
+
+#### 2. Fetch and Review
+
+**Before implementing:**
+1. Check CLAUDE.md and existing codebase for related patterns
+2. Use WebFetch to retrieve latest official spec (if external)
+3. Read through ENTIRE relevant section (don't skim!)
+4. Identify key properties, requirements, edge cases
+5. Document the URL and specific sections
+
+**WebFetch Example:**
+```
+WebFetch(url="https://docs.claude.com/slash-commands",
+         prompt="What is the exact property name for specifying allowed tools?")
+```
+
+#### 3. Implement Carefully
+
+- **Use exact property names from spec** (case-sensitive!)
+  - Example: "allowed-tools" ≠ "allowedTools" ≠ "tools"
+- **Reference spec in code comments**
+  ```javascript
+  // Per Claude Code spec (https://docs.claude.com/commands#allowed-tools):
+  // Commands use 'allowed-tools' property for tool restrictions
+  const allowedTools = frontmatter['allowed-tools'] || [];
+  ```
+- **Follow formatting/structure as specified**
+- **Handle edge cases mentioned in spec**
+
+#### 4. Commit With Evidence
+
+Include specification research in commit message:
+
+```
+<type>: <brief description>
+
+Per <spec-url> (section X.Y):
+<key specification details>
+
+Changes:
+- <what was changed>
+- <why it was changed>
+- <how it aligns with spec>
+
+Fixes <BUG-XXX> (if applicable)
+```
+
+**Example:**
+```
+fix: extract allowed-tools from slash commands per Claude Code spec
+
+Per https://docs.claude.com/slash-commands#metadata (section 3.2):
+Slash commands use 'allowed-tools' property for tool restrictions.
+
+Changed backend extraction from 'tools' to 'allowed-tools'.
+Maps to API response 'tools' field for frontend consistency.
+
+Fixes BUG-030
+```
+
+#### 5. Test Thoroughly
+
+- Verify implementation against spec requirements
+- Test edge cases mentioned in spec
+- Add test comments referencing spec sections
+- Validate with real data (actual command files, agent definitions, etc.)
+- Run full test suite (Jest + Playwright)
+
+#### Real-World Example: BUG-030 Fix
+
+**Problem:** Command tools field was always empty in sidebar
+
+**Wrong Approach (No Spec Review):**
+```javascript
+// ❌ Guessed property name without checking spec
+const tools = frontmatter.tools || [];  // Wrong for commands!
+// Result: 30+ minutes debugging, still broken
+```
+
+**Correct Approach (With Spec Review):**
+```javascript
+// ✅ Verified property name from official spec
+// Per https://docs.claude.com/slash-commands#metadata:
+// Commands use 'allowed-tools' property (agents use 'tools')
+const allowedTools = frontmatter['allowed-tools'] || [];
+// Result: Fixed on first try, zero rework
+```
+
+**Key Insight:** Commands use 'allowed-tools', agents use 'tools' (different conventions!)
+
+**Resolution Steps:**
+1. Used WebFetch to consult Claude Code spec
+2. Found: Agents use 'tools' property, slash commands use 'allowed-tools'
+3. Updated backend extraction to look for 'allowed-tools'
+4. Mapped to API response 'tools' field for frontend consistency
+5. Committed with spec reference in message
+6. Test suite validated (270 backend tests passing)
+
+**Time Saved:** ~50 minutes of debugging prevented by 5 minutes of spec review
+
+**Lesson:** Consulting specifications prevents implementation errors and saves significant debugging time.
+
+#### Checklist Reference
+
+For comprehensive guidance, see:
+- **Full Checklist:** `/home/claude/manager/.claude/templates/spec-review-checklist.md`
+- **Quick Summary:** 10-step checklist covering identification, review, implementation, documentation, and testing
+
+**Integration Points:**
+- Backend architects: Use for API implementations
+- Frontend developers: Use for component integrations
+- Test engineers: Verify against spec requirements
+- All developers: Reference spec URLs in commits
 
 ## Success Criteria (Phase 1)
 
@@ -404,6 +611,44 @@ The application will automatically:
 1. Read your Claude Code projects from `~/.claude.json`
 2. Display all discovered projects in the dashboard
 3. Allow you to view agents, commands, hooks, and MCP servers for each project
+
+### Server Restart Protocol
+
+When code changes don't appear to take effect in tests or browser, the server may be running stale code. Follow this protocol to prevent wasting time debugging correct code:
+
+**Quick Restart:**
+```bash
+npm run server:restart
+```
+
+This performs a force restart:
+- Kills any existing server process on port 8420
+- Waits 2 seconds for cleanup
+- Starts a fresh server instance
+- Shows PID transition (OLD_PID → NEW_PID)
+
+**Debugging Protocol:**
+
+If code changes show old behavior in tests/browser:
+
+1. **Kill and restart:** `npm run server:restart`
+2. **Wait 2 seconds** for full startup
+3. **Test again** with browser cache cleared (Ctrl+Shift+R or Cmd+Shift+R)
+4. **Only then** add debug logging if still failing
+
+This prevents 20+ min debugging sessions on code that's actually correct but running on a stale server instance.
+
+**Alternative Commands:**
+
+```bash
+# Check server status and start if needed (default mode)
+npm run server:check
+./scripts/ensure-server-running.sh
+
+# Force restart (kills and restarts)
+npm run server:restart
+./scripts/ensure-server-running.sh --restart
+```
 
 ## Git Workflow
 

@@ -18,6 +18,8 @@
     "preview": "vite preview",
     "start": "node src/backend/server.js",
     "dev:backend": "node --watch src/backend/server.js",
+    "server:check": "./scripts/ensure-server-running.sh",
+    "server:restart": "./scripts/ensure-server-running.sh --restart",
     "test": "jest",
     "test:backend": "jest tests/backend",
     "test:frontend": "playwright test",

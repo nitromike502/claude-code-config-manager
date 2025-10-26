@@ -80,7 +80,11 @@ Choose the appropriate category based on what you're testing:
 
 ### Step 2: Find Next Available Number
 
-List existing tests in your chosen category to find the next available number:
+**IMPORTANT:** Check the Test File Index first to find available numbers:
+
+📋 **See [TEST-FILE-INDEX.md](../../docs/testing/TEST-FILE-INDEX.md)** for a complete list of existing tests and available numbers.
+
+Alternatively, list existing tests in your chosen category:
 
 ```bash
 # For frontend component tests
@@ -195,12 +199,25 @@ tests/backend/error-handling.test.js
 
 ## Best Practices
 
-1. **Sequential Numbering:** Use the next available number in sequence
+**BEFORE creating a new test:**
+
+1. **Check the Test File Index** → [TEST-FILE-INDEX.md](../../docs/testing/TEST-FILE-INDEX.md)
+   - Find available test numbers
+   - Review similar existing tests
+   - Understand current test coverage
+
+2. **Review existing tests** in the same category to understand patterns and conventions
+
+**Core Best Practices:**
+
+1. **Sequential Numbering:** Use the next available number in sequence (run `ls tests/{category}/*.spec.js` first)
 2. **Descriptive Names:** Test name should clearly indicate what is being tested
 3. **One Feature Per Test:** Keep tests focused on a single feature or workflow
 4. **Commit with Test:** Commit the test file with the feature it tests
 5. **Reference in Commits:** Always include `[Test XXX]` in test-related commits
 6. **Update on Refactor:** If renaming/removing tests, update all references
+7. **Review Existing Tests:** Read 2 existing tests in same category before implementing
+8. **Search for Patterns:** Use `grep -r "pattern" tests/` to find existing implementations
 
 ## Quick Reference
 
@@ -255,11 +272,18 @@ git add tests/responsive/201-layout-responsive.spec.js
 git commit -m "test: fix [Test 201] timeout waiting for sidebar collapse"
 ```
 
+## Related Documentation
+
+- [TEST-FILE-INDEX.md](../../docs/testing/TEST-FILE-INDEX.md) - Complete index of all test files and available numbers
+- [Test Reports](../../docs/testing/test-reports/) - Generated test execution reports
+- [CLAUDE.md](../../CLAUDE.md) - Main project documentation with testing workflow
+
 ## Need Help?
 
 If you're unsure which category to use or what number to assign:
 
-1. Review existing tests in each category
-2. Consult with `@test-automation-engineer` agent
-3. Check test reports in `/home/claude/manager/docs/testing/test-reports/`
-4. Review this template again for examples
+1. **Check [TEST-FILE-INDEX.md](../../docs/testing/TEST-FILE-INDEX.md)** for existing tests and available numbers
+2. Review existing tests in each category
+3. Consult with `@test-automation-engineer` agent
+4. Check test reports in `/home/claude/manager/docs/testing/test-reports/`
+5. Review this template again for examples
