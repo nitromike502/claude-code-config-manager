@@ -30,6 +30,7 @@
       <div v-else class="config-cards-container">
         <!-- Agents Card -->
         <ConfigCard
+          card-type="agents"
           title="Subagents"
           :count="agents.length"
           icon="pi pi-users"
@@ -51,6 +52,7 @@
 
         <!-- Commands Card -->
         <ConfigCard
+          card-type="commands"
           title="Slash Commands"
           :count="commands.length"
           icon="pi pi-bolt"
@@ -72,6 +74,7 @@
 
         <!-- Hooks Card -->
         <ConfigCard
+          card-type="hooks"
           title="Hooks"
           :count="hooks.length"
           icon="pi pi-link"
@@ -93,6 +96,7 @@
 
         <!-- MCP Servers Card -->
         <ConfigCard
+          card-type="mcp"
           title="MCP Servers"
           :count="mcpServers.length"
           icon="pi pi-server"

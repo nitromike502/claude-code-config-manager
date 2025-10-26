@@ -1,5 +1,5 @@
 <template>
-  <div class="config-card">
+  <div :class="['config-card', cardTypeClass]">
     <!-- Header -->
     <div class="config-header">
       <div class="config-header-left">
@@ -79,10 +79,21 @@ const props = defineProps({
     type: Number,
     default: 5,
     validator: (value) => value > 0
+  },
+  cardType: {
+    type: String,
+    default: '',
+    validator: (value) => ['', 'agents', 'commands', 'hooks', 'mcp'].includes(value)
   }
 });
 
 const emit = defineEmits(['toggle-show-all', 'item-selected']);
+
+// Computed property for card type CSS class
+const cardTypeClass = computed(() => {
+  if (!props.cardType) return '';
+  return `${props.cardType}-card`;
+});
 
 // Computed property for displayed items
 const displayedItems = computed(() => {
