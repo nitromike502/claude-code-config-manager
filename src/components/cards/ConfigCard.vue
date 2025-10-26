@@ -106,7 +106,7 @@ const displayedItems = computed(() => {
 // Computed property for empty state message
 const emptyStateMessage = computed(() => {
   // Special handling for MCP to keep it uppercase
-  if (props.title === 'MCP') {
+  if (props.title === 'MCP Servers') {
     return 'No MCP servers configured';
   }
   return `No ${props.title.toLowerCase()} configured`;
