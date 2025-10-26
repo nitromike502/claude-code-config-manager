@@ -45,11 +45,33 @@ Unknown - needs investigation. Possibilities:
 
 ## Acceptance Criteria
 
-- [ ] User Configurations card visible on dashboard
-- [ ] Card displays correct metadata (path, counts)
-- [ ] "View" button navigates to user configs page
-- [ ] User page loads and displays agents/commands/hooks/MCP
-- [ ] Card styling consistent with project cards
+- [x] User Configurations card visible on dashboard
+- [x] Card displays correct metadata (path, counts)
+- [x] "View" button navigates to user configs page
+- [x] User page loads and displays agents/commands/hooks/MCP
+- [x] Card styling consistent with project cards
+
+## Resolution
+**Fixed in commit `4e33c39`**
+
+### Changes Made
+1. **Dashboard.vue (lines 130-160):** Added user configurations card rendering at top of project list
+2. **UserGlobal.vue:** Complete user configuration view implementation
+3. Card displays all user-level agents, commands, hooks, and MCP servers
+4. Navigation from dashboard to user config page working properly
+
+### Tests Verified
+- ✅ User card visible on dashboard
+- ✅ User card shows correct path (~/.claude)
+- ✅ User card shows counts of configs
+- ✅ "View" button navigates to user configurations page
+- ✅ User page displays all configuration types
+- ✅ Card styling matches other cards
+
+### Verification
+- ✅ Manual testing on Vite dev server (port 5173)
+- ✅ Playwright E2E tests passing
+- ✅ All 270+ backend Jest tests passing
 
 ## Test Steps
 

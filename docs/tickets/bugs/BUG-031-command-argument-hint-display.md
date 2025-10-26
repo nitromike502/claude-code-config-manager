@@ -1,12 +1,13 @@
 ---
 id: BUG-031
 title: Slash Command details sidebar missing argument hint from YAML
-status: open
+status: resolved
 priority: high
 category: Data Display
 assigned_to: null
 created_at: 2025-10-23
-updated_at: 2025-10-23
+updated_at: 2025-10-26
+resolved_at: 2025-10-26
 ---
 
 ## Description
@@ -39,9 +40,34 @@ Slash command configuration sidebar detail view is not displaying the `argument_
 5. Verify the command YAML has an argument-hint field
 
 ## Acceptance Criteria
-- [ ] Command sidebar detail view displays argument hint field
-- [ ] Argument hint field is clearly labeled as "Argument Hint"
-- [ ] Argument hint value is shown in readable format
-- [ ] Handles missing argument hint gracefully (shows nothing if not set)
-- [ ] Works in both ProjectDetail.vue and UserGlobal.vue
-- [ ] NOTE: YAML field is `argument-hint` (kebab-case), JS property is `argumentHint` (camelCase)
+- [x] Command sidebar detail view displays argument hint field
+- [x] Argument hint field is clearly labeled as "Argument Hint"
+- [x] Argument hint value is shown in readable format
+- [x] Handles missing argument hint gracefully (shows nothing if not set)
+- [x] Works in both ProjectDetail.vue and UserGlobal.vue
+- [x] NOTE: YAML field is `argument-hint` (kebab-case), JS property is `argumentHint` (camelCase)
+
+## Resolution
+**Fixed in commit (current session)**
+
+### Changes Made
+1. **projectDiscovery.js:** Added `argumentHint` field extraction for commands
+   - Extracts `argument-hint` from YAML frontmatter
+   - Maps to camelCase `argumentHint` in API response
+   - Applied to both getProjectCommands() and getUserCommands() functions (2 locations)
+   - Sets to `null` if not present
+
+2. **ConfigDetailSidebar.vue:** Already had display logic for `argumentHint`
+   - Frontend code was already in place: `<p v-if="selectedItem.argumentHint"><strong>Argument Hint:</strong> {{ selectedItem.argumentHint }}</p>`
+   - Issue was that backend wasn't extracting the field
+
+### Affected Files
+- Backend: `src/backend/services/projectDiscovery.js` (getProjectCommands, getUserCommands - 2 locations)
+- Frontend: `src/components/sidebars/ConfigDetailSidebar.vue` (display already present)
+
+### Verification
+- ✅ Backend tests passing (270 tests)
+- ✅ argumentHint field properly extracted in API response
+- ✅ Frontend conditionally displays when present
+- ✅ Applies to both ProjectDetail.vue and UserGlobal.vue (both use ConfigDetailSidebar)
+- ✅ Properly handles both present and missing argument-hint fields

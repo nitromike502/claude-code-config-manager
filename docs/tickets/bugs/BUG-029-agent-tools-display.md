@@ -1,12 +1,13 @@
 ---
 id: BUG-029
 title: Agent details sidebar missing allowed tools from YAML
-status: completed
+status: resolved
 priority: high
 category: Data Display
 assigned_to: null
 created_at: 2025-10-23
-updated_at: 2025-10-23
+updated_at: 2025-10-24
+resolved_at: 2025-10-24
 ---
 
 ## Description
@@ -39,9 +40,28 @@ Agent configuration sidebar detail view is not displaying the `allowed_tools` (o
 5. Verify the agent YAML has a tools field
 
 ## Acceptance Criteria
-- [ ] Agent sidebar detail view displays allowed tools field
-- [ ] Tools field is clearly labeled as "Allowed Tools"
-- [ ] Tools are shown as comma-separated list or badge format
-- [ ] Handles missing tools gracefully (shows "None specified")
-- [ ] Works in both ProjectDetail.vue and UserGlobal.vue
-- [ ] NOTE: Frontend code currently references this as `tools`, not `allowed_tools`
+- [x] Agent sidebar detail view displays allowed tools field
+- [x] Tools field is clearly labeled as "Allowed Tools"
+- [x] Tools are shown as comma-separated list or badge format
+- [x] Handles missing tools gracefully (shows "None specified")
+- [x] Works in both ProjectDetail.vue and UserGlobal.vue
+- [x] NOTE: Frontend code currently references this as `tools`, not `allowed_tools`
+
+## Resolution
+**Fixed in commit `253461c`**
+
+### Changes Made
+1. **ProjectDetail.vue (line 273):** Added tools field display to agent metadata section
+2. **UserGlobal.vue (line 256):** Added tools field display to agent metadata section
+3. Both components display tools as comma-separated list or "None specified" as fallback
+
+### Tests Added
+- [Test 04.004.005] Agent tools display in ProjectDetail sidebar [BUG-029]
+- [Test 04.004.006] Agent tools display in UserGlobal sidebar [BUG-029]
+- All tests passing (17/17 in file 04-component-rendering.spec.js)
+
+### Verification
+- ✅ Manual testing on Vite dev server (port 5173)
+- ✅ Playwright E2E tests passing
+- ✅ All 270+ backend Jest tests passing
+- ✅ Code committed and pushed to origin/phase-2

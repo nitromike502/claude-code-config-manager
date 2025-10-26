@@ -36,7 +36,7 @@
             <p v-if="selectedItem.tools && selectedItem.tools.length > 0">
               <strong>Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
             </p>
-            <p v-else-if="selectedItem.tools && selectedItem.tools.length === 0">
+            <p v-else-if="Array.isArray(selectedItem.tools) && selectedItem.tools.length === 0">
               <strong>Allowed Tools:</strong> None specified
             </p>
           </div>
@@ -51,7 +51,7 @@
             <p v-if="selectedItem.tools && selectedItem.tools.length > 0">
               <strong>Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
             </p>
-            <p v-else-if="selectedItem.tools && selectedItem.tools.length === 0">
+            <p v-else-if="Array.isArray(selectedItem.tools) && selectedItem.tools.length === 0">
               <strong>Allowed Tools:</strong> None specified
             </p>
           </div>

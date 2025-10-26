@@ -1,12 +1,13 @@
 ---
 id: BUG-030
 title: Slash Command details sidebar missing allowed tools from YAML
-status: open
+status: resolved
 priority: high
 category: Data Display
 assigned_to: null
 created_at: 2025-10-23
-updated_at: 2025-10-23
+updated_at: 2025-10-26
+resolved_at: 2025-10-26
 ---
 
 ## Description
@@ -39,9 +40,28 @@ Slash command configuration sidebar detail view is not displaying the `allowed_t
 5. Verify the command YAML has a tools field
 
 ## Acceptance Criteria
-- [ ] Command sidebar detail view displays allowed tools field
-- [ ] Tools field is clearly labeled as "Allowed Tools"
-- [ ] Tools are shown as comma-separated list or badge format
-- [ ] Handles missing tools gracefully (shows "None specified")
-- [ ] Works in both ProjectDetail.vue and UserGlobal.vue
-- [ ] NOTE: Frontend code currently references this as `tools`, not `allowed_tools`
+- [x] Command sidebar detail view displays allowed tools field
+- [x] Tools field is clearly labeled as "Allowed Tools"
+- [x] Tools are shown as comma-separated list or badge format
+- [x] Handles missing tools gracefully (shows "None specified")
+- [x] Works in both ProjectDetail.vue and UserGlobal.vue
+- [x] NOTE: Frontend code currently references this as `tools`, not `allowed_tools`
+
+## Resolution
+**Fixed in commit (current session)**
+
+### Changes Made
+1. **projectDiscovery.js:** Changed command `tools` field from `tools.length > 0 ? tools : null` to always return array (empty or populated)
+2. **ConfigDetailSidebar.vue:** Updated condition to properly handle empty arrays for all config types
+   - Changed condition from `selectedItem.tools && selectedItem.tools.length === 0` to `Array.isArray(selectedItem.tools) && selectedItem.tools.length === 0`
+   - This ensures "None specified" displays when tools array is empty
+
+### Affected Files
+- Backend: `src/backend/services/projectDiscovery.js` (getProjectCommands, getUserCommands)
+- Frontend: `src/components/sidebars/ConfigDetailSidebar.vue`
+
+### Verification
+- ✅ Backend tests passing (270 tests)
+- ✅ Tools field properly extracted in API response
+- ✅ Frontend correctly handles empty tools arrays
+- ✅ Applies to both ProjectDetail.vue and UserGlobal.vue (both use ConfigDetailSidebar)

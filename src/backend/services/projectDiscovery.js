@@ -98,7 +98,7 @@ async function getProjectAgents(projectPath) {
             frontmatter: parsed.frontmatter,
             content: parsed.content,
             description: parsed.frontmatter.description || '',
-            tools: tools.length > 0 ? tools : null,
+            tools: tools,
             color: parsed.frontmatter.color || null,
             model: parsed.frontmatter.model || 'inherit',
             hasParseError: parsed.hasError || false
@@ -177,7 +177,8 @@ async function getProjectCommands(projectPath) {
             frontmatter: parsed.frontmatter,
             content: parsed.content,
             description: parsed.frontmatter.description || '',
-            tools: tools.length > 0 ? tools : null,
+            tools: tools,
+            argumentHint: parsed.frontmatter['argument-hint'] || null,
             hasParseError: parsed.hasError || false
           });
         }
@@ -482,7 +483,7 @@ async function getUserAgents() {
             frontmatter: parsed.frontmatter,
             content: parsed.content,
             description: parsed.frontmatter.description || '',
-            tools: tools.length > 0 ? tools : null,
+            tools: tools,
             color: parsed.frontmatter.color || null,
             model: parsed.frontmatter.model || 'inherit',
             hasParseError: parsed.hasError || false
@@ -559,7 +560,8 @@ async function getUserCommands() {
             frontmatter: parsed.frontmatter,
             content: parsed.content,
             description: parsed.frontmatter.description || '',
-            tools: tools.length > 0 ? tools : null,
+            tools: tools,
+            argumentHint: parsed.frontmatter['argument-hint'] || null,
             hasParseError: parsed.hasError || false
           });
         }

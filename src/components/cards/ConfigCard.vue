@@ -18,7 +18,7 @@
     <!-- Empty State -->
     <div v-else-if="items.length === 0" class="empty-state">
       <i :class="icon" class="empty-icon"></i>
-      <p>No {{ title.toLowerCase() }} configured</p>
+      <p>{{ emptyStateMessage }}</p>
     </div>
 
     <!-- Items List -->
@@ -101,6 +101,15 @@ const displayedItems = computed(() => {
     return props.items;
   }
   return props.items.slice(0, props.initialDisplayCount);
+});
+
+// Computed property for empty state message
+const emptyStateMessage = computed(() => {
+  // Special handling for MCP to keep it uppercase
+  if (props.title === 'MCP') {
+    return 'No MCP servers configured';
+  }
+  return `No ${props.title.toLowerCase()} configured`;
 });
 
 // Computed property for button text

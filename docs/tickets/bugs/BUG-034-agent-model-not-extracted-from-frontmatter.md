@@ -1,12 +1,13 @@
 ---
 id: BUG-034
 title: Agent model field not extracted from frontmatter in API response
-status: completed
+status: resolved
 priority: critical
 category: Data Display / API Response
 assigned_to: null
 created_at: 2025-10-24
 updated_at: 2025-10-24
+resolved_at: 2025-10-24
 ---
 
 ## Description
@@ -52,13 +53,32 @@ The `model` field is available in `parsed.frontmatter.model` but is never extrac
 
 ## Acceptance Criteria
 
-- [ ] Agent API response includes `model` field at top level
-- [ ] Model value extracted from YAML frontmatter
-- [ ] Defaults to "inherit" if not specified in YAML
-- [ ] Works for `/api/projects/:projectId/agents`
-- [ ] Works for `/api/user/agents`
-- [ ] Frontend component can display the correct model value
-- [ ] Verified with agents that have model defined (e.g., `/home/claude/sample/.claude/agents/api-tester.md` with `model: sonnet`)
+- [x] Agent API response includes `model` field at top level
+- [x] Model value extracted from YAML frontmatter
+- [x] Defaults to "inherit" if not specified in YAML
+- [x] Works for `/api/projects/:projectId/agents`
+- [x] Works for `/api/user/agents`
+- [x] Frontend component can display the correct model value
+- [x] Verified with agents that have model defined (e.g., `/home/claude/sample/.claude/agents/api-tester.md` with `model: sonnet`)
+
+## Resolution
+**Fixed in commit `e1e2c32`**
+
+### Changes Made
+1. **projectDiscovery.js (getUserAgents):** Added `model: parsed.frontmatter.model || 'inherit'` extraction
+2. **projectDiscovery.js (getProjectAgents):** Added `model: parsed.frontmatter.model || 'inherit'` extraction
+3. Both API endpoints now include model field at top level in response
+
+### Tests Verified
+- ✅ API returns model field for agents with model defined
+- ✅ API returns 'inherit' as fallback for agents without model
+- ✅ Works on both user and project agent endpoints
+- ✅ Frontend can now correctly display agent model values
+
+### Verification
+- ✅ Manual API testing with curl
+- ✅ Backend Jest tests passing
+- ✅ Frontend component rendering correctly
 
 ## Test Agent
 
