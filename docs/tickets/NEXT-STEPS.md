@@ -277,7 +277,8 @@ test('04.004.XXX: [field] displays in [Component] sidebar [BUG-XXX]', async ({ p
 
 ## References
 
-- **Session Summary:** `docs/SESSION-SUMMARY-20251024.md`
-- **Main Docs:** `CLAUDE.md` (Success Criteria, Future Features)
+- **Session Archive:** `docs/sessions/INDEX.md` (Complete development history, workflow analyses)
+- **Latest Session Summary:** `docs/sessions/summaries/SESSION-SUMMARY-20251024.md`
+- **Main Docs:** `CLAUDE.md` (Success Criteria, Future Features, Development History)
 - **Bug Tickets:** `docs/tickets/bugs/BUG-*.md`
 - **Test Files:** `tests/frontend/04-component-rendering.spec.js`

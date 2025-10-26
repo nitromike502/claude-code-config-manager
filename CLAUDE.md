@@ -8,7 +8,9 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Deployment:** Local web server accessible at `http://localhost:8420`
 
-**Current Phase:** Phase 2 (Vite Migration) - ✅ COMPLETE
+**Current Phase:** Phase 2 Extension - Component Refactoring - 📋 READY FOR IMPLEMENTATION
+
+**Phase 2.1 Focus:** Refactoring large monolithic components (Dashboard.vue, ProjectDetail.vue, UserGlobal.vue) into smaller, reusable, maintainable components following Vue 3 best practices.
 
 ## Tech Stack
 
@@ -21,8 +23,14 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 ```
 manager/
 ├── docs/
-│   ├── PRD-Phase1-MVP.md             # Phase 1 requirements (archived)
-│   ├── PRD-Phase2-Vite-Migration.md  # Phase 2 (current - complete)
+│   ├── prd/                          # Phase Requirements Documents
+│   │   ├── PRD-Phase1-MVP.md         # Phase 1 requirements (archived)
+│   │   ├── PRD-Phase2-Vite-Migration.md  # Phase 2 - Vite Migration (complete)
+│   │   ├── PRD-Phase2-Extension-Component-Refactoring.md  # Phase 2.1 (ready)
+│   │   ├── PRD-Phase3-Subagents.md   # Phase 3 (planned)
+│   │   ├── PRD-Phase4-Commands.md    # Phase 4 (planned)
+│   │   ├── PRD-Phase5-Hooks.md       # Phase 5 (planned)
+│   │   └── PRD-Phase6-MCP.md         # Phase 6 (planned)
 │   └── testing/                      # Test reports and documentation
 ├── src/
 │   ├── backend/                      # Express server & API (unchanged)
@@ -73,7 +81,7 @@ manager/
 - **Dark mode:** Implemented in Phase 1
 - **No authentication:** Local-only tool
 
-## Phase 2 Features (Vite Migration)
+## Phase 2 - Vite Migration Features
 
 ### Architecture Modernization
 1. **Vite Build System** - Modern dev server with Hot Module Replacement (< 1s reload)
@@ -179,7 +187,7 @@ See subagent proposals in project `.claude/agents/` directory.
 5. ✅ Integration verification & cross-platform testing (COMPLETE)
 6. ✅ Polish & final quality review (COMPLETE)
 
-### Phase 2 Vite Migration - ✅ COMPLETE
+### Phase 2 - Vite Migration - ✅ COMPLETE
 1. ✅ Story 2.1: Vite Setup & Project Structure
 2. ✅ Story 2.2: Vue Router Implementation
 3. ✅ Story 2.3: Pinia State Management
@@ -189,7 +197,7 @@ See subagent proposals in project `.claude/agents/` directory.
 7. ✅ Story 2.7: Testing & Validation (100% test pass rate)
 8. ✅ Story 2.8: Documentation & Cleanup
 
-**Note:** Phase 1 = MVP (Read-only interface). Phase 2 = Architecture modernization with Vite. Future phases will add CRUD operations.
+**Note:** Phase 1 = MVP (Read-only interface). Phase 2 - Vite Migration = Architecture modernization with Vite. Future phases will add CRUD operations.
 
 ### Testing Workflow (Automated Quality Gate)
 
@@ -279,9 +287,36 @@ See `/home/claude/manager/.claude/templates/test-template.md` for detailed guide
 
 All bugs were resolved with comprehensive test coverage. Remaining known issues are tracked in `/docs/tickets/bugs/` directory.
 
-## Future Features (Phase 3+)
+## Current & Future Features
 
-With Phase 1 MVP and Phase 2 Vite migration complete with 100% test coverage and all critical bugs resolved, future phases will build on this solid foundation:
+With Phase 1 MVP and Phase 2 - Vite Migration complete with 100% test coverage and all critical bugs resolved, the following phases will build on this solid foundation:
+
+### Phase 2.1 - Component Refactoring (NEXT UP - Ready for Implementation)
+
+**Status:** Planned - Ready to Start
+**Priority:** High (Foundation for Phase 3+ features)
+**Timeline:** 3-4 hours total implementation
+
+Extract reusable components to reduce code duplication from 62% to <10% and establish scalable patterns for future development.
+
+**Components to Extract:**
+1. **ConfigCard** - Reusable wrapper for configuration sections (agents, commands, hooks, MCP)
+2. **ConfigItemList** - Uniform item rendering with type-specific formatting
+3. **ConfigDetailSidebar** - Detail view sidebar with type-aware metadata display
+4. **LoadingState** - Consistent skeleton loaders across all views
+5. **EmptyState** - Consistent empty state placeholders
+6. **BreadcrumbNavigation** - Reusable breadcrumb navigation
+7. **InfoBar** - Title + subtitle display pattern
+
+**Expected Benefits:**
+- 70% reduction in code duplication (1900 → 500 LOC)
+- 50% faster development of new configuration pages
+- Bug fixes applied once work everywhere
+- Guaranteed visual consistency across all displays
+
+**Documentation:**
+- PRD: `/home/claude/manager/docs/prd/PRD-Phase2-Extension-Component-Refactoring.md`
+- Tickets: `/home/claude/manager/docs/tickets/phase-2-extension/`
 
 ### Phase 3 - Subagent CRUD (Planned)
 - Create, edit, and delete subagent definitions
@@ -580,6 +615,20 @@ Please use the feature branch workflow:
   3. Push your feature branch: git push -u origin feature/your-feature-name
   4. Create a Pull Request for review
 ```
+
+## Development History
+
+This project has undergone continuous improvement since Phase 1 MVP. Key sessions and workflow analyses provide critical insights into best practices:
+
+**Session Summaries:**
+- [October 24, 2025](docs/sessions/summaries/SESSION-SUMMARY-20251024.md) - Fixed 4 critical display bugs (BUG-027, BUG-028, BUG-029, BUG-035) with 100% test coverage
+
+**Workflow Analyses:**
+- [October 7, 2025](docs/sessions/workflow-analyses/workflow-analysis-20251007.md) - Critical incident analysis: identified root causes of revert (massive scope, no branches, late testing). Established mandatory workflow improvements.
+- [October 12, 2025](docs/sessions/workflow-analyses/workflow-analysis-20251012-session-c6d23edd.md) - Exemplary execution: 100% task completion, zero errors, rated 5/5 stars. Proved new workflow prevents failures.
+- [October 22, 2025](docs/sessions/workflow-analyses/workflow-analysis-20251022.md) - Best-practice bug sprint: 16 bugs fixed systematically with zero regressions, rated 5/5 stars.
+
+**Complete Archive:** See [docs/sessions/INDEX.md](docs/sessions/INDEX.md) for full development history, lessons learned, and workflow best practices.
 
 ## Contributing
 

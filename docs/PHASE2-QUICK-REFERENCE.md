@@ -1,4 +1,4 @@
-# Phase 2 Quick Reference Guide
+# Phase 2 - Vite Migration Quick Reference Guide
 
 **For:** Developers implementing Vite+Vue3 SPA Migration
 **Duration:** 8 stories, ~12 hours total
@@ -6,11 +6,11 @@
 
 ---
 
-## Why Phase 2 Matters
+## Why Phase 2 - Vite Migration Matters
 
 ### Problems We're Solving
 ```
-❌ BEFORE (Phase 1):           ✅ AFTER (Phase 2):
+❌ BEFORE (Phase 1):           ✅ AFTER (Phase 2 - Vite Migration):
 - Full page reloads             - Smooth SPA transitions
 - Multiple HTML files           - Single entry point
 - Manual event routing          - Vue Router v4

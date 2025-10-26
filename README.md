@@ -174,6 +174,20 @@ MIT License
 
 For issues, questions, or feature requests, please create an issue in the repository.
 
+## Development History
+
+This project has undergone continuous improvement with rigorous workflow practices:
+
+**Session Summaries:**
+- [October 24, 2025](docs/sessions/summaries/SESSION-SUMMARY-20251024.md) - Fixed 4 critical display bugs with 100% test coverage
+
+**Workflow Analyses:**
+- [October 7, 2025](docs/sessions/workflow-analyses/workflow-analysis-20251007.md) - Critical incident analysis leading to workflow improvements
+- [October 12, 2025](docs/sessions/workflow-analyses/workflow-analysis-20251012-session-c6d23edd.md) - Exemplary execution (5/5 stars)
+- [October 22, 2025](docs/sessions/workflow-analyses/workflow-analysis-20251022.md) - Best-practice bug sprint (5/5 stars)
+
+**Complete Archive:** See [docs/sessions/INDEX.md](docs/sessions/INDEX.md) for lessons learned and best practices.
+
 ## Troubleshooting
 
 ### Server Won't Start

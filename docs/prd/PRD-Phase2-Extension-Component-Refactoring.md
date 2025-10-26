@@ -292,7 +292,7 @@ SharedPatterns/
 ## 7. Dependencies & Ordering
 
 ### Must Happen First
-- Phase 2 (Vite migration) ✅ COMPLETE
+- Phase 2 - Vite Migration ✅ COMPLETE
 - All existing tests passing ✅ VERIFIED
 
 ### No Dependencies
@@ -353,5 +353,5 @@ SharedPatterns/
 
 - **Current Code:** ProjectDetail.vue, UserGlobal.vue (src/components/)
 - **Analysis:** Component reusability analysis (initial planning doc)
-- **Phase 2 PRD:** docs/PRD-Phase2-Vite-Migration.md
+- **Phase 2 - Vite Migration PRD:** docs/prd/PRD-Phase2-Vite-Migration.md
 - **Phase 3 PRD:** docs/PRD-Phase3-Subagents.md

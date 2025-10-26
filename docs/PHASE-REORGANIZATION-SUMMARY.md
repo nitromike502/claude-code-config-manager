@@ -1,7 +1,7 @@
 # Phase Reorganization Summary
 
 **Date:** 2025-10-18
-**Rationale:** Insert new Phase 2 (Vite+Vue3 SPA Migration) as technical foundation before Phase 3+ CRUD operations
+**Rationale:** Insert new Phase 2 - Vite Migration (Vite+Vue3 SPA Migration) as technical foundation before Phase 3+ CRUD operations
 
 ---
 
@@ -16,7 +16,7 @@
 | Phase 2 (Commands) | Phase 4 | Create/Edit/Delete Slash Commands |
 | Phase 2 (Hooks) | Phase 5 | Create/Edit/Delete Hooks |
 | Phase 2 (MCP) | Phase 6 | Create/Edit/Delete MCP Servers |
-| **NEW** | **Phase 2** | **Vite+Vue3 SPA Migration (Technical Foundation)** |
+| **NEW** | **Phase 2 - Vite Migration** | **Vite+Vue3 SPA Migration (Technical Foundation)** |
 
 ### File Reorganization
 
@@ -42,7 +42,7 @@ docs/
 4. **Limited state management** - Hard to track edit state across components
 5. **Developer experience** - No HMR, no Vue DevTools, manual bundling
 
-### Why Phase 2 Must Be the Migration
+### Why Phase 2 - Vite Migration Must Be the Migration
 1. **Foundation required** - Phase 3+ edit features depend on Vite SPA architecture
 2. **Technical debt** - Current setup won't scale with CRUD operations
 3. **Zero feature impact** - Migration preserves all Phase 1 functionality
@@ -51,7 +51,7 @@ docs/
 
 ---
 
-## Phase 2: Vite+Vue3 SPA Migration Details
+## Phase 2 - Vite Migration: Vite+Vue3 SPA Migration Details
 
 ### 8 Stories, 40+ Tasks (~12 hours total)
 
@@ -64,7 +64,7 @@ docs/
 7. **Story 2.7:** Testing & Migration Validation (2h)
 8. **Story 2.8:** Documentation & Cleanup (1h)
 
-### Branching Strategy for Phase 2
+### Branching Strategy for Phase 2 - Vite Migration
 
 ```
 phase-2 (base branch for all Phase 2 work)

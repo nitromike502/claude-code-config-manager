@@ -1,4 +1,4 @@
-# Phase 2 Test Fixes - Emergency Recovery
+# Phase 2 - Vite Migration Test Fixes - Emergency Recovery
 
 **Date:** 2025-10-18
 **Branch:** phase-2
@@ -6,7 +6,7 @@
 
 ## Summary
 
-Fixed 43 failing Playwright tests caused by Phase 2 migration from static HTML to Vue 3 SPA.
+Fixed 43 failing Playwright tests caused by Phase 2 - Vite Migration from static HTML to Vue 3 SPA.
 
 ### Test Results
 
@@ -34,19 +34,19 @@ Fixed 43 failing Playwright tests caused by Phase 2 migration from static HTML t
 **Problem:** Tests written for Phase 1 static HTML using outdated selectors.
 
 **Examples:**
-- `h1:has-text("Dashboard")` → Phase 2 uses `h2:has-text("Projects")`
-- `h1:has-text("User/Global Configuration")` → Phase 2 uses `.user-info-title:has-text("User Configurations")`
-- `.mcp-servers-card` → Phase 2 uses `.mcp-card`
+- `h1:has-text("Dashboard")` → Phase 2 - Vite Migration uses `h2:has-text("Projects")`
+- `h1:has-text("User/Global Configuration")` → Phase 2 - Vite Migration uses `.user-info-title:has-text("User Configurations")`
+- `.mcp-servers-card` → Phase 2 - Vite Migration uses `.mcp-card`
 
 **Solution:** Updated selectors to match Vue component structure.
 
 ### 2. Data Attribute Changes (20% of failures)
-**Problem:** Phase 1 used `html[data-theme]`, Phase 2 uses `.app-container[data-theme]`.
+**Problem:** Phase 1 used `html[data-theme]`, Phase 2 - Vite Migration uses `.app-container[data-theme]`.
 
 **Solution:** Updated all theme-related tests to use `.app-container` instead of `html`.
 
 ### 3. Project Name Derivation (15% of failures)
-**Problem:** Phase 1 displayed project `name` from API, Phase 2 derives name from `projectId` path.
+**Problem:** Phase 1 displayed project `name` from API, Phase 2 - Vite Migration derives name from `projectId` path.
 
 **Example:**
 - Project ID: `project2`
