@@ -143,8 +143,8 @@
     <!-- Detail Sidebar Component -->
     <ConfigDetailSidebar
       :visible="sidebarVisible"
-      :item="selectedItem"
-      :type="selectedType"
+      :selected-item="selectedItem"
+      :selected-type="selectedType"
       :current-items="currentItems"
       :selected-index="currentIndex"
       @close="sidebarVisible = false"
