@@ -159,14 +159,17 @@ async function getProjectCommands(projectPath) {
           // Command name is derived from file path (e.g., "git/commit.md" -> "git/commit")
           const commandName = relFile.replace('.md', '');
 
-          // Handle tools field - can be string or array
+          // Handle allowed-tools field - can be string or array
+          // Note: Slash commands use 'allowed-tools' per Claude Code spec
           let tools = [];
-          if (parsed.frontmatter.tools) {
-            if (typeof parsed.frontmatter.tools === 'string') {
+          const allowedTools = parsed.frontmatter['allowed-tools'];
+
+          if (allowedTools) {
+            if (typeof allowedTools === 'string') {
               // Split by comma and trim
-              tools = parsed.frontmatter.tools.split(',').map(t => t.trim()).filter(Boolean);
-            } else if (Array.isArray(parsed.frontmatter.tools)) {
-              tools = parsed.frontmatter.tools;
+              tools = allowedTools.split(',').map(t => t.trim()).filter(Boolean);
+            } else if (Array.isArray(allowedTools)) {
+              tools = allowedTools;
             }
           }
 
@@ -542,14 +545,17 @@ async function getUserCommands() {
 
           const commandName = relFile.replace('.md', '');
 
-          // Handle tools field - can be string or array
+          // Handle allowed-tools field - can be string or array
+          // Note: Slash commands use 'allowed-tools' per Claude Code spec
           let tools = [];
-          if (parsed.frontmatter.tools) {
-            if (typeof parsed.frontmatter.tools === 'string') {
+          const allowedTools = parsed.frontmatter['allowed-tools'];
+
+          if (allowedTools) {
+            if (typeof allowedTools === 'string') {
               // Split by comma and trim
-              tools = parsed.frontmatter.tools.split(',').map(t => t.trim()).filter(Boolean);
-            } else if (Array.isArray(parsed.frontmatter.tools)) {
-              tools = parsed.frontmatter.tools;
+              tools = allowedTools.split(',').map(t => t.trim()).filter(Boolean);
+            } else if (Array.isArray(allowedTools)) {
+              tools = allowedTools;
             }
           }
 
