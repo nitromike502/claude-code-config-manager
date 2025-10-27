@@ -54,10 +54,11 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 
 ### Testing
 - **581 Tests** - 100% pass rate across all test suites
-  - 270 Backend tests (Jest) - 100% passing
-  - 311 Frontend tests (Playwright: E2E, component, responsive, visual) - 100% passing
+  - 270 Backend tests (Jest) - API endpoints, parsers, error handling
+  - 311 Frontend tests (Playwright) - E2E (90), Component (120), Responsive (44), Visual (57)
 - **Cross-Browser** - Verified on Chromium, Firefox, and WebKit
 - **Automated Quality** - Comprehensive test coverage with continuous validation
+- **Test Reports** - Saved to `docs/testing/test-reports/`
 
 ## Prerequisites
 
@@ -145,7 +146,14 @@ Claude Code Manager works on:
 - macOS
 - Windows (both WSL and native)
 
-## Future Plans
+## Roadmap
+
+**Phase 2.1 - Component Refactoring** (Ready for Implementation)
+- Extract reusable configuration card components
+- Reduce code duplication from 62% to <10%
+- Establish scalable patterns for future development
+- Improve maintainability and consistency
+- Timeline: 3-4 hours implementation
 
 **Phase 3 - Subagent CRUD** (Planned)
 - Create, edit, and delete subagent definitions

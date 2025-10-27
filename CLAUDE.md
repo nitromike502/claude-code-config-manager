@@ -33,7 +33,8 @@ manager/
 │   │   └── PRD-Phase6-MCP.md         # Phase 6 (planned)
 │   └── testing/                      # Test reports and documentation
 ├── src/
-│   ├── backend/                      # Express server & API (unchanged)
+│   ├── backend/                      # Express server & API
+│   ├── frontend/                     # [LEGACY] Phase 1 CDN-based code (archived)
 │   ├── main.js                       # Vue app initialization
 │   ├── App.vue                       # Root component
 │   ├── router/
@@ -65,6 +66,12 @@ manager/
 ├── vite.config.js                   # Vite configuration
 └── CLAUDE.md                         # This file
 ```
+
+**Note on Legacy Code:**
+- `/src/frontend/` contains Phase 1 CDN-based implementation (pre-Vite)
+- This directory is archived and NOT used in Phase 2+ production builds
+- All active frontend code is now in `/src/*.vue`, `/src/components/`, `/src/stores/`, etc.
+- The legacy directory is kept for historical reference and migration documentation
 
 ## Phase 1 MVP Features
 
@@ -165,7 +172,7 @@ POST /api/projects/scan              - Trigger project list refresh
 Building with **parallel subagent teams** using the SWARM method:
 
 1. **Backend Team** - API endpoints, file parsing, project discovery (includes immediate testing)
-2. **Frontend Team** - Vue components, PrimeVue integration, routing (includes immediate testing)
+2. **Frontend Team** - Vue components, SPA architecture, routing, state management (includes immediate testing)
 3. **Quality Team** - Code review, cross-platform verification, documentation
 
 **Note:** Testing is integrated into development, not a separate phase. Each developer tests their implementation immediately before code review.
