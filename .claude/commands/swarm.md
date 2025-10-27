@@ -7,15 +7,23 @@ Launch the subagent-orchestrator to coordinate Claude Code Manager development t
 
 <context>
 **Project**: Claude Code Manager - Web-based tool for managing Claude Code projects
-**Tech Stack**: Node.js + Express (backend), Vue 3 + PrimeVue (frontend, CDN)
+**Tech Stack**: Node.js + Express (backend), Vue 3 + Vite (frontend SPA)
 **Architecture**: Local web server on port 8420, live file system reads
 
+**Current Phase**: Phase 2.2 - Cleanup & Optimization for Production Release
 **Development Method**: SWARM (Simultaneous Work And Resource Management)
 **Team Structure**: See docs/Subagent-Team.md for complete team definitions
 
+**Ticket Storage**: Local markdown documents in `docs/tickets/phase-*/*.md`
+- Phase 2.2 cleanup tickets: `docs/tickets/phase-2.2/`
+- Epics within phase directories: `PHASE-2.X-EPIC.md`
+- Individual tickets: `CRITICAL-001-*.md`, `HIGH-005-*.md`, etc.
+
 **Available PRDs**:
 - docs/PRD-Phase1-MVP.md (reviewed & approved)
-- docs/PRD-Phase2-*.md (future phases, not reviewed)
+- docs/PRD-Phase2-Vite-Migration.md (Phase 2 complete - Architecture modernization)
+- docs/PRD-Phase2-Extension-Component-Refactoring.md (Phase 2.1 - Planned)
+- docs/PRD-Phase3-Subagents.md (Phase 3 - Planned)
 </context>
 
 <execution>
@@ -28,7 +36,7 @@ Invoke the `subagent-orchestrator` agent to:
 
 ## Step 2: Auto-Plan if Needed (ENFORCE SMALL FEATURE SIZING)
 If NO tickets exist or tickets are stale/completed:
-1. Assess current project state (read CLAUDE.md, workflow-analysis-20251007.md, git status)
+1. Assess current project state (read CLAUDE.md, git status)
 2. Determine current phase and what work comes next
 3. Identify appropriate PRD sections for planning
 4. Create comprehensive Epic/Story/Task breakdown with TodoWrite tool:
@@ -47,7 +55,9 @@ If NO tickets exist or tickets are stale/completed:
 Before starting any development work:
 1. **Invoke project-manager agent** to analyze ticket dependencies and priorities
 2. Project manager should:
-   - Scan all pending tickets in `docs/tickets/epic-*/TASK-*.md` (organized by epic subdirectories)
+   - Scan all pending tickets in phase directories: `docs/tickets/phase-2.2/`, `docs/tickets/phase-2.1/`, etc.
+   - Look for Epics like: `PHASE-2.2-EPIC.md`, `PHASE-2.1-EPIC.md` (organized within phase subdirectories)
+   - Look for individual tickets: `CRITICAL-001-*.md`, `HIGH-005-*.md`, etc. (status markers in filenames)
    - Check git status for any pending PRs awaiting merge
    - Identify ticket dependencies (which tickets block others)
    - Determine which tickets are independent and could be worked on in parallel
