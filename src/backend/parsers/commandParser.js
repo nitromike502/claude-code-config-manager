@@ -66,14 +66,16 @@ async function parseCommand(filePath, baseDir, scope = 'project') {
       }
     }
 
-    // Handle tools field - can be string or array
+    // Per Claude Code spec (https://docs.claude.com/slash-commands#metadata):
+    // Slash commands use 'allowed-tools' property (agents use 'tools')
+    // Map to 'tools' field in API response for frontend consistency
     let tools = [];
-    if (data.tools) {
-      if (typeof data.tools === 'string') {
+    if (data['allowed-tools']) {
+      if (typeof data['allowed-tools'] === 'string') {
         // Split by comma and trim
-        tools = data.tools.split(',').map(t => t.trim()).filter(Boolean);
-      } else if (Array.isArray(data.tools)) {
-        tools = data.tools;
+        tools = data['allowed-tools'].split(',').map(t => t.trim()).filter(Boolean);
+      } else if (Array.isArray(data['allowed-tools'])) {
+        tools = data['allowed-tools'];
       }
     }
 
