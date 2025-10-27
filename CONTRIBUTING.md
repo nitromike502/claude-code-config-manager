@@ -1,68 +1,110 @@
 # Contributing to Claude Code Manager
 
-Thank you for your interest in contributing to the Claude Code Manager project! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing! This guide provides essential information for contributors.
 
-## Table of Contents
-
-1. [Development Philosophy](#development-philosophy)
-2. [Getting Started](#getting-started)
-3. [Project Structure](#project-structure)
-4. [Development Workflow](#development-workflow)
-5. [Code Style Guidelines](#code-style-guidelines)
-6. [Testing](#testing)
-7. [Submitting Changes](#submitting-changes)
-8. [SWARM Methodology](#swarm-methodology)
-
----
-
-## Development Philosophy
-
-This project follows these core principles:
-
-1. **Simplicity First** - Avoid unnecessary complexity, use simple solutions when possible
-2. **No Build Tools** - Direct execution without compilation (Vue via CDN, Node.js without transpilation)
-3. **Read-First, Write-Later** - Phase 1 focuses on viewing configurations, editing comes in Phase 2
-4. **Progressive Enhancement** - Basic functionality works everywhere, enhanced features for modern browsers
-5. **Local-First** - Designed for local development workflows, no cloud dependencies
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- **Node.js 18.0.0 or higher** - Required for backend server
-- **npm** - Comes with Node.js
-- **Claude Code** - Have at least one Claude Code project configured
-- **Git** - For version control
-- **Code Editor** - VS Code, Sublime Text, or your preferred editor
-
-### Initial Setup
+## Quick Start
 
 ```bash
-# Clone the repository
+# Clone and setup
 git clone <repository-url>
 cd manager
-
-# Install dependencies
 npm install
+./scripts/setup-git-hooks.sh  # Enforces feature branch workflow
 
-# Start the development server
-npm run dev
-
-# Open browser
-open http://localhost:8420
+# Development (requires 2 terminals)
+npm run dev          # Terminal 1: Frontend (Vite dev server on :5173)
+npm run dev:backend  # Terminal 2: Backend (Express API on :8420)
 ```
 
-### Verify Setup
+Open http://localhost:5173 to see the application.
+
+---
+
+## Tech Stack
+
+### Frontend
+- **Vite 7.1.10** - Build system with Hot Module Replacement (HMR)
+- **Vue 3.5.22** - Single File Components (.vue files)
+- **Vue Router 4.6.3** - Client-side routing
+- **Pinia 3.0.3** - State management
+
+### Backend
+- **Node.js 18+** - JavaScript runtime
+- **Express 4.18** - API server
+
+### Testing
+- **Jest 30.2.0** - Backend tests (270 tests)
+- **Playwright 1.56.0** - Frontend tests (311 tests)
+
+---
+
+## Development Workflow
+
+### 1. Feature Branch Workflow (Mandatory)
 
 ```bash
-# Check server health
-curl http://localhost:8420/api/health
+# Create feature branch
+git checkout -b feature/your-feature-name
 
-# Check project discovery
-curl http://localhost:8420/api/projects
+# Make changes, test, commit frequently
+git add <files>
+git commit -m "type: description"
+git push -u origin feature/your-feature-name
+
+# Create PR when ready
+gh pr create --title "..." --body "..."
 ```
+
+**Rules:**
+- All work must be on feature branches
+- Direct commits to main are blocked by pre-push hook
+- One commit per completed task (15-30 min work)
+- Test immediately after each change
+
+### 2. Commit Message Format
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>: <brief description>
+
+[optional body]
+```
+
+**Types:**
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation changes
+- `test:` - Adding or updating tests
+- `refactor:` - Code refactoring
+- `chore:` - Maintenance tasks
+- `style:` - Code style/formatting changes
+
+**Examples:**
+```
+feat: add project discovery service
+fix: resolve sidebar scrolling issue
+docs: update API endpoint documentation
+test: add [Test 06] sidebar interaction tests
+```
+
+### 3. Testing
+
+**Run tests before creating PR:**
+```bash
+npm test                    # Run all tests (backend + frontend)
+npm run test:backend        # Jest tests only
+npm run test:frontend       # Playwright tests only
+```
+
+**All tests must pass (100% pass rate required).**
+
+### 4. Code Review
+
+- Address all reviewer feedback
+- Keep PRs focused (one feature/fix per PR)
+- Update documentation for new features
+- Ensure tests still pass after changes
 
 ---
 
@@ -70,426 +112,225 @@ curl http://localhost:8420/api/projects
 
 ```
 manager/
-├── .claude/                        # Claude Code configuration
-│   ├── agents/                     # Specialized subagents
-│   │   ├── backend-architect.md
-│   │   ├── frontend-developer.md
-│   │   ├── data-parser.md
-│   │   └── ...
-│   ├── commands/                   # Custom slash commands
-│   │   ├── swarm.md
-│   │   ├── docs.md
-│   │   └── ...
-│   └── settings.json               # Project settings
-├── docs/                           # Project documentation
-│   ├── PRD-Phase1-MVP.md          # Requirements (Phase 1)
-│   ├── PRD-Phase2-*.md            # Future phase requirements
-│   ├── wireframes/                # UI wireframes and specs
-│   ├── tickets/                   # Epic/Story/Task breakdown
-│   └── API.md                     # API documentation
 ├── src/
-│   ├── backend/                   # Express server
-│   │   ├── server.js             # Main server entry point
-│   │   ├── routes/               # API route handlers
-│   │   ├── services/             # Business logic
-│   │   ├── parsers/              # File parsing utilities
-│   │   └── utils/                # Helper functions
-│   └── frontend/                  # Vue 3 SPA
-│       ├── index.html            # Main HTML file
-│       ├── css/                  # Stylesheets
-│       │   ├── variables.css    # Theme colors
-│       │   ├── global.css       # Global styles
-│       │   └── components.css   # Component styles
-│       └── js/                   # JavaScript modules
-│           ├── app.js           # Vue app initialization
-│           ├── api.js           # Backend API client
-│           ├── router.js        # Client-side routing
-│           └── components/      # Vue components
-├── package.json                   # Dependencies and scripts
-├── README.md                      # Project overview
-├── CLAUDE.md                      # Claude Code instructions
-└── CONTRIBUTING.md                # This file
+│   ├── backend/              # Express API server
+│   │   ├── routes/          # API route handlers
+│   │   ├── services/        # Business logic
+│   │   └── parsers/         # File parsing utilities
+│   ├── components/           # Vue Single File Components
+│   ├── stores/              # Pinia state stores
+│   ├── api/                 # API client
+│   └── main.js              # Vue app entry point
+├── tests/
+│   ├── backend/             # Jest backend tests
+│   ├── frontend/            # Playwright component tests
+│   ├── e2e/                 # Playwright E2E tests
+│   └── fixtures/            # Shared test fixtures
+├── docs/                     # All project documentation
+│   ├── prd/                 # Phase requirement documents
+│   ├── testing/             # Test documentation
+│   ├── wireframes/          # UI/UX specifications
+│   └── tickets/             # Work item tracking
+└── .claude/                  # Claude Code configuration
+    ├── agents/              # Specialized subagents
+    └── commands/            # Custom slash commands
 ```
 
 ---
 
-## Development Workflow
+## Coding Standards
 
-### 1. Understanding the Task
+### Vue Components (Single File Components)
 
-Before starting work:
-- Read relevant PRD documents in `docs/`
-- Review related wireframes in `docs/wireframes/`
-- Check existing tickets in `docs/tickets/`
-- Understand the phase (Phase 1 = read-only, Phase 2+ = CRUD)
+```vue
+<script setup>
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
-### 2. Backend Development
-
-**Making Changes:**
-```bash
-# Start with auto-reload
-npm run dev
-
-# Edit files in src/backend/
-# Server automatically restarts on changes
-```
-
-**Adding New API Endpoints:**
-1. Add route handler in `src/backend/routes/`
-2. Implement service logic in `src/backend/services/`
-3. Update API documentation in `docs/API.md`
-4. Test with curl or browser
-
-**Example - Adding New Endpoint:**
-```javascript
-// src/backend/routes/projects.js
-router.get('/:projectId/settings', async (req, res) => {
-  try {
-    const { projectId } = req.params;
-    const settings = await getProjectSettings(projectData.path);
-    res.json({ success: true, settings });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+const props = defineProps({
+  data: {
+    type: Object,
+    required: true
   }
-});
+})
+
+const emit = defineEmits(['update', 'close'])
+</script>
+
+<template>
+  <div class="component-name">
+    <h3>{{ data.title }}</h3>
+  </div>
+</template>
+
+<style scoped>
+.component-name {
+  padding: var(--spacing-md);
+  background: var(--bg-card);
+}
+</style>
 ```
 
-### 3. Frontend Development
+**Guidelines:**
+- Use `<script setup>` syntax (Composition API)
+- Props and emits should be typed
+- Use CSS custom properties for colors/spacing
+- Keep components focused (single responsibility)
 
-**Making Changes:**
-```bash
-# Server should be running
-npm run dev
+### JavaScript/Node.js
 
-# Edit files in src/frontend/
-# Refresh browser to see changes (no build step)
-```
-
-**Adding New Components:**
-1. Create component file in `src/frontend/js/components/`
-2. Export component using Vue's `defineComponent`
-3. Import and register in parent component or `app.js`
-4. Add styles to `src/frontend/css/components.css`
-
-**Example - Creating Component:**
 ```javascript
-// src/frontend/js/components/MyComponent.js
-export default {
-  name: 'MyComponent',
-  props: {
-    data: {
-      type: Object,
-      required: true
-    }
-  },
-  template: `
-    <div class="my-component">
-      <h3>{{ data.title }}</h3>
-      <p>{{ data.description }}</p>
-    </div>
-  `
+// Use modern ES6+ features
+const projectData = await getProjectAgents(projectPath)
+const agentNames = projectData.agents.map(a => a.name)
+
+// Error handling with try/catch
+try {
+  const data = await fetchData()
+  return { success: true, data }
+} catch (error) {
+  return { success: false, error: error.message }
 }
 ```
 
-### 4. Styling Guidelines
-
-**CSS Organization:**
-- **variables.css** - Define new color/spacing variables here
-- **global.css** - Add global styles and utilities
-- **components.css** - Add component-specific styles
-
-**Theme Support:**
-```css
-/* Add to variables.css */
-:root[data-theme="dark"] {
-  --my-color: #64B5F6;
-}
-
-:root[data-theme="light"] {
-  --my-color: #1976D2;
-}
-
-/* Use in components.css */
-.my-component {
-  color: var(--my-color);
-}
-```
-
-### 5. Testing
-
-**Manual Testing:**
-```bash
-# Test API endpoints
-curl http://localhost:8420/api/projects
-curl http://localhost:8420/api/projects/PROJECT_ID/agents
-
-# Test frontend
-# Open http://localhost:8420 in browser
-# Check browser console (F12) for errors
-# Test all views (Dashboard, Project Detail, User/Global)
-# Test search/filter functionality
-# Test dark/light theme toggle
-# Test responsive design (resize browser)
-```
-
-**Automated Testing (Future):**
-```bash
-npm test
-```
-
-### 6. Documentation
-
-**Update Documentation When:**
-- Adding new API endpoints → Update `docs/API.md`
-- Adding new components → Update `src/frontend/README.md`
-- Changing configuration → Update `README.md` or `CLAUDE.md`
-- Adding new features → Update relevant PRD documents
-
----
-
-## Code Style Guidelines
-
-### JavaScript
-
-**Style:**
-- Use ES6+ features (const/let, arrow functions, async/await)
+**Guidelines:**
+- ES6+ features (const/let, arrow functions, async/await)
 - 2-space indentation
-- Single quotes for strings
-- Semicolons required
 - Descriptive variable names
-
-**Good:**
-```javascript
-const projectData = await getProjectAgents(projectPath);
-const agentNames = projectData.agents.map(a => a.name);
-```
-
-**Avoid:**
-```javascript
-var pd = await getProjectAgents(p);
-var an = pd.agents.map(function(a) { return a.name; });
-```
-
-### Vue Components
-
-**Structure:**
-```javascript
-export default {
-  name: 'ComponentName',
-  props: { /* ... */ },
-  data() { /* ... */ },
-  computed: { /* ... */ },
-  methods: { /* ... */ },
-  template: `...`
-}
-```
-
-**Template Guidelines:**
-- Use template literals for multi-line templates
-- Keep templates readable (use proper indentation)
-- Extract complex logic to computed properties or methods
-- Use PrimeVue components consistently
+- Handle errors gracefully
 
 ### CSS
 
-**Guidelines:**
-- Use CSS custom properties for colors and spacing
-- Mobile-first responsive design (with `@media` queries)
-- BEM-style naming for component classes (`.component-name__element`)
-- Avoid `!important` unless absolutely necessary
-
-**Example:**
 ```css
+/* Use CSS custom properties */
 .project-card {
   padding: var(--spacing-md);
   background: var(--bg-card);
   border-radius: var(--border-radius);
+  color: var(--text-primary);
 }
 
-.project-card__header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
+/* Responsive design */
+@media (max-width: 768px) {
+  .project-card {
+    padding: var(--spacing-sm);
+  }
 }
 ```
 
-### API Responses
+**Guidelines:**
+- Use CSS variables defined in `/src/styles/variables.css`
+- Mobile-first responsive design
+- BEM-style naming for component classes
+- Avoid `!important` unless necessary
 
-**Always return consistent format:**
+---
+
+## Testing Guidelines
+
+### Backend Tests (Jest)
+
 ```javascript
-// Success
-res.json({
-  success: true,
-  data: result,
-  error: null
-});
+describe('GET /api/projects/:projectId/agents', () => {
+  it('should return agents for valid project', async () => {
+    const response = await request(app)
+      .get('/api/projects/testproject/agents')
+      .expect(200)
 
-// Error
-res.status(500).json({
-  success: false,
-  error: error.message
-});
+    expect(response.body.success).toBe(true)
+    expect(Array.isArray(response.body.data)).toBe(true)
+  })
+})
 ```
+
+### Frontend Tests (Playwright)
+
+```javascript
+test('should display project list on dashboard', async ({ page }) => {
+  await page.goto('http://localhost:5173')
+  await expect(page.locator('.project-card')).toHaveCount(3)
+  await expect(page.locator('.project-card').first()).toContainText('Test Project')
+})
+```
+
+**Test Checklist:**
+- [ ] All new features have tests
+- [ ] Tests pass locally before pushing
+- [ ] Test edge cases and error scenarios
+- [ ] Use fixtures for consistent test data
 
 ---
 
-## Testing
+## Development Strategies
 
-### Testing Checklist
+This project uses three proven development strategies:
 
-**Backend:**
-- [ ] API endpoint returns correct data structure
-- [ ] Error handling works (invalid project ID, missing files, etc.)
-- [ ] CORS headers are present
-- [ ] Response times are reasonable
-- [ ] Handles missing/malformed files gracefully
+### 1. Development Approved
+**When:** Complex features, architectural decisions, multiple approaches exist
+**Pattern:** Propose → Approve → Implement
+**Benefit:** Prevents rework by getting approval first
 
-**Frontend:**
-- [ ] Component renders without errors
-- [ ] Data displays correctly
-- [ ] Loading states show during API calls
-- [ ] Error states display with helpful messages
-- [ ] Empty states show when no data
-- [ ] Responsive design works at different screen sizes
-- [ ] Theme toggle switches correctly
-- [ ] Navigation works (back button, breadcrumbs, links)
+### 2. Rapid Iteration
+**When:** Simple changes, obvious fixes, established patterns
+**Pattern:** Implement → Test → Commit
+**Benefit:** Fast execution with minimal overhead
 
-**Cross-Browser:**
-- [ ] Chrome (latest)
-- [ ] Firefox (latest)
-- [ ] Safari (latest)
-- [ ] Edge (latest)
+### 3. Parallel Execution
+**When:** 4+ independent tasks, no dependencies, no file conflicts
+**Pattern:** Plan → Launch All → Validate
+**Benefit:** 50-87% time savings vs sequential
 
-**Cross-Platform (Future):**
-- [ ] Linux
-- [ ] macOS
-- [ ] Windows (WSL)
-- [ ] Windows (native)
+Select strategy at session start:
+```bash
+/dev-strategy approved   # For complex features
+/dev-strategy rapid      # For straightforward changes
+/dev-strategy parallel   # For independent tasks
+```
+
+**Reference:** See `.claude/templates/development-strategies.md` for detailed guidance.
 
 ---
 
-## Submitting Changes
+## Documentation
 
-### Commit Messages
+### Update Documentation When:
+- Adding new API endpoints → Update `docs/API.md`
+- Adding new features → Update relevant PRD
+- Changing architecture → Update `CLAUDE.md`
+- Adding new tests → Update test file index
 
-Use conventional commit format:
-
-```
-<type>(<scope>): <description>
-
-[optional body]
-
-[optional footer]
-```
-
-**Types:**
-- `feat` - New feature
-- `fix` - Bug fix
-- `docs` - Documentation changes
-- `style` - Code style changes (formatting, no logic change)
-- `refactor` - Code refactoring
-- `test` - Adding or updating tests
-- `chore` - Maintenance tasks
-
-**Examples:**
-```
-feat(backend): add settings endpoint for projects
-fix(frontend): correct project card stat display
-docs(api): update endpoint documentation for hooks
-style(css): improve dark mode color contrast
-```
-
-### Pull Request Process
-
-1. **Create Feature Branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. **Make Changes**
-   - Follow code style guidelines
-   - Update documentation
-   - Test thoroughly
-
-3. **Commit Changes**
-   ```bash
-   git add .
-   git commit -m "feat(scope): description"
-   ```
-
-4. **Push to Remote**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-5. **Create Pull Request**
-   - Describe changes clearly
-   - Reference related issues/tickets
-   - Include screenshots for UI changes
-   - List testing performed
-
-6. **Code Review**
-   - Address reviewer feedback
-   - Make requested changes
-   - Update PR description if needed
-
-7. **Merge**
-   - Squash commits if needed
-   - Merge to main branch
-   - Delete feature branch
+### Documentation Structure
+- **User-facing:** `README.md` (project overview, installation, usage)
+- **Developer-facing:** `CLAUDE.md` (architecture, workflows, guidelines)
+- **API Reference:** `docs/API.md` (endpoint documentation)
+- **Requirements:** `docs/prd/` (phase specifications)
+- **Complete Index:** `docs/README.md` (navigation guide)
 
 ---
 
 ## SWARM Methodology
 
-This project uses the SWARM (Specialized Work Assignment & Resource Management) methodology with Claude Code subagents.
+This project uses specialized subagents for different tasks. Available agents include:
 
-### Subagent Team Structure
+- **backend-architect** - API design, server implementation
+- **frontend-developer** - Vue components, UI implementation
+- **test-automation-engineer** - Test creation and maintenance
+- **git-workflow-specialist** - Version control, PR management
+- **documentation-engineer** - Documentation creation
 
-**Specialized Roles:**
-- **Backend Architect** - API design, server implementation
-- **Frontend Developer** - Vue components, UI implementation
-- **Data Parser** - File parsing, data extraction
-- **Git Workflow Specialist** - Version control, PR management
-- **Subagent Orchestrator** - Multi-agent coordination
-- **Documentation Engineer** - Documentation creation
+Invoke with `/swarm` command to coordinate multi-agent work.
 
-### Using Subagents
-
-**Invoke with `/swarm` command:**
-```
-/swarm "Build API endpoint for project settings"
-```
-
-This will:
-1. Break down the task into subtasks
-2. Assign subtasks to appropriate subagents
-3. Coordinate parallel work
-4. Ensure proper handoffs between agents
-
-**See also:**
-- `.claude/agents/` - Subagent definitions
-- `.claude/commands/swarm.md` - SWARM command documentation
-- `docs/Subagent-Team.md` - Detailed team structure
-
-### Coordination Workflow
-
-1. **Planning** - Subagent Orchestrator breaks down Epic into Stories/Tasks
-2. **Assignment** - Tasks assigned to specialized subagents
-3. **Execution** - Subagents work in parallel where possible
-4. **Handoff** - Clean handoffs when dependencies exist
-5. **Integration** - Integration Tester verifies combined work
-6. **Documentation** - Documentation Engineer updates docs
+**See:** `.claude/agents/` for all agent definitions.
 
 ---
 
-## Questions or Issues?
+## Getting Help
 
-- **Documentation:** Check `docs/` directory
+- **Documentation:** Check `docs/README.md` for navigation
 - **API Reference:** See `docs/API.md`
-- **Wireframes:** See `docs/wireframes/`
+- **Development Guide:** See `CLAUDE.md`
 - **Issues:** Create GitHub issue with detailed description
-- **Discussion:** Use GitHub Discussions for questions
+- **Questions:** Use GitHub Discussions
 
 ---
 
@@ -499,4 +340,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-Thank you for contributing to Claude Code Manager! 🎉
+**Thank you for contributing to Claude Code Manager!**

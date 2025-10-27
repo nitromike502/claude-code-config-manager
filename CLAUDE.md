@@ -6,11 +6,11 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Purpose:** Centralized interface to view and manage Claude Code configurations across all projects on a local machine.
 
-**Deployment:** Local web server accessible at `http://localhost:8420`
+**Deployment:** Local web server accessible at `http://localhost:5173`
 
-**Current Phase:** Phase 2 Extension - Component Refactoring - 📋 READY FOR IMPLEMENTATION
+**Current Phase:** Phase 2.2 - 📋 READY FOR IMPLEMENTATION
 
-**Phase 2.1 Focus:** Refactoring large monolithic components (Dashboard.vue, ProjectDetail.vue, UserGlobal.vue) into smaller, reusable, maintainable components following Vue 3 best practices.
+**Phase 2.2 Focus:** Addressing final bugs and quality issues in preparation of launching Phase 2 updates to production.
 
 ## Tech Stack
 
@@ -26,7 +26,7 @@ manager/
 │   ├── prd/                          # Phase Requirements Documents
 │   │   ├── PRD-Phase1-MVP.md         # Phase 1 requirements (archived)
 │   │   ├── PRD-Phase2-Vite-Migration.md  # Phase 2 - Vite Migration (complete)
-│   │   ├── PRD-Phase2-Extension-Component-Refactoring.md  # Phase 2.1 (ready)
+│   │   ├── PRD-Phase2-Extension-Component-Refactoring.md  # Phase 2.1 (in progress)
 │   │   ├── PRD-Phase3-Subagents.md   # Phase 3 (planned)
 │   │   ├── PRD-Phase4-Commands.md    # Phase 4 (planned)
 │   │   ├── PRD-Phase5-Hooks.md       # Phase 5 (planned)
