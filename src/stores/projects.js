@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { projectsAPI } from '../frontend/js/api'
+import * as api from '../api/client'
 
 export const useProjectsStore = defineStore('projects', () => {
   const projects = ref([])
@@ -24,7 +24,7 @@ export const useProjectsStore = defineStore('projects', () => {
     isLoading.value = true
     error.value = null
     try {
-      const data = await projectsAPI.getAll()
+      const data = await api.getProjects()
       projects.value = data.projects || []
     } catch (err) {
       error.value = err.message
@@ -37,7 +37,7 @@ export const useProjectsStore = defineStore('projects', () => {
   // Refresh projects from backend
   async function refreshProjects() {
     try {
-      await projectsAPI.scan()
+      await api.scanProjects()
       await loadProjects()
     } catch (err) {
       error.value = err.message

@@ -94,7 +94,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectsStore } from '../stores/projects'
-import { userAPI } from '../frontend/js/api'
+import * as api from '../api/client'
 
 export default {
   name: 'Dashboard',
@@ -109,7 +109,21 @@ export default {
     // Load user config stats
     const loadUserConfig = async () => {
       try {
-        const stats = await userAPI.getStats()
+        // Get user stats by calling all endpoints and counting
+        const [agents, commands, hooks, mcp] = await Promise.all([
+          api.getUserAgents(),
+          api.getUserCommands(),
+          api.getUserHooks(),
+          api.getUserMcp(),
+        ])
+
+        const stats = {
+          agents: agents.agents?.length || 0,
+          commands: commands.commands?.length || 0,
+          hooks: hooks.hooks?.length || 0,
+          mcp: mcp.mcp?.length || 0,
+        }
+
         userConfig.value = {
           id: 'user',
           name: 'User Configurations',
