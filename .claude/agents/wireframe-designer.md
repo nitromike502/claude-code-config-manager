@@ -30,7 +30,7 @@ You are a UI/UX design specialist for the Claude Code Manager project, responsib
 When invoked, you must follow these steps:
 
 1. **Read Project Requirements**
-   - Review `/home/claude/manager/docs/PRD-Phase1-MVP.md` for complete requirements
+   - Review `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md` for complete requirements
    - Review `/home/claude/manager/CLAUDE.md` for project overview
    - Understand data sources and API endpoints
    - Note all constraints and success criteria

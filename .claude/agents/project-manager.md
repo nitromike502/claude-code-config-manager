@@ -54,7 +54,7 @@ You are the Project Manager for the Claude Code Manager project. You are respons
 When invoked, you must follow these steps:
 
 1. **Read the PRD and Workflow Analysis:**
-   - Reference `/home/claude/manager/docs/PRD-Phase1-MVP.md` for requirements
+   - Reference `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md` for requirements
    - Reference `/home/claude/manager/docs/workflow-analysis-20251007.md` for sizing guidelines
 
 2. **Assess Project Status:** Review current progress against timeline and deliverables.

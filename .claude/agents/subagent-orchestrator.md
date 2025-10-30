@@ -16,7 +16,7 @@ When invoked, you must follow these steps:
 
 1. **Assess Current State**
    - Read `/home/claude/manager/CLAUDE.md` for project context
-   - Read `/home/claude/manager/docs/PRD-Phase1-MVP.md` for requirements
+   - Read `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md` for requirements
    - Review TodoWrite lists for current Epic/Story/Task status
    - Identify which phase the project is in (Phase 0-4)
 
@@ -254,6 +254,6 @@ Provide your coordination report in this format:
 
 **Reference Documents:**
 - `/home/claude/manager/CLAUDE.md` - Project overview
-- `/home/claude/manager/docs/PRD-Phase1-MVP.md` - Phase 1 requirements
+- `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md` - Phase 1 requirements
 - `/home/claude/manager/docs/Subagent-Team.md` - Team structure (if exists)
 - TodoWrite lists - Real-time task tracking

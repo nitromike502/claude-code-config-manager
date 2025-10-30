@@ -20,6 +20,7 @@ When invoked, you must follow these steps in order:
 - Use Glob to locate existing test files in `/home/claude/manager/tests/`
 - Use Grep to search for test patterns, API endpoints, or components that need coverage
 - Review `/home/claude/manager/CLAUDE.md` to understand project requirements and quality standards
+- Reference `/home/claude/manager/docs/guides/TESTING-GUIDE.md` for test naming conventions and workflow
 
 ### 2. Set Up Test Infrastructure (if not already configured)
 

@@ -14,8 +14,8 @@ Launch the project-manager agent to assess current project state and create appr
 **Team Structure**: See docs/Subagent-Team.md for complete team definitions
 
 **Available PRDs**:
-- docs/PRD-Phase1-MVP.md (reviewed & approved)
-- docs/PRD-Phase2-*.md (future phases, not reviewed)
+- docs/prd/PRD-Phase1-MVP.md (reviewed & approved)
+- docs/prd/PRD-Phase2-*.md (future phases, not reviewed)
 </context>
 
 <execution>

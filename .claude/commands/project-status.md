@@ -12,8 +12,8 @@ Assess the current state of Claude Code Manager development, identify completed 
 
 This command performs a comprehensive project assessment by:
 1. Checking for core application files (package.json, src/backend/, src/frontend/)
-2. Reviewing docs/PRD-Phase1-MVP.md for Phase 1 requirements
-3. Checking docs/PRD-Phase2-*.md files for future planned features
+2. Reviewing docs/prd/PRD-Phase1-MVP.md for Phase 1 requirements
+3. Checking docs/prd/PRD-Phase2-*.md files for future planned features
 4. Analyzing git status to identify work in progress
 5. Determining Phase 1 MVP completion status
 6. Presenting available next steps
@@ -29,7 +29,7 @@ Verify the existence and state of:
 - `package.json` - Project dependencies and scripts
 - `src/backend/` - Express server and API endpoints
 - `src/frontend/` - Vue + PrimeVue UI components
-- `docs/PRD-Phase1-MVP.md` - Phase 1 requirements
+- `docs/prd/PRD-Phase1-MVP.md` - Phase 1 requirements
 - `docs/Subagent-Team.md` - Team structure
 - `CLAUDE.md` - Project overview
 
@@ -37,13 +37,13 @@ Use Read tool to verify these files exist and contain expected content.
 
 **Step 2: Scan for Phase 2 Features**
 Search `docs/` directory for Phase 2 PRD files:
-- `docs/PRD-Phase2-Subagents.md` - Future subagent CRUD
-- `docs/PRD-Phase2-Commands.md` - Future command CRUD
-- `docs/PRD-Phase2-Hooks.md` - Future hooks CRUD
-- `docs/PRD-Phase2-MCP.md` - Future MCP server CRUD
+- `docs/prd/PRD-Phase2-Subagents.md` - Future subagent CRUD
+- `docs/prd/PRD-Phase2-Commands.md` - Future command CRUD
+- `docs/prd/PRD-Phase2-Hooks.md` - Future hooks CRUD
+- `docs/prd/PRD-Phase2-MCP.md` - Future MCP server CRUD
 - These represent planned features (not yet reviewed)
 
-Use Glob tool with pattern `docs/PRD-Phase2-*.md` to find all Phase 2 PRDs.
+Use Glob tool with pattern `docs/prd/PRD-Phase2-*.md` to find all Phase 2 PRDs.
 
 **Step 3: Analyze Development Status**
 Check git status to identify:

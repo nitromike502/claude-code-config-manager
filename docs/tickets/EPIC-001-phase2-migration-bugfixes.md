@@ -206,5 +206,5 @@ All 4 Groups Complete → Code Review → PR Approval → Merge to phase-2
 ## Related Documents
 
 - `.claude/tickets/README.md` - Ticket index and quick reference
-- `docs/PRD-Phase2-Vite-Migration.md` - Phase 2 requirements
+- `docs/prd/PRD-Phase2-Vite-Migration.md` - Phase 2 requirements
 - `CLAUDE.md` - Project documentation

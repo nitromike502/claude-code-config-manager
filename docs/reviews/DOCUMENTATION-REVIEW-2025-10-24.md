@@ -79,7 +79,7 @@ docs/tickets/
 
 ### H-001: Outdated Status in PRD-Phase1-MVP.md
 
-**File:** `/home/claude/manager/docs/PRD-Phase1-MVP.md`
+**File:** `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md`
 **Line:** 6
 **Current:** `Status:** In Progress - 55% Complete (Backend 100%, Frontend 13%)`
 **Should be:** `Status: ✅ COMPLETE (100%) - Completed October 12, 2025`
@@ -154,7 +154,7 @@ docs/tickets/
 
 **Files Affected:**
 - `/home/claude/manager/CLAUDE.md` (line 103-109)
-- `/home/claude/manager/docs/PRD-Phase2-Vite-Migration.md`
+- `/home/claude/manager/docs/prd/PRD-Phase2-Vite-Migration.md`
 - `/home/claude/manager/docs/tickets/NEXT-STEPS.md` (line 168)
 
 **Issue:** Slight variations in test counts between documents
@@ -262,10 +262,10 @@ docs/tickets/
 ### L-003: Future Phase PRDs Are Minimal Placeholders
 
 **Files:**
-- `/home/claude/manager/docs/PRD-Phase3-Subagents.md`
-- `/home/claude/manager/docs/PRD-Phase4-Commands.md`
-- `/home/claude/manager/docs/PRD-Phase5-Hooks.md`
-- `/home/claude/manager/docs/PRD-Phase6-MCP.md`
+- `/home/claude/manager/docs/prd/PRD-Phase3-Subagents.md`
+- `/home/claude/manager/docs/prd/PRD-Phase4-Commands.md`
+- `/home/claude/manager/docs/prd/PRD-Phase5-Hooks.md`
+- `/home/claude/manager/docs/prd/PRD-Phase6-MCP.md`
 
 **Issue:** These are placeholder documents (1-2 pages each) without detailed requirements
 
@@ -413,12 +413,12 @@ docs/tickets/
 - `/home/claude/manager/docs/PRD.md` ✅
 
 ### PRD Files (7 files)
-- `/home/claude/manager/docs/PRD-Phase1-MVP.md` ⚠️ (needs status update)
-- `/home/claude/manager/docs/PRD-Phase2-Vite-Migration.md` ✅
-- `/home/claude/manager/docs/PRD-Phase3-Subagents.md` ✅ (placeholder)
-- `/home/claude/manager/docs/PRD-Phase4-Commands.md` ✅ (placeholder)
-- `/home/claude/manager/docs/PRD-Phase5-Hooks.md` ✅ (placeholder)
-- `/home/claude/manager/docs/PRD-Phase6-MCP.md` ✅ (placeholder)
+- `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md` ⚠️ (needs status update)
+- `/home/claude/manager/docs/prd/PRD-Phase2-Vite-Migration.md` ✅
+- `/home/claude/manager/docs/prd/PRD-Phase3-Subagents.md` ✅ (placeholder)
+- `/home/claude/manager/docs/prd/PRD-Phase4-Commands.md` ✅ (placeholder)
+- `/home/claude/manager/docs/prd/PRD-Phase5-Hooks.md` ✅ (placeholder)
+- `/home/claude/manager/docs/prd/PRD-Phase6-MCP.md` ✅ (placeholder)
 - `/home/claude/manager/docs/prd/PRD-Phase2-Extension-Component-Refactoring.md` ✅
 
 ### Ticket Documentation (7 files)

@@ -26,6 +26,9 @@ The user has requested a documentation review and update. If additional instruct
 - Documentation should be comprehensive but appropriately balanced - avoid excessive detail
 - Component documentation should focus on usage, not internal implementation
 - Strike a balance that helps users understand the project without investigating source code
+
+**Documentation Review Archive:**
+Historical documentation reviews are stored in `docs/reviews/` for reference. Previous review findings and improvements can inform current documentation work.
 </context>
 
 <execution>

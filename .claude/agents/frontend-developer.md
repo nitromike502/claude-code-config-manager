@@ -61,7 +61,7 @@ When invoked to work on frontend tasks, follow these steps:
 
 1. **Read Project Documentation**
    - Review `/home/claude/manager/CLAUDE.md` for project overview
-   - Check `/home/claude/manager/docs/PRD-Phase1-MVP.md` for detailed requirements
+   - Check `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md` for detailed requirements
    - Review `/home/claude/manager/docs/workflow-analysis-20251007.md` for process learnings
    - Understand the API endpoints and data structures
 

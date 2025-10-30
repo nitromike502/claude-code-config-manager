@@ -354,4 +354,4 @@ SharedPatterns/
 - **Current Code:** ProjectDetail.vue, UserGlobal.vue (src/components/)
 - **Analysis:** Component reusability analysis (initial planning doc)
 - **Phase 2 - Vite Migration PRD:** docs/prd/PRD-Phase2-Vite-Migration.md
-- **Phase 3 PRD:** docs/PRD-Phase3-Subagents.md
+- **Phase 3 PRD:** docs/prd/PRD-Phase3-Subagents.md

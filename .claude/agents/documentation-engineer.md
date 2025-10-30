@@ -19,6 +19,8 @@ When invoked, you must follow these steps:
    - Use `Read` to review existing documentation and identify gaps
    - Use `Grep` to search codebase for undocumented features, APIs, or components
    - Analyze project structure to understand scope and context
+   - **Check for duplicate files:** Use `find` with file size/content comparison to identify duplicates
+   - **Verify canonical locations:** Check CLAUDE.md or project conventions for where files should live
 
 2. **Research and Plan**
    - Use `WebFetch` to research documentation best practices and standards if needed
@@ -33,20 +35,28 @@ When invoked, you must follow these steps:
    - Include concrete examples, code snippets, and usage patterns
    - Add diagrams or visual aids where appropriate (using Mermaid, ASCII, or markdown tables)
 
-4. **Ensure Quality and Consistency**
+4. **Remove or Archive Obsolete Documentation**
+   - **NEVER use `git rm` or `rm` to delete files**
+   - **ALWAYS move obsolete files to `.deleted/` directory using `git mv`**
+   - Preserve directory structure: `docs/file.md` → `.deleted/docs/file.md`
+   - Use `Bash` with `mkdir -p .deleted/<original-path>` to create destination directories
+   - Example: `git mv docs/old-guide.md .deleted/docs/old-guide.md`
+   - This allows for recovery and maintains git history
+
+5. **Ensure Quality and Consistency**
    - Verify technical accuracy by cross-referencing with source code
    - Check for consistent terminology, formatting, and style
    - Ensure proper markdown formatting and structure
    - Add appropriate metadata (dates, version numbers, authors)
    - Include table of contents for longer documents
 
-5. **Organize and Structure**
+6. **Organize and Structure**
    - Create logical document hierarchy
    - Add navigation links between related documents
    - Maintain index files or documentation maps
    - Ensure discoverability of documentation
 
-6. **Provide Summary**
+7. **Provide Summary**
    - List all files created or modified with absolute paths
    - Highlight key documentation improvements
    - Note any remaining documentation gaps or future work needed
@@ -63,6 +73,8 @@ When invoked, you must follow these steps:
 - **Version Awareness:** Note version-specific information and deprecations
 - **Links and References:** Cross-reference related documentation and external resources
 - **Maintainability:** Write documentation that is easy to update as code changes
+- **Duplicate Detection:** Always check for duplicate files and consolidate to canonical locations
+- **Structural Compliance:** Verify documentation organization matches project conventions (CLAUDE.md)
 
 **Documentation Types and Templates:**
 

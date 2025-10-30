@@ -259,7 +259,7 @@ gh pr review <PR-NUMBER> --approve|--comment --body "message"
 
 ## Reference Documentation
 
-- `/home/claude/manager/docs/PRD-Phase1-MVP.md` - MVP requirements
+- `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md` - MVP requirements
 - `/home/claude/manager/CLAUDE.md` - Project overview
 - `/home/claude/manager/docs/Subagent-Team.md` - Team structure
 

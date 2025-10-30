@@ -29,7 +29,7 @@ Use when finishing an entire phase (e.g., Phase 1 complete, Phase 2 complete, Ph
 
 **Files to Update:**
 
-- [ ] **PRD file** (e.g., `docs/PRD-Phase1-MVP.md`)
+- [ ] **PRD file** (e.g., `docs/prd/PRD-Phase1-MVP.md`)
   - [ ] Update line 5 `Status:` from "In Progress - X% Complete" to "✅ COMPLETE (100%)"
   - [ ] Update `Last Updated:` date to today
 

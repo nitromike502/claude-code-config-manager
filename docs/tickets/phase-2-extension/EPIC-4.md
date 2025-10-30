@@ -174,7 +174,7 @@ Add component tests, update integration tests, and document new architecture.
 - **PRD:** `/home/claude/manager/docs/prd/PRD-Phase2-Extension-Component-Refactoring.md`
 - **Current Code:** `src/components/ProjectDetail.vue`, `src/components/UserGlobal.vue`
 - **Phase 2 - Vite Migration PRD:** `docs/prd/PRD-Phase2-Vite-Migration.md`
-- **Phase 3 PRD:** `docs/PRD-Phase3-Subagents.md`
+- **Phase 3 PRD:** `docs/prd/PRD-Phase3-Subagents.md`
 
 ## Task List Summary
 

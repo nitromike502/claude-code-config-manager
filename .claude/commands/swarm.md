@@ -20,10 +20,10 @@ Launch the subagent-orchestrator to coordinate Claude Code Manager development t
 - Individual tickets: `CRITICAL-001-*.md`, `HIGH-005-*.md`, etc.
 
 **Available PRDs**:
-- docs/PRD-Phase1-MVP.md (reviewed & approved)
-- docs/PRD-Phase2-Vite-Migration.md (Phase 2 complete - Architecture modernization)
-- docs/PRD-Phase2-Extension-Component-Refactoring.md (Phase 2.1 - Planned)
-- docs/PRD-Phase3-Subagents.md (Phase 3 - Planned)
+- docs/prd/PRD-Phase1-MVP.md (reviewed & approved)
+- docs/prd/PRD-Phase2-Vite-Migration.md (Phase 2 complete - Architecture modernization)
+- docs/prd/PRD-Phase2-Extension-Component-Refactoring.md (Phase 2.1 - Planned)
+- docs/prd/PRD-Phase3-Subagents.md (Phase 3 - Planned)
 </context>
 
 <execution>
