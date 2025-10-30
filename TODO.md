@@ -52,6 +52,12 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 - [ ] Connection testing
 - [ ] Server discovery and recommendations
 
+### Scripts to Skills Migration
+- [ ] Migrate utility scripts from `scripts/` directory to Claude Code skills
+- [ ] Convert `ensure-server-running.sh` to a reusable skill
+- [ ] Evaluate other scripts for skill conversion potential
+- [ ] Update documentation to reference skills instead of direct script paths
+
 ### Workflow Analyzer Script Integration
 - [ ] Update `/analyze-workflow` slash command to utilize condense-transcript.js helper script
 - [ ] Update `workflow-analyzer` agent instructions to leverage condense-transcript.js for large transcripts
