@@ -55,8 +55,8 @@ Extract reusable components to reduce code duplication from 62% to <10% and esta
 
 ### Documentation
 
-- **PRD:** `/home/claude/manager/docs/prd/PRD-Phase2-Extension-Component-Refactoring.md`
-- **Tickets:** `/home/claude/manager/docs/tickets/phase-2-extension/`
+- **PRD:** `docs/prd/PRD-Phase2-Extension-Component-Refactoring.md`
+- **Tickets:** `docs/tickets/phase-2-extension/`
 
 ---
 
@@ -188,7 +188,7 @@ Each phase must meet these criteria before advancement:
 Have ideas for features or improvements? See the following resources:
 
 - **Feature Requests:** Create a ticket in `/docs/tickets/feature-requests/`
-- **PRD Template:** `/home/claude/manager/.claude/templates/prd-template.md`
+- **PRD Template:** `.claude/templates/prd-template.md`
 - **Discussion:** Review existing PRDs in `/docs/prd/` before proposing new features
 
 ---

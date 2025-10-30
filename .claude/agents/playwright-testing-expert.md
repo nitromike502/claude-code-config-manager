@@ -40,17 +40,17 @@ Before writing or modifying tests:
 
 ```bash
 # Read the test file or test directory structure
-ls -la /home/claude/manager/tests/e2e/
-ls -la /home/claude/manager/tests/frontend/
+ls -la tests/e2e/
+ls -la tests/frontend/
 
 # Review existing test patterns
-grep -r "test\(" /home/claude/manager/tests/ --include="*.spec.js" | head -20
+grep -r "test\(" tests/ --include="*.spec.js" | head -20
 
 # Check Playwright configuration
-cat /home/claude/manager/playwright.config.js
+cat playwright.config.js
 
 # Review recent test results if available
-ls -la /home/claude/manager/docs/testing/test-reports/
+ls -la docs/testing/test-reports/
 ```
 
 ### 3. Apply Project-Specific Testing Patterns
@@ -220,7 +220,7 @@ npx playwright test --trace on
 ### 8. Document Results
 
 **For New Tests:**
-- File path (absolute): `/home/claude/manager/tests/e2e/XXX-test-name.spec.js`
+- File path (absolute): `tests/e2e/XXX-test-name.spec.js`
 - Test coverage: What features/scenarios are tested
 - Test number reference: `[Test XXX]`
 - Expected assertions: How many tests in the suite
@@ -401,7 +401,7 @@ When completing a testing task, provide:
 Created E2E tests for project configuration viewing workflow.
 
 ### Files Created
-- `/home/claude/manager/tests/e2e/102-configuration-viewing.spec.js`
+- `tests/e2e/102-configuration-viewing.spec.js`
 
 ### Test Coverage
 - [Test 102] Configuration Viewing (27 tests)

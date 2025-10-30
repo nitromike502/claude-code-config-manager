@@ -49,12 +49,12 @@ Use `[Test XXX]` format in commit messages and bug reports:
 
 ## Test Organization
 
-- See `/home/claude/manager/docs/testing/TEST-FILE-INDEX.md` for complete index of all tests and available numbers
-- See `/home/claude/manager/.claude/templates/test-template.md` for detailed test creation guidelines
+- See `docs/testing/TEST-FILE-INDEX.md` for complete index of all tests and available numbers
+- See `.claude/templates/test-template.md` for detailed test creation guidelines
 
 ## Test Reports
 
-All test results are saved to `/home/claude/manager/docs/testing/test-reports/`
+All test results are saved to `docs/testing/test-reports/`
 
 ## Hard Block Policy
 
@@ -129,8 +129,8 @@ Current test coverage:
 
 ## Additional Resources
 
-- **Test File Index:** `/home/claude/manager/docs/testing/TEST-FILE-INDEX.md`
-- **Test Template:** `/home/claude/manager/.claude/templates/test-template.md`
-- **Test Reports:** `/home/claude/manager/docs/testing/test-reports/`
+- **Test File Index:** `docs/testing/TEST-FILE-INDEX.md`
+- **Test Template:** `.claude/templates/test-template.md`
+- **Test Reports:** `docs/testing/test-reports/`
 - **Jest Documentation:** https://jestjs.io/
 - **Playwright Documentation:** https://playwright.dev/

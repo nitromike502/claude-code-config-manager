@@ -116,7 +116,7 @@ Before beginning analysis, use the available skills to discover and optimize you
 4. **Proceed with analysis** using condensed files (if created) or original transcripts, depending on Step 3 outcome
 
 ### Step 1: Locate Session Logs
-   - Navigate to `/home/claude/manager/.claude/logs/{date}/` directories
+   - Navigate to `.claude/logs/{date}/` directories
    - Use Glob to find relevant transcript files matching patterns like `*.log`, `*.md`, or session files
    - Use Bash to list available log directories if the specific date is not provided
    - Confirm which session(s) to analyze with the user if multiple exist
@@ -177,7 +177,7 @@ Before beginning analysis, use the available skills to discover and optimize you
 - **Consider Context:** Account for project complexity, constraints, and the exploratory nature of development
 - **Maintain Objectivity:** Analyze patterns without bias; focus on process, not individual performance
 - **Respect Privacy:** Do not extract or report sensitive information (API keys, credentials, personal data)
-- **Use Absolute Paths:** Always reference files with absolute paths like `/home/claude/manager/.claude/logs/2025-10-07/session.log`
+- **Use Absolute Paths:** Always reference files with absolute paths like `.claude/logs/2025-10-07/session.log`
 
 ## Best Practices for Large Transcripts
 
@@ -207,7 +207,7 @@ Use the **transcript-condenser skill** for efficient processing:
 
    # Condense all transcripts from a date at once
    node .claude/skills/transcript-condenser/condense-transcript.js \
-     /home/claude/manager/.claude/logs/20251022/ \
+     .claude/logs/20251022/ \
      --output-dir=/tmp/condensed-20251022/
 
    # Then analyze condensed versions for rapid insights
@@ -245,12 +245,12 @@ node .claude/skills/session-analyzer/analyze-session.js 20251022 48b4cb87
 ```bash
 # Condense main transcript with minimal verbosity
 node .claude/skills/transcript-condenser/condense-transcript.js \
-  /home/claude/manager/.claude/logs/20251022/transcript_48b4cb87_20251022_213346.json \
+  .claude/logs/20251022/transcript_48b4cb87_20251022_213346.json \
   --verbosity=minimal --format=json --output=/tmp/main-condensed.json
 
 # Condense subagent transcripts for comparison
 node .claude/skills/transcript-condenser/condense-transcript.js \
-  /home/claude/manager/.claude/logs/20251022/transcript_subagent_48b4cb87_20251022_204553.json \
+  .claude/logs/20251022/transcript_subagent_48b4cb87_20251022_204553.json \
   --verbosity=minimal --format=json --output=/tmp/subagent1-condensed.json
 ```
 
@@ -326,4 +326,4 @@ Brief summary emphasizing the most important insights and next steps.
 
 ---
 
-**Note:** If the user requests a written report, use the Write tool to save the analysis to a file (suggest `/home/claude/manager/docs/workflow-analysis-{date}.md` or similar). Always confirm the output location with the user before writing.
+**Note:** If the user requests a written report, use the Write tool to save the analysis to a file (suggest `docs/workflow-analysis-{date}.md` or similar). Always confirm the output location with the user before writing.

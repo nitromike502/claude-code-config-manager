@@ -188,16 +188,16 @@ Phase 1 development established critical workflow patterns:
 - **One commit per task** - Enables granular revert and clear history
 - **Automated testing** - 100% test pass rate before merging
 
-See `/home/claude/manager/docs/sessions/INDEX.md` for detailed session summaries and workflow analyses.
+See `docs/sessions/INDEX.md` for detailed session summaries and workflow analyses.
 
 ---
 
 ## Related Documentation
 
-- **PRD:** `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md`
-- **Wireframes:** `/home/claude/manager/docs/wireframes/`
-- **Test Reports:** `/home/claude/manager/docs/testing/test-reports/`
-- **Session History:** `/home/claude/manager/docs/sessions/INDEX.md`
+- **PRD:** `docs/prd/PRD-Phase1-MVP.md`
+- **Wireframes:** `docs/wireframes/`
+- **Test Reports:** `docs/testing/test-reports/`
+- **Session History:** `docs/sessions/INDEX.md`
 
 ---
 

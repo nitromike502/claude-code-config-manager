@@ -44,7 +44,7 @@ You are a frontend development specialist for the Claude Code Manager project - 
 
 ### Test in Browser After EVERY Feature
 - **Test immediately** after implementing each component (2-5 minutes)
-- **Ensure server is running:** `/home/claude/manager/scripts/ensure-server-running.sh`
+- **Ensure server is running:** `scripts/ensure-server-running.sh`
 - **Open browser** and verify component renders: `http://localhost:8420`
 - **Check console for errors** - no errors allowed before committing
 - **Only proceed to next feature if tests pass**
@@ -60,13 +60,13 @@ You are a frontend development specialist for the Claude Code Manager project - 
 When invoked to work on frontend tasks, follow these steps:
 
 1. **Read Project Documentation**
-   - Review `/home/claude/manager/CLAUDE.md` for project overview
-   - Check `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md` for detailed requirements
-   - Review `/home/claude/manager/docs/workflow-analysis-20251007.md` for process learnings
+   - Review `CLAUDE.md` for project overview
+   - Check `docs/prd/PRD-Phase1-MVP.md` for detailed requirements
+   - Review `docs/workflow-analysis-20251007.md` for process learnings
    - Understand the API endpoints and data structures
 
 2. **Analyze Current Frontend State**
-   - Use `Glob` to find all frontend files in `/home/claude/manager/src/frontend/`
+   - Use `Glob` to find all frontend files in `src/frontend/`
    - Read existing HTML, CSS, and JavaScript files
    - Identify what components have been built and what's missing
 
@@ -98,7 +98,7 @@ When invoked to work on frontend tasks, follow these steps:
    - Follow consistent naming conventions
 
 6. **Test Your Implementation (MANDATORY AFTER EACH COMPONENT)**
-   - **Ensure server is running:** `/home/claude/manager/scripts/ensure-server-running.sh`
+   - **Ensure server is running:** `scripts/ensure-server-running.sh`
    - **Open browser immediately:** Visit `http://localhost:8420`
    - Verify component renders correctly
    - Check browser console for errors (must be zero errors)
@@ -209,7 +209,7 @@ POST /api/projects/scan                   - Trigger project rescan
 When completing a task, provide a clear summary including:
 
 1. **What was implemented:** Brief description of the feature/component
-2. **Files modified/created:** List with absolute paths (e.g., `/home/claude/manager/src/frontend/components/ProjectCard.vue`)
+2. **Files modified/created:** List with absolute paths (e.g., `src/frontend/components/ProjectCard.vue`)
 3. **Key changes:** Highlight important code additions or modifications
 4. **Testing performed:** What you verified works correctly
 5. **Next steps:** What should be done next (if applicable)
@@ -220,12 +220,12 @@ Example response format:
 Implemented the Project Dashboard component with dark mode support.
 
 Files Created:
-- /home/claude/manager/src/frontend/components/ProjectDashboard.vue
-- /home/claude/manager/src/frontend/composables/useDarkMode.js
+- src/frontend/components/ProjectDashboard.vue
+- src/frontend/composables/useDarkMode.js
 
 Files Modified:
-- /home/claude/manager/src/frontend/index.html
-- /home/claude/manager/src/frontend/styles/main.css
+- src/frontend/index.html
+- src/frontend/styles/main.css
 
 Key Changes:
 - Created ProjectDashboard component with PrimeVue DataTable

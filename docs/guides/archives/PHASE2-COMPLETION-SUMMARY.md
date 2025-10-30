@@ -319,9 +319,9 @@ All bugs were resolved with comprehensive test coverage to prevent regressions.
 
 ## Related Documentation
 
-- **PRD:** `/home/claude/manager/docs/prd/PRD-Phase2-Vite-Migration.md`
-- **Test Reports:** `/home/claude/manager/docs/testing/test-reports/`
-- **Session History:** `/home/claude/manager/docs/sessions/INDEX.md`
+- **PRD:** `docs/prd/PRD-Phase2-Vite-Migration.md`
+- **Test Reports:** `docs/testing/test-reports/`
+- **Session History:** `docs/sessions/INDEX.md`
 - **Migration Guide:** See PRD for detailed migration steps
 
 ---

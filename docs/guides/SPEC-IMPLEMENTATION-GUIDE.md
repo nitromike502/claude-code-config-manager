@@ -139,7 +139,7 @@ Consulting specifications prevents implementation errors and saves significant d
 ## Checklist Reference
 
 For comprehensive guidance, see:
-- **Full Checklist:** `/home/claude/manager/.claude/templates/spec-review-checklist.md`
+- **Full Checklist:** `.claude/templates/spec-review-checklist.md`
 - **Quick Summary:** 10-step checklist covering identification, review, implementation, documentation, and testing
 
 ## Integration Points
@@ -187,9 +187,9 @@ For comprehensive guidance, see:
 
 ## Related Resources
 
-- **Development Strategies:** `/home/claude/manager/.claude/templates/development-strategies.md`
-- **Spec Review Checklist:** `/home/claude/manager/.claude/templates/spec-review-checklist.md`
-- **CLAUDE.md:** `/home/claude/manager/CLAUDE.md` (lines 322-451)
+- **Development Strategies:** `.claude/templates/development-strategies.md`
+- **Spec Review Checklist:** `.claude/templates/spec-review-checklist.md`
+- **CLAUDE.md:** `CLAUDE.md` (lines 322-451)
 
 ---
 

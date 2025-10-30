@@ -224,10 +224,10 @@ All documents created in this session are in the project root directory:
 - [ ] Fix CRITICAL-001: Command tools field (15 min)
   - File: `src/backend/parsers/commandParser.js`
   - Change: Use 'allowed-tools' instead of 'tools'
-- [ ] Fix CRITICAL-002: Remove legacy code (30 min)
-  - Delete: `src/frontend/js/app.js`
-  - Delete: `src/frontend/js/components/`
-  - Delete: `src/frontend/*.html`
+- [x] Fix CRITICAL-002: Remove legacy code (30 min) - ✅ COMPLETE (Oct 29, 2025)
+  - Deleted: `src/frontend/` directory (6,618 lines removed)
+  - All Phase 1 CDN-based code removed
+  - Application running on Vite architecture
 - [ ] Run test suite: `npm test` (should be 581/581 passing)
 - [ ] Create commit with both fixes
 

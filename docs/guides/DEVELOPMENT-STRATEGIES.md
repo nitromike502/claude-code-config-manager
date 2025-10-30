@@ -69,10 +69,10 @@ Select development strategy at session start:
 ## Strategy Documentation
 
 **Comprehensive Guide:**
-`/home/claude/manager/.claude/templates/development-strategies.md`
+`.claude/templates/development-strategies.md`
 
 **Slash Command:**
-`/home/claude/manager/.claude/commands/dev-strategy.md`
+`.claude/commands/dev-strategy.md`
 
 **Key Principle:** Right strategy for right task = maximum efficiency with minimal rework.
 

@@ -168,16 +168,16 @@ npm install
 
 ## Next Steps
 
-- **Read the main documentation:** `/home/claude/manager/CLAUDE.md`
+- **Read the main documentation:** `CLAUDE.md`
 - **Explore the codebase:** See project structure in main README
-- **Review testing documentation:** `/home/claude/manager/docs/testing/`
+- **Review testing documentation:** `docs/testing/`
 - **Learn the Git workflow:** See Git Workflow section in CLAUDE.md
 - **Check out subagent architecture:** `.claude/agents/` directory
 
 ## Getting Help
 
-- **Documentation:** All docs are in `/home/claude/manager/docs/`
-- **Session Summaries:** See `/home/claude/manager/docs/sessions/` for development history
-- **Issue Tracking:** Check `/home/claude/manager/docs/tickets/` for known issues
+- **Documentation:** All docs are in `docs/`
+- **Session Summaries:** See `docs/sessions/` for development history
+- **Issue Tracking:** Check `docs/tickets/` for known issues
 
 Welcome aboard!

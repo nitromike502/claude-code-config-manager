@@ -30,13 +30,13 @@ You are a UI/UX design specialist for the Claude Code Manager project, responsib
 When invoked, you must follow these steps:
 
 1. **Read Project Requirements**
-   - Review `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md` for complete requirements
-   - Review `/home/claude/manager/CLAUDE.md` for project overview
+   - Review `docs/prd/PRD-Phase1-MVP.md` for complete requirements
+   - Review `CLAUDE.md` for project overview
    - Understand data sources and API endpoints
    - Note all constraints and success criteria
 
 2. **Create Wireframe Documents**
-   - Create directory: `/home/claude/manager/docs/wireframes/` if it doesn't exist
+   - Create directory: `docs/wireframes/` if it doesn't exist
    - Generate the following wireframe documents:
      - `01-dashboard-view.md` - Project list/discovery interface
      - `02-project-detail-view.md` - Single project view with 4 config cards (Subagents, Commands, Hooks, MCP)
