@@ -136,7 +136,7 @@
 
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import { userAPI } from '../frontend/js/api'
+import * as api from '../api/client'
 import ConfigCard from './cards/ConfigCard.vue'
 import ConfigItemList from './cards/ConfigItemList.vue'
 import ConfigDetailSidebar from './sidebars/ConfigDetailSidebar.vue'
@@ -242,7 +242,7 @@ export default {
     const loadAgents = async () => {
       loadingAgents.value = true
       try {
-        const data = await userAPI.getAgents()
+        const data = await api.getUserAgents()
         agents.value = data.agents || []
       } catch (err) {
         console.error('Error loading agents:', err)
@@ -255,7 +255,7 @@ export default {
     const loadCommands = async () => {
       loadingCommands.value = true
       try {
-        const data = await userAPI.getCommands()
+        const data = await api.getUserCommands()
         commands.value = data.commands || []
       } catch (err) {
         console.error('Error loading commands:', err)
@@ -268,7 +268,7 @@ export default {
     const loadHooks = async () => {
       loadingHooks.value = true
       try {
-        const data = await userAPI.getHooks()
+        const data = await api.getUserHooks()
         hooks.value = data.hooks || []
       } catch (err) {
         console.error('Error loading hooks:', err)
@@ -281,7 +281,7 @@ export default {
     const loadMCP = async () => {
       loadingMCP.value = true
       try {
-        const data = await userAPI.getMCP()
+        const data = await api.getUserMcp()
         mcpServers.value = data.mcp || []
       } catch (err) {
         console.error('Error loading MCP servers:', err)

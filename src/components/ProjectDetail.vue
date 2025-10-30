@@ -156,7 +156,7 @@
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { projectsAPI } from '../frontend/js/api'
+import * as api from '../api/client'
 import ConfigCard from './cards/ConfigCard.vue'
 import ConfigItemList from './cards/ConfigItemList.vue'
 import BreadcrumbNavigation from './common/BreadcrumbNavigation.vue'
@@ -308,7 +308,7 @@ export default {
     const loadAgents = async () => {
       loadingAgents.value = true
       try {
-        const data = await projectsAPI.getAgents(projectId.value)
+        const data = await api.getProjectAgents(projectId.value)
         agents.value = data.agents || []
         return data
       } catch (err) {
@@ -323,7 +323,7 @@ export default {
     const loadCommands = async () => {
       loadingCommands.value = true
       try {
-        const data = await projectsAPI.getCommands(projectId.value)
+        const data = await api.getProjectCommands(projectId.value)
         commands.value = data.commands || []
         return data
       } catch (err) {
@@ -338,7 +338,7 @@ export default {
     const loadHooks = async () => {
       loadingHooks.value = true
       try {
-        const data = await projectsAPI.getHooks(projectId.value)
+        const data = await api.getProjectHooks(projectId.value)
         hooks.value = data.hooks || []
         return data
       } catch (err) {
@@ -353,7 +353,7 @@ export default {
     const loadMCP = async () => {
       loadingMCP.value = true
       try {
-        const data = await projectsAPI.getMCP(projectId.value)
+        const data = await api.getProjectMcp(projectId.value)
         mcpServers.value = data.mcp || []
         return data
       } catch (err) {
