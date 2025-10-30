@@ -130,9 +130,9 @@ All Playwright test files MUST follow the numbered prefix convention for easy id
   cd /home/claude/manager && npm run test:backend
   ```
 
-- **After frontend changes:** Run Playwright tests only
+- **After frontend changes:** Run Playwright tests only (with list reporter for stdout output)
   ```bash
-  cd /home/claude/manager && npm run test:frontend
+  cd /home/claude/manager && npx playwright test --reporter=list
   ```
 
 - **During development:** Use watch mode for rapid feedback
