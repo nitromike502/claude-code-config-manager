@@ -47,7 +47,7 @@ Location: [`/docs/tickets/`](tickets/)
 - [Phase 2.2 Tickets](tickets/phase-2.2/) - Bug fixes & optimization (ready)
 - [Bug Tracking](tickets/bugs/) - All bug reports
 
-**Active Phase:** Phase 2.2 (see [PHASE-2.2-WORK-READY.md](../PHASE-2.2-WORK-READY.md))
+**Active Phase:** Phase 2.2 - Production quality improvements and bug fixes
 
 ### Session History & Workflow Analyses
 Location: [`/docs/sessions/`](sessions/)
@@ -76,7 +76,7 @@ Location: [`/docs/sessions/`](sessions/)
 4. PRDs: [/docs/prd/](prd/) - Feature specifications
 
 ### For Project Managers
-1. Current Phase: [PHASE-2.2-WORK-READY.md](../PHASE-2.2-WORK-READY.md) - Active work
+1. Current Phase: Phase 2.2 - Production quality improvements (see [tickets/phase-2.2/](tickets/phase-2.2/))
 2. Tickets: [/docs/tickets/phase-2.2/](tickets/phase-2.2/) - Detailed tasks
 3. Session History: [/docs/sessions/INDEX.md](sessions/INDEX.md) - Progress tracking
 4. Test Reports: [/docs/testing/test-reports/](testing/test-reports/) - Quality metrics
@@ -112,9 +112,9 @@ Location: [`/docs/sessions/`](sessions/)
 ### Key Files
 - `/home/claude/manager/CLAUDE.md` - Main development documentation
 - `/home/claude/manager/README.md` - User-facing project README
-- `/home/claude/manager/PHASE-2.2-WORK-READY.md` - Current phase documentation
 - `/home/claude/manager/docs/prd/` - All requirements documents
 - `/home/claude/manager/docs/tickets/phase-2.2/` - Active work tickets
+- `/home/claude/manager/docs/sessions/INDEX.md` - Development history
 
 ---
 
@@ -134,6 +134,14 @@ Location: [`/docs/sessions/`](sessions/)
 
 ---
 
-**Last Updated:** 2025-10-26
-**Total Documentation Files:** 250+
-**Documentation Quality:** ✅ Verified (October 2025)
+### Documentation Reviews
+Location: [`/docs/reviews/`](reviews/)
+- [Latest Review (Oct 29, 2025)](reviews/DOCUMENTATION-REVIEW-2025-10-29.md) - Post-CRITICAL-002 updates
+- [Major Review (Oct 26, 2025)](reviews/DOCUMENTATION-REVIEW-2025-10-26.md) - Production readiness review
+- [Review Archive](reviews/archive/) - Historical documentation reviews
+
+---
+
+**Last Updated:** 2025-10-31
+**Total Documentation Files:** 260+
+**Documentation Quality:** ✅ Verified and optimized (October 2025)
