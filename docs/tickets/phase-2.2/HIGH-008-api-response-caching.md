@@ -2,14 +2,54 @@
 
 **Issue ID:** HIGH-008
 **Epic:** Phase 2.2 - Cleanup & Optimization
-**Status:** 📋 Ready for Implementation
+**Status:** ❌ CLOSED - Not Applicable
+**Closed:** October 31, 2025
+**Reason:** NPX app with local file system reads - caching adds unnecessary complexity
 **Priority:** HIGH (Performance)
-**Effort:** 1 hour
-**Labels:** `high`, `performance`, `phase-2.2`, `pinia`, `caching`
+**Effort:** N/A (not implemented)
+**Labels:** `high`, `performance`, `phase-2.2`, `pinia`, `caching`, `wontfix`
 
 ---
 
-## Problem Description
+## Closure Rationale
+
+**Closed as NOT APPLICABLE** - October 31, 2025
+
+**Reason:**
+This application is a local NPX tool that reads directly from the file system, not a remote API application. Implementing API response caching would add unnecessary complexity without meaningful benefits:
+
+1. **Local File System Reads:** All data comes from local `.claude/` directories and `~/.claude.json`
+   - No network latency
+   - No external API calls
+   - Sub-millisecond read times
+
+2. **File System is Already "Cached":**
+   - Operating system file system cache handles this efficiently
+   - No benefit from application-level caching layer
+
+3. **Minimal Navigation Performance Impact:**
+   - File reads are fast (<10ms typically)
+   - Loading spinners are brief
+   - User experience is already responsive
+
+4. **Added Complexity Without Benefit:**
+   - TTL management adds code complexity
+   - Cache invalidation logic needed
+   - More state to manage and debug
+   - Potential for stale data issues
+
+5. **Manual Refresh Available:**
+   - Scan button already exists for manual refresh
+   - Appropriate for a local development tool
+
+**Alternative Considered:**
+If caching becomes needed in the future (e.g., remote API integration), it can be added then with full context of actual performance issues.
+
+**Decision:** Close as WONTFIX - Not applicable to local file system architecture.
+
+---
+
+## Problem Description (Original - For Reference)
 
 Every navigation refetches the same data, causing slow navigation and unnecessary server load. No caching layer exists in Pinia stores.
 
