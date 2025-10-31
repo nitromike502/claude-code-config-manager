@@ -106,6 +106,72 @@ npm start        # Start backend server (serves frontend from dist/)
 ```
 Opens http://localhost:8420
 
+## Deployment
+
+Claude Code Manager supports environment-based API URL configuration for different deployment scenarios.
+
+### Local Development (Default)
+
+No configuration needed - works out of the box:
+
+```bash
+npm run dev
+# Frontend: http://localhost:5173
+# Backend: http://localhost:8420 (automatic)
+```
+
+### Docker Compose
+
+Configure the backend URL for Docker Compose deployment:
+
+```bash
+# Copy environment template
+cp env.docker.sample .env
+
+# Edit .env to match your Docker Compose service name
+# VITE_API_BASE_URL=http://backend:8420
+
+# Build and deploy
+npm run build
+docker-compose up
+```
+
+### Kubernetes
+
+Configure the backend service URL for Kubernetes:
+
+```bash
+# Copy environment template
+cp env.kubernetes.sample .env
+
+# Edit .env to match your Kubernetes service
+# VITE_API_BASE_URL=http://manager-api.default.svc.cluster.local:8420
+
+# Build and deploy
+npm run build
+kubectl apply -f k8s/
+```
+
+### Custom Deployment
+
+Override the API URL at build time:
+
+```bash
+# Set environment variable for custom backend URL
+VITE_API_BASE_URL=https://api.example.com npm run build
+```
+
+### Environment Variable Reference
+
+**VITE_API_BASE_URL** - Override the default API base URL
+
+Priority order:
+1. `VITE_API_BASE_URL` environment variable (if set)
+2. Development mode: `http://localhost:8420` (Vite dev server on port 5173)
+3. Production mode: same origin as frontend (default for most deployments)
+
+See `.env.sample` for configuration examples.
+
 ### Accessing the Application
 
 The application will automatically:
