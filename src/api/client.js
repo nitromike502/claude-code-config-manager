@@ -3,14 +3,36 @@
  * Provides consistent error handling, timeout management, and request/response interceptors
  */
 
-// Detect API base URL (development vs production)
+/**
+ * Get API base URL based on environment
+ *
+ * Priority order:
+ * 1. VITE_API_BASE_URL environment variable (deployment override)
+ * 2. Development mode: localhost:8420 (Vite dev server)
+ * 3. Same origin (production default)
+ *
+ * @returns {string} Base URL for API requests
+ */
 function getBaseUrl() {
-  // In development, backend runs on 8420, frontend on 5173
-  if (window.location.hostname === 'localhost' && window.location.port === '5173') {
-    return 'http://localhost:8420'
+  // Priority 1: Explicit environment variable
+  // Allows deployment-specific configuration (Docker, Kubernetes, etc.)
+  const envApiUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envApiUrl) {
+    console.log('[API Client] Using env-specified base URL:', envApiUrl);
+    return envApiUrl;
   }
-  // In production, use same origin
-  return window.location.origin
+
+  // Priority 2: Development mode (Vite dev server on port 5173)
+  if (import.meta.env.DEV && window.location.port === '5173') {
+    const devUrl = 'http://localhost:8420';
+    console.log('[API Client] Using dev mode base URL:', devUrl);
+    return devUrl;
+  }
+
+  // Priority 3: Same origin (production)
+  const origin = window.location.origin;
+  console.log('[API Client] Using same-origin base URL:', origin);
+  return origin;
 }
 
 const BASE_URL = getBaseUrl()
