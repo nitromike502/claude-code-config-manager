@@ -2,10 +2,11 @@
 
 **Issue ID:** CRITICAL-001
 **Epic:** Phase 2.2 - Cleanup & Optimization
-**Status:** 📋 Ready for Implementation
+**Status:** ✅ COMPLETE
+**Completed:** October 30, 2025 (Commit 85ced98)
 **Priority:** 🔴 CRITICAL (Production Blocker)
 **Effort:** 15 minutes
-**Labels:** `critical`, `bug`, `phase-2.2`, `backend`, `parser`
+**Labels:** `critical`, `bug`, `phase-2.2`, `backend`, `parser`, `completed`
 
 ---
 
@@ -181,6 +182,55 @@ Test: All 270 backend tests passing
 - [x] Code review completed
 - [x] Merged to feature branch
 - [x] Documentation updated if needed
+
+---
+
+## Completion Summary
+
+**Delivered:** October 30, 2025
+**Commit:** 85ced98 - fix: extract allowed-tools from slash commands per Claude Code spec
+**Branch:** phase-2.2
+
+**Implementation Results:**
+- ✅ Updated `commandParser.js:69-80` to extract from `allowed-tools` field (not `tools`)
+- ✅ Supports both string format: `"read,write,bash"`
+- ✅ Supports array format: `["read", "write", "bash"]`
+- ✅ Maps to API response `tools` field for frontend consistency
+- ✅ Added specification reference comment with URL
+- ✅ All backend tests passing (270+ tests)
+
+**Specification Compliance:**
+Per [Claude Code Slash Commands Documentation](https://docs.claude.com/slash-commands#metadata):
+- **Slash commands** use `allowed-tools` property
+- **Agents** use `tools` property (different conventions!)
+
+**Files Modified:**
+1. `src/backend/parsers/commandParser.js:69-80` - Field extraction logic
+
+**Implementation Code:**
+```javascript
+// Per Claude Code spec (https://docs.claude.com/slash-commands#metadata):
+// Slash commands use 'allowed-tools' property (agents use 'tools')
+// Map to 'tools' field in API response for frontend consistency
+let tools = [];
+if (data['allowed-tools']) {
+  if (typeof data['allowed-tools'] === 'string') {
+    // Split by comma and trim
+    tools = data['allowed-tools'].split(',').map(t => t.trim()).filter(Boolean);
+  } else if (Array.isArray(data['allowed-tools'])) {
+    tools = data['allowed-tools'];
+  }
+}
+```
+
+**Visual Regression Update:**
+- Commit 0dafe03: Updated visual regression baselines after fix
+
+**Testing:**
+- ✅ Backend parser tests passing
+- ✅ Frontend tests passing
+- ✅ Visual regression tests updated
+- ✅ Command tools display correctly in UI sidebar
 
 ---
 
