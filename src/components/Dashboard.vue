@@ -93,8 +93,8 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useProjectsStore } from '../stores/projects'
-import * as api from '../api/client'
+import { useProjectsStore } from '@/stores/projects'
+import * as api from '@/api/client'
 
 export default {
   name: 'Dashboard',
