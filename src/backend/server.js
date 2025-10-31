@@ -6,6 +6,24 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8420;
 
+// Global security middleware: Prevent path traversal attacks
+// Note: Express normalizes paths before middleware runs, so this catches encoded traversal (%2F)
+// but not plain ../ which gets normalized away at the HTTP parser level
+app.use((req, res, next) => {
+  const originalUrl = req.originalUrl || '';
+
+  // Check for path traversal sequences in URLs targeting projects
+  if (originalUrl.includes('/api/projects') && originalUrl.includes('..')) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid project ID format',
+      details: 'Project ID must not contain path traversal sequences'
+    });
+  }
+
+  next();
+});
+
 // Middleware
 app.use(cors()); // Enable CORS for frontend development
 app.use(express.json()); // Parse JSON request bodies
