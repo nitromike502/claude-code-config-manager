@@ -64,12 +64,12 @@ export default {
 }
 
 .breadcrumb-link {
-  color: var(--primary-color);
+  color: var(--color-primary);
   text-decoration: none;
 }
 
 .breadcrumb-link:hover {
-  color: var(--primary-color-dark);
+  color: var(--color-primary-hover);
   text-decoration: underline;
 }
 

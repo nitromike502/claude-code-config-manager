@@ -79,7 +79,7 @@ export default {
 .action-btn {
   margin-top: 0.5rem;
   padding: 0.625rem 1.25rem;
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -93,7 +93,7 @@ export default {
 }
 
 .action-btn:hover {
-  background: var(--primary-color-dark);
+  background: var(--color-primary-hover);
 }
 
 .action-btn i {

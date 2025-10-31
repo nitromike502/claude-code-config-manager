@@ -218,8 +218,8 @@ export default {
   min-width: 500px;
   max-width: 75vw;
   height: 100vh;
-  background: var(--surface-card);
-  border-left: 1px solid var(--surface-border);
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-primary);
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -238,7 +238,7 @@ export default {
 
 .sidebar-header {
   padding: 1.5rem;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--border-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -273,7 +273,7 @@ export default {
   height: 32px;
   padding: 0;
   background: transparent;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--border-primary);
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -290,8 +290,8 @@ export default {
 
 .nav-btn:hover:not(:disabled),
 .close-btn:hover {
-  background: var(--surface-ground);
-  border-color: var(--primary-color);
+  background: var(--bg-primary);
+  border-color: var(--color-primary);
 }
 
 .nav-btn:disabled {
@@ -330,19 +330,19 @@ export default {
 }
 
 .sidebar-section code {
-  background: var(--surface-ground);
+  background: var(--bg-primary);
   padding: 0.2rem 0.4rem;
   border-radius: 3px;
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
-  color: var(--primary-color);
+  color: var(--color-primary);
 }
 
 .content-preview {
-  background: var(--surface-ground);
+  background: var(--bg-primary);
   padding: 1rem;
   border-radius: 4px;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--border-primary);
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
   white-space: pre-wrap;
@@ -354,13 +354,13 @@ export default {
 
 .sidebar-footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--surface-border);
+  border-top: 1px solid var(--border-primary);
 }
 
 .action-btn {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -374,7 +374,7 @@ export default {
 }
 
 .action-btn:hover {
-  background: var(--primary-color-dark);
+  background: var(--color-primary-hover);
 }
 
 /* Responsive */

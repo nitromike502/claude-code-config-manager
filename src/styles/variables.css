@@ -1,8 +1,32 @@
-/* CSS Custom Properties for Theme System */
+/* ============================================
+   CSS CUSTOM PROPERTIES - THEME SYSTEM
+   ============================================
+
+   Variable Naming Convention:
+   - Backgrounds: --bg-{level}
+   - Text: --text-{level}
+   - Borders: --border-{type}
+   - Colors: --color-{purpose}
+   - Shadows: --shadow-{size}
+
+   Both themes define the SAME variable names
+   with different values for seamless switching.
+
+   PrimeVue Compatibility:
+   --surface-* aliases are maintained for potential
+   future PrimeVue component integration.
+   ============================================ */
 
 /* Dark Mode Theme (Default) */
 :root[data-theme="dark"] {
-  /* Backgrounds */
+
+  /* ========== Backgrounds ========== */
+  /* Primary: Page background
+     Secondary: Card/panel backgrounds
+     Tertiary: Subtle backgrounds (headers, footers)
+     Header: App header specific
+     Code: Code block backgrounds
+     Hover: Interactive element hover states */
   --bg-primary: #121212;
   --bg-secondary: #1e1e1e;
   --bg-tertiary: #252525;
@@ -10,41 +34,46 @@
   --bg-code: #1a1a1a;
   --bg-hover: #2a2a2a;
 
-  /* PrimeVue compatibility aliases */
-  --surface-ground: #121212;
-  --surface-card: #1e1e1e;
-  --surface-border: #3e3e3e;
+  /* ========== PrimeVue Compatibility ========== */
+  /* Maintained for potential PrimeVue component integration */
+  --surface-ground: #121212;  /* Maps to --bg-primary */
+  --surface-card: #1e1e1e;    /* Maps to --bg-secondary */
+  --surface-border: #3e3e3e;  /* Maps to --border-primary */
 
-  /* Borders */
+  /* ========== Borders ========== */
+  /* Primary: Default borders
+     Secondary: Subtle dividers
+     Focus: Keyboard focus indicators */
   --border-primary: #3e3e3e;
   --border-secondary: #2e2e2e;
   --border-focus: #007ad9;
 
-  /* Text */
+  /* ========== Text ========== */
+  /* Primary: Default body text
+     Secondary: Less prominent text (labels, captions)
+     Muted: Subtle hints and secondary info
+     Emphasis: Headings and important text
+     Disabled: Inactive UI elements */
   --text-primary: #e0e0e0;
   --text-secondary: #a0a0a0;
   --text-muted: #707070;
   --text-emphasis: #ffffff;
   --text-disabled: #505050;
 
-  /* Semantic Colors */
+  /* ========== Semantic Colors ========== */
+  /* Primary brand color and its states */
   --color-primary: #007ad9;
   --color-primary-hover: #005fa3;
   --color-primary-active: #004d82;
   --color-primary-disabled: #003d66;
 
-  /* PrimeVue compatibility aliases */
-  --primary-color: #007ad9;
-  --primary-color-dark: #005fa3;
-  --red-500: #EF5350;
-  --red-600: #d32f2f;
-  --border-color: #3e3e3e;
-
+  /* Link colors */
   --color-link: #64B5F6;
   --color-link-hover: #42A5F5;
   --color-link-visited: #90CAF9;
 
-  /* Status Colors */
+  /* ========== Status Colors ========== */
+  /* Success, warning, error, info states with background variants */
   --color-success: #4CAF50;
   --color-success-bg: #1b5e20;
   --color-warning: #FFA726;
@@ -54,38 +83,29 @@
   --color-info: #2196F3;
   --color-info-bg: #0d47a1;
 
-  /* Category Colors */
-  --color-agents: #4CAF50;
-  --color-commands: #2196F3;
-  --color-hooks: #FF9800;
-  --color-mcp: #9C27B0;
-  --color-user: #9C27B0;
+  /* ========== Category Colors ========== */
+  /* Specific colors for Claude Code configuration types */
+  --color-agents: #4CAF50;    /* Green for subagents */
+  --color-commands: #2196F3;  /* Blue for slash commands */
+  --color-hooks: #FF9800;     /* Orange for hooks */
+  --color-mcp: #9C27B0;       /* Purple for MCP servers */
+  --color-user: #9C27B0;      /* Purple for user-level configs */
 
-  /* Shadows */
+  /* ========== Shadows ========== */
+  /* Card: Default card elevation
+     Card-hover: Lifted card state
+     Card-active: Pressed card state
+     Sidebar: Sidebar/drawer shadow */
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-card-active: 0 1px 4px rgba(0, 0, 0, 0.2);
   --shadow-sidebar: -4px 0 16px rgba(0, 0, 0, 0.5);
-
-  /* Overlays */
-  --overlay-modal: rgba(0, 0, 0, 0.7);
-  --overlay-hover: rgba(255, 255, 255, 0.1);
-
-  /* Syntax Highlighting */
-  --syntax-keyword: #569CD6;
-  --syntax-string: #CE9178;
-  --syntax-number: #B5CEA8;
-  --syntax-comment: #6A9955;
-  --syntax-function: #DCDCAA;
-  --syntax-variable: #9CDCFE;
-  --syntax-type: #4EC9B0;
-  --syntax-operator: #D4D4D4;
-  --syntax-punctuation: #D4D4D4;
 }
 
 /* Light Mode Theme */
 :root[data-theme="light"] {
-  /* Backgrounds */
+
+  /* ========== Backgrounds ========== */
   --bg-primary: #f5f5f5;
   --bg-secondary: #ffffff;
   --bg-tertiary: #fafafa;
@@ -93,41 +113,34 @@
   --bg-code: #f8f8f8;
   --bg-hover: #fafafa;
 
-  /* PrimeVue compatibility aliases */
+  /* ========== PrimeVue Compatibility ========== */
   --surface-ground: #f5f5f5;
   --surface-card: #ffffff;
   --surface-border: #e0e0e0;
 
-  /* Borders */
+  /* ========== Borders ========== */
   --border-primary: #e0e0e0;
   --border-secondary: #eeeeee;
   --border-focus: #1976d2;
 
-  /* Text */
+  /* ========== Text ========== */
   --text-primary: #212121;
   --text-secondary: #616161;
   --text-muted: #9e9e9e;
   --text-emphasis: #000000;
   --text-disabled: #bdbdbd;
 
-  /* Semantic Colors */
+  /* ========== Semantic Colors ========== */
   --color-primary: #1976d2;
   --color-primary-hover: #1565c0;
   --color-primary-active: #0d47a1;
   --color-primary-disabled: #bbdefb;
 
-  /* PrimeVue compatibility aliases */
-  --primary-color: #1976d2;
-  --primary-color-dark: #1565c0;
-  --red-500: #d32f2f;
-  --red-600: #b71c1c;
-  --border-color: #e0e0e0;
-
   --color-link: #1976d2;
   --color-link-hover: #1565c0;
   --color-link-visited: #5e35b1;
 
-  /* Status Colors */
+  /* ========== Status Colors ========== */
   --color-success: #388e3c;
   --color-success-bg: #e8f5e9;
   --color-warning: #f57c00;
@@ -137,31 +150,16 @@
   --color-info: #1976d2;
   --color-info-bg: #e3f2fd;
 
-  /* Category Colors */
+  /* ========== Category Colors ========== */
   --color-agents: #388e3c;
   --color-commands: #1976d2;
   --color-hooks: #f57c00;
   --color-mcp: #7b1fa2;
   --color-user: #7b1fa2;
 
-  /* Shadows */
+  /* ========== Shadows ========== */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
   --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
   --shadow-card-active: 0 1px 2px rgba(0, 0, 0, 0.1);
   --shadow-sidebar: -2px 0 8px rgba(0, 0, 0, 0.1);
-
-  /* Overlays */
-  --overlay-modal: rgba(0, 0, 0, 0.4);
-  --overlay-hover: rgba(0, 0, 0, 0.05);
-
-  /* Syntax Highlighting */
-  --syntax-keyword: #0000ff;
-  --syntax-string: #a31515;
-  --syntax-number: #098658;
-  --syntax-comment: #008000;
-  --syntax-function: #795e26;
-  --syntax-variable: #001080;
-  --syntax-type: #267f99;
-  --syntax-operator: #000000;
-  --syntax-punctuation: #000000;
 }
