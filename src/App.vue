@@ -11,7 +11,9 @@
     </header>
 
     <main class="app-main">
-      <router-view />
+      <ErrorBoundary>
+        <router-view />
+      </ErrorBoundary>
     </main>
 
     <!-- Notifications Container -->
@@ -33,9 +35,13 @@
 import { useThemeStore } from './stores/theme'
 import { useNotificationsStore } from './stores/notifications'
 import { useProjectsStore } from './stores/projects'
+import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
 
 export default {
   name: 'App',
+  components: {
+    ErrorBoundary
+  },
   setup() {
     const themeStore = useThemeStore()
     const notificationsStore = useNotificationsStore()
