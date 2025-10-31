@@ -97,9 +97,9 @@
 
 <script>
 import { ref } from 'vue'
-import BreadcrumbNavigation from './BreadcrumbNavigation.vue'
-import LoadingState from './LoadingState.vue'
-import EmptyState from './EmptyState.vue'
+import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 export default {
   name: 'TestUtilityComponents',

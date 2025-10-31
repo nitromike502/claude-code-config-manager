@@ -136,11 +136,11 @@
 
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import * as api from '../api/client'
-import ConfigCard from './cards/ConfigCard.vue'
-import ConfigItemList from './cards/ConfigItemList.vue'
-import ConfigDetailSidebar from './sidebars/ConfigDetailSidebar.vue'
-import BreadcrumbNavigation from './common/BreadcrumbNavigation.vue'
+import * as api from '@/api/client'
+import ConfigCard from '@/components/cards/ConfigCard.vue'
+import ConfigItemList from '@/components/cards/ConfigItemList.vue'
+import ConfigDetailSidebar from '@/components/sidebars/ConfigDetailSidebar.vue'
+import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
 
 export default {
   name: 'UserGlobal',
