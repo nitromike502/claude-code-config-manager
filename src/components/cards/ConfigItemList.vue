@@ -39,7 +39,11 @@ const props = defineProps({
   },
 });
 
-defineEmits(['item-selected']);
+const emit = defineEmits({
+  'item-selected': (item, itemType) => {
+    return item !== null && typeof itemType === 'string' && ['agents', 'commands', 'hooks', 'mcp'].includes(itemType)
+  }
+});
 
 /**
  * Get the display name for an item based on its type
