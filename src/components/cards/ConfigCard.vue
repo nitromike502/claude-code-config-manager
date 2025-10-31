@@ -87,7 +87,12 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['toggle-show-all', 'item-selected']);
+const emit = defineEmits({
+  'toggle-show-all': null,
+  'item-selected': (item, itemType) => {
+    return item !== null && typeof itemType === 'string'
+  }
+});
 
 // Computed property for card type CSS class
 const cardTypeClass = computed(() => {

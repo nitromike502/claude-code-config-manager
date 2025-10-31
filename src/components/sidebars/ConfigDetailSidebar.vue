@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Sidebar Overlay -->
-    <div v-if="visible" class="sidebar-overlay" @click="$emit('close')"></div>
+    <div v-if="visible" class="sidebar-overlay" @click="emit('close')"></div>
 
     <!-- Detail Sidebar -->
     <div v-if="visible" class="sidebar" @click.stop>
@@ -17,7 +17,7 @@
           <button @click="handleNavigateNext" :disabled="!hasNext" class="nav-btn">
             <i class="pi pi-chevron-right"></i>
           </button>
-          <button @click="$emit('close')" class="close-btn">
+          <button @click="emit('close')" class="close-btn">
             <i class="pi pi-times"></i>
           </button>
         </div>
@@ -87,7 +87,7 @@
       </div>
 
       <div class="sidebar-footer">
-        <button @click="$emit('close')" class="action-btn close-action-btn">
+        <button @click="emit('close')" class="action-btn close-action-btn">
           <i class="pi pi-times"></i>
           Close
         </button>
@@ -96,93 +96,86 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { computed } from 'vue'
 
-export default {
-  name: 'ConfigDetailSidebar',
-  props: {
-    visible: {
-      type: Boolean,
-      required: true,
-      default: false
-    },
-    selectedItem: {
-      type: Object,
-      default: null
-    },
-    selectedType: {
-      type: String,
-      default: null
-    },
-    currentItems: {
-      type: Array,
-      default: () => []
-    },
-    selectedIndex: {
-      type: Number,
-      default: -1
-    }
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    required: true,
+    default: false
   },
-  emits: ['close', 'navigate'],
-  setup(props, { emit }) {
-    // Computed: navigation state
-    const hasPrev = computed(() => props.selectedIndex > 0)
-    const hasNext = computed(() => props.selectedIndex < props.currentItems.length - 1)
+  selectedItem: {
+    type: Object,
+    default: null
+  },
+  selectedType: {
+    type: String,
+    default: null
+  },
+  currentItems: {
+    type: Array,
+    default: () => []
+  },
+  selectedIndex: {
+    type: Number,
+    default: -1
+  }
+})
 
-    // Computed: type icon
-    const typeIcon = computed(() => {
-      const icons = {
-        agents: 'pi pi-users',
-        commands: 'pi pi-bolt',
-        hooks: 'pi pi-link',
-        mcp: 'pi pi-server'
-      }
-      return icons[props.selectedType] || 'pi pi-file'
-    })
+const emit = defineEmits({
+  close: null,
+  navigate: (payload) => {
+    return payload && typeof payload.index === 'number' && payload.item !== undefined
+  }
+})
 
-    // Computed: type color
-    const typeColor = computed(() => {
-      // For agents, use the defined color if available
-      if (props.selectedType === 'agents' && props.selectedItem?.color) {
-        return props.selectedItem.color
-      }
+// Computed: navigation state
+const hasPrev = computed(() => props.selectedIndex > 0)
+const hasNext = computed(() => props.selectedIndex < props.currentItems.length - 1)
 
-      // Otherwise use default type colors
-      const colors = {
-        agents: 'var(--color-agents)',
-        commands: 'var(--color-commands)',
-        hooks: 'var(--color-hooks)',
-        mcp: 'var(--color-mcp)'
-      }
-      return colors[props.selectedType] || 'var(--text-primary)'
-    })
+// Computed: type icon
+const typeIcon = computed(() => {
+  const icons = {
+    agents: 'pi pi-users',
+    commands: 'pi pi-bolt',
+    hooks: 'pi pi-link',
+    mcp: 'pi pi-server'
+  }
+  return icons[props.selectedType] || 'pi pi-file'
+})
 
-    // Navigation handlers
-    const handleNavigatePrev = () => {
-      if (hasPrev.value) {
-        const newIndex = props.selectedIndex - 1
-        const newItem = props.currentItems[newIndex]
-        emit('navigate', { item: newItem, index: newIndex })
-      }
-    }
+// Computed: type color
+const typeColor = computed(() => {
+  // For agents, use the defined color if available
+  if (props.selectedType === 'agents' && props.selectedItem?.color) {
+    return props.selectedItem.color
+  }
 
-    const handleNavigateNext = () => {
-      if (hasNext.value) {
-        const newIndex = props.selectedIndex + 1
-        const newItem = props.currentItems[newIndex]
-        emit('navigate', { item: newItem, index: newIndex })
-      }
-    }
+  // Otherwise use default type colors
+  const colors = {
+    agents: 'var(--color-agents)',
+    commands: 'var(--color-commands)',
+    hooks: 'var(--color-hooks)',
+    mcp: 'var(--color-mcp)'
+  }
+  return colors[props.selectedType] || 'var(--text-primary)'
+})
 
-    return {
-      hasPrev,
-      hasNext,
-      typeIcon,
-      typeColor,
-      handleNavigatePrev,
-      handleNavigateNext
-    }
+// Navigation handlers
+const handleNavigatePrev = () => {
+  if (hasPrev.value) {
+    const newIndex = props.selectedIndex - 1
+    const newItem = props.currentItems[newIndex]
+    emit('navigate', { item: newItem, index: newIndex })
+  }
+}
+
+const handleNavigateNext = () => {
+  if (hasNext.value) {
+    const newIndex = props.selectedIndex + 1
+    const newItem = props.currentItems[newIndex]
+    emit('navigate', { item: newItem, index: newIndex })
   }
 }
 </script>
