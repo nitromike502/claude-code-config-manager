@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 // Lazy load components
-const Dashboard = () => import('../components/Dashboard.vue')
-const ProjectDetail = () => import('../components/ProjectDetail.vue')
-const UserGlobal = () => import('../components/UserGlobal.vue')
+const Dashboard = () => import('@/components/Dashboard.vue')
+const ProjectDetail = () => import('@/components/ProjectDetail.vue')
+const UserGlobal = () => import('@/components/UserGlobal.vue')
 
 const routes = [
   {

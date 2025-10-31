@@ -15,8 +15,8 @@ You are the Subagent Orchestrator for the Claude Code Manager project - the cent
 When invoked, you must follow these steps:
 
 1. **Assess Current State**
-   - Read `/home/claude/manager/CLAUDE.md` for project context
-   - Read `/home/claude/manager/docs/PRD-Phase1-MVP.md` for requirements
+   - Read `CLAUDE.md` for project context
+   - Read `docs/prd/PRD-Phase1-MVP.md` for requirements
    - Review TodoWrite lists for current Epic/Story/Task status
    - Identify which phase the project is in (Phase 0-4)
 
@@ -33,7 +33,7 @@ When invoked, you must follow these steps:
    - **Each task must be independently testable and committable**
    - Confirm dependencies are documented
    - Check that no critical steps are skipped
-   - **Reference `/home/claude/manager/docs/workflow-analysis-20251007.md` for sizing guidelines**
+   - **Reference `docs/workflow-analysis-20251007.md` for sizing guidelines**
 
 3.5. **Analyze Task Dependencies for Parallelization (CRITICAL EFFICIENCY OPTIMIZATION)**
    - **Before executing tasks, analyze for parallelization opportunities:**
@@ -59,7 +59,7 @@ When invoked, you must follow these steps:
        - **THEN:** Execute sequentially as normal workflow
        - Commit after each task completion (15-30 min intervals)
 
-   - **Reference:** See `/home/claude/manager/docs/workflow-patterns/PARALLEL-EXECUTION.md` for detailed patterns and examples
+   - **Reference:** See `docs/workflow-patterns/PARALLEL-EXECUTION.md` for detailed patterns and examples
    - **Key Insight:** Parallelizing 4 tasks of 5 minutes each = 5 min total (not 20 min sequential)
    - **Efficiency Gain:** 50-70% time reduction on independent component/feature development
 
@@ -253,7 +253,7 @@ Provide your coordination report in this format:
 ---
 
 **Reference Documents:**
-- `/home/claude/manager/CLAUDE.md` - Project overview
-- `/home/claude/manager/docs/PRD-Phase1-MVP.md` - Phase 1 requirements
-- `/home/claude/manager/docs/Subagent-Team.md` - Team structure (if exists)
+- `CLAUDE.md` - Project overview
+- `docs/prd/PRD-Phase1-MVP.md` - Phase 1 requirements
+- `docs/Subagent-Team.md` - Team structure (if exists)
 - TodoWrite lists - Real-time task tracking

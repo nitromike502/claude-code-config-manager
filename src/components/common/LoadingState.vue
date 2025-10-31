@@ -38,9 +38,9 @@ export default {
 .skeleton {
   background: linear-gradient(
     90deg,
-    var(--surface-ground) 0%,
-    var(--surface-border) 50%,
-    var(--surface-ground) 100%
+    var(--bg-primary) 0%,
+    var(--border-primary) 50%,
+    var(--bg-primary) 100%
   );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;

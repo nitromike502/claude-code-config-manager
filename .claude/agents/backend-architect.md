@@ -55,9 +55,9 @@ You are a backend architecture specialist for the Claude Code Manager project - 
 When invoked, you must follow these steps:
 
 1. **Understand the Requirements**
-   - Read `/home/claude/manager/docs/PRD-Phase1-MVP.md` for complete specifications
-   - Review `/home/claude/manager/CLAUDE.md` for project structure
-   - Review `/home/claude/manager/docs/workflow-analysis-20251007.md` for process learnings
+   - Read `docs/prd/PRD-Phase1-MVP.md` for complete specifications
+   - Review `CLAUDE.md` for project structure
+   - Review `docs/workflow-analysis-20251007.md` for process learnings
    - Identify which API endpoints or backend features need implementation
    - **Break down into small features** (max 1 hour each)
 

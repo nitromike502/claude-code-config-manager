@@ -17,30 +17,31 @@ When invoked, you must follow these steps in order:
 ### 1. Understand the Testing Context
 
 - Use Read to examine the codebase structure and identify what needs testing
-- Use Glob to locate existing test files in `/home/claude/manager/tests/`
+- Use Glob to locate existing test files in ``tests/``
 - Use Grep to search for test patterns, API endpoints, or components that need coverage
-- Review `/home/claude/manager/CLAUDE.md` to understand project requirements and quality standards
+- Review ``CLAUDE.md`` to understand project requirements and quality standards
+- Reference `docs/guides/TESTING-GUIDE.md` for test naming conventions and workflow
 
 ### 2. Set Up Test Infrastructure (if not already configured)
 
 **For Jest (Backend API Testing):**
-- Verify `jest.config.js` exists at `/home/claude/manager/jest.config.js`
+- Verify `jest.config.js` exists at `jest.config.js`
 - If missing, create Jest configuration with:
   - Test environment: node
   - Coverage directory: coverage/
   - Test match pattern: `**/*.test.js`
   - Timeout: 10000ms
-- Install dependencies using Bash: `cd /home/claude/manager && npm install --save-dev jest supertest`
+- Install dependencies using Bash: `cd . && npm install --save-dev jest supertest`
 - Add test scripts to `package.json` if not present
 
 **For Playwright (Frontend UI Testing):**
-- Verify `playwright.config.js` exists at `/home/claude/manager/playwright.config.js`
+- Verify `playwright.config.js` exists at `playwright.config.js`
 - If missing, create Playwright configuration with:
   - Base URL: http://localhost:8420
   - Browser: Chromium only (initially)
   - Screenshots on failure enabled
   - Test timeout: 30000ms
-- Install dependencies using Bash: `cd /home/claude/manager && npm install --save-dev @playwright/test && npx playwright install chromium`
+- Install dependencies using Bash: `cd . && npm install --save-dev @playwright/test && npx playwright install chromium`
 
 ### 3. Build or Update Test Files
 
@@ -49,43 +50,43 @@ When invoked, you must follow these steps in order:
 All Playwright test files MUST follow the numbered prefix convention for easy identification and organization:
 
 **Frontend Component Tests (001-099):**
-- Format: `tests/frontend/XX-test-name.spec.js`
+- Format: ``tests/`frontend/XX-test-name.spec.js`
 - Examples:
-  - `tests/frontend/01-dashboard-rendering.spec.js`
-  - `tests/frontend/02-project-detail.spec.js`
-  - `tests/frontend/03-sidebar-interactions.spec.js`
+  - ``tests/`frontend/01-dashboard-rendering.spec.js`
+  - ``tests/`frontend/02-project-detail.spec.js`
+  - ``tests/`frontend/03-sidebar-interactions.spec.js`
 - Use: Component-specific tests, UI element rendering, basic interactions
 
 **E2E Integration Tests (100-199):**
-- Format: `tests/e2e/1XX-test-name.spec.js`
+- Format: ``tests/`e2e/1XX-test-name.spec.js`
 - Examples:
-  - `tests/e2e/100-complete-user-flows-integration.spec.js`
-  - `tests/e2e/101-project-discovery-flow.spec.js`
-  - `tests/e2e/102-configuration-viewing-flow.spec.js`
+  - ``tests/`e2e/100-complete-user-flows-integration.spec.js`
+  - ``tests/`e2e/101-project-discovery-flow.spec.js`
+  - ``tests/`e2e/102-configuration-viewing-flow.spec.js`
 - Use: Complete user workflows, multi-step interactions, cross-component tests
 
 **Responsive Tests (200-299):**
-- Format: `tests/responsive/2XX-test-name.spec.js`
+- Format: ``tests/`responsive/2XX-test-name.spec.js`
 - Examples:
-  - `tests/responsive/201-layout-responsive.spec.js`
-  - `tests/responsive/202-mobile-navigation.spec.js`
+  - ``tests/`responsive/201-layout-responsive.spec.js`
+  - ``tests/`responsive/202-mobile-navigation.spec.js`
 - Use: Viewport-specific tests, mobile/tablet/desktop layouts
 
 **Visual Regression Tests (300-399):**
-- Format: `tests/visual/3XX-test-name.spec.js`
+- Format: ``tests/`visual/3XX-test-name.spec.js`
 - Examples:
-  - `tests/visual/301-visual-regression.spec.js`
-  - `tests/visual/302-theme-visual-consistency.spec.js`
+  - ``tests/`visual/301-visual-regression.spec.js`
+  - ``tests/`visual/302-theme-visual-consistency.spec.js`
 - Use: Screenshot comparison, visual consistency checks
 
 **Before creating a new test file:**
-1. List existing test files in the category: `ls tests/[category]/*.spec.js`
+1. List existing test files in the category: `ls `tests/`[category]/*.spec.js`
 2. Identify the next available number in the sequence
 3. Create test with proper number prefix
 4. Reference test as `[Test XXX]` in commit messages and bug tickets
 
 **Backend API Tests (Jest + Supertest):**
-- Create test files in `/home/claude/manager/tests/backend/`
+- Create test files in ``tests/`backend/`
 - Backend tests do not use numbered prefixes (Jest convention)
 - Test all 11 API endpoints:
   - GET /api/projects
@@ -104,14 +105,14 @@ All Playwright test files MUST follow the numbered prefix convention for easy id
 - Test error handling scenarios (malformed YAML/JSON, missing files, invalid paths)
 
 **Frontend UI Tests (Playwright):**
-- Create test files in `/home/claude/manager/tests/frontend/` with numbered prefixes
+- Create test files in ``tests/`frontend/` with numbered prefixes
 - Test component rendering (project selector, config cards, navigation)
 - Test user interactions (clicks, form inputs, navigation flows)
 - Test API integration (API calls trigger correct UI updates)
 - Capture screenshots for visual verification on failure
 
 **Test Fixtures:**
-- Create mock data in `/home/claude/manager/tests/fixtures/`
+- Create mock data in ``tests/`fixtures/`
 - Include malformed YAML files for parser resilience testing
 - Include malformed JSON files for error handling testing
 - Include sample `.claude.json` project data
@@ -122,22 +123,22 @@ All Playwright test files MUST follow the numbered prefix convention for easy id
 
 - **Before ANY PR creation:** Run full test suite (mandatory)
   ```bash
-  cd /home/claude/manager && npm run test:full
+  cd . && npm run test:full
   ```
 
 - **After backend changes:** Run Jest tests only
   ```bash
-  cd /home/claude/manager && npm run test:backend
+  cd . && npm run test:backend
   ```
 
-- **After frontend changes:** Run Playwright tests only
+- **After frontend changes:** Run Playwright tests only (with list reporter for stdout output)
   ```bash
-  cd /home/claude/manager && npm run test:frontend
+  cd . && npx playwright test --reporter=list
   ```
 
 - **During development:** Use watch mode for rapid feedback
   ```bash
-  cd /home/claude/manager && npm run test:watch
+  cd . && npm run test:watch
   ```
 
 **IMPORTANT:** Always use absolute paths in Bash commands since agent threads reset cwd between calls.
@@ -145,7 +146,7 @@ All Playwright test files MUST follow the numbered prefix convention for easy id
 ### 5. Generate Test Report
 
 After test execution, create a detailed markdown report at:
-`/home/claude/manager/docs/testing/test-reports/test-report-{YYYYMMDD}-{HHMMSS}.md`
+`docs/testing/test-reports/test-report-{YYYYMMDD}-{HHMMSS}.md`
 
 **Report must include:**
 - Summary statistics (total, passed, failed, duration)
@@ -161,7 +162,7 @@ After test execution, create a detailed markdown report at:
 ```
 ✅ All tests passed! ({X} tests, {N} seconds)
 
-Test report: /home/claude/manager/docs/testing/test-reports/test-report-{timestamp}.md
+Test report: docs/testing/test-reports/test-report-{timestamp}.md
 
 Ready to proceed with PR creation.
 ```
@@ -179,10 +180,10 @@ Failed tests:
    Fix: {Specific actionable recommendation}
    File: {File path with line number}
 
-Full report: /home/claude/manager/docs/testing/test-reports/test-report-{timestamp}.md
+Full report: docs/testing/test-reports/test-report-{timestamp}.md
 
 BLOCKED: Fix these issues and re-run tests before creating PR.
-Run 'cd /home/claude/manager && npm test' to reproduce failures.
+Run 'cd . && npm test' to reproduce failures.
 ```
 
 ### 7. Block PR Creation if Tests Fail
@@ -291,19 +292,19 @@ FAILED TESTS:
 
 1. Backend: GET /api/projects/:projectId/agents
    Error: TypeError: Cannot read property 'map' of undefined
-   Location: /home/claude/manager/src/backend/routes/projects.js:45
+   Location: src/backend/routes/projects.js:45
    Fix: Add null check before .map() call - ensure agents array exists
 
 2. Frontend: Project selector renders correctly
    Error: Timeout waiting for element '.project-list'
-   Location: /home/claude/manager/tests/frontend/components.spec.js:12
+   Location: `tests/`frontend/components.spec.js:12
    Fix: Verify API is responding and selector matches rendered HTML
 
 Test report: {absolute file path}
 
 Status: PR CREATION BLOCKED
 Action: Fix the {Z} failing test(s) above, then re-run full test suite.
-Command: cd /home/claude/manager && npm test
+Command: cd . && npm test
 ```
 
 Always include:

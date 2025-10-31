@@ -97,9 +97,9 @@
 
 <script>
 import { ref } from 'vue'
-import BreadcrumbNavigation from './BreadcrumbNavigation.vue'
-import LoadingState from './LoadingState.vue'
-import EmptyState from './EmptyState.vue'
+import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
 
 export default {
   name: 'TestUtilityComponents',
@@ -172,8 +172,8 @@ h1 {
 }
 
 .test-box {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 1rem;
@@ -185,7 +185,7 @@ h1 {
   font-weight: 600;
   margin: 0 0 1rem 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .test-box ul {

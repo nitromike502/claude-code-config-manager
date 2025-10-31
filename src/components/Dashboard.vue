@@ -93,8 +93,8 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useProjectsStore } from '../stores/projects'
-import { userAPI } from '../frontend/js/api'
+import { useProjectsStore } from '@/stores/projects'
+import * as api from '@/api/client'
 
 export default {
   name: 'Dashboard',
@@ -109,7 +109,21 @@ export default {
     // Load user config stats
     const loadUserConfig = async () => {
       try {
-        const stats = await userAPI.getStats()
+        // Get user stats by calling all endpoints and counting
+        const [agents, commands, hooks, mcp] = await Promise.all([
+          api.getUserAgents(),
+          api.getUserCommands(),
+          api.getUserHooks(),
+          api.getUserMcp(),
+        ])
+
+        const stats = {
+          agents: agents.agents?.length || 0,
+          commands: commands.commands?.length || 0,
+          hooks: hooks.hooks?.length || 0,
+          mcp: mcp.mcp?.length || 0,
+        }
+
         userConfig.value = {
           id: 'user',
           name: 'User Configurations',
@@ -243,9 +257,9 @@ export default {
 
 .sort-dropdown {
   padding: 0.5rem 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-primary);
   border-radius: 4px;
-  background: var(--surface-ground);
+  background: var(--bg-primary);
   color: var(--text-primary);
   font-size: 0.95rem;
   cursor: pointer;
@@ -253,12 +267,12 @@ export default {
 }
 
 .sort-dropdown:hover {
-  border-color: var(--primary-color);
+  border-color: var(--color-primary);
 }
 
 .rescan-btn {
   padding: 0.5rem 1.25rem;
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -271,7 +285,7 @@ export default {
 }
 
 .rescan-btn:hover:not(:disabled) {
-  background: var(--primary-color-dark);
+  background: var(--color-primary-hover);
 }
 
 .rescan-btn:disabled {
@@ -295,8 +309,8 @@ export default {
 }
 
 .spinner {
-  border: 3px solid var(--surface-border);
-  border-top: 3px solid var(--primary-color);
+  border: 3px solid var(--border-primary);
+  border-top: 3px solid var(--color-primary);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -312,7 +326,7 @@ export default {
 .error-state {
   text-align: center;
   padding: 3rem 1rem;
-  color: var(--red-500);
+  color: var(--color-error);
 }
 
 .error-state h4 {
@@ -326,7 +340,7 @@ export default {
 
 .retry-btn {
   padding: 0.5rem 1.5rem;
-  background: var(--red-500);
+  background: var(--color-error);
   color: white;
   border: none;
   border-radius: 4px;
@@ -335,7 +349,7 @@ export default {
 }
 
 .retry-btn:hover {
-  background: var(--red-600);
+  background: var(--color-error);
 }
 
 /* Empty State */
@@ -370,8 +384,8 @@ export default {
 }
 
 .project-card {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   padding: 1.5rem;
   cursor: pointer;
@@ -382,14 +396,14 @@ export default {
 }
 
 .project-card:hover {
-  border-color: var(--primary-color);
+  border-color: var(--color-primary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
 .project-card.user-card {
   border-color: var(--color-user);
-  background: var(--surface-ground);
+  background: var(--bg-primary);
 }
 
 .project-card.user-card:hover {
@@ -405,7 +419,7 @@ export default {
 
 .project-header i {
   font-size: 1.5rem;
-  color: var(--primary-color);
+  color: var(--color-primary);
 }
 
 .user-card .project-header i {
@@ -459,13 +473,13 @@ export default {
 .project-footer {
   margin-top: auto;
   padding-top: 0.5rem;
-  border-top: 1px solid var(--surface-border);
+  border-top: 1px solid var(--border-primary);
 }
 
 .view-btn {
   width: 100%;
   padding: 0.5rem 1rem;
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -479,7 +493,7 @@ export default {
 }
 
 .view-btn:hover {
-  background: var(--primary-color-dark);
+  background: var(--color-primary-hover);
 }
 
 .view-btn i {

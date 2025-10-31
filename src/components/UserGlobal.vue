@@ -136,11 +136,11 @@
 
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
-import { userAPI } from '../frontend/js/api'
-import ConfigCard from './cards/ConfigCard.vue'
-import ConfigItemList from './cards/ConfigItemList.vue'
-import ConfigDetailSidebar from './sidebars/ConfigDetailSidebar.vue'
-import BreadcrumbNavigation from './common/BreadcrumbNavigation.vue'
+import * as api from '@/api/client'
+import ConfigCard from '@/components/cards/ConfigCard.vue'
+import ConfigItemList from '@/components/cards/ConfigItemList.vue'
+import ConfigDetailSidebar from '@/components/sidebars/ConfigDetailSidebar.vue'
+import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
 
 export default {
   name: 'UserGlobal',
@@ -242,7 +242,7 @@ export default {
     const loadAgents = async () => {
       loadingAgents.value = true
       try {
-        const data = await userAPI.getAgents()
+        const data = await api.getUserAgents()
         agents.value = data.agents || []
       } catch (err) {
         console.error('Error loading agents:', err)
@@ -255,7 +255,7 @@ export default {
     const loadCommands = async () => {
       loadingCommands.value = true
       try {
-        const data = await userAPI.getCommands()
+        const data = await api.getUserCommands()
         commands.value = data.commands || []
       } catch (err) {
         console.error('Error loading commands:', err)
@@ -268,7 +268,7 @@ export default {
     const loadHooks = async () => {
       loadingHooks.value = true
       try {
-        const data = await userAPI.getHooks()
+        const data = await api.getUserHooks()
         hooks.value = data.hooks || []
       } catch (err) {
         console.error('Error loading hooks:', err)
@@ -281,7 +281,7 @@ export default {
     const loadMCP = async () => {
       loadingMCP.value = true
       try {
-        const data = await userAPI.getMCP()
+        const data = await api.getUserMcp()
         mcpServers.value = data.mcp || []
       } catch (err) {
         console.error('Error loading MCP servers:', err)
@@ -435,14 +435,14 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--primary-color);
+  color: var(--color-primary);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .breadcrumb-link:hover {
-  color: var(--primary-color-dark);
+  color: var(--color-primary-hover);
   text-decoration: underline;
 }
 
@@ -467,8 +467,8 @@ export default {
 }
 
 .spinner {
-  border: 3px solid var(--surface-border);
-  border-top: 3px solid var(--primary-color);
+  border: 3px solid var(--border-primary);
+  border-top: 3px solid var(--color-primary);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -522,8 +522,8 @@ export default {
   min-width: 500px;
   max-width: 75vw;
   height: 100vh;
-  background: var(--surface-card);
-  border-left: 1px solid var(--surface-border);
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-primary);
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -542,7 +542,7 @@ export default {
 
 .sidebar-header {
   padding: 1.5rem;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--border-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -577,7 +577,7 @@ export default {
   height: 32px;
   padding: 0;
   background: transparent;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--border-primary);
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -588,8 +588,8 @@ export default {
 
 .nav-btn:hover:not(:disabled),
 .close-btn:hover {
-  background: var(--surface-ground);
-  border-color: var(--primary-color);
+  background: var(--bg-primary);
+  border-color: var(--color-primary);
 }
 
 .nav-btn:disabled {
@@ -628,10 +628,10 @@ export default {
 }
 
 .content-preview {
-  background: var(--surface-ground);
+  background: var(--bg-primary);
   padding: 1rem;
   border-radius: 4px;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--border-primary);
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
   white-space: pre-wrap;
@@ -643,13 +643,13 @@ export default {
 
 .sidebar-footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--surface-border);
+  border-top: 1px solid var(--border-primary);
 }
 
 .action-btn {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -663,7 +663,7 @@ export default {
 }
 
 .action-btn:hover {
-  background: var(--primary-color-dark);
+  background: var(--color-primary-hover);
 }
 
 /* Responsive */

@@ -259,8 +259,8 @@ gh pr review <PR-NUMBER> --approve|--comment --body "message"
 
 ## Reference Documentation
 
-- `/home/claude/manager/docs/PRD-Phase1-MVP.md` - MVP requirements
-- `/home/claude/manager/CLAUDE.md` - Project overview
-- `/home/claude/manager/docs/Subagent-Team.md` - Team structure
+- `docs/prd/PRD-Phase1-MVP.md` - MVP requirements
+- `CLAUDE.md` - Project overview
+- `docs/Subagent-Team.md` - Team structure
 
 Always use absolute file paths in your feedback and provide actionable recommendations.

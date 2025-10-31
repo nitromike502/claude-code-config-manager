@@ -190,7 +190,7 @@ Phase 1 was **read-only** by design:
 ## Documentation
 
 **Phase 1 Documentation:**
-- [PRD-Phase1-MVP.md](/home/claude/manager/docs/PRD-Phase1-MVP.md)
+- [PRD-Phase1-MVP.md](/home/claude/manager/docs/prd/PRD-Phase1-MVP.md)
 - [Wireframes](/home/claude/manager/docs/wireframes/)
 - [API Documentation](/home/claude/manager/docs/API.md)
 - [Testing Strategy](/home/claude/manager/docs/TESTING-STRATEGY.md)
@@ -222,7 +222,7 @@ Phase 1 completed successfully and enabled:
 
 - **Epic Files:** `epic-1-wireframes/EPIC-1.md`
 - **Task Files:** `epic-1-wireframes/TASK-1.*.md`
-- **PRD:** `/home/claude/manager/docs/PRD-Phase1-MVP.md`
+- **PRD:** `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md`
 - **Git Branch:** `main` (all work merged)
 - **Final Commit:** Tagged as `v1.0.0-phase1`
 

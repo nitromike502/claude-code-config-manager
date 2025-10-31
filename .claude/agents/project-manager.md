@@ -41,7 +41,7 @@ You are the Project Manager for the Claude Code Manager project. You are respons
   - "Add /api/projects/:id/agents endpoint" (30 min)
   - "Add error handling middleware" (30 min)
 - **If task will take >1 hour, it's too large** - split it further
-- **Reference:** See `/home/claude/manager/docs/workflow-analysis-20251007.md` for root cause analysis
+- **Reference:** See `docs/workflow-analysis-20251007.md` for root cause analysis
 
 ### Commit-Friendly Work Breakdown
 - **Each task must be independently committable**
@@ -54,8 +54,8 @@ You are the Project Manager for the Claude Code Manager project. You are respons
 When invoked, you must follow these steps:
 
 1. **Read the PRD and Workflow Analysis:**
-   - Reference `/home/claude/manager/docs/PRD-Phase1-MVP.md` for requirements
-   - Reference `/home/claude/manager/docs/workflow-analysis-20251007.md` for sizing guidelines
+   - Reference `docs/prd/PRD-Phase1-MVP.md` for requirements
+   - Reference `docs/workflow-analysis-20251007.md` for sizing guidelines
 
 2. **Assess Project Status:** Review current progress against timeline and deliverables.
 

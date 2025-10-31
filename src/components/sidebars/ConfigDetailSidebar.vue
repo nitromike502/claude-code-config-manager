@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Sidebar Overlay -->
-    <div v-if="visible" class="sidebar-overlay" @click="$emit('close')"></div>
+    <div v-if="visible" class="sidebar-overlay" @click="emit('close')"></div>
 
     <!-- Detail Sidebar -->
     <div v-if="visible" class="sidebar" @click.stop>
@@ -17,7 +17,7 @@
           <button @click="handleNavigateNext" :disabled="!hasNext" class="nav-btn">
             <i class="pi pi-chevron-right"></i>
           </button>
-          <button @click="$emit('close')" class="close-btn">
+          <button @click="emit('close')" class="close-btn">
             <i class="pi pi-times"></i>
           </button>
         </div>
@@ -87,7 +87,7 @@
       </div>
 
       <div class="sidebar-footer">
-        <button @click="$emit('close')" class="action-btn close-action-btn">
+        <button @click="emit('close')" class="action-btn close-action-btn">
           <i class="pi pi-times"></i>
           Close
         </button>
@@ -96,93 +96,86 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { computed } from 'vue'
 
-export default {
-  name: 'ConfigDetailSidebar',
-  props: {
-    visible: {
-      type: Boolean,
-      required: true,
-      default: false
-    },
-    selectedItem: {
-      type: Object,
-      default: null
-    },
-    selectedType: {
-      type: String,
-      default: null
-    },
-    currentItems: {
-      type: Array,
-      default: () => []
-    },
-    selectedIndex: {
-      type: Number,
-      default: -1
-    }
+const props = defineProps({
+  visible: {
+    type: Boolean,
+    required: true,
+    default: false
   },
-  emits: ['close', 'navigate'],
-  setup(props, { emit }) {
-    // Computed: navigation state
-    const hasPrev = computed(() => props.selectedIndex > 0)
-    const hasNext = computed(() => props.selectedIndex < props.currentItems.length - 1)
+  selectedItem: {
+    type: Object,
+    default: null
+  },
+  selectedType: {
+    type: String,
+    default: null
+  },
+  currentItems: {
+    type: Array,
+    default: () => []
+  },
+  selectedIndex: {
+    type: Number,
+    default: -1
+  }
+})
 
-    // Computed: type icon
-    const typeIcon = computed(() => {
-      const icons = {
-        agents: 'pi pi-users',
-        commands: 'pi pi-bolt',
-        hooks: 'pi pi-link',
-        mcp: 'pi pi-server'
-      }
-      return icons[props.selectedType] || 'pi pi-file'
-    })
+const emit = defineEmits({
+  close: null,
+  navigate: (payload) => {
+    return payload && typeof payload.index === 'number' && payload.item !== undefined
+  }
+})
 
-    // Computed: type color
-    const typeColor = computed(() => {
-      // For agents, use the defined color if available
-      if (props.selectedType === 'agents' && props.selectedItem?.color) {
-        return props.selectedItem.color
-      }
+// Computed: navigation state
+const hasPrev = computed(() => props.selectedIndex > 0)
+const hasNext = computed(() => props.selectedIndex < props.currentItems.length - 1)
 
-      // Otherwise use default type colors
-      const colors = {
-        agents: 'var(--color-agents)',
-        commands: 'var(--color-commands)',
-        hooks: 'var(--color-hooks)',
-        mcp: 'var(--color-mcp)'
-      }
-      return colors[props.selectedType] || 'var(--text-primary)'
-    })
+// Computed: type icon
+const typeIcon = computed(() => {
+  const icons = {
+    agents: 'pi pi-users',
+    commands: 'pi pi-bolt',
+    hooks: 'pi pi-link',
+    mcp: 'pi pi-server'
+  }
+  return icons[props.selectedType] || 'pi pi-file'
+})
 
-    // Navigation handlers
-    const handleNavigatePrev = () => {
-      if (hasPrev.value) {
-        const newIndex = props.selectedIndex - 1
-        const newItem = props.currentItems[newIndex]
-        emit('navigate', { item: newItem, index: newIndex })
-      }
-    }
+// Computed: type color
+const typeColor = computed(() => {
+  // For agents, use the defined color if available
+  if (props.selectedType === 'agents' && props.selectedItem?.color) {
+    return props.selectedItem.color
+  }
 
-    const handleNavigateNext = () => {
-      if (hasNext.value) {
-        const newIndex = props.selectedIndex + 1
-        const newItem = props.currentItems[newIndex]
-        emit('navigate', { item: newItem, index: newIndex })
-      }
-    }
+  // Otherwise use default type colors
+  const colors = {
+    agents: 'var(--color-agents)',
+    commands: 'var(--color-commands)',
+    hooks: 'var(--color-hooks)',
+    mcp: 'var(--color-mcp)'
+  }
+  return colors[props.selectedType] || 'var(--text-primary)'
+})
 
-    return {
-      hasPrev,
-      hasNext,
-      typeIcon,
-      typeColor,
-      handleNavigatePrev,
-      handleNavigateNext
-    }
+// Navigation handlers
+const handleNavigatePrev = () => {
+  if (hasPrev.value) {
+    const newIndex = props.selectedIndex - 1
+    const newItem = props.currentItems[newIndex]
+    emit('navigate', { item: newItem, index: newIndex })
+  }
+}
+
+const handleNavigateNext = () => {
+  if (hasNext.value) {
+    const newIndex = props.selectedIndex + 1
+    const newItem = props.currentItems[newIndex]
+    emit('navigate', { item: newItem, index: newIndex })
   }
 }
 </script>
@@ -218,8 +211,8 @@ export default {
   min-width: 500px;
   max-width: 75vw;
   height: 100vh;
-  background: var(--surface-card);
-  border-left: 1px solid var(--surface-border);
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-primary);
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -238,7 +231,7 @@ export default {
 
 .sidebar-header {
   padding: 1.5rem;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--border-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -273,7 +266,7 @@ export default {
   height: 32px;
   padding: 0;
   background: transparent;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--border-primary);
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -290,8 +283,8 @@ export default {
 
 .nav-btn:hover:not(:disabled),
 .close-btn:hover {
-  background: var(--surface-ground);
-  border-color: var(--primary-color);
+  background: var(--bg-primary);
+  border-color: var(--color-primary);
 }
 
 .nav-btn:disabled {
@@ -330,19 +323,19 @@ export default {
 }
 
 .sidebar-section code {
-  background: var(--surface-ground);
+  background: var(--bg-primary);
   padding: 0.2rem 0.4rem;
   border-radius: 3px;
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
-  color: var(--primary-color);
+  color: var(--color-primary);
 }
 
 .content-preview {
-  background: var(--surface-ground);
+  background: var(--bg-primary);
   padding: 1rem;
   border-radius: 4px;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--border-primary);
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
   white-space: pre-wrap;
@@ -354,13 +347,13 @@ export default {
 
 .sidebar-footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--surface-border);
+  border-top: 1px solid var(--border-primary);
 }
 
 .action-btn {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -374,7 +367,7 @@ export default {
 }
 
 .action-btn:hover {
-  background: var(--primary-color-dark);
+  background: var(--color-primary-hover);
 }
 
 /* Responsive */

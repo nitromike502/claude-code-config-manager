@@ -138,5 +138,5 @@ npm run test:frontend -- tests/e2e/102-user-flow-configuration-viewing.spec.js
 ## Contact
 
 For questions about test migration strategy:
-- See: `/home/claude/manager/docs/PRD-Phase2-Vite-Migration.md`
+- See: `/home/claude/manager/docs/prd/PRD-Phase2-Vite-Migration.md`
 - See: `/home/claude/manager/.claude/templates/test-template.md`

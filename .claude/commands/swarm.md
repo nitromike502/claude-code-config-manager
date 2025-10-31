@@ -1,3 +1,11 @@
+---
+name: swarm
+description: Launch the subagent-orchestrator to coordinate Claude Code Manager development through a structured workflow with Epic/Story/Task breakdown
+tools: Task
+argument-hint: "[ticket] [additional-instructions] - Optional ticket ID (e.g., HIGH-005) and/or custom instructions"
+color: purple
+---
+
 # SWARM Orchestrator
 # Multi-Agent Claude Code Manager Development Coordinator
 
@@ -7,28 +15,68 @@ Launch the subagent-orchestrator to coordinate Claude Code Manager development t
 
 <context>
 **Project**: Claude Code Manager - Web-based tool for managing Claude Code projects
-**Tech Stack**: Node.js + Express (backend), Vue 3 + PrimeVue (frontend, CDN)
+**Tech Stack**: Node.js + Express (backend), Vue 3 + Vite (frontend SPA)
 **Architecture**: Local web server on port 8420, live file system reads
 
+**Current Phase**: Phase 2.2 - Cleanup & Optimization for Production Release
 **Development Method**: SWARM (Simultaneous Work And Resource Management)
 **Team Structure**: See docs/Subagent-Team.md for complete team definitions
 
+**Ticket Storage**: Local markdown documents in `docs/tickets/phase-*/*.md`
+- Phase 2.2 cleanup tickets: `docs/tickets/phase-2.2/`
+- Epics within phase directories: `PHASE-2.X-EPIC.md`
+- Individual tickets: `CRITICAL-001-*.md`, `HIGH-005-*.md`, etc.
+
 **Available PRDs**:
-- docs/PRD-Phase1-MVP.md (reviewed & approved)
-- docs/PRD-Phase2-*.md (future phases, not reviewed)
+- docs/prd/PRD-Phase1-MVP.md (reviewed & approved)
+- docs/prd/PRD-Phase2-Vite-Migration.md (Phase 2 complete - Architecture modernization)
+- docs/prd/PRD-Phase2-Extension-Component-Refactoring.md (Phase 2.1 - Planned)
+- docs/prd/PRD-Phase3-Subagents.md (Phase 3 - Planned)
 </context>
 
 <execution>
 Invoke the `subagent-orchestrator` agent to:
 
-## Step 1: Check for Existing Tickets
+## Step 1: Parse Arguments
+
+**Arguments provided:** `$ARGUMENTS`
+
+### Parse Ticket ID and Instructions
+
+1. **If `$ARGUMENTS` is empty:**
+   - ticket_id = None
+   - instructions = None
+   - Proceed with current auto-select behavior (show ticket options in Step 3)
+
+2. **If `$ARGUMENTS` is not empty:**
+   - Extract first token from `$ARGUMENTS`
+   - Check if first token matches pattern `^[a-zA-Z]+-[0-9]+$`
+
+   **If matches (valid ticket ID):**
+   - ticket_id = first token (e.g., "HIGH-005", "CRITICAL-001")
+   - instructions = everything after first token (may be empty)
+
+   **If doesn't match (no valid ticket ID):**
+   - ticket_id = None
+   - instructions = all of `$ARGUMENTS`
+
+3. **Validation:**
+   - If first token looks like a ticket ID but doesn't match pattern exactly:
+     - Inform user of correct format: `[PREFIX]-[NUMBER]` (e.g., HIGH-005, ABC-123)
+     - Provide helpful feedback on what was received vs expected
+
+4. **Result Summary:**
+   - **Ticket ID:** {display ticket_id or "None - will show options"}
+   - **Instructions:** {display instructions or "None"}
+
+## Step 2: Check for Existing Tickets
 1. Check if TodoWrite tickets/tasks already exist from previous `/plan` execution
 2. Review any existing tickets to understand current work scope and status
 3. Determine if tickets are sufficient to proceed with development
 
-## Step 2: Auto-Plan if Needed (ENFORCE SMALL FEATURE SIZING)
+## Step 3: Auto-Plan if Needed (ENFORCE SMALL FEATURE SIZING)
 If NO tickets exist or tickets are stale/completed:
-1. Assess current project state (read CLAUDE.md, workflow-analysis-20251007.md, git status)
+1. Assess current project state (read CLAUDE.md, git status)
 2. Determine current phase and what work comes next
 3. Identify appropriate PRD sections for planning
 4. Create comprehensive Epic/Story/Task breakdown with TodoWrite tool:
@@ -43,11 +91,27 @@ If NO tickets exist or tickets are stale/completed:
 
 **Note**: This auto-planning mirrors the `/plan` command functionality, ensuring you can run `/swarm` at any time.
 
-## Step 3: Ticket Selection & Dependency Analysis (PROPOSE OPTIONS TO USER)
-Before starting any development work:
+## Step 4: Ticket Selection & Dependency Analysis
+
+**Ticket Selection Mode:** {Based on Step 1 parsing results}
+
+### If Ticket ID Provided (from Step 1):
+- **Target Ticket:** {ticket_id from Step 1}
+- **Skip ticket options menu** - proceed directly to this ticket
+- **Validate ticket exists:** Check that ticket file exists in `docs/tickets/` directories
+- **If ticket not found:**
+  - List available tickets matching the prefix (e.g., all HIGH-* tickets)
+  - Ask user to confirm correct ticket ID
+- **If ticket found:** Load ticket details and proceed to Step 5
+
+### If NO Ticket ID Provided (from Step 1):
+Present ticket options to user as normal:
+
 1. **Invoke project-manager agent** to analyze ticket dependencies and priorities
 2. Project manager should:
-   - Scan all pending tickets in `docs/tickets/epic-*/TASK-*.md` (organized by epic subdirectories)
+   - Scan all pending tickets in phase directories: `docs/tickets/phase-2.2/`, `docs/tickets/phase-2.1/`, etc.
+   - Look for Epics like: `PHASE-2.2-EPIC.md`, `PHASE-2.1-EPIC.md` (organized within phase subdirectories)
+   - Look for individual tickets: `CRITICAL-001-*.md`, `HIGH-005-*.md`, etc. (status markers in filenames)
    - Check git status for any pending PRs awaiting merge
    - Identify ticket dependencies (which tickets block others)
    - Determine which tickets are independent and could be worked on in parallel
@@ -66,7 +130,22 @@ Before starting any development work:
 5. **WAIT FOR USER SELECTION** - Do not proceed until user chooses an option
 6. User may also specify custom ticket selection
 
-## Step 4: Execute Development Workflow (ONE TICKET = ONE BRANCH = ONE PR)
+### Additional Instructions (from Step 1):
+**User Instructions:** {instructions from Step 1, or "None"}
+
+{If instructions provided:}
+Apply these instructions when:
+- Selecting tickets (if no ticket_id provided)
+- Prioritizing work within the ticket
+- Choosing development approach
+- Any other context the user intended
+
+Instructions: "{instructions}"
+
+{If no instructions:}
+(No additional instructions provided - use standard workflow)
+
+## Step 5: Execute Development Workflow (ONE TICKET = ONE BRANCH = ONE PR)
 After user selects ticket(s) to work on:
 
 **For EACH selected ticket (process sequentially or delegate to parallel agents):**
@@ -100,7 +179,7 @@ After user selects ticket(s) to work on:
 - STOP and present all PR URLs to user
 - Wait for user approval/merge before continuing
 
-## Step 5: Deliver Results & Wait for PR Approval
+## Step 6: Deliver Results & Wait for PR Approval
 1. Provide summary of completed work for each ticket
 2. Show all PR URLs created (one per ticket)
 3. Explain which tickets are complete and awaiting review
@@ -118,3 +197,45 @@ After user selects ticket(s) to work on:
 
 The orchestrator intelligently handles both planning and execution. It proposes ticket options with dependency analysis, waits for your selection, executes work with parallel subagents where appropriate (within each ticket), creates one PR per ticket, and stops for your review.
 </execution>
+
+## Examples
+
+### Work on specific ticket with instructions:
+```
+/swarm HIGH-005 Use the approval workflow for this ticket
+```
+- Parses: ticket_id="HIGH-005", instructions="Use the approval workflow for this ticket"
+- Skips ticket options menu, goes directly to HIGH-005
+- Applies instructions to development approach
+
+### Work on specific ticket without instructions:
+```
+/swarm CRITICAL-001
+```
+- Parses: ticket_id="CRITICAL-001", instructions=None
+- Skips ticket options menu, goes directly to CRITICAL-001
+- Uses standard workflow
+
+### Guide ticket selection without specifying ticket:
+```
+/swarm prioritize bug tickets in the options
+```
+- Parses: ticket_id=None, instructions="prioritize bug tickets in the options"
+- Shows ticket options menu as normal
+- Project manager considers instructions when presenting options
+
+### Provide workflow instructions without ticket:
+```
+/swarm use rapid development strategy
+```
+- Parses: ticket_id=None, instructions="use rapid development strategy"
+- Shows ticket options menu as normal
+- Instructions applied during development workflow
+
+### Standard behavior (show options):
+```
+/swarm
+```
+- Parses: ticket_id=None, instructions=None
+- Shows ticket options menu as normal
+- Standard workflow throughout

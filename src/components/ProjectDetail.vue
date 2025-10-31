@@ -156,11 +156,11 @@
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { projectsAPI } from '../frontend/js/api'
-import ConfigCard from './cards/ConfigCard.vue'
-import ConfigItemList from './cards/ConfigItemList.vue'
-import BreadcrumbNavigation from './common/BreadcrumbNavigation.vue'
-import ConfigDetailSidebar from './sidebars/ConfigDetailSidebar.vue'
+import * as api from '@/api/client'
+import ConfigCard from '@/components/cards/ConfigCard.vue'
+import ConfigItemList from '@/components/cards/ConfigItemList.vue'
+import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
+import ConfigDetailSidebar from '@/components/sidebars/ConfigDetailSidebar.vue'
 
 export default {
   name: 'ProjectDetail',
@@ -308,7 +308,7 @@ export default {
     const loadAgents = async () => {
       loadingAgents.value = true
       try {
-        const data = await projectsAPI.getAgents(projectId.value)
+        const data = await api.getProjectAgents(projectId.value)
         agents.value = data.agents || []
         return data
       } catch (err) {
@@ -323,7 +323,7 @@ export default {
     const loadCommands = async () => {
       loadingCommands.value = true
       try {
-        const data = await projectsAPI.getCommands(projectId.value)
+        const data = await api.getProjectCommands(projectId.value)
         commands.value = data.commands || []
         return data
       } catch (err) {
@@ -338,7 +338,7 @@ export default {
     const loadHooks = async () => {
       loadingHooks.value = true
       try {
-        const data = await projectsAPI.getHooks(projectId.value)
+        const data = await api.getProjectHooks(projectId.value)
         hooks.value = data.hooks || []
         return data
       } catch (err) {
@@ -353,7 +353,7 @@ export default {
     const loadMCP = async () => {
       loadingMCP.value = true
       try {
-        const data = await projectsAPI.getMCP(projectId.value)
+        const data = await api.getProjectMcp(projectId.value)
         mcpServers.value = data.mcp || []
         return data
       } catch (err) {
@@ -497,7 +497,7 @@ export default {
 
 .project-info-title i {
   font-size: 1.75rem;
-  color: var(--primary-color);
+  color: var(--color-primary);
 }
 
 .project-info-subtitle {
@@ -521,14 +521,14 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--primary-color);
+  color: var(--color-primary);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .breadcrumb-link:hover {
-  color: var(--primary-color-dark);
+  color: var(--color-primary-hover);
   text-decoration: underline;
 }
 
@@ -553,8 +553,8 @@ export default {
 }
 
 .spinner {
-  border: 3px solid var(--surface-border);
-  border-top: 3px solid var(--primary-color);
+  border: 3px solid var(--border-primary);
+  border-top: 3px solid var(--color-primary);
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -575,8 +575,8 @@ export default {
 .error-container {
   text-align: center;
   padding: 3rem 1rem;
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   margin-top: 2rem;
 }
@@ -595,7 +595,7 @@ export default {
 
 .retry-btn {
   padding: 0.75rem 1.5rem;
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -608,7 +608,7 @@ export default {
 }
 
 .retry-btn:hover {
-  background: var(--primary-color-dark);
+  background: var(--color-primary-hover);
 }
 
 .retry-btn i {
@@ -671,8 +671,8 @@ export default {
 }
 
 .config-card {
-  background: var(--surface-card);
-  border: 1px solid var(--surface-border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
   border-radius: 8px;
   padding: 1.5rem;
   display: flex;
@@ -686,7 +686,7 @@ export default {
   align-items: center;
   padding-bottom: 0.75rem;
   margin-bottom: 1rem;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .config-header-left {
@@ -709,9 +709,9 @@ export default {
   width: 100%;
   padding: 0.75rem 0;
   background: transparent;
-  color: var(--primary-color);
+  color: var(--color-primary);
   border: none;
-  border-top: 1px solid var(--surface-border);
+  border-top: 1px solid var(--border-primary);
   border-radius: 0;
   cursor: pointer;
   font-size: 0.85rem;
@@ -721,7 +721,7 @@ export default {
 }
 
 .expand-btn:hover {
-  background: var(--surface-ground);
+  background: var(--bg-primary);
 }
 
 /* Loading State */
@@ -732,7 +732,7 @@ export default {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, var(--surface-ground) 0%, var(--surface-border) 50%, var(--surface-ground) 100%);
+  background: linear-gradient(90deg, var(--bg-primary) 0%, var(--border-primary) 50%, var(--bg-primary) 100%);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s ease-in-out infinite;
   height: 60px;
@@ -776,8 +776,8 @@ export default {
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: var(--surface-ground);
-  border: 1px solid var(--surface-border);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
@@ -785,7 +785,7 @@ export default {
 }
 
 .config-item:hover {
-  border-color: var(--primary-color);
+  border-color: var(--color-primary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -814,8 +814,8 @@ export default {
 .view-details-btn {
   padding: 0.5rem 1rem;
   background: transparent;
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.85rem;
@@ -827,7 +827,7 @@ export default {
 }
 
 .view-details-btn:hover {
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
 }
 
@@ -861,8 +861,8 @@ export default {
   min-width: 500px;
   max-width: 75vw;
   height: 100vh;
-  background: var(--surface-card);
-  border-left: 1px solid var(--surface-border);
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-primary);
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -881,7 +881,7 @@ export default {
 
 .sidebar-header {
   padding: 1.5rem;
-  border-bottom: 1px solid var(--surface-border);
+  border-bottom: 1px solid var(--border-primary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -916,7 +916,7 @@ export default {
   height: 32px;
   padding: 0;
   background: transparent;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--border-primary);
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -933,8 +933,8 @@ export default {
 
 .nav-btn:hover:not(:disabled),
 .close-btn:hover {
-  background: var(--surface-ground);
-  border-color: var(--primary-color);
+  background: var(--bg-primary);
+  border-color: var(--color-primary);
 }
 
 .nav-btn:disabled {
@@ -973,19 +973,19 @@ export default {
 }
 
 .sidebar-section code {
-  background: var(--surface-ground);
+  background: var(--bg-primary);
   padding: 0.2rem 0.4rem;
   border-radius: 3px;
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
-  color: var(--primary-color);
+  color: var(--color-primary);
 }
 
 .content-preview {
-  background: var(--surface-ground);
+  background: var(--bg-primary);
   padding: 1rem;
   border-radius: 4px;
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--border-primary);
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
   white-space: pre-wrap;
@@ -997,13 +997,13 @@ export default {
 
 .sidebar-footer {
   padding: 1rem 1.5rem;
-  border-top: 1px solid var(--surface-border);
+  border-top: 1px solid var(--border-primary);
 }
 
 .action-btn {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -1017,7 +1017,7 @@ export default {
 }
 
 .action-btn:hover {
-  background: var(--primary-color-dark);
+  background: var(--color-primary-hover);
 }
 
 /* Responsive */

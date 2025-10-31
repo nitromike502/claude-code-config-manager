@@ -173,8 +173,8 @@ When invoked, you must follow these steps:
 - Git-workflow-specialist handles final commits after approval
 
 **Reference Documents:**
-- `/home/claude/manager/docs/PRD-Phase1-MVP.md` - Complete MVP requirements
-- `/home/claude/manager/CLAUDE.md` - Project overview and structure
+- `docs/prd/PRD-Phase1-MVP.md` - Complete MVP requirements
+- `CLAUDE.md` - Project overview and structure
 
 ## Report / Response
 

@@ -5,7 +5,7 @@
     <p>{{ message }}</p>
     <button
       v-if="actionText"
-      @click="$emit('action')"
+      @click="emit('action')"
       class="action-btn"
     >
       <i v-if="actionIcon" :class="actionIcon"></i>
@@ -14,35 +14,35 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'EmptyState',
-  props: {
-    icon: {
-      type: String,
-      required: true,
-      validator: (value) => value.includes('pi-')
-    },
-    title: {
-      type: String,
-      required: true
-    },
-    message: {
-      type: String,
-      default: 'No items configured'
-    },
-    actionText: {
-      type: String,
-      default: null
-    },
-    actionIcon: {
-      type: String,
-      default: null,
-      validator: (value) => !value || value.includes('pi-')
-    }
+<script setup>
+defineProps({
+  icon: {
+    type: String,
+    required: true,
+    validator: (value) => value.includes('pi-')
   },
-  emits: ['action']
-}
+  title: {
+    type: String,
+    required: true
+  },
+  message: {
+    type: String,
+    default: 'No items configured'
+  },
+  actionText: {
+    type: String,
+    default: null
+  },
+  actionIcon: {
+    type: String,
+    default: null,
+    validator: (value) => !value || value.includes('pi-')
+  }
+})
+
+const emit = defineEmits({
+  action: null
+})
 </script>
 
 <style scoped>
@@ -79,7 +79,7 @@ export default {
 .action-btn {
   margin-top: 0.5rem;
   padding: 0.625rem 1.25rem;
-  background: var(--primary-color);
+  background: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -93,7 +93,7 @@ export default {
 }
 
 .action-btn:hover {
-  background: var(--primary-color-dark);
+  background: var(--color-primary-hover);
 }
 
 .action-btn i {

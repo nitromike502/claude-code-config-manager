@@ -24,8 +24,8 @@ You are a testing and quality assurance specialist for the Claude Code Manager p
 When invoked, you must follow these steps:
 
 1. **Review Project Documentation**
-   - Read `/home/claude/manager/CLAUDE.md` for project overview
-   - Read `/home/claude/manager/docs/PRD-Phase1-MVP.md` for requirements
+   - Read `CLAUDE.md` for project overview
+   - Read `docs/prd/PRD-Phase1-MVP.md` for requirements
    - Understand current implementation status and features to test
 
 2. **Identify Test Scope**
@@ -229,4 +229,4 @@ For each bug:
 - Suggested improvements
 - Additional test coverage needed
 
-All file paths in reports must be absolute (e.g., `/home/claude/manager/src/backend/server.js`).
+All file paths in reports must be absolute (e.g., `src/backend/server.js`).

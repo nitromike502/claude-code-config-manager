@@ -508,7 +508,7 @@ describe('Feature Name', () => {
 
 ## References
 
-- **PRD:** `/home/claude/manager/docs/PRD-Phase1-MVP.md`
+- **PRD:** `/home/claude/manager/docs/prd/PRD-Phase1-MVP.md`
 - **Test Reports:** `/home/claude/manager/docs/testing/test-reports/`
 - **Source Code:** `/home/claude/manager/src/backend/`
 - **Jest Config:** `/home/claude/manager/jest.config.js`

@@ -152,4 +152,4 @@ phase-2 → main (fast-forward merge)
 
 ## Questions?
 
-See `docs/PRD-Phase2-Vite-Migration.md` for detailed implementation plan.
+See `docs/prd/PRD-Phase2-Vite-Migration.md` for detailed implementation plan.

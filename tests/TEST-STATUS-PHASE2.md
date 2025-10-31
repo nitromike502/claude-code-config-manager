@@ -166,7 +166,7 @@ To open last HTML report run:
 ## References
 
 - **Migration Notes:** `tests/e2e/PHASE2-MIGRATION-NOTES.md`
-- **Phase 2 PRD:** `docs/PRD-Phase2-Vite-Migration.md`
+- **Phase 2 PRD:** `docs/prd/PRD-Phase2-Vite-Migration.md`
 - **Test Template:** `.claude/templates/test-template.md`
 - **Router Config:** `src/router/index.js`
 - **Playwright Config:** `playwright.config.js`
