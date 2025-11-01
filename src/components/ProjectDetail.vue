@@ -288,6 +288,8 @@ export default {
           errorMessage.value = 'Request timed out. Please try again.'
         } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
           errorMessage.value = 'Failed to connect to server. Please check your connection.'
+        } else if (err.message.includes('400')) {
+          errorMessage.value = 'Project not found'
         } else if (err.message.includes('404')) {
           errorMessage.value = 'Project not found'
         } else if (err.message.includes('500')) {
