@@ -223,12 +223,93 @@ To install the pre-push hook that enforces this workflow:
 
 This script copies the pre-push hook to `.git/hooks/` and ensures it's executable.
 
+## Pull Request Guidelines
+
+### PR Template
+
+When creating pull requests, use this template for consistency:
+
+```markdown
+## Summary
+[Brief description of changes and their purpose]
+
+## Changes Made
+- [Change 1]
+- [Change 2]
+- [Change 3]
+
+## Testing Performed
+- [ ] All tests passing (npm test)
+- [ ] Manual testing completed
+- [ ] No breaking changes
+- [ ] Documentation updated (if applicable)
+
+## Screenshots (if applicable)
+[Add UI screenshots or visual changes]
+
+## Code Review
+- [ ] Self-review completed
+- [ ] Code follows project conventions
+- [ ] All acceptance criteria met
+
+## Related Issues
+Closes #[issue-number]
+Related to #[issue-number]
+```
+
+### PR Creation Process
+
+1. **Ensure all tests pass** before creating PR
+2. **Stay on your feature branch** when running `gh pr create`
+3. **Use descriptive title** following commit message format
+4. **Fill out PR template completely**
+5. **Request review** from appropriate team members
+6. **Respond to feedback** promptly
+
+## Agent-Based Workflow Architecture
+
+This project uses specialized Claude Code subagents for different aspects of development:
+
+### Separation of Concerns
+
+**Development Agents:**
+- `backend-architect` - Backend implementation
+- `frontend-developer` - Frontend implementation
+- `data-parser` - Data parsing and utilities
+- `test-automation-engineer` - Test implementation
+
+**Coordination Agents:**
+- `git-workflow-specialist` - All git operations (commits, branches, PRs, merges)
+- `subagent-orchestrator` - Task delegation and workflow coordination
+- `code-reviewer` - Code quality and standards review
+- `documentation-engineer` - Documentation updates
+
+### Workflow Sequence
+
+1. **Orchestrator** assigns task to appropriate developer agent
+2. **Developer** implements feature AND tests immediately (no git operations)
+3. **Test Engineer** runs full test suite (if needed)
+4. **Documentation Engineer** updates docs (if applicable)
+5. **Code Reviewer** reviews implementation and tests
+6. **Git Specialist** handles all git operations (commits, PRs)
+
+### Benefits
+
+- **Single Source of Truth** - All git operations centralized with git-workflow-specialist
+- **Consistent Standards** - Each agent follows specialized best practices
+- **Clear Responsibilities** - Developers focus on implementation, not git mechanics
+- **Better Code Review** - Dedicated review agent catches issues early
+- **Audit Trail** - All operations traceable to specific agents
+
+For SWARM-based development workflows, use the `/swarm` command to launch coordinated multi-agent tasks.
+
 ## Related Documentation
 
 - **Workflow Analysis (October 7, 2025):** `docs/workflow-analysis-20251007.md` - Critical incident analysis that led to this workflow
 - **Parallel Execution Pattern:** `docs/workflow-patterns/PARALLEL-EXECUTION.md` - Detailed guide for parallel task execution
 - **Contributing Guide:** `CONTRIBUTING.md` - General contribution guidelines
 - **Project Overview:** `CLAUDE.md` - Complete project documentation
+- **Subagent Coordination:** `.claude/agents/` - Individual agent specifications
 
 ## Quick Reference
 

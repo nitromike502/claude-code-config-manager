@@ -40,14 +40,13 @@ Location: [`/docs/wireframes/`](wireframes/)
 - [User/Global View](wireframes/03-user-global-view.md) - Global config specs
 - Additional wireframes for components and interactions
 
-### Tickets & Work Items
-Location: [`/docs/tickets/`](tickets/)
-- [Phase 1 Tickets](tickets/phase-1/) - MVP implementation (archived)
-- [Phase 2 Tickets](tickets/phase-2/) - Vite migration (archived)
-- [Phase 2.2 Tickets](tickets/phase-2.2/) - Bug fixes & optimization (ready)
-- [Bug Tracking](tickets/bugs/) - All bug reports
+### Development History
+Location: [`/docs/sessions/`](sessions/)
+- [Session Index](sessions/INDEX.md) - Complete development history
+- [Workflow Analyses](sessions/workflow-analyses/) - Pattern analyses
+- [Session Summaries](sessions/summaries/) - Individual reports
 
-**Active Phase:** Phase 2.2 - Production quality improvements and bug fixes
+**Current Status:** Phase 2.3 Complete - Production ready for NPM publication
 
 ### Session History & Workflow Analyses
 Location: [`/docs/sessions/`](sessions/)
@@ -76,10 +75,10 @@ Location: [`/docs/sessions/`](sessions/)
 4. PRDs: [/docs/prd/](prd/) - Feature specifications
 
 ### For Project Managers
-1. Current Phase: Phase 2.2 - Production quality improvements (see [tickets/phase-2.2/](tickets/phase-2.2/))
-2. Tickets: [/docs/tickets/phase-2.2/](tickets/phase-2.2/) - Detailed tasks
-3. Session History: [/docs/sessions/INDEX.md](sessions/INDEX.md) - Progress tracking
-4. Test Reports: [/docs/testing/test-reports/](testing/test-reports/) - Quality metrics
+1. Current Phase: Phase 2.3 Complete - Production ready
+2. Session History: [/docs/sessions/INDEX.md](sessions/INDEX.md) - Progress tracking
+3. Test Reports: [/docs/testing/test-reports/](testing/test-reports/) - Quality metrics
+4. Roadmap: [/docs/guides/ROADMAP.md](guides/ROADMAP.md) - Future phases
 
 ### For Designers
 1. Wireframes: [/docs/wireframes/](wireframes/) - All UI specifications
@@ -96,25 +95,25 @@ Location: [`/docs/sessions/`](sessions/)
 
 ## Quick Reference
 
-### Current Status (Phase 2.2)
-- **Test Coverage:** 583 tests (100% pass rate)
-- **Backend Tests:** 270 Jest tests
-- **Frontend Tests:** 313 Playwright tests
-- **Current Branch:** phase-2.2
-- **Ready for:** Phase 2.2 implementation (bug fixes & optimization)
+### Current Status (Phase 2.3 Complete)
+- **Test Coverage:** 879 tests (100% pass rate)
+- **Backend Tests:** 276 Jest tests
+- **Frontend Tests:** 603 Playwright tests
+- **Current Branch:** phase-2.3
+- **Status:** Production ready for NPM publication
 
 ### Project Health
 - **Architecture:** ✅ Modern (Vite + Vue 3 + Vue Router + Pinia)
-- **Documentation:** ✅ Complete (150+ files, verified October 2025)
-- **Test Suite:** ✅ Excellent (100% pass rate)
-- **Production Ready:** ✅ Phase 2 complete, Phase 2.2 tickets ready
+- **Documentation:** ✅ Complete (verified November 2025)
+- **Test Suite:** ✅ Excellent (879 tests, 100% pass rate)
+- **Production Ready:** ✅ Phase 2.3 complete, NPM publication ready
 
 ### Key Files
 - `/home/claude/manager/CLAUDE.md` - Main development documentation
 - `/home/claude/manager/README.md` - User-facing project README
 - `/home/claude/manager/docs/prd/` - All requirements documents
-- `/home/claude/manager/docs/tickets/phase-2.2/` - Active work tickets
 - `/home/claude/manager/docs/sessions/INDEX.md` - Development history
+- `/home/claude/manager/docs/guides/ROADMAP.md` - Future development plans
 
 ---
 
@@ -122,9 +121,9 @@ Location: [`/docs/sessions/`](sessions/)
 
 ### File Naming
 - PRDs: `PRD-Phase#-Name.md`
-- Tickets: `TYPE-###-description.md` (e.g., `CRITICAL-001-fix-command-tools.md`)
 - Tests: `##-test-name.spec.js` (numbered by category)
 - Wireframes: `##-name.md` (numbered for order)
+- Session summaries: `SESSION-SUMMARY-YYYYMMDD.md`
 
 ### Documentation Updates
 - Always update date/timestamp when modifying
