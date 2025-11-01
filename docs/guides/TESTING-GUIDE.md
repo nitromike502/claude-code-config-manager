@@ -92,13 +92,13 @@ npm test
 ## Test Coverage
 
 Current test coverage:
-- **Backend Tests:** 270 Jest tests (100% pass rate)
-- **Frontend Tests:** 313 Playwright tests (100% pass rate)
-  - 90 E2E integration tests
-  - 122 Component tests
-  - 44 Responsive design tests
-  - 57 Visual regression tests
-- **Total:** 583 tests (100% pass rate)
+- **Backend Tests:** 276 Jest tests (100% pass rate)
+- **Frontend Tests:** 603 Playwright tests (100% pass rate)
+  - E2E integration tests
+  - Component tests
+  - Responsive design tests
+  - Visual regression tests
+- **Total:** 879 tests (100% pass rate)
 
 ## Best Practices
 

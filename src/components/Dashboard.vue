@@ -91,7 +91,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
 import * as api from '@/api/client'
@@ -193,6 +193,11 @@ export default {
       }
     }
 
+    // Header search event handler (extracted for cleanup)
+    const handleHeaderSearch = (e) => {
+      projectsStore.setSearchQuery(e.detail)
+    }
+
     // Listen for search from header (backwards compat with Phase 1)
     onMounted(async () => {
       if (!projectsStore.projects.length) {
@@ -202,9 +207,12 @@ export default {
         await loadUserConfig()
       }
 
-      window.addEventListener('header-search', (e) => {
-        projectsStore.setSearchQuery(e.detail)
-      })
+      window.addEventListener('header-search', handleHeaderSearch)
+    })
+
+    // Cleanup event listener on unmount to prevent memory leak
+    onBeforeUnmount(() => {
+      window.removeEventListener('header-search', handleHeaderSearch)
     })
 
     return {

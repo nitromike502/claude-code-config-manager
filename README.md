@@ -20,8 +20,8 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 - **Gray Matter** - YAML frontmatter parser for agents and commands
 
 ### Testing
-- **Jest 30.2.0** - Backend API and parser testing (270 tests, 100% pass rate)
-- **Playwright 1.56.0** - Frontend E2E and component testing (311 tests, 100% pass rate)
+- **Jest 30.2.0** - Backend API and parser testing (276 tests, 100% pass rate)
+- **Playwright 1.56.0** - Frontend E2E and component testing (603 tests, 100% pass rate)
 
 ### Development
 - **Vite Dev Server** - < 1 second startup, instant HMR
@@ -53,9 +53,9 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 - **Instant Navigation** - No page reloads between views
 
 ### Testing
-- **581 Tests** - 100% pass rate across all test suites
-  - 270 Backend tests (Jest) - API endpoints, parsers, error handling
-  - 311 Frontend tests (Playwright) - E2E (90), Component (120), Responsive (44), Visual (57)
+- **879 Tests** - 100% pass rate across all test suites
+  - 276 Backend tests (Jest) - API endpoints, parsers, error handling
+  - 603 Frontend tests (Playwright) - E2E, Component, Responsive, and Visual tests
 - **Cross-Browser** - Verified on Chromium, Firefox, and WebKit
 - **Automated Quality** - Comprehensive test coverage with continuous validation
 - **Test Reports** - Saved to `docs/testing/test-reports/`

@@ -165,17 +165,13 @@ const typeColor = computed(() => {
 // Navigation handlers
 const handleNavigatePrev = () => {
   if (hasPrev.value) {
-    const newIndex = props.selectedIndex - 1
-    const newItem = props.currentItems[newIndex]
-    emit('navigate', { item: newItem, index: newIndex })
+    emit('navigate', 'prev')
   }
 }
 
 const handleNavigateNext = () => {
   if (hasNext.value) {
-    const newIndex = props.selectedIndex + 1
-    const newItem = props.currentItems[newIndex]
-    emit('navigate', { item: newItem, index: newIndex })
+    emit('navigate', 'next')
   }
 }
 </script>

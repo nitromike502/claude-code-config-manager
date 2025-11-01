@@ -8,6 +8,7 @@
   },
   "files": [
     "bin/",
+    "dist/",
     "src/",
     "README.md",
     "LICENSE"
@@ -16,6 +17,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "prepublishOnly": "npm run build",
     "start": "node src/backend/server.js",
     "dev:backend": "node --watch src/backend/server.js",
     "server:check": "./scripts/ensure-server-running.sh",
