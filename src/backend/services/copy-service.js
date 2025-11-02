@@ -210,11 +210,38 @@ class CopyService {
    *
    * @param {string} sourcePath - Absolute path to source file
    * @param {string} targetPath - Absolute path to target location
-   * @returns {Promise<Object>} Object with { hasConflict: boolean, existingFile: string|null }
+   * @returns {Promise<Object|null>} Conflict object with timestamps if file exists, null otherwise
+   * @returns {Promise<{targetPath: string, sourceModified: string, targetModified: string}>}
    */
   async detectConflict(sourcePath, targetPath) {
-    // TODO: Implement in TASK-3.1.3
-    throw new Error('Not implemented');
+    try {
+      // Check if target file exists
+      const targetExists = await fs.access(targetPath)
+        .then(() => true)
+        .catch(() => false);
+
+      // No conflict if target doesn't exist
+      if (!targetExists) {
+        return null;
+      }
+
+      // Get modification times for both source and target
+      const [sourceStat, targetStat] = await Promise.all([
+        fs.stat(sourcePath),
+        fs.stat(targetPath)
+      ]);
+
+      // Return conflict information with ISO timestamps
+      return {
+        targetPath,
+        sourceModified: sourceStat.mtime.toISOString(),
+        targetModified: targetStat.mtime.toISOString()
+      };
+    } catch (error) {
+      // Gracefully handle any errors (permissions, stat failures, etc.)
+      // Return null to indicate no conflict (safe default)
+      return null;
+    }
   }
 
   /**
