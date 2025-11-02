@@ -52,11 +52,18 @@ The **agile-ticket-manager** subagent serves as the central ticketing system for
 ```
 
 ### Status Workflow
-1. **backlog** → Not prioritized
-2. **todo** → Prioritized and ready
-3. **in-progress** → Being worked on
-4. **review** → Awaiting code review
-5. **done** → Completed and merged
+1. **backlog** → Not prioritized, ticket exists but not scheduled
+2. **todo** → Prioritized and ready to start
+3. **in-progress** → Developer actively working on implementation
+4. **review** → Implementation complete, awaiting user code review
+5. **done** → User approved, PR merged, ticket complete
+
+**Status Transition Rules:**
+- **backlog → todo:** Orchestrator assigns ticket to current sprint/iteration
+- **todo → in-progress:** Developer starts work (orchestrator must update status BEFORE work begins)
+- **in-progress → review:** Developer completes implementation (orchestrator updates when work ready for review)
+- **review → done:** User approves code review and PR is merged
+- **review → in-progress:** User requests changes during code review (ticket goes back for rework)
 
 ---
 
@@ -112,10 +119,11 @@ Project Manager invokes agile-ticket-manager:
 1. **Ticket Discovery:** Ask ticket manager "What tickets are in `todo` status?"
 2. **Ticket Selection:** Present options to user based on dependencies
 3. **Work Assignment:** Assign tickets to appropriate agents
-4. **Status Tracking:** Request ticket manager to update status:
-   - Task assigned → Move to `in-progress`
-   - Task completed → Move to `review`
-   - PR merged → Move to `done`
+4. **Status Tracking:** Request ticket manager to update status at key transitions:
+   - **BEFORE development starts** → Move ticket from `todo` to `in-progress`
+   - **AFTER implementation complete** → Move ticket from `in-progress` to `review`
+   - **AFTER user approves review** → Move ticket from `review` to `done`
+   - **IF user requests changes** → Move ticket from `review` back to `in-progress`
 
 **Example Interaction:**
 ```markdown
@@ -192,10 +200,14 @@ Project Manager:
 
 **Workflow:**
 1. **Receive Assignment:** Orchestrator assigns ticket (e.g., TASK-3.2.1)
-2. **Implementation:** Develop feature
-3. **Testing:** Test implementation
-4. **Report Completion:** Notify orchestrator
-5. **Orchestrator** requests ticket manager to move ticket to `review`
+2. **Orchestrator Updates Status:** Orchestrator requests ticket manager to move ticket to `in-progress`
+3. **Implementation:** Develop feature
+4. **Testing:** Test implementation
+5. **Report Completion:** Notify orchestrator that work is ready for review
+6. **Orchestrator Updates Status:** Orchestrator requests ticket manager to move ticket to `review`
+7. **User Review:** User reviews code and approves OR requests changes
+8. **If Approved:** Orchestrator requests ticket manager to move ticket to `done`
+9. **If Changes Needed:** Orchestrator requests ticket manager to move ticket back to `in-progress`
 
 **Never Do:**
 - Create tickets (project manager does this)
@@ -251,17 +263,31 @@ Orchestrator (presents options to user)
     ↓
 User selects ticket
     ↓
+Orchestrator requests ticket manager ("Move ticket to in-progress")
+    ↓
+agile-ticket-manager (moves ticket: todo → in-progress)
+    ↓
 Orchestrator assigns to developer
     ↓
-Developer implements
+Developer implements and tests
+    ↓
+Developer reports completion
     ↓
 Orchestrator requests ticket manager ("Move to review")
     ↓
-agile-ticket-manager (updates ticket status)
+agile-ticket-manager (moves ticket: in-progress → review)
     ↓
-Code review & merge
+User reviews code
     ↓
-Orchestrator requests ticket manager ("Move to done")
+IF User approves:
+    Orchestrator requests ticket manager ("Move to done")
+    agile-ticket-manager (moves ticket: review → done)
+    PR merged, ticket complete
+    ↓
+IF User requests changes:
+    Orchestrator requests ticket manager ("Move back to in-progress")
+    agile-ticket-manager (moves ticket: review → in-progress)
+    Developer makes changes, cycle repeats
 ```
 
 ### 3. BA Session to Tickets Flow
