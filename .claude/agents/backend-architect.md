@@ -1,7 +1,7 @@
 ---
 name: backend-architect
 description: Use proactively for backend API design, Node.js/Express server implementation, RESTful endpoint development, and file system operations for the Claude Code Manager project.
-tools: Read, Write, Edit, Bash, Glob, Grep
+tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, TodoWrite, WebSearch, BashOutput, KillShell, NotebookEdit
 model: sonnet
 color: blue
 ---
