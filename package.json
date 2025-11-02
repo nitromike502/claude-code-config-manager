@@ -1,6 +1,6 @@
 {
   "name": "claude-code-config-manager",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers",
   "main": "src/backend/server.js",
   "bin": {
@@ -67,10 +67,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nitromike502/claude-code-web-manager.git"
+    "url": "git+https://github.com/nitromike502/claude-code-config-manager.git"
   },
   "bugs": {
-    "url": "https://github.com/nitromike502/claude-code-web-manager/issues"
+    "url": "https://github.com/nitromike502/claude-code-config-manager/issues"
   },
-  "homepage": "https://github.com/nitromike502/claude-code-web-manager#readme"
+  "homepage": "https://github.com/nitromike502/claude-code-config-manager#readme"
 }
