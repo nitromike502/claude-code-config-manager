@@ -70,26 +70,31 @@ Invoke the `subagent-orchestrator` agent to:
    - **Instructions:** {display instructions or "None"}
 
 ## Step 2: Check for Existing Tickets
-1. Check if TodoWrite tickets/tasks already exist from previous `/plan` execution
-2. Review any existing tickets to understand current work scope and status
-3. Determine if tickets are sufficient to proceed with development
+1. **Query `agile-ticket-manager` for tickets in `backlog`, `todo`, and `in-progress` statuses**
+2. Review ticket metadata (ID, title, priority, dependencies, status)
+3. Understand current Epic/Story/Task hierarchy from ticket manager
+4. Determine if tickets are sufficient to proceed with development
 
 ## Step 3: Auto-Plan if Needed (ENFORCE SMALL FEATURE SIZING)
 If NO tickets exist or tickets are stale/completed:
-1. Assess current project state (read CLAUDE.md, git status)
-2. Determine current phase and what work comes next
-3. Identify appropriate PRD sections for planning
-4. Create comprehensive Epic/Story/Task breakdown with TodoWrite tool:
-   - **Epics**: Major feature areas (e.g., "Backend API Development", "Frontend UI Development")
-   - **Stories**: User-facing features within each epic (e.g., "Project List View", "Subagent Viewer")
-   - **Tasks**: Technical implementation steps for each story (e.g., "Create /api/projects endpoint")
-   - **⚠️ CRITICAL: ALL tasks MUST be 30-60 minutes max**
-   - **⚠️ CRITICAL: Each task must be independently testable and committable**
-   - **⚠️ CRITICAL: Break down any task >1 hour into multiple sub-tasks**
-5. Include agent assignments, dependencies, acceptance criteria, and phase gates
-6. Reference `/home/claude/manager/docs/workflow-analysis-20251007.md` for sizing best practices
+1. Invoke `project-manager` subagent to create tickets
+2. Project manager will:
+   - Assess current project state (read CLAUDE.md, git status)
+   - Reference PRDs in `/home/tickets/claude/manager/prds/`
+   - Determine current phase and what work comes next
+   - Create comprehensive Epic/Story/Task ticket files:
+     - **Epics**: Major feature areas (e.g., "Backend API Development", "Frontend UI Development")
+     - **Stories**: User-facing features within each epic (e.g., "Project List View", "Subagent Viewer")
+     - **Tasks**: Technical implementation steps for each story (e.g., "Create /api/projects endpoint")
+     - **⚠️ CRITICAL: ALL tasks MUST be 30-60 minutes max**
+     - **⚠️ CRITICAL: Each task must be independently testable and committable**
+     - **⚠️ CRITICAL: Break down any task >1 hour into multiple sub-tasks**
+   - Write ticket files with complete frontmatter
+   - Invoke `agile-ticket-manager` to organize tickets into proper directory structure
+   - Reference `/home/claude/manager/docs/workflow-analysis-20251007.md` for sizing best practices
+3. Verify tickets are organized in `/home/tickets/claude/manager/`
 
-**Note**: This auto-planning mirrors the `/plan` command functionality, ensuring you can run `/swarm` at any time.
+**Note**: Project manager creates tickets, ticket manager organizes them.
 
 ## Step 4: Ticket Selection & Dependency Analysis
 
@@ -98,22 +103,22 @@ If NO tickets exist or tickets are stale/completed:
 ### If Ticket ID Provided (from Step 1):
 - **Target Ticket:** {ticket_id from Step 1}
 - **Skip ticket options menu** - proceed directly to this ticket
-- **Validate ticket exists:** Check that ticket file exists in `docs/tickets/` directories
+- **Query `agile-ticket-manager`:** Request ticket details for {ticket_id}
 - **If ticket not found:**
-  - List available tickets matching the prefix (e.g., all HIGH-* tickets)
+  - Ask ticket manager to list available tickets matching the prefix (e.g., all HIGH-* tickets)
   - Ask user to confirm correct ticket ID
-- **If ticket found:** Load ticket details and proceed to Step 5
+- **If ticket found:** Load ticket details from ticket manager and proceed to Step 5
 
 ### If NO Ticket ID Provided (from Step 1):
 Present ticket options to user as normal:
 
 1. **Invoke project-manager agent** to analyze ticket dependencies and priorities
 2. Project manager should:
-   - Scan all pending tickets in phase directories: `docs/tickets/phase-2.2/`, `docs/tickets/phase-2.1/`, etc.
-   - Look for Epics like: `PHASE-2.2-EPIC.md`, `PHASE-2.1-EPIC.md` (organized within phase subdirectories)
-   - Look for individual tickets: `CRITICAL-001-*.md`, `HIGH-005-*.md`, etc. (status markers in filenames)
+   - **Query `agile-ticket-manager` for all tickets in `todo`, `backlog`, and `in-progress` statuses**
+   - Request ticket manager to return Epic/Story/Task hierarchy information
+   - Analyze ticket priorities (P0, P1, P2, P3)
    - Check git status for any pending PRs awaiting merge
-   - Identify ticket dependencies (which tickets block others)
+   - Identify ticket dependencies (which tickets block others via `parent` field)
    - Determine which tickets are independent and could be worked on in parallel
    - Consider Epic/Story groupings for logical sequencing
 3. **Present 2-4 ticket options to user** with clear rationale:
@@ -124,9 +129,10 @@ Present ticket options to user as normal:
 4. **Include for each option**:
    - Ticket ID(s) and descriptions
    - Estimated time (30-60 min per ticket)
-   - Dependencies (blocks/blocked by which PRs)
+   - Dependencies (blocks/blocked by which tickets/PRs)
    - Whether backend + frontend can work in parallel within the ticket
    - Risk level (low/medium/high)
+   - Current ticket status (todo/backlog/in-progress)
 5. **WAIT FOR USER SELECTION** - Do not proceed until user chooses an option
 6. User may also specify custom ticket selection
 
@@ -150,28 +156,31 @@ After user selects ticket(s) to work on:
 
 **For EACH selected ticket (process sequentially or delegate to parallel agents):**
 
-1. Read relevant PRD documents and ticket details
-2. **Validate task sizing before starting** - reject any task >1 hour
-3. **Create dedicated feature branch** for THIS ticket (e.g., `feature/task-1.1.1`)
-4. Coordinate specialized agents through development workflow:
-   - git-workflow-specialist creates feature branch FIRST (mandatory)
+1. **Request `agile-ticket-manager` to move ticket to `in-progress` status**
+2. Read relevant PRD documents from `/home/tickets/claude/manager/prds/`
+3. **Query `agile-ticket-manager` for full ticket details** (description, acceptance criteria, dependencies)
+4. **Validate task sizing before starting** - reject any task >1 hour
+5. **Create dedicated feature branch** for THIS ticket (e.g., `feature/TASK-3.2.1-implement-agent-card`)
+6. Coordinate specialized agents through development workflow:
+   - git-workflow-specialist creates feature branch FIRST (mandatory) with ticket ID in name
    - **Run parallel subagents within this ticket** (backend + frontend together on same branch)
-   - wireframe-designer for UI mockups
+   - wireframe-designer for UI mockups (if needed)
    - backend-architect for API development
    - frontend-developer for Vue/PrimeVue components
    - data-parser for configuration file parsing
    - **Developer tests their implementation manually** (quick sanity check)
-   - **git-workflow-specialist commits after EACH tested sub-feature (15-30 min)**
+   - **git-workflow-specialist commits after EACH tested sub-feature (15-30 min)** with ticket ID in message
    - **test-automation-engineer runs automated tests (MANDATORY after all sub-features complete)**
    - **If tests FAIL:** Return to developer to fix issues, re-run tests (loop until pass)
    - **If tests PASS:** Proceed to documentation and code review
+   - **Request `agile-ticket-manager` to move ticket to `review` status**
    - documentation-engineer for documentation updates
    - code-reviewer for quality assurance (reviews implementation + test results)
-5. **Ensure incremental commit chain:** developer implements + tests → git-commit → next sub-feature → test-automation-engineer → docs → code-review
-6. **After all work complete and tests pass:** documentation-engineer → code-reviewer → git-PR
-7. **Create PR for THIS ticket** - one ticket = one PR (only if automated tests passed)
-8. **Mark ticket as "pending PR review"**
-9. **Monitor commit frequency - must see commits every 15-30 minutes**
+7. **Ensure incremental commit chain:** developer implements + tests → git-commit (with ticket ID) → next sub-feature → test-automation-engineer → move to review → docs → code-review
+8. **After all work complete and tests pass:** documentation-engineer → code-reviewer → git-PR
+9. **Create PR for THIS ticket** - one ticket = one PR (only if automated tests passed), include ticket ID in PR title
+10. **Monitor commit frequency - must see commits every 15-30 minutes**
+11. **After PR merged:** Request `agile-ticket-manager` to move ticket to `done` status
 
 **CRITICAL: Automated testing (test-automation-engineer) is a mandatory quality gate that runs AFTER all sub-features complete but BEFORE PR creation. PRs cannot be created if tests fail.**
 

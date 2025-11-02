@@ -273,7 +273,7 @@ All documents for this analysis session are in:
 `docs/ba-sessions/[session-dir]/`
 ```
 
-## Phase 6: Present Deliverables
+## Phase 6: Present Deliverables & Next Steps
 
 Present a summary to the user:
 
@@ -300,16 +300,47 @@ All deliverables saved to: `docs/ba-sessions/[session-dir]/`
 - Tasks: [count] tasks (~X hours total)
 
 ## Next Steps
-1. **Review** - Review all documents in the session directory
-2. **Approve** - Confirm approach and deliverables
-3. **Migrate** - Move documents to main docs/ structure when ready
-4. **Plan** - Use /plan or /swarm to create Epic/Story/Task breakdown
-5. **Develop** - Begin implementation
+
+### 1. Review & Approve
+- Review all documents in the session directory
+- Confirm approach and deliverables meet requirements
+- Request any refinements needed
+
+### 2. Migrate PRD (Optional)
+- Move PRD to `/home/tickets/claude/manager/prds/features/[feature-name]/`
+- This makes it available to project-manager for ticket creation
+
+### 3. Create Tickets
+**IMPORTANT: The project-manager creates tickets, NOT the BA.**
+
+When ready to begin development:
+- Invoke `project-manager` subagent
+- Project manager will read the PRD
+- Project manager will create Epic/Story/Task ticket files
+- Project manager will invoke `agile-ticket-manager` to organize tickets
+- Tickets will be stored in `/home/tickets/claude/manager/`
+
+### 4. Begin Development
+- Use `/swarm` command to start working on tickets
+- Orchestrator will query ticket manager for available work
+- Development proceeds through standard SWARM workflow
+
+## BA Role Summary
+**Business Analyst provides:**
+- Analysis and research
+- PRDs and requirements documentation
+- Wireframes and design specifications
+- Implementation recommendations
+
+**Business Analyst does NOT:**
+- Create tickets (project-manager does this)
+- Organize tickets (agile-ticket-manager does this)
+- Execute development (developers do this via /swarm)
 
 Would you like me to:
 - Refine any of the analysis or designs?
-- Create the Epic/Story/Task breakdown now?
-- Migrate documents to main docs/ structure?
+- Migrate the PRD to the ticketing system PRD directory?
+- Have me invoke project-manager to create tickets from this PRD?
 ```
 
 </execution>
@@ -322,6 +353,11 @@ Would you like me to:
 4. **Comprehensive Deliverables** - Produce analysis + PRD + wireframes + guides
 5. **Easy Migration** - Mirror docs/ structure so approved work moves easily
 6. **Claude Code Manager Focus** - Only solution features for this project
+7. **BA Produces Documentation, PM Produces Tickets** - Clear separation of responsibilities:
+   - BA creates PRDs and requirements
+   - Project Manager creates Epic/Story/Task tickets from PRDs
+   - Ticket Manager organizes ticket files
+   - /swarm executes ticket-based development
 
 ## Examples
 
