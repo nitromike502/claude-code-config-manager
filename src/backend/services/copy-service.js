@@ -286,14 +286,25 @@ class CopyService {
   /**
    * Generates a unique filename by appending a numeric suffix
    *
-   * Example: agent.md -> agent-1.md, agent-2.md, etc.
+   * Example: agent.md -> agent-2.md, agent-3.md, etc.
    *
    * @param {string} originalPath - Original absolute path that has a conflict
    * @returns {Promise<string>} New unique absolute path that doesn't conflict
    */
   async generateUniquePath(originalPath) {
-    // TODO: Implement in TASK-3.1.3
-    throw new Error('Not implemented');
+    const dir = path.dirname(originalPath);
+    const ext = path.extname(originalPath);
+    const base = path.basename(originalPath, ext);
+
+    let counter = 2;
+    let newPath;
+
+    do {
+      newPath = path.join(dir, `${base}-${counter}${ext}`);
+      counter++;
+    } while (await fs.access(newPath).then(() => true).catch(() => false));
+
+    return newPath;
   }
 }
 
