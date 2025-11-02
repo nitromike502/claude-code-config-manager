@@ -254,11 +254,33 @@ class CopyService {
    *
    * @param {string} targetPath - Absolute path where conflict occurred
    * @param {string} strategy - Conflict resolution strategy ('overwrite', 'skip', 'rename')
-   * @returns {Promise<Object>} Object with { action: string, finalPath: string }
+   * @returns {Promise<string>} Resolved target path (original for overwrite, unique for rename)
+   * @throws {Error} If strategy is 'skip' (cancels copy) or strategy is unknown
    */
   async resolveConflict(targetPath, strategy) {
-    // TODO: Implement in TASK-3.1.3
-    throw new Error('Not implemented');
+    // No strategy provided: return targetPath as-is
+    if (!strategy) {
+      return targetPath;
+    }
+
+    switch (strategy) {
+      case 'skip':
+        // User chose to skip the copy operation
+        throw new Error('Copy cancelled by user');
+
+      case 'overwrite':
+        // Return original targetPath - file will be replaced during copy
+        // TODO: Consider creating backup before overwrite (future enhancement)
+        return targetPath;
+
+      case 'rename':
+        // Generate unique filename to avoid overwriting
+        return this.generateUniquePath(targetPath);
+
+      default:
+        // Unknown strategy
+        throw new Error(`Unknown conflict strategy: ${strategy}`);
+    }
   }
 
   /**
