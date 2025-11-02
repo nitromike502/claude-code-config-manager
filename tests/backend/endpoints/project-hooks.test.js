@@ -10,6 +10,8 @@ const path = require('path');
  * - Merge Logic: settings.json + settings.local.json merging
  * - Error Cases: Invalid IDs, malformed files, missing directories
  * - Warnings System: Graceful error handling with warnings
+ * - Flattened Response Structure: One object per hook command (BUG-038)
+ * - Claude Code Event Validation: Only valid events accepted (BUG-038)
  *
  * Fixtures Used:
  * - /home/claude/manager/tests/fixtures/projects/valid-project
@@ -61,7 +63,7 @@ describe('GET /api/projects/:id/hooks', () => {
       expect(response.body.projectPath).toBe(validProjectPath);
     });
 
-    test('should parse hooks from settings.json with correct structure', async () => {
+    test('should parse hooks from settings.json with flattened structure', async () => {
       const response = await request(app)
         .get(`/api/projects/${validProjectId}/hooks`);
 
@@ -74,50 +76,52 @@ describe('GET /api/projects/:id/hooks', () => {
       expect(settingsHook).toBeDefined();
       expect(settingsHook).toHaveProperty('event');
       expect(settingsHook).toHaveProperty('matcher');
-      expect(settingsHook).toHaveProperty('hooks');
+      expect(settingsHook).toHaveProperty('type');
+      expect(settingsHook).toHaveProperty('command');
+      expect(settingsHook).toHaveProperty('timeout');
+      expect(settingsHook).toHaveProperty('enabled');
       expect(settingsHook).toHaveProperty('source');
-      expect(Array.isArray(settingsHook.hooks)).toBe(true);
+
+      // Flattened structure should NOT have nested hooks array
+      expect(settingsHook).not.toHaveProperty('hooks');
+      expect(settingsHook).not.toHaveProperty('matcherIndex');
     });
 
-    test('should parse pre-commit hooks correctly', async () => {
+    test('should parse PreToolUse hooks correctly', async () => {
       const response = await request(app)
         .get(`/api/projects/${validProjectId}/hooks`);
 
       expect(response.status).toBe(200);
 
-      // Find pre-commit hook from settings.json
-      const preCommitHook = response.body.hooks.find(
-        h => h.event === 'pre-commit' && h.source === 'settings.json'
+      // Find PreToolUse hook from settings.json (*.js matcher)
+      const preToolUseHook = response.body.hooks.find(
+        h => h.event === 'PreToolUse' && h.source === 'settings.json'
       );
 
-      expect(preCommitHook).toBeDefined();
-      expect(preCommitHook.event).toBe('pre-commit');
-      expect(preCommitHook.matcher).toBe('*.js');
-      expect(preCommitHook.hooks.length).toBeGreaterThan(0);
-
-      // Verify hook command structure
-      const hook = preCommitHook.hooks[0];
-      expect(hook).toHaveProperty('type');
-      expect(hook).toHaveProperty('command');
-      expect(hook).toHaveProperty('enabled');
-      expect(hook.command).toBe('npm run lint');
+      expect(preToolUseHook).toBeDefined();
+      expect(preToolUseHook.event).toBe('PreToolUse');
+      expect(preToolUseHook.matcher).toBe('*.js');
+      expect(preToolUseHook.type).toBe('command');
+      expect(preToolUseHook.command).toBe('npm run lint');
+      expect(preToolUseHook.timeout).toBe(60);
+      expect(preToolUseHook.enabled).toBe(true);
     });
 
-    test('should parse pre-push hooks correctly', async () => {
+    test('should parse PreCompact hooks correctly', async () => {
       const response = await request(app)
         .get(`/api/projects/${validProjectId}/hooks`);
 
       expect(response.status).toBe(200);
 
-      // Find pre-push hook from settings.json
-      const prePushHook = response.body.hooks.find(
-        h => h.event === 'pre-push' && h.source === 'settings.json'
+      // Find PreCompact hook from settings.json
+      const preCompactHook = response.body.hooks.find(
+        h => h.event === 'PreCompact' && h.source === 'settings.json'
       );
 
-      expect(prePushHook).toBeDefined();
-      expect(prePushHook.event).toBe('pre-push');
-      expect(prePushHook.matcher).toBe('*');
-      expect(prePushHook.hooks[0].command).toBe('npm test');
+      expect(preCompactHook).toBeDefined();
+      expect(preCompactHook.event).toBe('PreCompact');
+      expect(preCompactHook.matcher).toBe('*'); // Default matcher
+      expect(preCompactHook.command).toBe('npm test');
     });
 
     test('should return empty array for project without hooks', async () => {
@@ -130,17 +134,18 @@ describe('GET /api/projects/:id/hooks', () => {
       expect(response.body.warnings).toEqual([]);
     });
 
-    test('should include hook event types', async () => {
+    test('should include Claude Code hook event types', async () => {
       const response = await request(app)
         .get(`/api/projects/${validProjectId}/hooks`);
 
       expect(response.status).toBe(200);
 
-      // Verify we have the expected hook events
+      // Verify we have the expected hook events from fixtures
       const events = response.body.hooks.map(h => h.event);
 
-      expect(events).toContain('pre-commit');
-      expect(events).toContain('pre-push');
+      expect(events).toContain('PreToolUse');
+      expect(events).toContain('PreCompact');
+      expect(events).toContain('Stop');
     });
   });
 
@@ -159,21 +164,21 @@ describe('GET /api/projects/:id/hooks', () => {
       expect(localHooks.length).toBeGreaterThan(0);
     });
 
-    test('should include post-checkout hook from settings.local.json', async () => {
+    test('should include Stop hook from settings.local.json', async () => {
       const response = await request(app)
         .get(`/api/projects/${validProjectId}/hooks`);
 
       expect(response.status).toBe(200);
 
-      // Find post-checkout hook from settings.local.json
-      const postCheckoutHook = response.body.hooks.find(
-        h => h.event === 'post-checkout' && h.source === 'settings.local.json'
+      // Find Stop hook from settings.local.json
+      const stopHook = response.body.hooks.find(
+        h => h.event === 'Stop' && h.source === 'settings.local.json'
       );
 
-      expect(postCheckoutHook).toBeDefined();
-      expect(postCheckoutHook.event).toBe('post-checkout');
-      expect(postCheckoutHook.matcher).toBe('*');
-      expect(postCheckoutHook.hooks[0].command).toBe('npm install');
+      expect(stopHook).toBeDefined();
+      expect(stopHook.event).toBe('Stop');
+      expect(stopHook.matcher).toBe('*');
+      expect(stopHook.command).toBe('npm install');
     });
 
     test('should preserve separate hooks for different events', async () => {
@@ -186,9 +191,9 @@ describe('GET /api/projects/:id/hooks', () => {
       const uniqueEvents = new Set(response.body.hooks.map(h => h.event));
 
       expect(uniqueEvents.size).toBeGreaterThan(1);
-      expect(uniqueEvents.has('pre-commit')).toBe(true);
-      expect(uniqueEvents.has('pre-push')).toBe(true);
-      expect(uniqueEvents.has('post-checkout')).toBe(true);
+      expect(uniqueEvents.has('PreToolUse')).toBe(true);
+      expect(uniqueEvents.has('PreCompact')).toBe(true);
+      expect(uniqueEvents.has('Stop')).toBe(true);
     });
 
     test('should handle matcher patterns correctly', async () => {
@@ -207,19 +212,22 @@ describe('GET /api/projects/:id/hooks', () => {
       expect(allFilesHook).toBeDefined();
     });
 
-    test('should handle multiple matchers in same event', async () => {
+    test('should deduplicate identical hooks across files', async () => {
       const response = await request(app)
         .get(`/api/projects/${validProjectId}/hooks`);
 
       expect(response.status).toBe(200);
 
-      // Check if we have multiple entries with same event but different matchers
-      const preCommitHooks = response.body.hooks.filter(h => h.event === 'pre-commit');
+      // Create a map to count hook occurrences by unique key
+      const hookMap = new Map();
+      response.body.hooks.forEach(hook => {
+        const key = `${hook.event}::${hook.matcher}::${hook.command}`;
+        hookMap.set(key, (hookMap.get(key) || 0) + 1);
+      });
 
-      // Each matcher config becomes a separate hook entry
-      preCommitHooks.forEach(hook => {
-        expect(hook).toHaveProperty('matcher');
-        expect(hook).toHaveProperty('matcherIndex');
+      // Each unique hook should appear exactly once (deduplication)
+      hookMap.forEach((count, key) => {
+        expect(count).toBe(1);
       });
     });
   });
@@ -297,44 +305,34 @@ describe('GET /api/projects/:id/hooks', () => {
       });
     });
 
-    test('each hook should have required fields', async () => {
+    test('each hook should have flattened structure with required fields', async () => {
       const response = await request(app)
         .get(`/api/projects/${validProjectId}/hooks`);
 
       expect(response.status).toBe(200);
 
       response.body.hooks.forEach(hook => {
+        // New flattened structure fields
         expect(hook).toHaveProperty('event');
         expect(hook).toHaveProperty('matcher');
-        expect(hook).toHaveProperty('hooks');
+        expect(hook).toHaveProperty('type');
+        expect(hook).toHaveProperty('command');
+        expect(hook).toHaveProperty('timeout');
+        expect(hook).toHaveProperty('enabled');
         expect(hook).toHaveProperty('source');
-        expect(hook).toHaveProperty('matcherIndex');
+
+        // Old nested structure should NOT exist
+        expect(hook).not.toHaveProperty('hooks');
+        expect(hook).not.toHaveProperty('matcherIndex');
 
         // Verify types
         expect(typeof hook.event).toBe('string');
         expect(typeof hook.matcher).toBe('string');
-        expect(Array.isArray(hook.hooks)).toBe(true);
+        expect(typeof hook.type).toBe('string');
+        expect(typeof hook.command).toBe('string');
+        expect(typeof hook.timeout).toBe('number');
+        expect(typeof hook.enabled).toBe('boolean');
         expect(typeof hook.source).toBe('string');
-        expect(typeof hook.matcherIndex).toBe('number');
-      });
-    });
-
-    test('each hook command should have correct structure', async () => {
-      const response = await request(app)
-        .get(`/api/projects/${validProjectId}/hooks`);
-
-      expect(response.status).toBe(200);
-
-      // Check structure of hook commands
-      response.body.hooks.forEach(hookEntry => {
-        hookEntry.hooks.forEach(hookCommand => {
-          expect(hookCommand).toHaveProperty('type');
-          expect(hookCommand).toHaveProperty('command');
-
-          // type should be string, command should be string
-          expect(typeof hookCommand.type).toBe('string');
-          expect(typeof hookCommand.command).toBe('string');
-        });
       });
     });
 
@@ -358,51 +356,52 @@ describe('GET /api/projects/:id/hooks', () => {
   });
 
   describe('Hook Event Types', () => {
-    test('should support pre-commit events', async () => {
+    test('should support PreToolUse events', async () => {
       const response = await request(app)
         .get(`/api/projects/${validProjectId}/hooks`);
 
       expect(response.status).toBe(200);
 
-      const preCommitHooks = response.body.hooks.filter(h => h.event === 'pre-commit');
-      expect(preCommitHooks.length).toBeGreaterThan(0);
+      const preToolUseHooks = response.body.hooks.filter(h => h.event === 'PreToolUse');
+      expect(preToolUseHooks.length).toBeGreaterThan(0);
     });
 
-    test('should support pre-push events', async () => {
+    test('should support PreCompact events', async () => {
       const response = await request(app)
         .get(`/api/projects/${validProjectId}/hooks`);
 
       expect(response.status).toBe(200);
 
-      const prePushHooks = response.body.hooks.filter(h => h.event === 'pre-push');
-      expect(prePushHooks.length).toBeGreaterThan(0);
+      const preCompactHooks = response.body.hooks.filter(h => h.event === 'PreCompact');
+      expect(preCompactHooks.length).toBeGreaterThan(0);
     });
 
-    test('should support post-checkout events', async () => {
+    test('should support Stop events', async () => {
       const response = await request(app)
         .get(`/api/projects/${validProjectId}/hooks`);
 
       expect(response.status).toBe(200);
 
-      const postCheckoutHooks = response.body.hooks.filter(h => h.event === 'post-checkout');
-      expect(postCheckoutHooks.length).toBeGreaterThan(0);
+      const stopHooks = response.body.hooks.filter(h => h.event === 'Stop');
+      expect(stopHooks.length).toBeGreaterThan(0);
     });
 
-    test('should support post-merge events', async () => {
-      // Note: This test depends on fixture having post-merge hooks
-      // The sample fixtures show post-merge in valid-hooks.json
+    test('should only include valid Claude Code events', async () => {
       const response = await request(app)
         .get(`/api/projects/${validProjectId}/hooks`);
 
       expect(response.status).toBe(200);
 
-      // Check if post-merge hooks exist (depends on fixture)
-      const events = response.body.hooks.map(h => h.event);
+      const validEvents = [
+        'PreToolUse', 'PostToolUse', 'UserPromptSubmit',
+        'Notification', 'Stop', 'SubagentStop',
+        'PreCompact', 'SessionStart', 'SessionEnd'
+      ];
 
-      // At minimum, should have pre-commit, pre-push, and post-checkout
-      expect(events).toContain('pre-commit');
-      expect(events).toContain('pre-push');
-      expect(events).toContain('post-checkout');
+      // All returned hooks should have valid Claude Code events
+      response.body.hooks.forEach(hook => {
+        expect(validEvents).toContain(hook.event);
+      });
     });
   });
 
@@ -494,6 +493,46 @@ describe('GET /api/projects/:id/hooks', () => {
       // Both should exist in valid-project fixture
       expect(projectHooks.length).toBeGreaterThan(0);
       expect(localHooks.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Default Values', () => {
+    test('should apply default matcher "*" when not specified', async () => {
+      const response = await request(app)
+        .get(`/api/projects/${validProjectId}/hooks`);
+
+      expect(response.status).toBe(200);
+
+      // Hooks without explicit matcher should default to "*"
+      const hooksWithDefaultMatcher = response.body.hooks.filter(h => h.matcher === '*');
+      expect(hooksWithDefaultMatcher.length).toBeGreaterThan(0);
+    });
+
+    test('should apply default timeout 60 when not specified', async () => {
+      const response = await request(app)
+        .get(`/api/projects/${validProjectId}/hooks`);
+
+      expect(response.status).toBe(200);
+
+      // All hooks should have timeout (default or explicit)
+      response.body.hooks.forEach(hook => {
+        expect(hook.timeout).toBeDefined();
+        expect(typeof hook.timeout).toBe('number');
+        expect(hook.timeout).toBeGreaterThan(0);
+      });
+    });
+
+    test('should apply default enabled true when not specified', async () => {
+      const response = await request(app)
+        .get(`/api/projects/${validProjectId}/hooks`);
+
+      expect(response.status).toBe(200);
+
+      // All hooks should have enabled field
+      response.body.hooks.forEach(hook => {
+        expect(hook.enabled).toBeDefined();
+        expect(typeof hook.enabled).toBe('boolean');
+      });
     });
   });
 });
