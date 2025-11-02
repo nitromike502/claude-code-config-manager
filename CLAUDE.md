@@ -159,6 +159,62 @@ Building with **parallel subagent teams** using the SWARM method:
 
 See subagent proposals in project `.claude/agents/` directory.
 
+## Ticketing Workflow
+
+**Agile Ticketing System:** `/home/tickets/claude/manager/`
+
+The project uses a file-based Agile ticketing system managed by the `agile-ticket-manager` subagent. This system functions like enterprise tools (Jira, Azure DevOps, Linear) but uses a hierarchical directory structure.
+
+### Ticket Hierarchy
+```
+Epics → Stories → Tasks
+  ↓        ↓        ↓
+EPIC-001  STORY-2.1  TASK-2.1.1
+```
+
+### Status Workflow
+```
+backlog → todo → in-progress → review → done
+```
+
+### Roles & Responsibilities
+
+**Business Analyst (`/ba` command):**
+- Creates PRDs and requirements documentation
+- Designs UI/UX wireframes
+- Provides implementation recommendations
+- **Does NOT create tickets**
+
+**Project Manager (`project-manager` subagent):**
+- **Creates ALL tickets** (Epics, Stories, Tasks, Bugs)
+- Writes ticket files with frontmatter
+- Invokes `agile-ticket-manager` to organize tickets
+- Sets priorities and dependencies
+
+**Ticket Manager (`agile-ticket-manager` subagent):**
+- Organizes ticket files into directory structure
+- Provides ticket retrieval and querying
+- Manages status transitions
+- Maintains Epic/Story/Task relationships
+
+**Orchestrator (`subagent-orchestrator` subagent):**
+- Queries ticket manager for available work
+- Assigns tickets to developers
+- Requests status updates throughout workflow
+- **Does NOT create tickets**
+
+### Workflow Integration
+
+1. **Feature Request** → User runs `/ba` command
+2. **Analysis** → BA creates PRD in `docs/ba-sessions/`
+3. **Planning** → User invokes `project-manager` to create tickets from PRD
+4. **Organization** → Project manager invokes `agile-ticket-manager` to organize tickets
+5. **Execution** → User runs `/swarm` command
+6. **Coordination** → Orchestrator queries ticket manager, assigns work, updates statuses
+7. **Completion** → Tickets moved to `done` after PR merge
+
+**See:** `docs/guides/TICKET-MANAGER-INTEGRATION.md` for complete integration patterns
+
 ## Current Status & Priorities
 
 ### Recent Bug Fixes (October 24, 2025)
