@@ -14,8 +14,8 @@ const os = require('os');
  * - Missing user settings file returns empty array gracefully
  * - Missing ~/.claude/ directory returns empty array gracefully
  * - Empty hooks section returns empty array
- * - Hook parsing includes all expected fields (event, matcher, hooks array)
- * - Handles both array and object hook formats
+ * - Hook parsing includes all expected fields with flattened structure (BUG-038)
+ * - Claude Code event validation (BUG-038)
  *
  * NOTE: These tests use the actual user's home directory (~/.claude/settings.json)
  * rather than mocking because os.homedir() is difficult to mock in Node.js.
@@ -54,33 +54,36 @@ describe('GET /api/user/hooks', () => {
       expect(Array.isArray(response.body.warnings)).toBe(true);
     });
 
-    test('should include all expected fields in hook objects if hooks exist', async () => {
+    test('should include all expected fields in hook objects if hooks exist (flattened structure)', async () => {
       const response = await request(app).get('/api/user/hooks');
 
       expect(response.status).toBe(200);
 
-      // If user has hooks in ~/.claude/settings.json, verify structure
+      // If user has hooks in ~/.claude/settings.json, verify flattened structure
       if (response.body.hooks.length > 0) {
         const hook = response.body.hooks[0];
 
-        // All hooks should have these fields
+        // All hooks should have these fields (flattened structure)
         expect(hook).toHaveProperty('event');
         expect(hook).toHaveProperty('matcher');
-        expect(hook).toHaveProperty('hooks');
+        expect(hook).toHaveProperty('type');
+        expect(hook).toHaveProperty('command');
+        expect(hook).toHaveProperty('timeout');
+        expect(hook).toHaveProperty('enabled');
         expect(hook).toHaveProperty('source');
+
+        // Old nested structure should NOT exist
+        expect(hook).not.toHaveProperty('hooks');
+        expect(hook).not.toHaveProperty('matcherIndex');
 
         // Verify field types
         expect(typeof hook.event).toBe('string');
         expect(typeof hook.matcher).toBe('string');
-        expect(Array.isArray(hook.hooks)).toBe(true);
+        expect(typeof hook.type).toBe('string');
+        expect(typeof hook.command).toBe('string');
+        expect(typeof hook.timeout).toBe('number');
+        expect(typeof hook.enabled).toBe('boolean');
         expect(hook.source).toBe('~/.claude/settings.json');
-
-        // If hook has actions, verify structure
-        if (hook.hooks.length > 0) {
-          const action = hook.hooks[0];
-          expect(action).toHaveProperty('type');
-          expect(typeof action.type).toBe('string');
-        }
       }
     });
 
@@ -89,21 +92,19 @@ describe('GET /api/user/hooks', () => {
 
       expect(response.status).toBe(200);
 
-      // If user has hooks configured, verify object format is parsed
+      // If user has hooks configured, verify object format is parsed with flattened structure
       if (response.body.hooks.length > 0) {
         const hook = response.body.hooks[0];
 
-        // Object format should have event, matcher, hooks array, and matcherIndex
+        // Flattened format should have event, matcher, type, command
         expect(hook).toHaveProperty('event');
         expect(hook).toHaveProperty('matcher');
-        expect(hook).toHaveProperty('hooks');
-        expect(Array.isArray(hook.hooks)).toBe(true);
+        expect(hook).toHaveProperty('type');
+        expect(hook).toHaveProperty('command');
 
-        // matcherIndex is added when parsing object format
-        if (hook.matcherIndex !== undefined) {
-          expect(typeof hook.matcherIndex).toBe('number');
-          expect(hook.matcherIndex).toBeGreaterThanOrEqual(0);
-        }
+        // Old nested structure should NOT exist
+        expect(hook).not.toHaveProperty('hooks');
+        expect(hook).not.toHaveProperty('matcherIndex');
       }
     });
   });
@@ -204,20 +205,26 @@ describe('GET /api/user/hooks', () => {
   });
 
   describe('Hook Event Types', () => {
-    test('should support various hook event types', async () => {
+    test('should support Claude Code event types', async () => {
       const response = await request(app).get('/api/user/hooks');
 
       expect(response.status).toBe(200);
 
-      // If hooks exist, verify they have valid event types
+      const validEvents = [
+        'PreToolUse', 'PostToolUse', 'UserPromptSubmit',
+        'Notification', 'Stop', 'SubagentStop',
+        'PreCompact', 'SessionStart', 'SessionEnd'
+      ];
+
+      // If hooks exist, verify they have valid Claude Code event types
       if (response.body.hooks.length > 0) {
         response.body.hooks.forEach(hook => {
           expect(hook.event).toBeDefined();
           expect(typeof hook.event).toBe('string');
-
-          // Common event types (not exhaustive, just examples)
-          // Could be: pre-commit, post-commit, UserPromptSubmit, Notification, etc.
           expect(hook.event.length).toBeGreaterThan(0);
+
+          // Only valid Claude Code events should be returned
+          expect(validEvents).toContain(hook.event);
         });
       }
     });
@@ -237,21 +244,77 @@ describe('GET /api/user/hooks', () => {
       }
     });
 
-    test('should support hooks with action arrays', async () => {
+    test('should support hooks with command details in flattened structure', async () => {
       const response = await request(app).get('/api/user/hooks');
 
       expect(response.status).toBe(200);
 
-      // If hooks exist, verify hooks array contains actions
+      // If hooks exist, verify flattened structure
       if (response.body.hooks.length > 0) {
         response.body.hooks.forEach(hook => {
-          expect(Array.isArray(hook.hooks)).toBe(true);
+          // Each hook should have command directly (not nested)
+          expect(hook).toHaveProperty('type');
+          expect(hook).toHaveProperty('command');
+          expect(hook).toHaveProperty('timeout');
+          expect(hook).toHaveProperty('enabled');
 
-          // Each action should have a type (command, notify, etc.)
-          hook.hooks.forEach(action => {
-            expect(action).toHaveProperty('type');
-            expect(typeof action.type).toBe('string');
-          });
+          expect(typeof hook.type).toBe('string');
+          expect(typeof hook.command).toBe('string');
+          expect(typeof hook.timeout).toBe('number');
+          expect(typeof hook.enabled).toBe('boolean');
+
+          // No nested hooks array
+          expect(hook).not.toHaveProperty('hooks');
+        });
+      }
+    });
+  });
+
+  describe('Flattened Response Structure', () => {
+    test('hooks should use flattened structure (no nested arrays)', async () => {
+      const response = await request(app).get('/api/user/hooks');
+
+      expect(response.status).toBe(200);
+
+      // Each hook should be a flat object, not contain nested hooks array
+      if (response.body.hooks.length > 0) {
+        response.body.hooks.forEach(hook => {
+          // Should have flattened fields
+          expect(hook).toHaveProperty('event');
+          expect(hook).toHaveProperty('matcher');
+          expect(hook).toHaveProperty('type');
+          expect(hook).toHaveProperty('command');
+          expect(hook).toHaveProperty('timeout');
+          expect(hook).toHaveProperty('enabled');
+          expect(hook).toHaveProperty('source');
+
+          // Should NOT have old nested structure
+          expect(hook).not.toHaveProperty('hooks');
+          expect(hook).not.toHaveProperty('matcherIndex');
+        });
+      }
+    });
+
+    test('default values should be applied (matcher: "*", timeout: 60, enabled: true)', async () => {
+      const response = await request(app).get('/api/user/hooks');
+
+      expect(response.status).toBe(200);
+
+      // If hooks exist, verify defaults are applied
+      if (response.body.hooks.length > 0) {
+        response.body.hooks.forEach(hook => {
+          // Matcher should default to "*" if not specified
+          expect(hook.matcher).toBeDefined();
+          expect(typeof hook.matcher).toBe('string');
+
+          // Timeout should default to 60 if not specified
+          expect(hook.timeout).toBeDefined();
+          expect(typeof hook.timeout).toBe('number');
+          expect(hook.timeout).toBeGreaterThan(0);
+
+          // Enabled should default to true if not specified
+          expect(hook.enabled).toBeDefined();
+          expect(typeof hook.enabled).toBe('boolean');
         });
       }
     });

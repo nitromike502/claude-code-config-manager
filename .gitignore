@@ -172,3 +172,6 @@ playwright-report/
 
 # Screenshots (test artifacts)
 screenshots/
+
+# Deleted files pending review
+.deleted/

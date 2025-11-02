@@ -1,6 +1,6 @@
 {
   "hooks": {
-    "pre-commit": [
+    "PreToolUse": [
       {
         "matcher": "*.js",
         "hooks": [
@@ -12,9 +12,8 @@
         ]
       }
     ],
-    "pre-push": [
+    "PreCompact": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",

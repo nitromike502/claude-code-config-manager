@@ -206,6 +206,25 @@ async function getProjectCommands(projectPath) {
 }
 
 /**
+ * Valid Claude Code hook events per official specification
+ * @see https://docs.claude.com/en/docs/claude-code/hooks
+ * @see https://json.schemastore.org/claude-code-settings.json
+ */
+const VALID_HOOK_EVENTS = [
+  'PreToolUse', 'PostToolUse', 'UserPromptSubmit',
+  'Notification', 'Stop', 'SubagentStop',
+  'PreCompact', 'SessionStart', 'SessionEnd'
+];
+
+/**
+ * Hook events that support matchers (can filter by tool name)
+ * Only PreToolUse and PostToolUse support the matcher field per official specification
+ * @see https://docs.claude.com/en/docs/claude-code/hooks
+ * @see https://json.schemastore.org/claude-code-settings.json
+ */
+const MATCHER_EVENTS = ['PreToolUse', 'PostToolUse'];
+
+/**
  * Gets hooks for a specific project (from settings.json and settings.local.json)
  * @param {string} projectPath - Absolute project path
  * @returns {Promise<Object>} Object with hooks array and warnings array
@@ -231,17 +250,137 @@ async function getProjectHooks(projectPath) {
         // Handle object format: { "UserPromptSubmit": [...], "Notification": [...] }
         // Each event maps to an array of matcher configs
         for (const [event, matchers] of Object.entries(settings.hooks)) {
-          if (Array.isArray(matchers)) {
-            matchers.forEach((matcher, index) => {
-              hooks.push({
-                event,
-                matcher: matcher.matcher || '',
-                hooks: matcher.hooks || [],
-                source: 'settings.json',
-                matcherIndex: index
-              });
+          // STEP 2: Validate event name against Claude Code specification
+          if (!VALID_HOOK_EVENTS.includes(event)) {
+            warnings.push({
+              file: settingsPath,
+              error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
+              severity: 'error',
+              skipped: true,
+              helpText: 'See https://docs.claude.com/en/docs/claude-code/hooks for valid event names'
             });
+            continue;
           }
+
+          // Check if event supports matchers
+          const supportsMatchers = MATCHER_EVENTS.includes(event);
+
+          // STEP 3: Validate top-level structure (must be array)
+          if (!Array.isArray(matchers)) {
+            warnings.push({
+              file: settingsPath,
+              error: `Hook event "${event}" must be an array of hook objects, got ${typeof matchers}`,
+              severity: 'error',
+              skipped: true,
+              helpText: 'See https://json.schemastore.org/claude-code-settings.json for valid format'
+            });
+            continue;
+          }
+
+          // STEP 3: Validate each matcher entry
+          matchers.forEach((matcherEntry, index) => {
+            // Validate matcher entry is an object
+            if (!matcherEntry || typeof matcherEntry !== 'object') {
+              warnings.push({
+                file: settingsPath,
+                error: `Each hook entry for "${event}" must be an object with "hooks" property`,
+                severity: 'error',
+                skipped: true
+              });
+              return;
+            }
+
+            // Validate hooks property exists and is array
+            if (!Array.isArray(matcherEntry.hooks)) {
+              warnings.push({
+                file: settingsPath,
+                error: `Hook entry for "${event}" missing required "hooks" array`,
+                severity: 'error',
+                skipped: true
+              });
+              return;
+            }
+
+            // Warn if matcher used on non-matcher event
+            if (matcherEntry.matcher && !supportsMatchers) {
+              warnings.push({
+                file: settingsPath,
+                error: `Event "${event}" does not support matchers. Matcher field will be ignored.`,
+                severity: 'warning',
+                skipped: false
+              });
+            }
+
+            // STEP 3: Validate each hook command
+            const validHooks = [];
+            for (const hook of matcherEntry.hooks) {
+              // Validate hook is object
+              if (!hook || typeof hook !== 'object') {
+                warnings.push({
+                  file: settingsPath,
+                  error: `Hook command must be an object with "type" and "command" fields`,
+                  severity: 'error',
+                  skipped: true
+                });
+                continue;
+              }
+
+              // Validate type field (must be "command")
+              if (hook.type && hook.type !== 'command') {
+                warnings.push({
+                  file: settingsPath,
+                  error: `Hook type must be "command", got "${hook.type}". Defaulting to "command".`,
+                  severity: 'warning',
+                  skipped: false
+                });
+                hook.type = 'command';
+              } else if (!hook.type) {
+                // Auto-fix missing type
+                hook.type = 'command';
+              }
+
+              // Validate command field (required, must be string)
+              if (!hook.command || typeof hook.command !== 'string') {
+                warnings.push({
+                  file: settingsPath,
+                  error: `Hook missing required "command" field (string)`,
+                  severity: 'error',
+                  skipped: true
+                });
+                continue;
+              }
+
+              // Validate timeout if present
+              if (hook.timeout !== undefined && (typeof hook.timeout !== 'number' || hook.timeout <= 0)) {
+                warnings.push({
+                  file: settingsPath,
+                  error: `Hook timeout must be a positive number, got ${hook.timeout}. Using default (60s).`,
+                  severity: 'warning',
+                  skipped: false
+                });
+                hook.timeout = 60;
+              }
+
+              // Hook passed validation
+              validHooks.push(hook);
+            }
+
+            // STEP 4: Flatten response structure - create one object per hook command
+            // This makes it easier for the UI to consume without nested arrays
+            if (validHooks.length > 0) {
+              for (const hook of validHooks) {
+                hooks.push({
+                  event,
+                  matcher: matcherEntry.matcher || '*',
+                  type: hook.type || 'command',
+                  command: hook.command,
+                  timeout: hook.timeout || 60,
+                  enabled: hook.enabled !== undefined ? hook.enabled : true,
+                  source: 'settings.json'
+                });
+              }
+            }
+          });
         }
       } else {
         // Unexpected type
@@ -279,17 +418,137 @@ async function getProjectHooks(projectPath) {
         // Handle object format: { "UserPromptSubmit": [...], "Notification": [...] }
         // Each event maps to an array of matcher configs
         for (const [event, matchers] of Object.entries(localSettings.hooks)) {
-          if (Array.isArray(matchers)) {
-            matchers.forEach((matcher, index) => {
-              hooks.push({
-                event,
-                matcher: matcher.matcher || '',
-                hooks: matcher.hooks || [],
-                source: 'settings.local.json',
-                matcherIndex: index
-              });
+          // STEP 2: Validate event name against Claude Code specification
+          if (!VALID_HOOK_EVENTS.includes(event)) {
+            warnings.push({
+              file: localSettingsPath,
+              error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
+              severity: 'error',
+              skipped: true,
+              helpText: 'See https://docs.claude.com/en/docs/claude-code/hooks for valid event names'
             });
+            continue;
           }
+
+          // Check if event supports matchers
+          const supportsMatchers = MATCHER_EVENTS.includes(event);
+
+          // STEP 3: Validate top-level structure (must be array)
+          if (!Array.isArray(matchers)) {
+            warnings.push({
+              file: localSettingsPath,
+              error: `Hook event "${event}" must be an array of hook objects, got ${typeof matchers}`,
+              severity: 'error',
+              skipped: true,
+              helpText: 'See https://json.schemastore.org/claude-code-settings.json for valid format'
+            });
+            continue;
+          }
+
+          // STEP 3: Validate each matcher entry
+          matchers.forEach((matcherEntry, index) => {
+            // Validate matcher entry is an object
+            if (!matcherEntry || typeof matcherEntry !== 'object') {
+              warnings.push({
+                file: localSettingsPath,
+                error: `Each hook entry for "${event}" must be an object with "hooks" property`,
+                severity: 'error',
+                skipped: true
+              });
+              return;
+            }
+
+            // Validate hooks property exists and is array
+            if (!Array.isArray(matcherEntry.hooks)) {
+              warnings.push({
+                file: localSettingsPath,
+                error: `Hook entry for "${event}" missing required "hooks" array`,
+                severity: 'error',
+                skipped: true
+              });
+              return;
+            }
+
+            // Warn if matcher used on non-matcher event
+            if (matcherEntry.matcher && !supportsMatchers) {
+              warnings.push({
+                file: localSettingsPath,
+                error: `Event "${event}" does not support matchers. Matcher field will be ignored.`,
+                severity: 'warning',
+                skipped: false
+              });
+            }
+
+            // STEP 3: Validate each hook command
+            const validHooks = [];
+            for (const hook of matcherEntry.hooks) {
+              // Validate hook is object
+              if (!hook || typeof hook !== 'object') {
+                warnings.push({
+                  file: localSettingsPath,
+                  error: `Hook command must be an object with "type" and "command" fields`,
+                  severity: 'error',
+                  skipped: true
+                });
+                continue;
+              }
+
+              // Validate type field (must be "command")
+              if (hook.type && hook.type !== 'command') {
+                warnings.push({
+                  file: localSettingsPath,
+                  error: `Hook type must be "command", got "${hook.type}". Defaulting to "command".`,
+                  severity: 'warning',
+                  skipped: false
+                });
+                hook.type = 'command';
+              } else if (!hook.type) {
+                // Auto-fix missing type
+                hook.type = 'command';
+              }
+
+              // Validate command field (required, must be string)
+              if (!hook.command || typeof hook.command !== 'string') {
+                warnings.push({
+                  file: localSettingsPath,
+                  error: `Hook missing required "command" field (string)`,
+                  severity: 'error',
+                  skipped: true
+                });
+                continue;
+              }
+
+              // Validate timeout if present
+              if (hook.timeout !== undefined && (typeof hook.timeout !== 'number' || hook.timeout <= 0)) {
+                warnings.push({
+                  file: localSettingsPath,
+                  error: `Hook timeout must be a positive number, got ${hook.timeout}. Using default (60s).`,
+                  severity: 'warning',
+                  skipped: false
+                });
+                hook.timeout = 60;
+              }
+
+              // Hook passed validation
+              validHooks.push(hook);
+            }
+
+            // STEP 4: Flatten response structure - create one object per hook command
+            // This makes it easier for the UI to consume without nested arrays
+            if (validHooks.length > 0) {
+              for (const hook of validHooks) {
+                hooks.push({
+                  event,
+                  matcher: matcherEntry.matcher || '*',
+                  type: hook.type || 'command',
+                  command: hook.command,
+                  timeout: hook.timeout || 60,
+                  enabled: hook.enabled !== undefined ? hook.enabled : true,
+                  source: 'settings.local.json'
+                });
+              }
+            }
+          });
         }
       } else {
         // Unexpected type
@@ -313,7 +572,10 @@ async function getProjectHooks(projectPath) {
     }
   }
 
-  return { hooks, warnings };
+  // STEP 5: Apply deduplication before returning
+  const deduplicatedHooks = deduplicateHooks(hooks);
+
+  return { hooks: deduplicatedHooks, warnings };
 }
 
 /**
@@ -615,17 +877,137 @@ async function getUserHooks() {
         // Handle object format: { "UserPromptSubmit": [...], "Notification": [...] }
         // Each event maps to an array of matcher configs
         for (const [event, matchers] of Object.entries(settings.hooks)) {
-          if (Array.isArray(matchers)) {
-            matchers.forEach((matcher, index) => {
-              hooks.push({
-                event,
-                matcher: matcher.matcher || '',
-                hooks: matcher.hooks || [],
-                source: '~/.claude/settings.json',
-                matcherIndex: index
-              });
+          // STEP 2: Validate event name against Claude Code specification
+          if (!VALID_HOOK_EVENTS.includes(event)) {
+            warnings.push({
+              file: settingsPath,
+              error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
+              severity: 'error',
+              skipped: true,
+              helpText: 'See https://docs.claude.com/en/docs/claude-code/hooks for valid event names'
             });
+            continue;
           }
+
+          // Check if event supports matchers
+          const supportsMatchers = MATCHER_EVENTS.includes(event);
+
+          // STEP 3: Validate top-level structure (must be array)
+          if (!Array.isArray(matchers)) {
+            warnings.push({
+              file: settingsPath,
+              error: `Hook event "${event}" must be an array of hook objects, got ${typeof matchers}`,
+              severity: 'error',
+              skipped: true,
+              helpText: 'See https://json.schemastore.org/claude-code-settings.json for valid format'
+            });
+            continue;
+          }
+
+          // STEP 3: Validate each matcher entry
+          matchers.forEach((matcherEntry, index) => {
+            // Validate matcher entry is an object
+            if (!matcherEntry || typeof matcherEntry !== 'object') {
+              warnings.push({
+                file: settingsPath,
+                error: `Each hook entry for "${event}" must be an object with "hooks" property`,
+                severity: 'error',
+                skipped: true
+              });
+              return;
+            }
+
+            // Validate hooks property exists and is array
+            if (!Array.isArray(matcherEntry.hooks)) {
+              warnings.push({
+                file: settingsPath,
+                error: `Hook entry for "${event}" missing required "hooks" array`,
+                severity: 'error',
+                skipped: true
+              });
+              return;
+            }
+
+            // Warn if matcher used on non-matcher event
+            if (matcherEntry.matcher && !supportsMatchers) {
+              warnings.push({
+                file: settingsPath,
+                error: `Event "${event}" does not support matchers. Matcher field will be ignored.`,
+                severity: 'warning',
+                skipped: false
+              });
+            }
+
+            // STEP 3: Validate each hook command
+            const validHooks = [];
+            for (const hook of matcherEntry.hooks) {
+              // Validate hook is object
+              if (!hook || typeof hook !== 'object') {
+                warnings.push({
+                  file: settingsPath,
+                  error: `Hook command must be an object with "type" and "command" fields`,
+                  severity: 'error',
+                  skipped: true
+                });
+                continue;
+              }
+
+              // Validate type field (must be "command")
+              if (hook.type && hook.type !== 'command') {
+                warnings.push({
+                  file: settingsPath,
+                  error: `Hook type must be "command", got "${hook.type}". Defaulting to "command".`,
+                  severity: 'warning',
+                  skipped: false
+                });
+                hook.type = 'command';
+              } else if (!hook.type) {
+                // Auto-fix missing type
+                hook.type = 'command';
+              }
+
+              // Validate command field (required, must be string)
+              if (!hook.command || typeof hook.command !== 'string') {
+                warnings.push({
+                  file: settingsPath,
+                  error: `Hook missing required "command" field (string)`,
+                  severity: 'error',
+                  skipped: true
+                });
+                continue;
+              }
+
+              // Validate timeout if present
+              if (hook.timeout !== undefined && (typeof hook.timeout !== 'number' || hook.timeout <= 0)) {
+                warnings.push({
+                  file: settingsPath,
+                  error: `Hook timeout must be a positive number, got ${hook.timeout}. Using default (60s).`,
+                  severity: 'warning',
+                  skipped: false
+                });
+                hook.timeout = 60;
+              }
+
+              // Hook passed validation
+              validHooks.push(hook);
+            }
+
+            // STEP 4: Flatten response structure - create one object per hook command
+            // This makes it easier for the UI to consume without nested arrays
+            if (validHooks.length > 0) {
+              for (const hook of validHooks) {
+                hooks.push({
+                  event,
+                  matcher: matcherEntry.matcher || '*',
+                  type: hook.type || 'command',
+                  command: hook.command,
+                  timeout: hook.timeout || 60,
+                  enabled: hook.enabled !== undefined ? hook.enabled : true,
+                  source: '~/.claude/settings.json'
+                });
+              }
+            }
+          });
         }
       } else {
         // Unexpected type
@@ -649,7 +1031,10 @@ async function getUserHooks() {
     }
   }
 
-  return { hooks, warnings };
+  // STEP 5: Apply deduplication before returning
+  const deduplicatedHooks = deduplicateHooks(hooks);
+
+  return { hooks: deduplicatedHooks, warnings };
 }
 
 /**
@@ -697,6 +1082,25 @@ async function getUserMCP() {
   }
 
   return { mcp, warnings };
+}
+
+/**
+ * STEP 5: Deduplicates hooks based on event, matcher, and command
+ * Per Claude Code spec: "Identical hook commands are automatically deduplicated"
+ * @param {Array} hooks - Array of hook objects
+ * @returns {Array} Deduplicated array of hooks
+ */
+function deduplicateHooks(hooks) {
+  const seen = new Set();
+  return hooks.filter(hook => {
+    // Create unique key from event, matcher, and command
+    const key = `${hook.event}::${hook.matcher}::${hook.command}`;
+    if (seen.has(key)) {
+      return false; // Skip duplicate
+    }
+    seen.add(key);
+    return true; // Keep first occurrence
+  });
 }
 
 /**

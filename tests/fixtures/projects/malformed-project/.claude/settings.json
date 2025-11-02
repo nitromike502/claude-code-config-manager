@@ -1,6 +1,6 @@
 {
   "hooks": {
-    "pre-commit": [
+    "Stop": [
       {
         "matcher": "*.js"
         "hooks": [
