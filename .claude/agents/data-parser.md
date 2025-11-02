@@ -1,7 +1,7 @@
 ---
 name: data-parser
 description: Expert in parsing Markdown, YAML, and JSON files for Claude Code configurations. Use proactively when you need to parse .claude files, extract frontmatter, process Claude Code configuration formats, or create parsers for subagents, commands, hooks, or MCP servers.
-tools: Read, Write, Edit, Glob, Grep, Bash
+tools: Read, Write, Edit, Glob, Grep, Bash, NotebookEdit, WebFetch, TodoWrite, WebSearch, BashOutput, KillShell, AskUserQuestion, Skill, SlashCommand
 model: sonnet
 color: cyan
 ---

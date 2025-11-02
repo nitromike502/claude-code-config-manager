@@ -1,7 +1,7 @@
 ---
 name: subagent-orchestrator
 description: Use proactively for coordinating multi-agent workflows, managing dependencies between agents, tracking Epic/Story/Task progress, and ensuring smooth handoffs in the SWARM development process. The traffic controller for all agent coordination.
-tools: Read, Write, TodoWrite, Task
+tools: Read, Write, TodoWrite, Glob, Grep, WebFetch, WebSearch, BashOutput, KillShell, AskUserQuestion
 model: sonnet
 color: purple
 ---

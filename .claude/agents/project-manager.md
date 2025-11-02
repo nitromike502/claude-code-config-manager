@@ -1,7 +1,6 @@
 ---
 name: project-manager
 description: Use proactively for high-level project decisions, phase gate approvals, timeline management, stakeholder communication, and ensuring project meets success criteria.
-tools: Read, Write
 model: sonnet
 color: blue
 ---

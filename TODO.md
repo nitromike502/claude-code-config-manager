@@ -46,6 +46,9 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 - [ ] Pre-built hook templates
 - [ ] Hook dependency management
 
+### Technical Verification Tasks
+- [ ] **Verify Claude Code Manager hook array handling**: Confirm that our backend parsers and frontend UI correctly handle `.claude/settings.json` hooks with multiple scripts per event as arrays (e.g., `"pre-commit": ["script1", "script2"]`). Claude Code supports this format, but our Manager app may only display/parse single-script hooks currently. Test with array-format hooks and update parsers/UI if needed before implementing Copy Configuration feature.
+
 ### Phase 6 - MCP Server Management
 - [ ] Add, edit, and remove MCP servers
 - [ ] Server configuration validation
