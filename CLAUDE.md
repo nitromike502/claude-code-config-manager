@@ -227,3 +227,4 @@ This project has undergone continuous improvement since Phase 1 MVP. Key session
 This project uses Claude Code with specialized subagents. See `.claude/agents/` for team structure.
 
 **All contributions must follow the Git Workflow** - See `docs/guides/GIT-WORKFLOW.md` for complete details.
+- Move files to delete to the `.deleted/` directory, so I can review and delete them manually
