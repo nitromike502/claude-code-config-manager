@@ -56,23 +56,27 @@ describe('CopyService - resolveConflict()', () => {
       const targetPath = '/target/agent.md';
 
       // Mock file system to simulate existing files
+      // generateUniquePath checks agent-2.md (exists), then agent-3.md (doesn't exist)
       accessSpy
-        .mockRejectedValueOnce(new Error('exists')) // agent-2.md exists
-        .mockResolvedValueOnce(undefined);          // agent-3.md doesn't exist
+        .mockResolvedValueOnce(undefined)  // agent-2.md exists (first check in do...while)
+        .mockRejectedValueOnce(Object.assign(new Error('ENOENT'), { code: 'ENOENT' })); // agent-3.md doesn't exist (second check)
 
       const result = await copyService.resolveConflict(targetPath, 'rename');
 
       expect(result).toBe('/target/agent-3.md');
+      expect(accessSpy).toHaveBeenCalledTimes(2);
     });
 
     test('should preserve file extension in renamed path', async () => {
       const targetPath = '/target/my-command.md';
 
-      accessSpy.mockResolvedValue(undefined); // File doesn't exist
+      // Mock file system - first check (my-command-2.md) doesn't exist
+      accessSpy.mockRejectedValueOnce(Object.assign(new Error('ENOENT'), { code: 'ENOENT' }));
 
       const result = await copyService.resolveConflict(targetPath, 'rename');
 
-      expect(result).toMatch(/my-command-\d+\.md$/);
+      expect(result).toBe('/target/my-command-2.md');
+      expect(accessSpy).toHaveBeenCalledTimes(1);
     });
   });
 
