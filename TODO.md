@@ -79,7 +79,7 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 _(Add UI improvement ideas here as they come up)_
 
 ### Performance Optimization Ideas
-_(Add performance improvement ideas here)_
+- [ ] **DEBUG: Jest test performance issue** - Copy service tests (67 tests, 653 lines) cause Jest to run out of memory (>4GB heap) and take extremely long to run in WSL2 environment. Issue may be environment-specific (WSL2), circular dependencies in mocks, or Jest configuration. Need to investigate and fix before STORY-3.1 can be completed. Potential solutions: split into smaller test files, investigate mock dependencies, try different environment, optimize Jest config. See TASK-3.1.6 for context.
 
 ### Developer Experience Ideas
 _(Add DX improvement ideas here)_

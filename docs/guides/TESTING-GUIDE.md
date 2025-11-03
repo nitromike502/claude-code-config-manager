@@ -89,6 +89,147 @@ npm run test:visual       # Visual regression tests
 npm test
 ```
 
+## Running Backend Tests Efficiently
+
+### Optimal Execution Strategy
+
+Backend tests run **significantly faster** when executed individually in parallel rather than as a single Jest suite. This approach avoids Jest memory issues common in WSL2 environments.
+
+**Key Metrics:**
+- Individual test files complete in **<0.2 seconds**
+- Running all tests together can cause memory issues (>4GB, timeouts)
+- Parallel execution with timeout provides optimal performance
+
+### Recommended Approach: Parallel Execution with Timeout
+
+**Timeout Recommendation:** 5 seconds per individual test file
+
+**Rationale:**
+- Well-behaved tests finish in <0.2s
+- Timeouts indicate infrastructure problems, not slow tests
+- Provides early detection of Jest memory issues
+- Prevents hanging test processes
+
+**Example Pattern:**
+```bash
+# Run multiple test files in parallel with 5s timeout each
+timeout 5s npm test -- tests/backend/services/copyService.test.js &
+timeout 5s npm test -- tests/backend/services/pathValidator.test.js &
+timeout 5s npm test -- tests/backend/services/conflictDetector.test.js &
+timeout 5s npm test -- tests/backend/services/conflictResolver.test.js &
+timeout 5s npm test -- tests/backend/services/uniquePathGenerator.test.js &
+
+# Wait for all background processes to complete
+wait
+
+# Check exit codes
+echo "All tests completed"
+```
+
+### Exit Code Meanings
+
+Understanding exit codes helps diagnose issues quickly:
+
+- **Exit code 0:** All tests passed ✅
+- **Exit code 1:** Test failures (assertion errors) ❌
+- **Exit code 124:** Timeout exceeded (infrastructure issue) ⏱️
+
+**Example with Exit Code Handling:**
+```bash
+# Run test with timeout and capture exit code
+timeout 5s npm test -- tests/backend/services/copyService.test.js
+exit_code=$?
+
+if [ $exit_code -eq 0 ]; then
+  echo "✅ Tests passed"
+elif [ $exit_code -eq 124 ]; then
+  echo "⏱️ Timeout - Jest infrastructure issue detected"
+elif [ $exit_code -eq 1 ]; then
+  echo "❌ Test failures - check assertions"
+fi
+```
+
+### When to Use Parallel vs. Sequential
+
+**Use Parallel Execution (Recommended):**
+- Running multiple test files during development
+- Full test suite execution in CI/CD
+- When experiencing Jest memory issues
+- For fastest overall test execution
+
+**Use Sequential Execution:**
+- Debugging specific test failures
+- Investigating test interdependencies
+- When you need complete Jest output logs
+- Running a single test file
+
+**Example: Full Parallel Test Run**
+```bash
+# Create array of all backend test files
+test_files=(
+  tests/backend/services/copyService.test.js
+  tests/backend/services/pathValidator.test.js
+  tests/backend/services/conflictDetector.test.js
+  tests/backend/services/conflictResolver.test.js
+  tests/backend/services/uniquePathGenerator.test.js
+)
+
+# Run all tests in parallel with timeout
+for test_file in "${test_files[@]}"; do
+  timeout 5s npm test -- "$test_file" &
+done
+
+# Wait for all to complete
+wait
+echo "All backend tests completed"
+```
+
+### Troubleshooting Jest Memory Issues in WSL2
+
+**Symptoms:**
+- Tests hang or timeout when running together
+- Memory usage exceeds 4GB
+- Tests pass individually but fail in suites
+- Jest process becomes unresponsive
+
+**Solutions:**
+
+1. **Use Parallel Execution** (see above)
+   - Isolates each test file in its own Jest process
+   - Prevents memory accumulation across tests
+
+2. **Increase WSL2 Memory Limit** (`.wslconfig`)
+   ```ini
+   [wsl2]
+   memory=8GB
+   ```
+
+3. **Clear Jest Cache**
+   ```bash
+   npm test -- --clearCache
+   ```
+
+4. **Use --runInBand for Debugging**
+   ```bash
+   # Run tests sequentially in same process
+   npm test -- --runInBand tests/backend/services/
+   ```
+
+5. **Monitor Memory Usage**
+   ```bash
+   # Run test with memory monitoring
+   /usr/bin/time -v npm test -- tests/backend/services/copyService.test.js
+   ```
+
+### Best Practices Summary
+
+1. **Default to parallel execution** with 5s timeout for all backend test runs
+2. **Investigate timeouts immediately** - they indicate infrastructure issues
+3. **Use exit codes** to distinguish between test failures and infrastructure problems
+4. **Run tests individually** when debugging specific failures
+5. **Monitor memory usage** in WSL2 environments
+6. **Clear Jest cache** if experiencing unexplained failures
+
 ## Test Coverage
 
 Current test coverage:
