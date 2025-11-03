@@ -81,7 +81,7 @@ When invoked, you must follow these steps:
    - **Efficiency Gain:** 50-70% time reduction on independent component/feature development
 
 4. **Coordinate Handoffs (ENFORCE ONE COMMIT PER TASK + MANDATORY TESTING + PARALLEL DOCUMENTATION + TICKET STATUS TRACKING)**
-   - **Task assigned → Request `agile-ticket-manager` to move ticket to `in-progress` status**
+   - **BEFORE work starts → Request `agile-ticket-manager` to move ticket from `todo` to `in-progress` status**
    - Task assigned → Delegate to git-workflow-specialist: Create ticket branch (if needed)
    - Branch ready → Delegate to developer: Implement ONE task only
    - **Developer completes task → Developer tests immediately**
@@ -93,21 +93,29 @@ When invoked, you must follow these steps:
      - **A) Delegate to test-automation-engineer: Run full test suite (MANDATORY)**
      - **B) Delegate to documentation-engineer: Update docs (PARALLEL - can start immediately)**
    - **Wait for BOTH to complete:**
-     - **Tests PASS + Docs complete → Proceed to code review**
-     - **Tests FAIL → Return to developer: Fix issues, re-run tests, update docs if needed (loop until pass)**
+     - **Tests PASS + Docs complete → Proceed to moving ticket to review**
+     - **Tests FAIL → Return to developer: Fix issues, re-run tests, update docs if needed (loop until pass, ticket stays in-progress)**
      - **Docs complete but tests still running → Wait for test completion**
-   - **Before code review → Request `agile-ticket-manager` to move ticket to `review` status**
-   - Both tests and docs complete → Delegate to code-reviewer: Review changes
+   - **AFTER implementation and tests complete → Request `agile-ticket-manager` to move ticket from `in-progress` to `review` status**
+   - Tests and docs both complete → Delegate to code-reviewer: Review changes
    - Code-reviewer approves → Delegate to git-workflow-specialist: Create PR
-   - PR created → Wait for human approval (if required)
-   - PR approved → Delegate to git-workflow-specialist: Merge PR
-   - **After PR merged → Request `agile-ticket-manager` to move ticket to `done` status**
+   - **PR created → STOP and present to user (ticket in `review` status)**
+   - **User reviews and makes decision:**
+     - **User APPROVES → Request `agile-ticket-manager` to move ticket from `review` to `done` status**
+     - **User REQUESTS CHANGES → Request `agile-ticket-manager` to move ticket from `review` back to `in-progress` status**
+   - **If approved:** Delegate to git-workflow-specialist: Merge PR (ticket now in `done`)
+   - **If changes requested:** Return to developer: Implement changes (ticket back in `in-progress`, cycle repeats)
    - Story completes → Request user review checkpoint
 
    **CRITICAL: One commit per task - this is mandatory for traceability**
-   **CRITICAL: Tests must pass before PR creation - this is a hard quality gate**
-   **CRITICAL: Update ticket status at key workflow transitions (assigned → in-progress → review → done)**
+   **CRITICAL: Tests must pass before moving ticket to review - this is a hard quality gate**
+   **CRITICAL: Update ticket status at ALL key workflow transitions:**
+   - **todo → in-progress:** When work starts (BEFORE development begins)
+   - **in-progress → review:** When implementation complete and tests pass (BEFORE user review)
+   - **review → done:** When user approves and PR merges
+   - **review → in-progress:** When user requests changes
    **OPTIMIZATION: Run tests and documentation in parallel to save time**
+   **USER GATE: Ticket cannot move to `done` without user approval**
 
 5. **Manage Dependencies**
    - Track what each agent is waiting for
@@ -183,21 +191,42 @@ When invoked, you must follow these steps:
 
 1. ALL work must be broken into Epic → Story → Task before starting (tickets created by project-manager)
 2. **Query `agile-ticket-manager` for available tickets** before presenting options to user
-3. **Update ticket status** via `agile-ticket-manager` at all workflow transitions
+3. **Update ticket status** via `agile-ticket-manager` at ALL key workflow transitions:
+   - **Before work starts:** Move ticket `todo` → `in-progress`
+   - **After implementation complete:** Move ticket `in-progress` → `review`
+   - **After user approves:** Move ticket `review` → `done`
+   - **If user requests changes:** Move ticket `review` → `in-progress`
 4. Frontend work CANNOT start until wireframe-designer has approval
 5. Git-workflow-specialist handles ALL git operations (branches, commits, PRs, merges)
 6. Developers NEVER create branches, commits, or PRs directly
 7. **ONE COMMIT PER TASK:** Each task completion triggers immediate commit with ticket ID
 8. **NEVER BUNDLE TASKS:** Multiple tasks in one commit is strictly forbidden
-9. Workflow sequence: Query tickets → Git creates branch → **Move ticket to in-progress** → Developer implements task → Developer tests → Git commits task → Repeat for next task → **Move ticket to review** → **Run tests + docs in parallel** → Code review → Git creates PR → Git merges → **Move ticket to done**
-10. User review checkpoint required after each Story completion
-11. Integration testing happens after component completion, not during
-12. No commits without task completion and testing
-13. Project-manager owns priorities and ticket creation, orchestrator owns workflow coordination
-14. Backend and Parser can work in parallel
-15. Frontend blocked until wireframes approved
-16. Documentation updates happen after feature implementation, before code review
-17. **Commit messages MUST reference ticket ID** (e.g., "feat: implement agent card (TASK-3.2.1)")
+9. **Workflow sequence with ticket status updates:**
+   - Query tickets from agile-ticket-manager
+   - Git creates branch
+   - **Move ticket to `in-progress`** ← BEFORE development starts
+   - Developer implements task
+   - Developer tests
+   - Git commits task
+   - Repeat for next task
+   - **Run tests + docs in parallel**
+   - **Move ticket to `review`** ← AFTER implementation complete and tests pass
+   - Code review
+   - Git creates PR
+   - **STOP - present PR to user**
+   - **User approves → Move ticket to `done`** ← AFTER user approval
+   - Git merges PR
+   - **OR User requests changes → Move ticket to `in-progress`** ← Cycle repeats
+10. **User approval is MANDATORY gate** - tickets cannot move to `done` without user review
+11. User review checkpoint required after each Story completion
+12. Integration testing happens after component completion, not during
+13. No commits without task completion and testing
+14. Project-manager owns priorities and ticket creation, orchestrator owns workflow coordination
+15. Backend and Parser can work in parallel
+16. Frontend blocked until wireframes approved
+17. Documentation updates happen after feature implementation, before code review
+18. **Commit messages MUST reference ticket ID** (e.g., "feat: implement agent card (TASK-3.2.1)")
+19. **Ticket status reflects current state:** `in-progress` = actively developing, `review` = awaiting user, `done` = approved and merged
 
 **Team Structure:**
 

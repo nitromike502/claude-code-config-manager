@@ -156,7 +156,7 @@ After user selects ticket(s) to work on:
 
 **For EACH selected ticket (process sequentially or delegate to parallel agents):**
 
-1. **Request `agile-ticket-manager` to move ticket to `in-progress` status**
+1. **BEFORE starting work:** Request `agile-ticket-manager` to move ticket from `todo` to `in-progress` status
 2. Read relevant PRD documents from `/home/tickets/claude/manager/prds/`
 3. **Query `agile-ticket-manager` for full ticket details** (description, acceptance criteria, dependencies)
 4. **Validate task sizing before starting** - reject any task >1 hour
@@ -172,30 +172,38 @@ After user selects ticket(s) to work on:
    - **git-workflow-specialist commits after EACH tested sub-feature (15-30 min)** with ticket ID in message
    - **test-automation-engineer runs automated tests (MANDATORY after all sub-features complete)**
    - **If tests FAIL:** Return to developer to fix issues, re-run tests (loop until pass)
-   - **If tests PASS:** Proceed to documentation and code review
-   - **Request `agile-ticket-manager` to move ticket to `review` status**
+   - **If tests PASS:** Proceed to documentation and code review preparation
+7. **AFTER implementation complete:** Request `agile-ticket-manager` to move ticket from `in-progress` to `review` status
+8. **Continue with review preparation:**
    - documentation-engineer for documentation updates
    - code-reviewer for quality assurance (reviews implementation + test results)
-7. **Ensure incremental commit chain:** developer implements + tests → git-commit (with ticket ID) → next sub-feature → test-automation-engineer → move to review → docs → code-review
-8. **After all work complete and tests pass:** documentation-engineer → code-reviewer → git-PR
-9. **Create PR for THIS ticket** - one ticket = one PR (only if automated tests passed), include ticket ID in PR title
-10. **Monitor commit frequency - must see commits every 15-30 minutes**
-11. **After PR merged:** Request `agile-ticket-manager` to move ticket to `done` status
+9. **Ensure incremental commit chain:** developer implements + tests → git-commit (with ticket ID) → next sub-feature → test-automation-engineer → **move to review** → docs → code-review
+10. **After all work complete and tests pass:** documentation-engineer → code-reviewer → git-PR
+11. **Create PR for THIS ticket** - one ticket = one PR (only if automated tests passed), include ticket ID in PR title
+12. **Monitor commit frequency - must see commits every 15-30 minutes**
+13. **Present PR to user for code review** - ticket now in `review` status awaiting user approval
 
-**CRITICAL: Automated testing (test-automation-engineer) is a mandatory quality gate that runs AFTER all sub-features complete but BEFORE PR creation. PRs cannot be created if tests fail.**
+**CRITICAL: Automated testing (test-automation-engineer) is a mandatory quality gate that runs AFTER all sub-features complete but BEFORE moving to review status. Tickets cannot move to review if tests fail.**
 
 **After all selected tickets have their PRs created:**
 - STOP and present all PR URLs to user
-- Wait for user approval/merge before continuing
+- Ticket(s) are in `review` status awaiting user approval
+- User will review code and either:
+  - **APPROVE:** Orchestrator requests ticket manager to move ticket to `done` status (PR gets merged)
+  - **REQUEST CHANGES:** Orchestrator requests ticket manager to move ticket back to `in-progress` (developer makes changes, cycle repeats)
+- Wait for user decision before continuing
 
-## Step 6: Deliver Results & Wait for PR Approval
+## Step 6: Deliver Results & Wait for User Review
 1. Provide summary of completed work for each ticket
 2. Show all PR URLs created (one per ticket)
-3. Explain which tickets are complete and awaiting review
+3. Explain ticket status: "Ticket(s) moved to `review` status, awaiting your approval"
 4. **STOP HERE - Do not proceed to next tickets**
-5. User will review and merge PRs, then:
+5. **Wait for user review decision:**
+   - **If user APPROVES:** Orchestrator requests ticket manager to move ticket(s) to `done`, then PR(s) get merged
+   - **If user REQUESTS CHANGES:** Orchestrator requests ticket manager to move ticket(s) back to `in-progress`, developers make changes
+6. After user provides decision on current tickets:
    - Run `/swarm` again to continue with next ticket(s)
-   - Or request changes on specific PRs
+   - Or implement requested changes on tickets returned to `in-progress`
 
 **Key Points**:
 - One ticket = One branch = One PR (always)
@@ -203,6 +211,9 @@ After user selects ticket(s) to work on:
 - Parallel subagents work WITHIN a single ticket's branch (backend + frontend together)
 - Never combine multiple tickets into one branch/PR
 - Each `/swarm` execution stops after creating PR(s) for selected ticket(s)
+- **Tickets move to `review` status when PR created, awaiting user approval**
+- **Tickets move to `done` only after user approval and PR merge**
+- **Tickets can move back to `in-progress` if user requests changes**
 
 The orchestrator intelligently handles both planning and execution. It proposes ticket options with dependency analysis, waits for your selection, executes work with parallel subagents where appropriate (within each ticket), creates one PR per ticket, and stops for your review.
 </execution>
