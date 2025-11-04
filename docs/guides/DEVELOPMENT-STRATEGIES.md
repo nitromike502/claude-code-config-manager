@@ -10,6 +10,7 @@ Different types of work require different development approaches. This project u
 
 | Strategy | Best For | Pattern | Time Impact |
 |----------|----------|---------|-------------|
+| **SWARM** | Ticket-based development | 7 phases, quality gates | 40-62% time savings with parallelization |
 | **Development Approved** | Complex features, architectural decisions | Propose → Approve → Implement | +5-10 min discussion, saves 30-60 min rework |
 | **Rapid Iteration** | Simple changes, obvious fixes | Implement → Test → Commit | Minimal overhead, fast execution |
 | **Parallel Execution** | Multiple independent tasks | Plan → Launch All → Validate | 50-87% time savings vs sequential |
@@ -84,9 +85,63 @@ Select development strategy at session start:
 4. **Follow the pattern:** Adapt your workflow to match the selected strategy
 5. **Review results:** Compare actual vs. expected time impact
 
+## SWARM Strategy (Recommended for Tickets)
+
+**Definition:** Specialized Workflow with Autonomous Resource Management
+
+**When to Use:**
+- Implementing any ticket (Epic/Story/Task/Bug) from the ticketing system
+- Feature development requiring multiple subagents
+- Work that benefits from structured phases and quality gates
+- Projects requiring session continuity (tracking documents)
+
+**Architecture:**
+- **Main Agent:** Coordinates all subagent invocations
+- **Orchestrator:** Creates execution plans (does NOT invoke subagents)
+- **Ticket Manager:** API-style ticket operations
+- **Session Tracking:** Maintained by main agent for continuity
+
+**7-Phase Workflow:**
+1. **Session Initialization:** Orchestrator analyzes ticket, creates plan
+2. **Git & Session Setup:** Branch creation, tracking document creation
+3. **Implementation:** Sequential or parallel execution based on orchestrator's recommendations
+4. **Code Commit:** Commit implementation changes
+5. **Documentation Commit:** Commit documentation updates (separate commit)
+6. **PR & Review:** Code-reviewer provides quality gate
+7. **User Approval & Merge:** User approves, git-workflow-specialist merges
+
+**Parallelization:**
+- Orchestrator identifies safe parallel opportunities (independent files, no dependencies)
+- Main agent decides whether to execute in parallel
+- Reference: `docs/guides/PARALLEL-EXECUTION-GUIDE.md`
+
+**Session Continuity:**
+- Tracking document: `docs/sessions/tracking/SESSION-<ticket-id>-<date>.md`
+- Comprehensive state tracking enables resumption at any point
+- Template: `.claude/templates/session-tracking-template.md`
+
+**Evidence:**
+- 5 exemplary sessions analyzed (Nov 2, 2025)
+- 100% completion rate
+- 879/879 tests passing across all sessions
+- 40-62% time savings with parallelization
+
+**Commands:**
+- `/project-status` - Intelligent ticket selection
+- `/swarm <ticket-id>` - Execute SWARM workflow
+
+**Complete Documentation:** `docs/guides/SWARM-WORKFLOW.md`
+
+**When NOT to Use:**
+- Quick exploratory work (use Rapid strategy)
+- Simple one-file changes (use Approved strategy)
+- Purely investigative tasks (use general-purpose agent)
+
 ## Related Resources
 
 - **CLAUDE.md:** Project overview and complete documentation
+- **SWARM-WORKFLOW.md:** Complete SWARM workflow documentation
+- **PARALLEL-EXECUTION-GUIDE.md:** Parallelization decision criteria and patterns
 - **development-strategies.md template:** Detailed implementation patterns
 - **/dev-strategy command:** Interactive strategy selection tool
 - **Workflow analyses:** Real-world examples in `/docs/sessions/workflow-analyses/`

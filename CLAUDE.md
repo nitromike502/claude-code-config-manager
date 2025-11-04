@@ -149,11 +149,16 @@ POST /api/projects/scan              - Trigger project list refresh
 
 ## Implementation Approach
 
-Building with **parallel subagent teams** using the SWARM method:
+Building with **SWARM architecture** (Specialized Workflow with Autonomous Resource Management):
 
-1. **Backend Team** - API endpoints, file parsing, project discovery (includes immediate testing)
-2. **Frontend Team** - Vue components, SPA architecture, routing, state management (includes immediate testing)
-3. **Quality Team** - Code review, cross-platform verification, documentation
+- **Main Agent Coordination:** Only main agent invokes subagents
+- **Orchestrator Role:** Creates execution plans, recommends parallelization
+- **Ticket Manager:** Acts as API for ticket operations (like Jira/Azure DevOps)
+- **7-Phase Workflow:** Session Init → Git Setup → Implementation → Code Commit → Docs Commit → PR/Review → User Approval/Merge
+
+**Architecture Principle:** Subagents cannot invoke other subagents. Main agent coordinates all work based on orchestrator's recommendations.
+
+See `docs/guides/SWARM-WORKFLOW.md` for complete workflow documentation.
 
 **Note:** Testing is integrated into development, not a separate phase. Each developer tests their implementation immediately before code review.
 
@@ -209,7 +214,10 @@ backlog → todo → in-progress → review → done
 2. **Analysis** → BA creates PRD in `docs/ba-sessions/`
 3. **Planning** → User invokes `project-manager` to create tickets from PRD
 4. **Organization** → Project manager invokes `agile-ticket-manager` to organize tickets
-5. **Execution** → User runs `/swarm` command
+5. **Execution** → User runs `/swarm <ticket-id>`
+   - See `docs/guides/SWARM-WORKFLOW.md` for complete execution workflow
+   - Main agent coordinates all subagents (orchestrator creates plans only)
+   - Session tracking document maintained at `docs/sessions/tracking/`
 6. **Coordination** → Orchestrator queries ticket manager, assigns work, updates statuses
 7. **Completion** → Tickets moved to `done` after PR merge
 
@@ -229,10 +237,21 @@ All bugs were resolved with comprehensive test coverage.
 
 **Read these documents when you need them:**
 
+### 🎯 SWARM Workflow
+- **Complete workflow guide:** `docs/guides/SWARM-WORKFLOW.md`
+  - When: Implementing any ticket (Story/Task/Bug)
+  - Contains: Complete 7-phase workflow from ticket selection through PR merge
+  - Key commands: /project-status (ticket selection), /swarm <ticket-id> (execution)
+
+- **Parallelization guide:** `docs/guides/PARALLEL-EXECUTION-GUIDE.md`
+  - When: Orchestrator recommends parallel execution
+  - Contains: Decision criteria, examples, troubleshooting
+  - Performance: 40-62% time reduction demonstrated in real sessions
+
 ### 🚀 Starting Development
 - **Choose your workflow:** `docs/guides/DEVELOPMENT-STRATEGIES.md`
   - When: Beginning a new session or task
-  - Contains: Strategy selection (Approved/Rapid/Parallel), real-world evidence, decision criteria
+  - Contains: Strategy selection (Approved/Rapid/Parallel/SWARM), real-world evidence, decision criteria
 
 ### 📝 Git & Commits
 - **Feature branch workflow:** `docs/guides/GIT-WORKFLOW.md`
