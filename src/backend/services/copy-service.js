@@ -415,6 +415,115 @@ class CopyService {
       };
     }
   }
+
+  /**
+   * Copies a command file from source to target location
+   *
+   * Commands are markdown files with YAML frontmatter containing metadata like
+   * name, description, and command text. Commands can be nested in subdirectories
+   * (e.g., .claude/commands/git/commit.md) and the structure is preserved.
+   *
+   * @param {Object} request - Copy request object
+   * @param {string} request.sourcePath - Absolute path to source command file
+   * @param {string} request.targetScope - Target scope ('project' or 'user')
+   * @param {string|null} request.targetProjectId - Project ID if scope is 'project'
+   * @param {string} [request.conflictStrategy] - How to handle conflicts ('skip', 'overwrite', 'rename')
+   * @returns {Promise<Object>} Result object with success status and details
+   *
+   * Success return: { success: true, copiedPath: '/absolute/path/to/copied/command.md' }
+   * Conflict return: { success: false, conflict: { targetPath, sourceModified, targetModified } }
+   * Skip return: { success: false, skipped: true, message: 'Copy cancelled by user' }
+   * Error return: { success: false, error: 'Descriptive error message' }
+   */
+  async copyCommand(request) {
+    try {
+      // 1. Validate source path (security + existence)
+      const validatedSourcePath = await this.validateSource(request.sourcePath);
+
+      // 2. Validate YAML frontmatter
+      let content;
+      try {
+        content = await fs.readFile(validatedSourcePath, 'utf8');
+      } catch (error) {
+        throw new Error(`Failed to read source file: ${error.message}`);
+      }
+
+      // Check for YAML frontmatter delimiters (must start with --- and have closing ---)
+      const yamlPattern = /^---\s*\n[\s\S]*?\n---\s*\n/;
+      if (!yamlPattern.test(content)) {
+        throw new Error('Invalid command file: missing YAML frontmatter (must start and end with ---)');
+      }
+
+      // 3. Build target path
+      const targetPath = await this.buildTargetPath(
+        'command',
+        request.targetScope,
+        request.targetProjectId,
+        validatedSourcePath
+      );
+
+      // 4. Detect conflict
+      const conflict = await this.detectConflict(validatedSourcePath, targetPath);
+
+      // 5. Handle conflict if detected
+      let finalTargetPath = targetPath;
+
+      if (conflict) {
+        // Conflict exists - check if strategy provided
+        if (!request.conflictStrategy) {
+          // No strategy provided, return conflict for user decision
+          return {
+            success: false,
+            conflict: conflict
+          };
+        }
+
+        // Resolve conflict with provided strategy
+        try {
+          finalTargetPath = await this.resolveConflict(targetPath, request.conflictStrategy);
+        } catch (error) {
+          // Handle 'skip' strategy (throws "Copy cancelled by user")
+          if (error.message === 'Copy cancelled by user') {
+            return {
+              success: false,
+              skipped: true,
+              message: 'Copy cancelled by user'
+            };
+          }
+          // Re-throw other errors
+          throw error;
+        }
+      }
+
+      // 6. Ensure parent directory exists
+      const targetDir = path.dirname(finalTargetPath);
+      try {
+        await fs.mkdir(targetDir, { recursive: true });
+      } catch (error) {
+        throw new Error(`Failed to create target directory: ${error.message}`);
+      }
+
+      // 7. Copy file
+      try {
+        await fs.copyFile(validatedSourcePath, finalTargetPath);
+      } catch (error) {
+        throw new Error(`Failed to copy file: ${error.message}`);
+      }
+
+      // 8. Return success
+      return {
+        success: true,
+        copiedPath: finalTargetPath
+      };
+
+    } catch (error) {
+      // Handle all errors with consistent format
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred during copy operation'
+      };
+    }
+  }
 }
 
 // Export singleton instance
