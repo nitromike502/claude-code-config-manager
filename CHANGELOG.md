@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.0] - 2025-11-05
+
+### Added
+- Backend copy service for agents, commands, hooks, and MCP servers with conflict detection and resolution strategies
+- Security hardening with path validation and atomic writes
+- Smart deduplication for hooks and MCP configurations
+- Comprehensive test coverage: 111 tests (100% pass rate)
+
+---
+
 ## [2.0.1] - 2025-11-02
 
 ### Fixed

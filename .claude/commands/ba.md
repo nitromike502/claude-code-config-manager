@@ -314,18 +314,22 @@ All deliverables saved to: `docs/ba-sessions/[session-dir]/`
 **IMPORTANT: The project-manager creates tickets, NOT the BA.**
 
 When ready to begin development:
-- Invoke `project-manager` subagent
-- Project manager will read the PRD
+- User invokes `project-manager` subagent (or main agent invokes on user's behalf)
+- Project manager will read the PRD from BA session directory
 - Project manager will create Epic/Story/Task ticket files
 - Project manager will invoke `agile-ticket-manager` to organize tickets
 - Tickets will be stored in `/home/tickets/claude/manager/`
 
 ### 4. Begin Development
 - Use `/swarm` command to start working on tickets
-- Orchestrator will query ticket manager for available work
-- Development proceeds through standard SWARM workflow
+- Main agent will query ticket manager for available work (see Phase 0 in SWARM-WORKFLOW.md)
+- Main agent will invoke orchestrator for planning
+- Development proceeds through standard SWARM workflow (7 phases)
+
+**See:** `docs/guides/SWARM-WORKFLOW.md` for complete development workflow
 
 ## BA Role Summary
+
 **Business Analyst provides:**
 - Analysis and research
 - PRDs and requirements documentation
@@ -335,7 +339,11 @@ When ready to begin development:
 **Business Analyst does NOT:**
 - Create tickets (project-manager does this)
 - Organize tickets (agile-ticket-manager does this)
-- Execute development (developers do this via /swarm)
+- Execute development (main agent coordinates via /swarm)
+- Invoke subagents for implementation (only main agent can invoke subagents)
+
+**Workflow Integration:**
+BA creates PRD → PM creates tickets → Ticket Manager organizes → /swarm executes → Main agent coordinates all subagent invocations
 
 Would you like me to:
 - Refine any of the analysis or designs?

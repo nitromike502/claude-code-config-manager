@@ -15,6 +15,64 @@ All code changes must pass automated tests before PR creation:
 3. **git-workflow-specialist creates PR** (only after tests pass)
 4. **Code review and merge**
 
+## SWARM Workflow Integration
+
+The SWARM workflow includes testing as a **mandatory quality gate** in Phase 3.
+
+### Phase 3: Implementation & Testing
+
+**Test-Automation-Engineer Role:**
+- Invoked by main agent after each implementation task
+- Runs complete test suite: Backend (276 Jest) + Frontend (603 Playwright)
+- **Hard Quality Gate:** ALL tests must pass before proceeding to Phase 4 (Code Commit)
+- If ANY test fails: Analyzes failures, recommends fixes, returns to main agent
+
+**Workflow:**
+```
+Main Agent invokes backend-architect (task X)
+  ↓
+Main Agent invokes test-automation-engineer
+  ↓
+IF tests pass ✅ → Proceed to Phase 4 (Code Commit)
+IF tests fail ❌ → Main agent invokes appropriate developer to fix
+  ↓
+Loop until 100% pass rate achieved
+```
+
+**Structured Test Reports:**
+```
+## Test Results
+Backend: 276/276 passing ✅
+Frontend: 603/603 passing ✅
+Coverage: 97.97%
+
+Status: PASS - Proceed to Phase 4
+```
+
+### Parallel Test Execution Pattern
+
+**Jest Performance Optimization (WSL2):**
+
+Session ff4ab482 discovered that running all Jest test files together causes memory exhaustion in WSL2. **Solution:** Run individual test files in parallel using background Bash tasks.
+
+**Pattern:**
+```bash
+# Run 5 test files in parallel with timeouts
+npm test tests/backend/file1.test.js &
+npm test tests/backend/file2.test.js &
+npm test tests/backend/file3.test.js &
+npm test tests/backend/file4.test.js &
+npm test tests/backend/file5.test.js &
+wait
+```
+
+**Performance:**
+- Individual files: 0.2-0.4s per file
+- All together: Minutes (or timeout due to memory)
+- **Speedup:** ~90% reduction in test execution time
+
+**Reference:** `docs/guides/SWARM-WORKFLOW.md` Phase 3
+
 ## Test Types
 
 ### Backend (Jest + Supertest)
@@ -28,6 +86,91 @@ All code changes must pass automated tests before PR creation:
 - User interactions
 - API integration
 - Visual verification
+
+## Test Fixtures and Data Standards
+
+### Model Values in Test Fixtures
+
+**Always use enum values, never full model IDs:**
+
+**Correct:**
+```yaml
+---
+name: test-agent
+model: sonnet
+---
+```
+
+**Incorrect:**
+```yaml
+---
+name: test-agent
+model: claude-3-5-sonnet-20241022  # ❌ Never use full model IDs
+---
+```
+
+**Valid Enum Values:**
+- `sonnet` - Latest Claude 3.5 Sonnet model
+- `haiku` - Latest Claude 3 Haiku model
+- `opus` - Latest Claude 3 Opus model
+
+**Rationale:**
+- Full model IDs change with each release
+- Enum values remain stable across Claude Code versions
+- Tests stay valid when new models are released
+
+### Frontmatter Properties for Comprehensive Coverage
+
+**Include optional properties to ensure thorough test coverage:**
+
+**Agents:**
+```yaml
+---
+name: test-agent
+description: Test agent description
+tools: [Read, Write, Bash]
+model: sonnet
+color: blue
+---
+```
+
+**Commands:**
+```yaml
+---
+name: test-command
+model: sonnet
+allowed-tools: [Read, Write]
+argument-hint: Optional hint text
+disable-model-invocation: false
+---
+```
+
+**Benefits:**
+- Exercises more code paths in parsers
+- Ensures optional fields are handled correctly
+- Catches edge cases in frontmatter processing
+
+**See:** `docs/guides/CODING-STANDARDS.md` for complete test data standards.
+
+### Import Path Conventions
+
+**Backend Tests (Jest):**
+```javascript
+// ✅ Use relative paths
+const copyService = require('../../../src/backend/services/copy-service');
+const { parseSubagent } = require('../../../src/backend/parsers/subagentParser');
+```
+
+**Frontend Tests (Playwright):**
+```javascript
+// ✅ Use @ aliases (Vite configured)
+import { useProjectStore } from '@/stores/projectStore';
+import ConfigCard from '@/components/ConfigCard.vue';
+```
+
+**Rationale:**
+- Backend: Jest doesn't have `@` alias configured
+- Frontend: Vite has `@` alias pointing to `/src`
 
 ## Test File Naming Convention
 
@@ -67,6 +210,16 @@ If tests fail:
 4. Only then proceed to PR creation
 
 ## Running Tests
+
+### Test Execution in SWARM Workflow
+
+Within SWARM workflow, main agent delegates ALL test execution to test-automation-engineer:
+- Main agent invokes: `test-automation-engineer` in Phase 3
+- Test engineer runs full suite (backend + frontend)
+- Returns structured pass/fail report
+- Main agent coordinates fixes if needed
+
+**Manual Testing:** Outside SWARM, use standard npm commands:
 
 ### Backend Tests (Jest)
 ```bash
@@ -250,6 +403,9 @@ Current test coverage:
 5. **Keep Tests Fast:** Optimize slow tests to maintain rapid feedback loops
 6. **Use Descriptive Names:** Test names should clearly describe what they verify
 7. **Document Test Purpose:** Add comments explaining complex test scenarios
+8. **Follow Test Data Standards:** Use enum model values and comprehensive frontmatter (see Test Fixtures section above)
+
+**See Also:** `docs/guides/CODING-STANDARDS.md` for complete coding and testing standards
 
 ## Troubleshooting
 

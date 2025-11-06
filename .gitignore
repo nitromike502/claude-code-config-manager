@@ -159,6 +159,7 @@ $RECYCLE.BIN/
 .playwright-mcp/
 test-*.html
 test-results/
+test-reports/
 playwright-report/
 
 # Visual regression test artifacts (keep baselines, ignore diffs)
