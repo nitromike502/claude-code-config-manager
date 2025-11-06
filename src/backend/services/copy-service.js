@@ -1028,6 +1028,224 @@ class CopyService {
       };
     }
   }
+
+  /**
+   * Helper method to get project path from projectId
+   *
+   * @param {string} projectId - Project ID (encoded path)
+   * @returns {Promise<string>} Absolute path to project directory
+   * @throws {Error} If project not found or doesn't exist
+   */
+  async getProjectPath(projectId) {
+    const projectsResult = await discoverProjects();
+    const projectData = projectsResult.projects[projectId];
+
+    if (!projectData) {
+      throw new Error(`Project not found: ${projectId}`);
+    }
+
+    if (!projectData.exists) {
+      throw new Error(`Project directory does not exist: ${projectData.path}`);
+    }
+
+    return projectData.path;
+  }
+
+  /**
+   * Copies an MCP server configuration by merging it into target settings.json or .mcp.json
+   *
+   * Unlike agents and commands, MCP servers are not copied as separate files.
+   * Instead, they are merged into either:
+   * - User scope: ~/.claude/settings.json (under mcpServers key)
+   * - Project scope: .mcp.json (preferred) or .claude/settings.json (fallback)
+   *
+   * The method detects conflicts by checking if a server with the same name already exists.
+   * Conflict strategies supported: 'skip' (cancel), 'overwrite' (replace existing).
+   *
+   * @param {Object} request - Copy request object
+   * @param {string} request.sourceServerName - Name of MCP server to copy
+   * @param {Object} request.sourceMcpConfig - MCP server configuration object
+   * @param {string} request.sourceMcpConfig.command - Command to execute
+   * @param {Array<string>} request.sourceMcpConfig.args - Command arguments
+   * @param {Object} [request.sourceMcpConfig.env] - Environment variables
+   * @param {string} request.targetScope - Target scope ('project' or 'user')
+   * @param {string|null} request.targetProjectId - Project ID if scope is 'project'
+   * @param {string} [request.conflictStrategy] - How to handle conflicts ('skip', 'overwrite')
+   * @returns {Promise<Object>} Result object with success status and details
+   *
+   * Success return: { success: true, mergedInto: '/absolute/path/to/.mcp.json', serverName: 'github' }
+   * Conflict return: { success: false, conflict: { serverName, targetPath, existingConfig } }
+   * Skip return: { success: false, skipped: true, message: 'Copy cancelled by user' }
+   * Error return: { success: false, error: 'Descriptive error message' }
+   */
+  async copyMcp(request) {
+    try {
+      // 1. Extract and validate request parameters
+      const { sourceServerName, sourceMcpConfig, targetScope, targetProjectId, conflictStrategy } = request;
+
+      // Validate required fields
+      if (!sourceServerName || typeof sourceServerName !== 'string') {
+        throw new Error('Invalid MCP server: sourceServerName is required');
+      }
+
+      if (!sourceMcpConfig || typeof sourceMcpConfig !== 'object') {
+        throw new Error('Invalid MCP server: sourceMcpConfig is required');
+      }
+
+      if (!sourceMcpConfig.command || typeof sourceMcpConfig.command !== 'string') {
+        throw new Error('Invalid MCP server: command is required');
+      }
+
+      if (!targetScope || typeof targetScope !== 'string') {
+        throw new Error('Invalid targetScope: must be a non-empty string');
+      }
+
+      // 2. Determine target file path
+      let targetPath;
+
+      if (targetScope === 'user') {
+        // User scope: ~/.claude/settings.json
+        targetPath = path.join(os.homedir(), '.claude', 'settings.json');
+      } else if (targetScope === 'project') {
+        // Project scope: prefer .mcp.json, fallback to settings.json
+        if (!targetProjectId) {
+          throw new Error('targetProjectId is required when targetScope is "project"');
+        }
+
+        const projectPath = await this.getProjectPath(targetProjectId);
+        const mcpJsonPath = path.join(projectPath, '.mcp.json');
+        const settingsPath = path.join(projectPath, '.claude', 'settings.json');
+
+        // Check if .mcp.json exists
+        const mcpJsonExists = await fs.access(mcpJsonPath)
+          .then(() => true)
+          .catch(() => false);
+
+        targetPath = mcpJsonExists ? mcpJsonPath : settingsPath;
+      } else {
+        throw new Error(`Invalid targetScope: must be 'project' or 'user'`);
+      }
+
+      // 3. Read target file (or create empty structure)
+      let targetConfig = {};
+      try {
+        const content = await fs.readFile(targetPath, 'utf8');
+        targetConfig = JSON.parse(content);
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          // File exists but couldn't be read or parsed
+          throw new Error(`Failed to read target file: ${error.message}`);
+        }
+        // File doesn't exist - will create new one
+      }
+
+      // 4. Determine MCP server structure based on file type
+      // Note: .mcp.json uses nested structure with mcpServers key (same as settings.json)
+      // Both file types store servers under the mcpServers key
+      const isMcpJson = targetPath.endsWith('.mcp.json');
+
+      // Ensure mcpServers exists in the structure
+      if (!targetConfig.mcpServers) {
+        targetConfig.mcpServers = {};
+      }
+
+      const mcpServers = targetConfig.mcpServers;
+
+      // 5. Detect conflict (server name already exists)
+      if (mcpServers[sourceServerName]) {
+        // Conflict exists
+        if (!conflictStrategy) {
+          // No strategy provided - return conflict for user decision
+          return {
+            success: false,
+            conflict: {
+              serverName: sourceServerName,
+              targetPath: targetPath,
+              existingConfig: mcpServers[sourceServerName]
+            }
+          };
+        }
+
+        // Handle strategy
+        if (conflictStrategy === 'skip') {
+          return {
+            success: false,
+            skipped: true,
+            message: 'Copy cancelled by user'
+          };
+        }
+
+        // 'overwrite' strategy - continue to merge (will replace)
+        if (conflictStrategy !== 'overwrite') {
+          throw new Error(`Unknown conflict strategy: ${conflictStrategy}`);
+        }
+      }
+
+      // 6. Merge MCP server configuration
+      mcpServers[sourceServerName] = sourceMcpConfig;
+
+      // 7. Update target config structure (mcpServers already updated by reference)
+      // Both .mcp.json and settings.json use the same nested structure
+      targetConfig.mcpServers = mcpServers;
+
+      // 8. Ensure parent directory exists
+      const targetDir = path.dirname(targetPath);
+      try {
+        await fs.mkdir(targetDir, { recursive: true });
+      } catch (error) {
+        throw new Error(`Failed to create target directory: ${error.message}`);
+      }
+
+      // 9. Write atomically (temp file + rename)
+      const tempFile = targetPath + '.tmp';
+      try {
+        await fs.writeFile(tempFile, JSON.stringify(targetConfig, null, 2), 'utf8');
+      } catch (error) {
+        throw new Error(`Failed to write temporary file: ${error.message}`);
+      }
+
+      // 10. Validate JSON is well-formed
+      try {
+        const validationContent = await fs.readFile(tempFile, 'utf8');
+        JSON.parse(validationContent);
+      } catch (error) {
+        // Clean up temp file
+        try {
+          await fs.unlink(tempFile);
+        } catch (unlinkError) {
+          // Ignore cleanup errors
+        }
+        throw new Error(`Generated invalid JSON: ${error.message}`);
+      }
+
+      // 11. Atomic rename (replaces original)
+      try {
+        await fs.rename(tempFile, targetPath);
+      } catch (error) {
+        // Clean up temp file
+        try {
+          await fs.unlink(tempFile);
+        } catch (unlinkError) {
+          // Ignore cleanup errors
+        }
+        throw new Error(`Failed to update target file: ${error.message}`);
+      }
+
+      // 12. Return success
+      return {
+        success: true,
+        mergedInto: targetPath,
+        serverName: sourceServerName
+      };
+
+    } catch (error) {
+      // Handle all errors with consistent format
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred during MCP copy operation'
+      };
+    }
+  }
 }
 
 // Export singleton instance
