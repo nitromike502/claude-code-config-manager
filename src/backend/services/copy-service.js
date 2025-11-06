@@ -810,6 +810,224 @@ class CopyService {
       };
     }
   }
+
+  /**
+   * Checks if a hook already exists in the hooks array
+   * Deduplication is based on the "command" field
+   *
+   * @param {Array} existingHooks - Array of existing hook objects
+   * @param {Object} newHook - New hook object to check
+   * @returns {boolean} True if hook command already exists
+   */
+  isDuplicateHook(existingHooks, newHook) {
+    if (!Array.isArray(existingHooks) || existingHooks.length === 0) {
+      return false;
+    }
+
+    return existingHooks.some(hook => hook.command === newHook.command);
+  }
+
+  /**
+   * Performs 3-level merge of hook into settings object
+   *
+   * Level 1: Find or create event in settings.hooks
+   * Level 2: Find or create matcher entry in event array
+   * Level 3: Add hook command to matcher's hooks array (if not duplicate)
+   *
+   * @param {Object} settings - Settings object to merge into
+   * @param {string} event - Event name (e.g., 'PreToolUse')
+   * @param {string} matcher - Matcher pattern (e.g., '*.ts')
+   * @param {Object} hookCommand - Hook command object { type, command, enabled, timeout }
+   * @returns {Object} Updated settings object
+   */
+  mergeHookIntoSettings(settings, event, matcher, hookCommand) {
+    // Ensure hooks object exists (Level 0)
+    if (!settings.hooks) {
+      settings.hooks = {};
+    }
+
+    // Level 1: Find or create event
+    if (!settings.hooks[event]) {
+      // Create new event with empty matcher array
+      settings.hooks[event] = [];
+    }
+
+    // Level 2: Find or create matcher entry
+    const eventArray = settings.hooks[event];
+    let matcherEntry = eventArray.find(entry => {
+      // Match on matcher field, treating undefined and "*" as equivalent
+      const entryMatcher = entry.matcher || '*';
+      const targetMatcher = matcher || '*';
+      return entryMatcher === targetMatcher;
+    });
+
+    if (!matcherEntry) {
+      // Create new matcher entry
+      matcherEntry = {
+        hooks: []
+      };
+
+      // Only add matcher field if not default "*"
+      if (matcher && matcher !== '*') {
+        matcherEntry.matcher = matcher;
+      }
+
+      eventArray.push(matcherEntry);
+    }
+
+    // Level 3: Add hook command (if not duplicate)
+    if (!this.isDuplicateHook(matcherEntry.hooks, hookCommand)) {
+      matcherEntry.hooks.push(hookCommand);
+    }
+
+    return settings;
+  }
+
+  /**
+   * Copies a hook configuration by merging it into target settings.json
+   *
+   * Unlike agents and commands, hooks are not copied as separate files.
+   * Instead, they are merged into the settings.json file using a 3-level
+   * nested structure: event -> matcher -> hooks array.
+   *
+   * The method performs intelligent deduplication based on event+matcher+command
+   * to prevent duplicate hooks from being added.
+   *
+   * @param {Object} request - Copy request object
+   * @param {Object} request.sourceHook - Flattened hook object from API
+   * @param {string} request.sourceHook.event - Event name (e.g., 'PreToolUse')
+   * @param {string} request.sourceHook.matcher - Matcher pattern (e.g., '*.ts')
+   * @param {string} request.sourceHook.type - Hook type (e.g., 'command')
+   * @param {string} request.sourceHook.command - Command to execute
+   * @param {boolean} [request.sourceHook.enabled=true] - Whether hook is enabled
+   * @param {number} [request.sourceHook.timeout=60] - Timeout in seconds
+   * @param {string} request.targetScope - Target scope ('project' or 'user')
+   * @param {string|null} request.targetProjectId - Project ID if scope is 'project'
+   * @returns {Promise<Object>} Result object with success status and details
+   *
+   * Success return: { success: true, mergedInto: '/absolute/path/to/settings.json', hook: { event, matcher, command } }
+   * Error return: { success: false, error: 'Descriptive error message' }
+   */
+  async copyHook(request) {
+    try {
+      // 1. Extract hook details from request
+      const { event, matcher, type, command, enabled, timeout } = request.sourceHook;
+
+      // Validate required fields
+      if (!event || typeof event !== 'string') {
+        throw new Error('Invalid hook: event is required');
+      }
+
+      if (!command || typeof command !== 'string') {
+        throw new Error('Invalid hook: command is required');
+      }
+
+      // 2. Build target settings.json path
+      // Use a dummy path since buildTargetPath extracts filename from source
+      // For hooks, we only care about the settings.json path
+      const dummySourcePath = '/dummy/hook.json';
+      const settingsPath = await this.buildTargetPath(
+        'hook',
+        request.targetScope,
+        request.targetProjectId,
+        dummySourcePath
+      );
+
+      // 3. Read existing settings.json (or create empty structure)
+      let settings = {};
+      try {
+        const content = await fs.readFile(settingsPath, 'utf8');
+        settings = JSON.parse(content);
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          // File exists but couldn't be read
+          throw new Error(`Failed to read settings file: ${error.message}`);
+        }
+        // File doesn't exist - will create new one
+      }
+
+      // 4. Validate settings structure (if file exists)
+      if (Object.keys(settings).length > 0 && typeof settings !== 'object') {
+        throw new Error('Malformed settings.json: expected JSON object');
+      }
+
+      // 5. Perform 3-level merge
+      const hookCommand = {
+        type: type || 'command',
+        command,
+        enabled: enabled !== undefined ? enabled : true,
+        timeout: timeout || 60
+      };
+
+      settings = this.mergeHookIntoSettings(
+        settings,
+        event,
+        matcher || '*',
+        hookCommand
+      );
+
+      // 6. Ensure parent directory exists
+      const settingsDir = path.dirname(settingsPath);
+      try {
+        await fs.mkdir(settingsDir, { recursive: true });
+      } catch (error) {
+        throw new Error(`Failed to create settings directory: ${error.message}`);
+      }
+
+      // 7. Write settings back to file (atomic write pattern)
+      const tempFile = settingsPath + '.tmp';
+      try {
+        await fs.writeFile(tempFile, JSON.stringify(settings, null, 2), 'utf8');
+      } catch (error) {
+        throw new Error(`Failed to write temporary file: ${error.message}`);
+      }
+
+      // 8. Validate JSON is well-formed
+      try {
+        const validationContent = await fs.readFile(tempFile, 'utf8');
+        JSON.parse(validationContent);
+      } catch (error) {
+        // Clean up temp file
+        try {
+          await fs.unlink(tempFile);
+        } catch (unlinkError) {
+          // Ignore cleanup errors
+        }
+        throw new Error(`Generated invalid JSON: ${error.message}`);
+      }
+
+      // 9. Atomic rename (replaces original)
+      try {
+        await fs.rename(tempFile, settingsPath);
+      } catch (error) {
+        // Clean up temp file
+        try {
+          await fs.unlink(tempFile);
+        } catch (unlinkError) {
+          // Ignore cleanup errors
+        }
+        throw new Error(`Failed to update settings file: ${error.message}`);
+      }
+
+      // 10. Return success
+      return {
+        success: true,
+        mergedInto: settingsPath,
+        hook: {
+          event,
+          matcher: matcher || '*',
+          command
+        }
+      };
+
+    } catch (error) {
+      // Handle all errors with consistent format
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred during hook copy operation'
+      };
+    }
+  }
 }
 
 // Export singleton instance
