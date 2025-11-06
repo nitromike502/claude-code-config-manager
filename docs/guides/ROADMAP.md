@@ -20,8 +20,7 @@ The Claude Code Manager follows a phased development approach, building incremen
 | Phase 2.1 - Component Refactoring | ✅ Complete | Completed (Oct 26, 2025) | - |
 | Phase 2.2 - Bug Fixes | ✅ Complete | Completed (Oct 27, 2025) | - |
 | Phase 2.3 - Production Readiness | ✅ Complete | Completed (Nov 1, 2025) | - |
-| Phase 3 - Copy Configuration (Backend) | ✅ Complete | Completed (Nov 5, 2025) | - |
-| Phase 3.1 - Copy Configuration (API & UI) | 📅 In Progress | TBD | High |
+| Phase 3 - Copy Configuration | 🚧 In Progress | Started Nov 2, 2025 | High |
 | Phase 4 - Subagent CRUD | 📅 Planned | TBD | Medium |
 | Phase 5 - Command Management | 📅 Planned | TBD | Medium |
 | Phase 6 - Hooks Configuration | 📅 Planned | TBD | Medium |
@@ -30,17 +29,36 @@ The Claude Code Manager follows a phased development approach, building incremen
 
 ---
 
-## Phase 3 - Copy Configuration (Backend Service)
+## Phase 3 - Copy Configuration Feature
 
-**Status:** ✅ Complete
-**Completion Date:** November 5, 2025
-**Priority:** High (Foundation for Phase 3.1 API & UI)
+**Status:** 🚧 In Progress
+**Started:** November 2, 2025
+**Priority:** High (First write operation in Claude Code Manager)
 
 ### Objective
 
-Implement the backend service and validation logic for copying configuration items (agents, commands, hooks, MCP servers) between projects and scopes.
+Enable users to copy configuration items (agents, commands, hooks, MCP servers) between projects and scopes through a complete end-to-end feature including backend service, API endpoints, and user interface.
 
-### Features Implemented
+### Epic Structure
+
+**EPIC-003** contains 7 stories organized in 3 delivery stages:
+
+**Stage 1: Backend Service (Stories 3.1-3.2) - ✅ COMPLETE**
+- STORY-3.1: Backend Copy Service Infrastructure
+- STORY-3.2: Configuration-Specific Copy Logic
+
+**Stage 2: API Layer (Story 3.3) - 📅 BACKLOG**
+- STORY-3.3: Copy API Endpoints
+
+**Stage 3: User Interface (Stories 3.4-3.7) - 📅 BACKLOG**
+- STORY-3.4: Frontend Copy UI Components
+- STORY-3.5: State Management and API Integration
+- STORY-3.6: UI Integration and Accessibility
+- STORY-3.7: Testing and Cross-Platform Validation
+
+### Completed Work (Stories 3.1-3.2)
+
+**Completion Date:** November 5, 2025
 
 1. **Configuration-Specific Copy Methods**
    - `copyAgent()` - File-based copy with YAML validation
@@ -77,61 +95,27 @@ Implement the backend service and validation logic for copying configuration ite
 - ✅ **Robust error handling:** File system, validation, and edge cases
 - ✅ **Security hardening:** Path traversal and permission checks
 
-### Deferred to Future
-
-- **Skills copy** - Deferred until Skills viewing is implemented in UI
-- **API endpoints** - Will be added in Phase 3.1
-- **UI components** - Will be added in Phase 3.1
-
-### Next Phase: Phase 3.1 - Copy Configuration (API & UI)
+### Remaining Work (Stories 3.3-3.7)
 
 **Timeline:** Ready to Start
-**Focus:** Add API endpoints and user interface for copy operations
+**Focus:** Complete the copy feature with API and UI
+
 **Deliverables:**
 - RESTful API endpoints for all copy operations
-- Copy modal and conflict resolution UI
+- Copy modal with conflict resolution UI
 - Copy buttons integrated into configuration cards
+- State management for copy operations
+- WCAG 2.1 AA accessibility compliance
 - E2E tests for complete copy workflows
+- Cross-platform validation (Windows, macOS, Linux)
+
+### Deferred Items
+
+- **Skills copy** - Deferred until Skills viewing is implemented in UI
 
 ---
 
-## Phase 2.1 - Component Refactoring
-
-**Status:** ✅ Complete
-**Completion Date:** October 26, 2025 (PR #45, commit 65c6bd3)
-**Priority:** High (Foundation for Phase 3+ features)
-
-### Objective
-
-Extract reusable components to reduce code duplication from 62% to <10% and establish scalable patterns for future development.
-
-### Components to Extract
-
-1. **ConfigCard** - Reusable wrapper for configuration sections (agents, commands, hooks, MCP)
-2. **ConfigItemList** - Uniform item rendering with type-specific formatting
-3. **ConfigDetailSidebar** - Detail view sidebar with type-aware metadata display
-4. **LoadingState** - Consistent skeleton loaders across all views
-5. **EmptyState** - Consistent empty state placeholders
-6. **BreadcrumbNavigation** - Reusable breadcrumb navigation
-7. **InfoBar** - Title + subtitle display pattern
-
-### Results Achieved
-
-- ✅ **83% reduction in code duplication** (62% → <10%)
-- ✅ **ProjectDetail.vue:** -52.3% LOC (1,191 → 568 lines)
-- ✅ **UserGlobal.vue:** -61.1% LOC (984 → 383 lines)
-- ✅ **6 reusable components created:** ConfigCard, ConfigItemList, ConfigDetailSidebar, LoadingState, EmptyState, BreadcrumbNavigation
-- ✅ **All tests passing:** 270/270 backend tests, full test coverage maintained
-- ✅ **No regressions:** 100% feature parity with existing functionality
-
-### Documentation
-
-- **PRD:** `docs/prd/PRD-Phase2-Extension-Component-Refactoring.md`
-- **Status:** ✅ Complete (October 26, 2025)
-
----
-
-## Phase 3 - Subagent CRUD
+## Phase 4 - Subagent CRUD
 
 **Status:** Planned
 **Priority:** Medium
@@ -149,7 +133,7 @@ Enables users to manage their Claude Code subagents directly through the web int
 
 ---
 
-## Phase 4 - Command Management
+## Phase 5 - Command Management
 
 **Status:** Planned
 **Priority:** Medium
@@ -167,7 +151,7 @@ Simplifies slash command creation and sharing, making it easy to build and distr
 
 ---
 
-## Phase 5 - Hooks Configuration
+## Phase 6 - Hooks Configuration
 
 **Status:** Planned
 **Priority:** Medium
@@ -185,7 +169,7 @@ Provides a user-friendly interface for configuring Claude Code hooks, making wor
 
 ---
 
-## Phase 6 - MCP Server Management
+## Phase 7 - MCP Server Management
 
 **Status:** Planned
 **Priority:** Medium
@@ -203,7 +187,7 @@ Streamlines MCP server setup and management, with built-in validation and testin
 
 ---
 
-## Phase 7+ - Advanced Features
+## Phase 8+ - Advanced Features
 
 **Status:** Future
 **Priority:** Low
@@ -224,23 +208,40 @@ Advanced functionality for power users and teams managing multiple projects, wit
 
 ## Roadmap Notes
 
-### Why Phase 2.1 First?
+### Completed Sub-Phases (Phase 2.x)
 
-Component refactoring is prioritized before CRUD features because:
+**Phase 2.1 - Component Refactoring** (October 26, 2025)
+- Extracted 6 reusable components (ConfigCard, ConfigItemList, ConfigDetailSidebar, etc.)
+- Reduced code duplication from 62% to <10% (83% reduction)
+- ProjectDetail.vue: -52.3% LOC, UserGlobal.vue: -61.1% LOC
+- See: `docs/prd/PRD-Phase2-Extension-Component-Refactoring.md`
 
-1. **Reduces Technical Debt:** Eliminates 62% code duplication before adding more features
-2. **Accelerates Future Development:** Reusable components make Phase 3+ features faster to build
-3. **Improves Maintainability:** Bug fixes in one place benefit all features
-4. **Ensures Consistency:** Shared components guarantee uniform UX across all views
+**Phase 2.2 - Bug Fixes** (October 27, 2025)
+- Fixed agent display bugs (BUG-027, 028, 029, 035)
+- Resolved event handler and memory leak issues
+
+**Phase 2.3 - Production Readiness** (November 1, 2025)
+- Added MIT LICENSE and favicon
+- Updated Vite to 7.1.12 (security fix)
+- Achieved WCAG 2.1 AA accessibility compliance
+
+### Why Phase 3 Before Phase 4-7?
+
+Copy Configuration (Phase 3) is prioritized before other CRUD features because:
+
+1. **Validates Write Infrastructure:** First write operation tests our security model and error handling
+2. **Lower Risk:** Copy operations are safer than create/update/delete (source remains unchanged)
+3. **High User Value:** Enables immediate productivity gains without requiring full CRUD
+4. **Foundation for CRUD:** Patterns established in copy operations inform create/update/delete features
 
 ### Phase Dependencies
 
 ```
-Phase 1 (MVP) → Phase 2 (Vite Migration) → Phase 2.1 (Refactoring) → Phases 3-6 (CRUD Features) → Phase 7+ (Advanced)
-     ✅                ✅                         ✅ COMPLETE           📅 Ready to Start        🔮 Future
+Phase 1 (MVP) → Phase 2 (Vite Migration) → Phase 2.1 (Refactoring) → Phase 3 (Copy) → Phases 4-7 (CRUD) → Phase 8+ (Advanced)
+     ✅                ✅                         ✅                    🚧 In Progress   📅 Planned       🔮 Future
 ```
 
-**Key Insight:** Phases 3-6 can now be developed in parallel, as they operate on independent configuration types (agents, commands, hooks, MCP) and have the shared component foundation from Phase 2.1.
+**Key Insight:** Phase 3 (Copy Configuration) is the first write operation and validates our write infrastructure. Once complete, Phases 4-7 (CRUD features) can be developed in parallel, as they operate on independent configuration types (agents, commands, hooks, MCP) and share the component foundation from Phase 2.1.
 
 ### Success Criteria
 
@@ -265,5 +266,6 @@ Have ideas for features or improvements? See the following resources:
 ---
 
 **Last Updated:** 2025-11-05
-**Roadmap Version:** 1.3
-**Current Phase:** Phase 3 Complete ✅ - Copy Configuration Backend (Next: Phase 3.1 - Copy Configuration API & UI)
+**Roadmap Version:** 1.4
+**Current Phase:** Phase 3 In Progress 🚧 - Copy Configuration Feature
+**Progress:** Stories 3.1-3.2 complete (backend), Stories 3.3-3.7 in backlog (API & UI)

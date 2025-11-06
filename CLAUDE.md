@@ -8,11 +8,15 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Deployment:** Local web server accessible at `http://localhost:5173`
 
-**Current Phase:** Phase 3 - ✅ COMPLETE (Copy Configuration Backend Service)
+**Current Phase:** Phase 3 - 🚧 IN PROGRESS (Copy Configuration Feature)
 
-**Phase 3 Focus:** Configuration-specific copy logic for agents, commands, hooks, and MCP servers with robust conflict handling and security validation.
+**Phase 3 Focus:** Complete copy configuration feature including backend service, API endpoints, and user interface for copying agents, commands, hooks, and MCP servers between projects.
 
-**Next Phase:** Phase 3.1 - Copy Configuration API & UI (REST endpoints and user interface)
+**Phase 3 Progress:**
+- ✅ Backend Service (Stories 3.1-3.2 complete)
+- 📅 API & UI (Stories 3.3-3.7 in backlog)
+
+**Next Phase:** Phase 4 - Subagent CRUD (after Phase 3 complete)
 
 ## Tech Stack
 
@@ -102,26 +106,38 @@ manager/
 - Updated all documentation for test count consistency
 - **Testing:** 879 tests (276 backend + 603 frontend) with 100% pass rate
 
-### Phase 3 - Copy Configuration (Backend Service) - ✅ COMPLETE
-**Completion Date:** November 5, 2025
+### Phase 3 - Copy Configuration Feature - 🚧 IN PROGRESS
+**Started:** November 2, 2025
+**Current Status:** Backend complete, API & UI in backlog
 
-**Achievements:**
+**Epic:** EPIC-003 contains 7 stories (3.1-3.7)
+
+**Completed Work (Stories 3.1-3.2):**
+- ✅ Backend copy service infrastructure (STORY-3.1)
+- ✅ Configuration-specific copy logic (STORY-3.2)
 - Implemented `copyAgent()`, `copyCommand()`, `copyHook()`, `copyMcp()` methods
 - 3-level nested merge algorithm for hooks (event → matcher → command)
 - Smart deduplication by command field (hooks) and server name (MCP)
 - Robust conflict handling with skip/overwrite/rename strategies
 - Security hardening with path traversal protection
 - Atomic writes using temp file + rename pattern
-- **Testing:** 111 comprehensive tests (100% pass rate)
+- **Testing:** 111 comprehensive backend tests (100% pass rate)
   - Agent copy: 24 tests
   - Command copy: 25 tests
   - Hook copy: 45 tests
   - MCP copy: 17 tests
 
+**Remaining Work (Stories 3.3-3.7):**
+- 📅 Copy API endpoints (STORY-3.3)
+- 📅 Frontend copy UI components (STORY-3.4)
+- 📅 State management and API integration (STORY-3.5)
+- 📅 UI integration and accessibility (STORY-3.6)
+- 📅 Testing and cross-platform validation (STORY-3.7)
+
 **See:** `docs/prd/features/copy-configuration/FEATURE-OVERVIEW.md` for complete feature documentation.
 
 ### Future Phases
-**See:** `docs/guides/ROADMAP.md` for Phase 3.1+ planning (Copy API & UI, CRUD Features, Advanced Features)
+**See:** `docs/guides/ROADMAP.md` for Phase 4+ planning (Subagent CRUD, Command Management, Advanced Features)
 
 ## Data Sources
 
