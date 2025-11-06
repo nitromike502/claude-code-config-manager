@@ -8,9 +8,11 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Deployment:** Local web server accessible at `http://localhost:5173`
 
-**Current Phase:** Phase 2.3 - ✅ COMPLETE
+**Current Phase:** Phase 3 - ✅ COMPLETE (Copy Configuration Backend Service)
 
-**Phase 2.3 Focus:** Production readiness fixes including critical bug fixes, accessibility compliance, and documentation updates.
+**Phase 3 Focus:** Configuration-specific copy logic for agents, commands, hooks, and MCP servers with robust conflict handling and security validation.
+
+**Next Phase:** Phase 3.1 - Copy Configuration API & UI (REST endpoints and user interface)
 
 ## Tech Stack
 
@@ -100,8 +102,26 @@ manager/
 - Updated all documentation for test count consistency
 - **Testing:** 879 tests (276 backend + 603 frontend) with 100% pass rate
 
+### Phase 3 - Copy Configuration (Backend Service) - ✅ COMPLETE
+**Completion Date:** November 5, 2025
+
+**Achievements:**
+- Implemented `copyAgent()`, `copyCommand()`, `copyHook()`, `copyMcp()` methods
+- 3-level nested merge algorithm for hooks (event → matcher → command)
+- Smart deduplication by command field (hooks) and server name (MCP)
+- Robust conflict handling with skip/overwrite/rename strategies
+- Security hardening with path traversal protection
+- Atomic writes using temp file + rename pattern
+- **Testing:** 111 comprehensive tests (100% pass rate)
+  - Agent copy: 24 tests
+  - Command copy: 25 tests
+  - Hook copy: 45 tests
+  - MCP copy: 17 tests
+
+**See:** `docs/prd/features/copy-configuration/FEATURE-OVERVIEW.md` for complete feature documentation.
+
 ### Future Phases
-**See:** `docs/guides/ROADMAP.md` for Phase 2.1-7+ planning (Component Refactoring, Subagent CRUD, Command Management, Hooks, MCP Servers, Advanced Features)
+**See:** `docs/guides/ROADMAP.md` for Phase 3.1+ planning (Copy API & UI, CRUD Features, Advanced Features)
 
 ## Data Sources
 
