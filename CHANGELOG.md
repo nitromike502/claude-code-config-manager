@@ -10,55 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.1.0] - 2025-11-05
 
 ### Added
-
-#### Copy Configuration Feature - Backend Service
-- **Configuration-Specific Copy Logic** - Complete copy service for agents, commands, hooks, and MCP servers
-  - `copyAgent()` - File-based copy with YAML validation and conflict resolution
-  - `copyCommand()` - File-based copy with nested directory preservation
-  - `copyHook()` - Complex 3-level merge algorithm for hooks (event → matcher → command)
-  - `copyMcp()` - JSON merge with dual file location support (.mcp.json vs settings.json)
-
-- **Robust Conflict Handling**
-  - Automatic conflict detection for all config types
-  - Configurable resolution strategies: skip, overwrite, rename
-  - Safe rename logic with numeric suffixes (agent.md → agent-2.md → agent-3.md)
-  - Pre-copy validation without committing changes
-
-- **Security & Validation**
-  - Path traversal protection on all copy operations
-  - YAML frontmatter validation for agents and commands
-  - JSON schema validation for hooks and MCP configurations
-  - Permission verification before copy operations
-  - Atomic writes using temp file + rename pattern for reliability
-
-- **Smart Deduplication**
-  - Hooks: Deduplication by command field within same event+matcher
-  - MCP servers: Deduplication by server name
-  - Agents/Commands: Filename-based duplicate detection
-
-- **Comprehensive Error Handling**
-  - File system errors (permissions, disk space, missing files)
-  - Configuration parse errors with helpful messages
-  - Non-existent project/scope validation
-  - Symlink prevention for security
-  - Transaction-like behavior (validate before committing)
-
-#### Testing
-- **111 Comprehensive Tests** for copy service (100% pass rate)
-  - Agent copy: 24 tests (success, conflicts, permissions, validation)
-  - Command copy: 25 tests (nested directories, deep paths)
-  - Hook copy: 45 tests (3-level merging, deduplication, conflict scenarios)
-  - MCP copy: 17 tests (dual file locations, JSON merge, deduplication)
-
-### Notes
-- **Skills copy deferred** - Skills viewing not yet implemented in UI (targeted for future phase)
-- **API endpoints will be added in STORY-3.3** - This release contains backend service only
-- **Future phases** will add UI components, API endpoints, and user-facing copy workflow
-
-### Technical Details
-- Backend implementation: `src/backend/services/copy-service.js` (1030 LOC)
-- Copy validators: `src/backend/validators/copy-validator.js`
-- Comprehensive test suite: `tests/backend/services/copy-service-*.test.js`
+- Backend copy service for agents, commands, hooks, and MCP servers with conflict detection and resolution strategies
+- Security hardening with path validation and atomic writes
+- Smart deduplication for hooks and MCP configurations
+- Comprehensive test coverage: 111 tests (100% pass rate)
 
 ---
 

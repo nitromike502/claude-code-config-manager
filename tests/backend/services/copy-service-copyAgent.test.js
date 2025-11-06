@@ -25,7 +25,7 @@ describe('CopyService.copyAgent()', () => {
 name: test-agent
 description: Test agent for copy testing
 tools: [Read, Write, Bash]
-model: claude-3-5-sonnet-20241022
+model: sonnet
 color: blue
 ---
 
