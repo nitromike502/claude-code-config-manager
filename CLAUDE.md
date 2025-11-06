@@ -8,9 +8,11 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Deployment:** Local web server accessible at `http://localhost:5173`
 
-**Current Phase:** Phase 2.3 - ✅ COMPLETE
+**Current Phase:** Phase 3 - ✅ COMPLETE (Copy Configuration Backend Service)
 
-**Phase 2.3 Focus:** Production readiness fixes including critical bug fixes, accessibility compliance, and documentation updates.
+**Phase 3 Focus:** Configuration-specific copy logic for agents, commands, hooks, and MCP servers with robust conflict handling and security validation.
+
+**Next Phase:** Phase 3.1 - Copy Configuration API & UI (REST endpoints and user interface)
 
 ## Tech Stack
 
@@ -100,8 +102,26 @@ manager/
 - Updated all documentation for test count consistency
 - **Testing:** 879 tests (276 backend + 603 frontend) with 100% pass rate
 
+### Phase 3 - Copy Configuration (Backend Service) - ✅ COMPLETE
+**Completion Date:** November 5, 2025
+
+**Achievements:**
+- Implemented `copyAgent()`, `copyCommand()`, `copyHook()`, `copyMcp()` methods
+- 3-level nested merge algorithm for hooks (event → matcher → command)
+- Smart deduplication by command field (hooks) and server name (MCP)
+- Robust conflict handling with skip/overwrite/rename strategies
+- Security hardening with path traversal protection
+- Atomic writes using temp file + rename pattern
+- **Testing:** 111 comprehensive tests (100% pass rate)
+  - Agent copy: 24 tests
+  - Command copy: 25 tests
+  - Hook copy: 45 tests
+  - MCP copy: 17 tests
+
+**See:** `docs/prd/features/copy-configuration/FEATURE-OVERVIEW.md` for complete feature documentation.
+
 ### Future Phases
-**See:** `docs/guides/ROADMAP.md` for Phase 2.1-7+ planning (Component Refactoring, Subagent CRUD, Command Management, Hooks, MCP Servers, Advanced Features)
+**See:** `docs/guides/ROADMAP.md` for Phase 3.1+ planning (Copy API & UI, CRUD Features, Advanced Features)
 
 ## Data Sources
 
@@ -149,11 +169,16 @@ POST /api/projects/scan              - Trigger project list refresh
 
 ## Implementation Approach
 
-Building with **parallel subagent teams** using the SWARM method:
+Building with **SWARM architecture** (Specialized Workflow with Autonomous Resource Management):
 
-1. **Backend Team** - API endpoints, file parsing, project discovery (includes immediate testing)
-2. **Frontend Team** - Vue components, SPA architecture, routing, state management (includes immediate testing)
-3. **Quality Team** - Code review, cross-platform verification, documentation
+- **Main Agent Coordination:** Only main agent invokes subagents
+- **Orchestrator Role:** Creates execution plans, recommends parallelization
+- **Ticket Manager:** Acts as API for ticket operations (like Jira/Azure DevOps)
+- **7-Phase Workflow:** Session Init → Git Setup → Implementation → Code Commit → Docs Commit → PR/Review → User Approval/Merge
+
+**Architecture Principle:** Subagents cannot invoke other subagents. Main agent coordinates all work based on orchestrator's recommendations.
+
+See `docs/guides/SWARM-WORKFLOW.md` for complete workflow documentation.
 
 **Note:** Testing is integrated into development, not a separate phase. Each developer tests their implementation immediately before code review.
 
@@ -209,7 +234,10 @@ backlog → todo → in-progress → review → done
 2. **Analysis** → BA creates PRD in `docs/ba-sessions/`
 3. **Planning** → User invokes `project-manager` to create tickets from PRD
 4. **Organization** → Project manager invokes `agile-ticket-manager` to organize tickets
-5. **Execution** → User runs `/swarm` command
+5. **Execution** → User runs `/swarm <ticket-id>`
+   - See `docs/guides/SWARM-WORKFLOW.md` for complete execution workflow
+   - Main agent coordinates all subagents (orchestrator creates plans only)
+   - Session tracking document maintained at `docs/sessions/tracking/`
 6. **Coordination** → Orchestrator queries ticket manager, assigns work, updates statuses
 7. **Completion** → Tickets moved to `done` after PR merge
 
@@ -229,10 +257,21 @@ All bugs were resolved with comprehensive test coverage.
 
 **Read these documents when you need them:**
 
+### 🎯 SWARM Workflow
+- **Complete workflow guide:** `docs/guides/SWARM-WORKFLOW.md`
+  - When: Implementing any ticket (Story/Task/Bug)
+  - Contains: Complete 7-phase workflow from ticket selection through PR merge
+  - Key commands: /project-status (ticket selection), /swarm <ticket-id> (execution)
+
+- **Parallelization guide:** `docs/guides/PARALLEL-EXECUTION-GUIDE.md`
+  - When: Orchestrator recommends parallel execution
+  - Contains: Decision criteria, examples, troubleshooting
+  - Performance: 40-62% time reduction demonstrated in real sessions
+
 ### 🚀 Starting Development
 - **Choose your workflow:** `docs/guides/DEVELOPMENT-STRATEGIES.md`
   - When: Beginning a new session or task
-  - Contains: Strategy selection (Approved/Rapid/Parallel), real-world evidence, decision criteria
+  - Contains: Strategy selection (Approved/Rapid/Parallel/SWARM), real-world evidence, decision criteria
 
 ### 📝 Git & Commits
 - **Feature branch workflow:** `docs/guides/GIT-WORKFLOW.md`
@@ -244,10 +283,19 @@ All bugs were resolved with comprehensive test coverage.
   - When: Implementing from official specifications (Claude Code, Playwright, Vue, etc.)
   - Contains: 5-step pattern, BUG-030 case study, common pitfalls
 
+- **Coding standards:** `docs/guides/CODING-STANDARDS.md`
+  - When: Writing code, creating tests, or updating documentation
+  - Contains: Test data standards, import paths, documentation placement, CHANGELOG guidelines
+
 ### 🧪 Testing
 - **Test workflow & conventions:** `docs/guides/TESTING-GUIDE.md`
   - When: Running tests, creating new tests, or debugging test failures
-  - Contains: Automated quality gate, naming conventions, test types, troubleshooting
+  - Contains: Automated quality gate, naming conventions, test types, test data standards, troubleshooting
+
+### 🔧 Technical Specifications
+- **Technical documentation index:** `docs/technical/README.md`
+  - When: Understanding complex algorithms, data structures, or architecture
+  - Contains: Hook structure specs, merge algorithms, edge case documentation
 
 ### ⚙️ Setup & Operations
 - **First-time setup:** `docs/guides/SETUP-GUIDE.md`

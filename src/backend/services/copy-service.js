@@ -15,6 +15,21 @@ const { discoverProjects } = require('./projectDiscovery');
  * - Detect and resolve file conflicts
  * - Generate unique filenames when needed
  */
+
+/**
+ * HOOK STRUCTURE DOCUMENTATION
+ *
+ * Claude Code hooks use a complex 3-level nested structure.
+ * For complete documentation, see: docs/technical/hook-structure.md
+ *
+ * Quick reference:
+ * - Level 1: Event names (PreToolUse, PostToolUse, UserPromptSubmit, etc.)
+ * - Level 2: Matcher entries with glob patterns (*.ts, *.js, etc.)
+ * - Level 3: Hook command objects with type/command/enabled/timeout
+ *
+ * Deduplication key: event + matcher + command
+ * Merge algorithm: 3-level merge (event → matcher → hooks)
+ */
 class CopyService {
   /**
    * Validates that a source path exists and is safe to read
@@ -305,6 +320,660 @@ class CopyService {
     } while (await fs.access(newPath).then(() => true).catch(() => false));
 
     return newPath;
+  }
+
+  /**
+   * Copies an agent file from source to target location
+   *
+   * Agents are markdown files with YAML frontmatter containing metadata like
+   * name, description, tools, model, and color. This method validates the
+   * source file structure, handles conflicts, and copies to the target location.
+   *
+   * @param {Object} request - Copy request object
+   * @param {string} request.sourcePath - Absolute path to source agent file
+   * @param {string} request.targetScope - Target scope ('project' or 'user')
+   * @param {string|null} request.targetProjectId - Project ID if scope is 'project'
+   * @param {string} [request.conflictStrategy] - How to handle conflicts ('skip', 'overwrite', 'rename')
+   * @returns {Promise<Object>} Result object with success status and details
+   *
+   * Success return: { success: true, copiedPath: '/absolute/path/to/copied/agent.md' }
+   * Conflict return: { success: false, conflict: { targetPath, sourceModified, targetModified } }
+   * Skip return: { success: false, skipped: true, message: 'Copy cancelled by user' }
+   * Error return: { success: false, error: 'Descriptive error message' }
+   */
+  async copyAgent(request) {
+    try {
+      // 1. Validate source path (security + existence)
+      const validatedSourcePath = await this.validateSource(request.sourcePath);
+
+      // 2. Validate YAML frontmatter
+      let content;
+      try {
+        content = await fs.readFile(validatedSourcePath, 'utf8');
+      } catch (error) {
+        throw new Error(`Failed to read source file: ${error.message}`);
+      }
+
+      // Check for YAML frontmatter delimiters (must start with --- and have closing ---)
+      const yamlPattern = /^---\s*\n[\s\S]*?\n---\s*\n/;
+      if (!yamlPattern.test(content)) {
+        throw new Error('Invalid agent file: missing YAML frontmatter (must start and end with ---)');
+      }
+
+      // 3. Build target path
+      const targetPath = await this.buildTargetPath(
+        'agent',
+        request.targetScope,
+        request.targetProjectId,
+        validatedSourcePath
+      );
+
+      // 4. Detect conflict
+      const conflict = await this.detectConflict(validatedSourcePath, targetPath);
+
+      // 5. Handle conflict if detected
+      let finalTargetPath = targetPath;
+
+      if (conflict) {
+        // Conflict exists - check if strategy provided
+        if (!request.conflictStrategy) {
+          // No strategy provided, return conflict for user decision
+          return {
+            success: false,
+            conflict: conflict
+          };
+        }
+
+        // Resolve conflict with provided strategy
+        try {
+          finalTargetPath = await this.resolveConflict(targetPath, request.conflictStrategy);
+        } catch (error) {
+          // Handle 'skip' strategy (throws "Copy cancelled by user")
+          if (error.message === 'Copy cancelled by user') {
+            return {
+              success: false,
+              skipped: true,
+              message: 'Copy cancelled by user'
+            };
+          }
+          // Re-throw other errors
+          throw error;
+        }
+      }
+
+      // 6. Ensure parent directory exists
+      const targetDir = path.dirname(finalTargetPath);
+      try {
+        await fs.mkdir(targetDir, { recursive: true });
+      } catch (error) {
+        throw new Error(`Failed to create target directory: ${error.message}`);
+      }
+
+      // 7. Copy file
+      try {
+        await fs.copyFile(validatedSourcePath, finalTargetPath);
+      } catch (error) {
+        throw new Error(`Failed to copy file: ${error.message}`);
+      }
+
+      // 8. Return success
+      return {
+        success: true,
+        copiedPath: finalTargetPath
+      };
+
+    } catch (error) {
+      // Handle all errors with consistent format
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred during copy operation'
+      };
+    }
+  }
+
+  /**
+   * Copies a command file from source to target location
+   *
+   * Commands are markdown files with YAML frontmatter containing metadata like
+   * name, description, and command text. Commands can be nested in subdirectories
+   * (e.g., .claude/commands/git/commit.md) and the structure is preserved.
+   *
+   * @param {Object} request - Copy request object
+   * @param {string} request.sourcePath - Absolute path to source command file
+   * @param {string} request.targetScope - Target scope ('project' or 'user')
+   * @param {string|null} request.targetProjectId - Project ID if scope is 'project'
+   * @param {string} [request.conflictStrategy] - How to handle conflicts ('skip', 'overwrite', 'rename')
+   * @returns {Promise<Object>} Result object with success status and details
+   *
+   * Success return: { success: true, copiedPath: '/absolute/path/to/copied/command.md' }
+   * Conflict return: { success: false, conflict: { targetPath, sourceModified, targetModified } }
+   * Skip return: { success: false, skipped: true, message: 'Copy cancelled by user' }
+   * Error return: { success: false, error: 'Descriptive error message' }
+   */
+  async copyCommand(request) {
+    try {
+      // 1. Validate source path (security + existence)
+      const validatedSourcePath = await this.validateSource(request.sourcePath);
+
+      // 2. Validate YAML frontmatter
+      let content;
+      try {
+        content = await fs.readFile(validatedSourcePath, 'utf8');
+      } catch (error) {
+        throw new Error(`Failed to read source file: ${error.message}`);
+      }
+
+      // Check for YAML frontmatter delimiters (must start with --- and have closing ---)
+      const yamlPattern = /^---\s*\n[\s\S]*?\n---\s*\n/;
+      if (!yamlPattern.test(content)) {
+        throw new Error('Invalid command file: missing YAML frontmatter (must start and end with ---)');
+      }
+
+      // 3. Build target path
+      const targetPath = await this.buildTargetPath(
+        'command',
+        request.targetScope,
+        request.targetProjectId,
+        validatedSourcePath
+      );
+
+      // 4. Detect conflict
+      const conflict = await this.detectConflict(validatedSourcePath, targetPath);
+
+      // 5. Handle conflict if detected
+      let finalTargetPath = targetPath;
+
+      if (conflict) {
+        // Conflict exists - check if strategy provided
+        if (!request.conflictStrategy) {
+          // No strategy provided, return conflict for user decision
+          return {
+            success: false,
+            conflict: conflict
+          };
+        }
+
+        // Resolve conflict with provided strategy
+        try {
+          finalTargetPath = await this.resolveConflict(targetPath, request.conflictStrategy);
+        } catch (error) {
+          // Handle 'skip' strategy (throws "Copy cancelled by user")
+          if (error.message === 'Copy cancelled by user') {
+            return {
+              success: false,
+              skipped: true,
+              message: 'Copy cancelled by user'
+            };
+          }
+          // Re-throw other errors
+          throw error;
+        }
+      }
+
+      // 6. Ensure parent directory exists
+      const targetDir = path.dirname(finalTargetPath);
+      try {
+        await fs.mkdir(targetDir, { recursive: true });
+      } catch (error) {
+        throw new Error(`Failed to create target directory: ${error.message}`);
+      }
+
+      // 7. Copy file
+      try {
+        await fs.copyFile(validatedSourcePath, finalTargetPath);
+      } catch (error) {
+        throw new Error(`Failed to copy file: ${error.message}`);
+      }
+
+      // 8. Return success
+      return {
+        success: true,
+        copiedPath: finalTargetPath
+      };
+
+    } catch (error) {
+      // Handle all errors with consistent format
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred during copy operation'
+      };
+    }
+  }
+
+  /**
+   * Checks if a hook already exists in the hooks array
+   * Deduplication is based on the "command" field
+   *
+   * @param {Array} existingHooks - Array of existing hook objects
+   * @param {Object} newHook - New hook object to check
+   * @returns {boolean} True if hook command already exists
+   */
+  isDuplicateHook(existingHooks, newHook) {
+    if (!Array.isArray(existingHooks) || existingHooks.length === 0) {
+      return false;
+    }
+
+    return existingHooks.some(hook => hook.command === newHook.command);
+  }
+
+  /**
+   * Performs 3-level merge of hook into settings object
+   *
+   * Level 1: Find or create event in settings.hooks
+   * Level 2: Find or create matcher entry in event array
+   * Level 3: Add hook command to matcher's hooks array (if not duplicate)
+   *
+   * @param {Object} settings - Settings object to merge into
+   * @param {string} event - Event name (e.g., 'PreToolUse')
+   * @param {string} matcher - Matcher pattern (e.g., '*.ts')
+   * @param {Object} hookCommand - Hook command object { type, command, enabled, timeout }
+   * @returns {Object} Updated settings object
+   */
+  mergeHookIntoSettings(settings, event, matcher, hookCommand) {
+    // Ensure hooks object exists (Level 0)
+    if (!settings.hooks) {
+      settings.hooks = {};
+    }
+
+    // Level 1: Find or create event
+    if (!settings.hooks[event]) {
+      // Create new event with empty matcher array
+      settings.hooks[event] = [];
+    }
+
+    // Level 2: Find or create matcher entry
+    const eventArray = settings.hooks[event];
+    let matcherEntry = eventArray.find(entry => {
+      // Match on matcher field, treating undefined and "*" as equivalent
+      const entryMatcher = entry.matcher || '*';
+      const targetMatcher = matcher || '*';
+      return entryMatcher === targetMatcher;
+    });
+
+    if (!matcherEntry) {
+      // Create new matcher entry
+      matcherEntry = {
+        hooks: []
+      };
+
+      // Only add matcher field if not default "*"
+      if (matcher && matcher !== '*') {
+        matcherEntry.matcher = matcher;
+      }
+
+      eventArray.push(matcherEntry);
+    }
+
+    // Level 3: Add hook command (if not duplicate)
+    if (!this.isDuplicateHook(matcherEntry.hooks, hookCommand)) {
+      matcherEntry.hooks.push(hookCommand);
+    }
+
+    return settings;
+  }
+
+  /**
+   * Copies a hook configuration by merging it into target settings.json
+   *
+   * Unlike agents and commands, hooks are not copied as separate files.
+   * Instead, they are merged into the settings.json file using a 3-level
+   * nested structure: event -> matcher -> hooks array.
+   *
+   * The method performs intelligent deduplication based on event+matcher+command
+   * to prevent duplicate hooks from being added.
+   *
+   * @param {Object} request - Copy request object
+   * @param {Object} request.sourceHook - Flattened hook object from API
+   * @param {string} request.sourceHook.event - Event name (e.g., 'PreToolUse')
+   * @param {string} request.sourceHook.matcher - Matcher pattern (e.g., '*.ts')
+   * @param {string} request.sourceHook.type - Hook type (e.g., 'command')
+   * @param {string} request.sourceHook.command - Command to execute
+   * @param {boolean} [request.sourceHook.enabled=true] - Whether hook is enabled
+   * @param {number} [request.sourceHook.timeout=60] - Timeout in seconds
+   * @param {string} request.targetScope - Target scope ('project' or 'user')
+   * @param {string|null} request.targetProjectId - Project ID if scope is 'project'
+   * @returns {Promise<Object>} Result object with success status and details
+   *
+   * Success return: { success: true, mergedInto: '/absolute/path/to/settings.json', hook: { event, matcher, command } }
+   * Error return: { success: false, error: 'Descriptive error message' }
+   */
+  async copyHook(request) {
+    try {
+      // 1. Extract hook details from request
+      const { event, matcher, type, command, enabled, timeout } = request.sourceHook;
+
+      // Validate required fields
+      if (!event || typeof event !== 'string') {
+        throw new Error('Invalid hook: event is required');
+      }
+
+      if (!command || typeof command !== 'string') {
+        throw new Error('Invalid hook: command is required');
+      }
+
+      // 2. Build target settings.json path
+      // Use a dummy path since buildTargetPath extracts filename from source
+      // For hooks, we only care about the settings.json path
+      const dummySourcePath = '/dummy/hook.json';
+      const settingsPath = await this.buildTargetPath(
+        'hook',
+        request.targetScope,
+        request.targetProjectId,
+        dummySourcePath
+      );
+
+      // 3. Read existing settings.json (or create empty structure)
+      let settings = {};
+      try {
+        const content = await fs.readFile(settingsPath, 'utf8');
+        settings = JSON.parse(content);
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          // File exists but couldn't be read
+          throw new Error(`Failed to read settings file: ${error.message}`);
+        }
+        // File doesn't exist - will create new one
+      }
+
+      // 4. Validate settings structure (if file exists)
+      if (Object.keys(settings).length > 0 && typeof settings !== 'object') {
+        throw new Error('Malformed settings.json: expected JSON object');
+      }
+
+      // 5. Perform 3-level merge
+      const hookCommand = {
+        type: type || 'command',
+        command,
+        enabled: enabled !== undefined ? enabled : true,
+        timeout: timeout || 60
+      };
+
+      settings = this.mergeHookIntoSettings(
+        settings,
+        event,
+        matcher || '*',
+        hookCommand
+      );
+
+      // 6. Ensure parent directory exists
+      const settingsDir = path.dirname(settingsPath);
+      try {
+        await fs.mkdir(settingsDir, { recursive: true });
+      } catch (error) {
+        throw new Error(`Failed to create settings directory: ${error.message}`);
+      }
+
+      // 7. Write settings back to file (atomic write pattern)
+      const tempFile = settingsPath + '.tmp';
+      try {
+        await fs.writeFile(tempFile, JSON.stringify(settings, null, 2), 'utf8');
+      } catch (error) {
+        throw new Error(`Failed to write temporary file: ${error.message}`);
+      }
+
+      // 8. Validate JSON is well-formed
+      try {
+        const validationContent = await fs.readFile(tempFile, 'utf8');
+        JSON.parse(validationContent);
+      } catch (error) {
+        // Clean up temp file
+        try {
+          await fs.unlink(tempFile);
+        } catch (unlinkError) {
+          // Ignore cleanup errors
+        }
+        throw new Error(`Generated invalid JSON: ${error.message}`);
+      }
+
+      // 9. Atomic rename (replaces original)
+      try {
+        await fs.rename(tempFile, settingsPath);
+      } catch (error) {
+        // Clean up temp file
+        try {
+          await fs.unlink(tempFile);
+        } catch (unlinkError) {
+          // Ignore cleanup errors
+        }
+        throw new Error(`Failed to update settings file: ${error.message}`);
+      }
+
+      // 10. Return success
+      return {
+        success: true,
+        mergedInto: settingsPath,
+        hook: {
+          event,
+          matcher: matcher || '*',
+          command
+        }
+      };
+
+    } catch (error) {
+      // Handle all errors with consistent format
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred during hook copy operation'
+      };
+    }
+  }
+
+  /**
+   * Helper method to get project path from projectId
+   *
+   * @param {string} projectId - Project ID (encoded path)
+   * @returns {Promise<string>} Absolute path to project directory
+   * @throws {Error} If project not found or doesn't exist
+   */
+  async getProjectPath(projectId) {
+    const projectsResult = await discoverProjects();
+    const projectData = projectsResult.projects[projectId];
+
+    if (!projectData) {
+      throw new Error(`Project not found: ${projectId}`);
+    }
+
+    if (!projectData.exists) {
+      throw new Error(`Project directory does not exist: ${projectData.path}`);
+    }
+
+    return projectData.path;
+  }
+
+  /**
+   * Copies an MCP server configuration by merging it into target settings.json or .mcp.json
+   *
+   * Unlike agents and commands, MCP servers are not copied as separate files.
+   * Instead, they are merged into either:
+   * - User scope: ~/.claude/settings.json (under mcpServers key)
+   * - Project scope: .mcp.json (preferred) or .claude/settings.json (fallback)
+   *
+   * The method detects conflicts by checking if a server with the same name already exists.
+   * Conflict strategies supported: 'skip' (cancel), 'overwrite' (replace existing).
+   *
+   * @param {Object} request - Copy request object
+   * @param {string} request.sourceServerName - Name of MCP server to copy
+   * @param {Object} request.sourceMcpConfig - MCP server configuration object
+   * @param {string} request.sourceMcpConfig.command - Command to execute
+   * @param {Array<string>} request.sourceMcpConfig.args - Command arguments
+   * @param {Object} [request.sourceMcpConfig.env] - Environment variables
+   * @param {string} request.targetScope - Target scope ('project' or 'user')
+   * @param {string|null} request.targetProjectId - Project ID if scope is 'project'
+   * @param {string} [request.conflictStrategy] - How to handle conflicts ('skip', 'overwrite')
+   * @returns {Promise<Object>} Result object with success status and details
+   *
+   * Success return: { success: true, mergedInto: '/absolute/path/to/.mcp.json', serverName: 'github' }
+   * Conflict return: { success: false, conflict: { serverName, targetPath, existingConfig } }
+   * Skip return: { success: false, skipped: true, message: 'Copy cancelled by user' }
+   * Error return: { success: false, error: 'Descriptive error message' }
+   */
+  async copyMcp(request) {
+    try {
+      // 1. Extract and validate request parameters
+      const { sourceServerName, sourceMcpConfig, targetScope, targetProjectId, conflictStrategy } = request;
+
+      // Validate required fields
+      if (!sourceServerName || typeof sourceServerName !== 'string') {
+        throw new Error('Invalid MCP server: sourceServerName is required');
+      }
+
+      if (!sourceMcpConfig || typeof sourceMcpConfig !== 'object') {
+        throw new Error('Invalid MCP server: sourceMcpConfig is required');
+      }
+
+      if (!sourceMcpConfig.command || typeof sourceMcpConfig.command !== 'string') {
+        throw new Error('Invalid MCP server: command is required');
+      }
+
+      if (!targetScope || typeof targetScope !== 'string') {
+        throw new Error('Invalid targetScope: must be a non-empty string');
+      }
+
+      // 2. Determine target file path
+      let targetPath;
+
+      if (targetScope === 'user') {
+        // User scope: ~/.claude/settings.json
+        targetPath = path.join(os.homedir(), '.claude', 'settings.json');
+      } else if (targetScope === 'project') {
+        // Project scope: prefer .mcp.json, fallback to settings.json
+        if (!targetProjectId) {
+          throw new Error('targetProjectId is required when targetScope is "project"');
+        }
+
+        const projectPath = await this.getProjectPath(targetProjectId);
+        const mcpJsonPath = path.join(projectPath, '.mcp.json');
+        const settingsPath = path.join(projectPath, '.claude', 'settings.json');
+
+        // Check if .mcp.json exists
+        const mcpJsonExists = await fs.access(mcpJsonPath)
+          .then(() => true)
+          .catch(() => false);
+
+        targetPath = mcpJsonExists ? mcpJsonPath : settingsPath;
+      } else {
+        throw new Error(`Invalid targetScope: must be 'project' or 'user'`);
+      }
+
+      // 3. Read target file (or create empty structure)
+      let targetConfig = {};
+      try {
+        const content = await fs.readFile(targetPath, 'utf8');
+        targetConfig = JSON.parse(content);
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          // File exists but couldn't be read or parsed
+          throw new Error(`Failed to read target file: ${error.message}`);
+        }
+        // File doesn't exist - will create new one
+      }
+
+      // 4. Determine MCP server structure based on file type
+      // Note: .mcp.json uses nested structure with mcpServers key (same as settings.json)
+      // Both file types store servers under the mcpServers key
+      const isMcpJson = targetPath.endsWith('.mcp.json');
+
+      // Ensure mcpServers exists in the structure
+      if (!targetConfig.mcpServers) {
+        targetConfig.mcpServers = {};
+      }
+
+      const mcpServers = targetConfig.mcpServers;
+
+      // 5. Detect conflict (server name already exists)
+      if (mcpServers[sourceServerName]) {
+        // Conflict exists
+        if (!conflictStrategy) {
+          // No strategy provided - return conflict for user decision
+          return {
+            success: false,
+            conflict: {
+              serverName: sourceServerName,
+              targetPath: targetPath,
+              existingConfig: mcpServers[sourceServerName]
+            }
+          };
+        }
+
+        // Handle strategy
+        if (conflictStrategy === 'skip') {
+          return {
+            success: false,
+            skipped: true,
+            message: 'Copy cancelled by user'
+          };
+        }
+
+        // 'overwrite' strategy - continue to merge (will replace)
+        if (conflictStrategy !== 'overwrite') {
+          throw new Error(`Unknown conflict strategy: ${conflictStrategy}`);
+        }
+      }
+
+      // 6. Merge MCP server configuration
+      mcpServers[sourceServerName] = sourceMcpConfig;
+
+      // 7. Update target config structure (mcpServers already updated by reference)
+      // Both .mcp.json and settings.json use the same nested structure
+      targetConfig.mcpServers = mcpServers;
+
+      // 8. Ensure parent directory exists
+      const targetDir = path.dirname(targetPath);
+      try {
+        await fs.mkdir(targetDir, { recursive: true });
+      } catch (error) {
+        throw new Error(`Failed to create target directory: ${error.message}`);
+      }
+
+      // 9. Write atomically (temp file + rename)
+      const tempFile = targetPath + '.tmp';
+      try {
+        await fs.writeFile(tempFile, JSON.stringify(targetConfig, null, 2), 'utf8');
+      } catch (error) {
+        throw new Error(`Failed to write temporary file: ${error.message}`);
+      }
+
+      // 10. Validate JSON is well-formed
+      try {
+        const validationContent = await fs.readFile(tempFile, 'utf8');
+        JSON.parse(validationContent);
+      } catch (error) {
+        // Clean up temp file
+        try {
+          await fs.unlink(tempFile);
+        } catch (unlinkError) {
+          // Ignore cleanup errors
+        }
+        throw new Error(`Generated invalid JSON: ${error.message}`);
+      }
+
+      // 11. Atomic rename (replaces original)
+      try {
+        await fs.rename(tempFile, targetPath);
+      } catch (error) {
+        // Clean up temp file
+        try {
+          await fs.unlink(tempFile);
+        } catch (unlinkError) {
+          // Ignore cleanup errors
+        }
+        throw new Error(`Failed to update target file: ${error.message}`);
+      }
+
+      // 12. Return success
+      return {
+        success: true,
+        mergedInto: targetPath,
+        serverName: sourceServerName
+      };
+
+    } catch (error) {
+      // Handle all errors with consistent format
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred during MCP copy operation'
+      };
+    }
   }
 }
 

@@ -1,16 +1,16 @@
 ---
 name: swarm
-description: Launch the subagent-orchestrator to coordinate Claude Code Manager development through a structured workflow with Epic/Story/Task breakdown
+description: Execute SWARM (Specialized Workflow with Autonomous Resource Management) development workflow for coordinated multi-agent implementation
 tools: Task
-argument-hint: "[ticket] [additional-instructions] - Optional ticket ID (e.g., HIGH-005) and/or custom instructions"
+argument-hint: "[ticket] [additional-instructions] - Optional ticket ID (e.g., STORY-3.1) and/or custom instructions"
 color: purple
 ---
 
-# SWARM Orchestrator
-# Multi-Agent Claude Code Manager Development Coordinator
+# SWARM Workflow Command
+# Coordinated Multi-Agent Development with Main Agent Control
 
 <task>
-Launch the subagent-orchestrator to coordinate Claude Code Manager development through a structured workflow with Epic/Story/Task breakdown. Automatically creates tickets if none exist.
+Execute the complete SWARM workflow where the main agent coordinates all subagent invocations, manages session tracking, and implements the orchestrator's execution plan.
 </task>
 
 <context>
@@ -18,26 +18,46 @@ Launch the subagent-orchestrator to coordinate Claude Code Manager development t
 **Tech Stack**: Node.js + Express (backend), Vue 3 + Vite (frontend SPA)
 **Architecture**: Local web server on port 8420, live file system reads
 
-**Current Phase**: Phase 2.2 - Cleanup & Optimization for Production Release
-**Development Method**: SWARM (Simultaneous Work And Resource Management)
-**Team Structure**: See docs/Subagent-Team.md for complete team definitions
+**Current Phase**: Phase 3 - CRUD Operations for Configuration Management
+**Development Method**: SWARM (Specialized Workflow with Autonomous Resource Management)
+**Team Structure**: See `.claude/agents/` for subagent definitions
 
-**Ticket Storage**: Local markdown documents in `docs/tickets/phase-*/*.md`
-- Phase 2.2 cleanup tickets: `docs/tickets/phase-2.2/`
-- Epics within phase directories: `PHASE-2.X-EPIC.md`
-- Individual tickets: `CRITICAL-001-*.md`, `HIGH-005-*.md`, etc.
+**Ticket Storage**: `/home/tickets/claude/manager/`
+- Managed by `agile-ticket-manager` subagent
+- Hierarchical directory structure: Epics → Stories → Tasks
+- Status workflow: backlog → todo → in-progress → review → done
 
-**Available PRDs**:
-- docs/prd/PRD-Phase1-MVP.md (reviewed & approved)
-- docs/prd/PRD-Phase2-Vite-Migration.md (Phase 2 complete - Architecture modernization)
-- docs/prd/PRD-Phase2-Extension-Component-Refactoring.md (Phase 2.1 - Planned)
-- docs/prd/PRD-Phase3-Subagents.md (Phase 3 - Planned)
+**Key Workflow Documents**:
+- `docs/guides/SWARM-WORKFLOW.md` - Complete SWARM workflow specification
+- `docs/guides/PARALLEL-EXECUTION-GUIDE.md` - Parallelization patterns and safety
+- `docs/guides/GIT-WORKFLOW.md` - Feature branch workflow and commit conventions
+- `docs/guides/TESTING-GUIDE.md` - Test execution and quality gates
+
+**CRITICAL ARCHITECTURE PRINCIPLE**:
+Only the main agent invokes subagents. The orchestrator creates plans but does NOT invoke other subagents.
 </context>
 
 <execution>
-Invoke the `subagent-orchestrator` agent to:
+**Reference:** See `docs/guides/SWARM-WORKFLOW.md` for complete workflow specification.
 
-## Step 1: Parse Arguments
+**User Arguments:** `$ARGUMENTS`
+
+## SWARM Workflow Overview
+
+This command implements the complete SWARM workflow across 7 phases:
+1. **Session Initialization & Planning** - Orchestrator creates plan, main agent manages
+2. **Git & Session Setup** - Branch creation, session tracking doc creation by main agent
+3. **Implementation** - Sequential or parallel execution based on orchestrator recommendations
+4. **Commit Code Changes** - Git-workflow-specialist handles all git operations
+5. **Documentation Updates** - Documentation-engineer updates docs, committed separately
+6. **PR Creation & Code Review** - Git-workflow-specialist creates PR, code-reviewer analyzes
+7. **User Approval & Merge** - Main agent moves tracking doc to `.deleted/`, handles merge
+
+---
+
+## Phase 1: Session Initialization & Planning
+
+### Step 1: Parse Arguments
 
 **Arguments provided:** `$ARGUMENTS`
 
@@ -69,193 +89,359 @@ Invoke the `subagent-orchestrator` agent to:
    - **Ticket ID:** {display ticket_id or "None - will show options"}
    - **Instructions:** {display instructions or "None"}
 
-## Step 2: Check for Existing Tickets
-1. **Query `agile-ticket-manager` for tickets in `backlog`, `todo`, and `in-progress` statuses**
-2. Review ticket metadata (ID, title, priority, dependencies, status)
-3. Understand current Epic/Story/Task hierarchy from ticket manager
-4. Determine if tickets are sufficient to proceed with development
+### Step 2: Invoke Orchestrator for Planning
 
-## Step 3: Auto-Plan if Needed (ENFORCE SMALL FEATURE SIZING)
-If NO tickets exist or tickets are stale/completed:
-1. Invoke `project-manager` subagent to create tickets
-2. Project manager will:
-   - Assess current project state (read CLAUDE.md, git status)
-   - Reference PRDs in `/home/tickets/claude/manager/prds/`
-   - Determine current phase and what work comes next
-   - Create comprehensive Epic/Story/Task ticket files:
-     - **Epics**: Major feature areas (e.g., "Backend API Development", "Frontend UI Development")
-     - **Stories**: User-facing features within each epic (e.g., "Project List View", "Subagent Viewer")
-     - **Tasks**: Technical implementation steps for each story (e.g., "Create /api/projects endpoint")
-     - **⚠️ CRITICAL: ALL tasks MUST be 30-60 minutes max**
-     - **⚠️ CRITICAL: Each task must be independently testable and committable**
-     - **⚠️ CRITICAL: Break down any task >1 hour into multiple sub-tasks**
-   - Write ticket files with complete frontmatter
-   - Invoke `agile-ticket-manager` to organize tickets into proper directory structure
-   - Reference `/home/claude/manager/docs/workflow-analysis-20251007.md` for sizing best practices
-3. Verify tickets are organized in `/home/tickets/claude/manager/`
+**Main agent invokes `subagent-orchestrator`** with ticket context:
 
-**Note**: Project manager creates tickets, ticket manager organizes them.
+**If ticket ID provided in $ARGUMENTS:**
+- Main agent invokes `agile-ticket-manager` to fetch ticket details
+- Main agent invokes `subagent-orchestrator` with ticket content
+- Orchestrator analyzes and creates execution plan
 
-## Step 4: Ticket Selection & Dependency Analysis
+**If NO ticket ID provided:**
+- Main agent invokes `agile-ticket-manager` to retrieve available tickets (backlog, todo)
+- Main agent invokes `project-manager` to analyze and recommend tickets
+- Present ticket options to user (see Phase 0 in SWARM-WORKFLOW.md)
+- User selects ticket
+- Main agent invokes `agile-ticket-manager` to fetch selected ticket
+- Main agent invokes `subagent-orchestrator` with ticket content
 
-**Ticket Selection Mode:** {Based on Step 1 parsing results}
+**Orchestrator Deliverable:**
+- Detailed task breakdown
+- Dependencies between tasks
+- Parallel vs. sequential execution recommendations
+- Risk assessment and mitigations
+- Time estimates
 
-### If Ticket ID Provided (from Step 1):
-- **Target Ticket:** {ticket_id from Step 1}
-- **Skip ticket options menu** - proceed directly to this ticket
-- **Query `agile-ticket-manager`:** Request ticket details for {ticket_id}
-- **If ticket not found:**
-  - Ask ticket manager to list available tickets matching the prefix (e.g., all HIGH-* tickets)
-  - Ask user to confirm correct ticket ID
-- **If ticket found:** Load ticket details from ticket manager and proceed to Step 5
+### Step 3: Invoke Ticket Manager
 
-### If NO Ticket ID Provided (from Step 1):
-Present ticket options to user as normal:
+**Main agent invokes `agile-ticket-manager`:**
+- Request: Move ticket from `todo` to `in-progress`
+- Document start timestamp
+- Confirm ticket status updated
 
-1. **Invoke project-manager agent** to analyze ticket dependencies and priorities
-2. Project manager should:
-   - **Query `agile-ticket-manager` for all tickets in `todo`, `backlog`, and `in-progress` statuses**
-   - Request ticket manager to return Epic/Story/Task hierarchy information
-   - Analyze ticket priorities (P0, P1, P2, P3)
-   - Check git status for any pending PRs awaiting merge
-   - Identify ticket dependencies (which tickets block others via `parent` field)
-   - Determine which tickets are independent and could be worked on in parallel
-   - Consider Epic/Story groupings for logical sequencing
-3. **Present 2-4 ticket options to user** with clear rationale:
-   - **Option A**: Single ticket (safest, no dependencies)
-   - **Option B**: 2-3 independent tickets (each gets own branch/PR, can work simultaneously)
-   - **Option C**: Next logical ticket in sequence (explain any blockers)
-   - **Option D**: Recommend skip if ticket depends on pending PR
-4. **Include for each option**:
-   - Ticket ID(s) and descriptions
-   - Estimated time (30-60 min per ticket)
-   - Dependencies (blocks/blocked by which tickets/PRs)
-   - Whether backend + frontend can work in parallel within the ticket
-   - Risk level (low/medium/high)
-   - Current ticket status (todo/backlog/in-progress)
-5. **WAIT FOR USER SELECTION** - Do not proceed until user chooses an option
-6. User may also specify custom ticket selection
+**Main agent presents orchestrator's plan to user:**
 
-### Additional Instructions (from Step 1):
-**User Instructions:** {instructions from Step 1, or "None"}
+Show:
+- Task breakdown with time estimates
+- Parallelization opportunities and rationale
+- Dependencies and sequencing
+- Risk assessment
+- Total estimated time
 
-{If instructions provided:}
-Apply these instructions when:
-- Selecting tickets (if no ticket_id provided)
-- Prioritizing work within the ticket
-- Choosing development approach
-- Any other context the user intended
+Request user approval or refinements.
 
-Instructions: "{instructions}"
+**User provides feedback:**
+- Approve plan as-is → Proceed to Phase 2
+- Request modifications → Main agent updates plan, re-present
+- Reject plan → End workflow
 
-{If no instructions:}
-(No additional instructions provided - use standard workflow)
+---
 
-## Step 5: Execute Development Workflow (ONE TICKET = ONE BRANCH = ONE PR)
-After user selects ticket(s) to work on:
+## Phase 2: Git & Session Setup
 
-**For EACH selected ticket (process sequentially or delegate to parallel agents):**
+### Step 1: Invoke Git Workflow Specialist
 
-1. **BEFORE starting work:** Request `agile-ticket-manager` to move ticket from `todo` to `in-progress` status
-2. Read relevant PRD documents from `/home/tickets/claude/manager/prds/`
-3. **Query `agile-ticket-manager` for full ticket details** (description, acceptance criteria, dependencies)
-4. **Validate task sizing before starting** - reject any task >1 hour
-5. **Create dedicated feature branch** for THIS ticket (e.g., `feature/TASK-3.2.1-implement-agent-card`)
-6. Coordinate specialized agents through development workflow:
-   - git-workflow-specialist creates feature branch FIRST (mandatory) with ticket ID in name
-   - **Run parallel subagents within this ticket** (backend + frontend together on same branch)
-   - wireframe-designer for UI mockups (if needed)
-   - backend-architect for API development
-   - frontend-developer for Vue/PrimeVue components
-   - data-parser for configuration file parsing
-   - **Developer tests their implementation manually** (quick sanity check)
-   - **git-workflow-specialist commits after EACH tested sub-feature (15-30 min)** with ticket ID in message
-   - **test-automation-engineer runs automated tests (MANDATORY after all sub-features complete)**
-   - **If tests FAIL:** Return to developer to fix issues, re-run tests (loop until pass)
-   - **If tests PASS:** Proceed to documentation and code review preparation
-7. **AFTER implementation complete:** Request `agile-ticket-manager` to move ticket from `in-progress` to `review` status
-8. **Continue with review preparation:**
-   - documentation-engineer for documentation updates
-   - code-reviewer for quality assurance (reviews implementation + test results)
-9. **Ensure incremental commit chain:** developer implements + tests → git-commit (with ticket ID) → next sub-feature → test-automation-engineer → **move to review** → docs → code-review
-10. **After all work complete and tests pass:** documentation-engineer → code-reviewer → git-PR
-11. **Create PR for THIS ticket** - one ticket = one PR (only if automated tests passed), include ticket ID in PR title
-12. **Monitor commit frequency - must see commits every 15-30 minutes**
-13. **Present PR to user for code review** - ticket now in `review` status awaiting user approval
+**Main agent invokes `git-workflow-specialist`:**
+- Checkout phase branch (e.g., `phase-3`)
+- Pull latest changes from remote
+- Create feature branch: `feature/story-X.X-description`
+- Push feature branch to remote with `-u` flag
 
-**CRITICAL: Automated testing (test-automation-engineer) is a mandatory quality gate that runs AFTER all sub-features complete but BEFORE moving to review status. Tickets cannot move to review if tests fail.**
+### Step 2: Main Agent Creates Session Tracking Document
 
-**After all selected tickets have their PRs created:**
-- STOP and present all PR URLs to user
-- Ticket(s) are in `review` status awaiting user approval
-- User will review code and either:
-  - **APPROVE:** Orchestrator requests ticket manager to move ticket to `done` status (PR gets merged)
-  - **REQUEST CHANGES:** Orchestrator requests ticket manager to move ticket back to `in-progress` (developer makes changes, cycle repeats)
-- Wait for user decision before continuing
+**CRITICAL: Main agent creates this, NOT documentation-engineer**
 
-## Step 6: Deliver Results & Wait for User Review
-1. Provide summary of completed work for each ticket
-2. Show all PR URLs created (one per ticket)
-3. Explain ticket status: "Ticket(s) moved to `review` status, awaiting your approval"
-4. **STOP HERE - Do not proceed to next tickets**
-5. **Wait for user review decision:**
-   - **If user APPROVES:** Orchestrator requests ticket manager to move ticket(s) to `done`, then PR(s) get merged
-   - **If user REQUESTS CHANGES:** Orchestrator requests ticket manager to move ticket(s) back to `in-progress`, developers make changes
-6. After user provides decision on current tickets:
-   - Run `/swarm` again to continue with next ticket(s)
-   - Or implement requested changes on tickets returned to `in-progress`
+**Location:** `docs/sessions/tracking/SESSION-[TICKET-ID]-[YYYY-MM-DD].md`
 
-**Key Points**:
-- One ticket = One branch = One PR (always)
-- Multiple tickets selected = Multiple branches = Multiple PRs (processed in sequence or parallel)
-- Parallel subagents work WITHIN a single ticket's branch (backend + frontend together)
-- Never combine multiple tickets into one branch/PR
-- Each `/swarm` execution stops after creating PR(s) for selected ticket(s)
-- **Tickets move to `review` status when PR created, awaiting user approval**
-- **Tickets move to `done` only after user approval and PR merge**
-- **Tickets can move back to `in-progress` if user requests changes**
+**Template:** Use `.claude/templates/session-tracking-template.md`
 
-The orchestrator intelligently handles both planning and execution. It proposes ticket options with dependency analysis, waits for your selection, executes work with parallel subagents where appropriate (within each ticket), creates one PR per ticket, and stops for your review.
+**Content:**
+- Execution plan from orchestrator (full details)
+- Task breakdown with acceptance criteria
+- Git context (branch names, parent branch)
+- Critical context for session resumption
+- Parallelization decisions
+- All timestamps and metadata
+
+**Purpose:** This document must be detailed enough for a fresh session to resume work at any point.
+
+### Step 3: Main Agent Creates TodoWrite Task List
+
+**Main agent uses TodoWrite tool:**
+- Mirror structure from session tracking document
+- Provides real-time status visibility
+- Updated after each milestone completion
+
+---
+
+## Phase 3: Implementation
+
+**Main agent coordinates execution based on orchestrator recommendations.**
+
+See `docs/guides/PARALLEL-EXECUTION-GUIDE.md` for parallelization patterns.
+
+### Sequential Execution (When tasks have dependencies or modify same files)
+
+**For each task:**
+
+1. **Main agent invokes appropriate developer agent**
+   - Provide clear task scope and acceptance criteria
+   - Reference session tracking document for context
+   - Specify files to modify
+
+2. **Developer implements task**
+   - Focus on single task only
+   - Write implementation code
+   - Create/update tests for this specific task
+   - **Developer tests immediately** (do NOT wait)
+
+3. **Developer reports completion**
+   - Summary of changes and test results
+
+4. **Main agent updates tracking document and TodoWrite**
+   - Mark task completed with timestamp
+   - Document key decisions
+
+5. **Main agent invokes test-automation-engineer**
+   - Run full test suite (backend + frontend)
+   - **HARD GATE:** If tests fail, return to developer (loop until pass)
+
+6. **Tests pass → Main agent invokes git-workflow-specialist**
+   - Commit THIS TASK only
+   - Format: `type: description (TASK-ID)`
+   - Push commit to remote
+
+7. **Repeat for next task**
+
+### Parallel Execution (When orchestrator recommends AND main agent agrees)
+
+**Main agent launches multiple developer agents simultaneously:**
+
+1. **Main agent invokes multiple agents in parallel**
+   - Each agent gets clear, independent scope
+   - No file conflicts
+   - No logical dependencies
+
+2. **Each agent works independently**
+   - Different files or safe append-only
+   - Each agent tests their changes
+
+3. **Main agent monitors completion**
+   - Wait for ALL parallel tasks to finish
+   - Aggregate results
+
+4. **Main agent invokes test-automation-engineer**
+   - Run full test suite with ALL changes
+   - **HARD GATE:** If tests fail, return to appropriate developer
+
+5. **All tests pass → Main agent invokes git-workflow-specialist**
+   - **Batch commit:** `type: description (TASK-X, TASK-Y)`
+   - Push commit to remote
+
+### Main Agent Updates Throughout
+
+After each milestone:
+- Update session tracking document
+- Document decisions and issues
+- Update TodoWrite
+- Note remaining work
+
+---
+
+## Phase 4: Commit Code Changes
+
+**Integrated into Phase 3** - commits happen after each task/batch completion.
+
+**Git-workflow-specialist responsibilities:**
+- Verify working directory clean
+- Stage appropriate files
+- Create commit with proper format
+- Push to remote immediately
+- Confirm push succeeded
+
+**Main agent updates:**
+- Document commit hash in session tracking
+- Update git history section
+
+---
+
+## Phase 5: Documentation Updates
+
+**Only if documentation updates needed** (new features, API changes, breaking changes, config changes).
+
+### Step 1: Main Agent Invokes Documentation Engineer
+
+**Main agent invokes `documentation-engineer`:**
+- Specify which documents need updates
+- Provide context about changes made
+- Reference implementation details
+
+**Documentation engineer updates:**
+- CHANGELOG.md (Keep a Changelog format)
+- README.md (if setup/usage changed)
+- API documentation (if endpoints changed)
+- Guides (if workflows changed)
+
+### Step 2: Main Agent Updates Session Tracking
+
+**Main agent (NOT documentation-engineer) maintains session tracking:**
+- Note which documentation was updated
+- Explain rationale for changes
+
+### Step 3: Main Agent Invokes Git Workflow Specialist
+
+**Commit documentation changes separately:**
+- Format: `docs: description (STORY-ID)`
+- Push to remote
+
+---
+
+## Phase 6: PR Creation & Code Review
+
+### Step 1: Main Agent Invokes Git Workflow Specialist
+
+**Create pull request:**
+- Generate PR title from ticket
+- Create comprehensive PR body
+- Push PR to remote
+
+### Step 2: Main Agent Invokes Ticket Manager
+
+**Update ticket status:**
+- Move from `in-progress` to `review`
+- Document PR number in ticket
+
+### Step 3: Main Agent Invokes Code Reviewer
+
+**Comprehensive code review:**
+- Code quality and standards
+- Security vulnerabilities
+- Test coverage
+- Documentation completeness
+- Commit message conventions
+
+**Code reviewer provides feedback:**
+- ✅ Approved → Proceed to Phase 7
+- ❌ Changes requested → Fix issues, re-test, re-review
+
+### Step 4: Ticket Status Update
+
+**If approved, main agent invokes ticket manager:**
+- Move to `approved` status (sub-status of `review`)
+- Document reviewer approval
+
+---
+
+## Phase 7: User Approval & Merge
+
+### Step 1: Main Agent Presents PR to User
+
+Present:
+- PR URL and summary
+- Code review status
+- Test results
+- Documentation status
+
+Request user decision:
+- Approve → Proceed to merge
+- Request changes → Return to Phase 3
+
+### Step 2: User Approves - Cleanup & Merge
+
+**Main agent moves session tracking doc to archive:**
+- Move `docs/sessions/tracking/SESSION-*.md` to `.deleted/docs/sessions/tracking/`
+- Use `git mv` to preserve history
+
+**Main agent invokes git-workflow-specialist:**
+- Commit tracking doc removal: `chore: archive session tracking for [TICKET-ID]`
+- Push commit
+
+**Main agent invokes git-workflow-specialist to merge PR:**
+- Squash-merge PR to phase branch
+- Delete feature branch (local and remote)
+- Checkout phase branch
+- Pull latest changes
+
+**Main agent invokes agile-ticket-manager:**
+- Move ticket from `review` to `done`
+- Update completion timestamp
+- Document merge commit hash
+
+### Step 3: Main Agent Presents Final Summary
+
+Show:
+- Ticket completion confirmation
+- Merge details
+- Test results
+- Time taken
+- Next available work
+
+---
+
+## Critical Workflow Rules
+
+**Mandatory Practices:**
+
+1. **Only Main Agent Invokes Subagents** - Orchestrator creates plans but does NOT invoke
+2. **One Commit Per Task (Sequential)** - Each task completion triggers immediate commit
+3. **Batch Commit for Parallel Work** - Single commit when tasks truly execute simultaneously
+4. **Test Immediately After Each Task** - Developers test before declaring complete
+5. **Ticket Status Must Be Current** - Update at ALL key transitions
+6. **Git Operations via git-workflow-specialist** - Developers NEVER do git operations
+7. **User Approval is Mandatory Gate** - Tickets cannot move to `done` without user review
+8. **Session Tracking is Main Agent's Job** - NOT delegated to documentation-engineer
+9. **Documentation Updates After Implementation** - Committed separately from code
+10. **TodoWrite Mirrors Session Tracking** - Updated after each milestone
+
+**See:** `docs/guides/SWARM-WORKFLOW.md` for complete workflow details and best practices.
+
 </execution>
 
 ## Examples
 
-### Work on specific ticket with instructions:
+### Example 1: Work on specific ticket
 ```
-/swarm HIGH-005 Use the approval workflow for this ticket
+/swarm STORY-3.2
 ```
-- Parses: ticket_id="HIGH-005", instructions="Use the approval workflow for this ticket"
-- Skips ticket options menu, goes directly to HIGH-005
-- Applies instructions to development approach
+- Main agent fetches STORY-3.2 from ticket manager
+- Main agent invokes orchestrator for planning
+- Main agent invokes ticket manager to move to `in-progress`
+- Main agent presents plan to user for approval
+- Upon approval, main agent executes all 7 phases
+- Session tracking doc created and maintained by main agent
+- PR created and presented to user for approval
 
-### Work on specific ticket without instructions:
+### Example 2: Work with custom instructions
 ```
-/swarm CRITICAL-001
+/swarm STORY-3.2 Focus on backend first, then frontend
 ```
-- Parses: ticket_id="CRITICAL-001", instructions=None
-- Skips ticket options menu, goes directly to CRITICAL-001
-- Uses standard workflow
+- Same flow as Example 1
+- Instructions applied to orchestrator's planning
+- Main agent coordinates accordingly
 
-### Guide ticket selection without specifying ticket:
-```
-/swarm prioritize bug tickets in the options
-```
-- Parses: ticket_id=None, instructions="prioritize bug tickets in the options"
-- Shows ticket options menu as normal
-- Project manager considers instructions when presenting options
-
-### Provide workflow instructions without ticket:
-```
-/swarm use rapid development strategy
-```
-- Parses: ticket_id=None, instructions="use rapid development strategy"
-- Shows ticket options menu as normal
-- Instructions applied during development workflow
-
-### Standard behavior (show options):
+### Example 3: Let main agent recommend ticket
 ```
 /swarm
 ```
-- Parses: ticket_id=None, instructions=None
-- Shows ticket options menu as normal
-- Standard workflow throughout
+- Main agent invokes ticket manager for available tickets
+- Main agent invokes project-manager for recommendations
+- User selects from presented options
+- Main agent proceeds with selected ticket
+
+### Example 4: Session resumption scenario
+```
+/swarm STORY-3.2
+```
+- If session tracking doc exists for STORY-3.2
+- Main agent reads tracking doc to understand current state
+- Resumes from last documented milestone
+- Continues updating tracking doc throughout
+
+## Related Documentation
+
+- **Complete Workflow:** `docs/guides/SWARM-WORKFLOW.md`
+- **Parallelization Guide:** `docs/guides/PARALLEL-EXECUTION-GUIDE.md`
+- **Git Workflow:** `docs/guides/GIT-WORKFLOW.md`
+- **Testing Guide:** `docs/guides/TESTING-GUIDE.md`
+- **Session Tracking Template:** `.claude/templates/session-tracking-template.md`

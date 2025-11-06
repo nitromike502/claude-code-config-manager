@@ -20,11 +20,78 @@ The Claude Code Manager follows a phased development approach, building incremen
 | Phase 2.1 - Component Refactoring | ✅ Complete | Completed (Oct 26, 2025) | - |
 | Phase 2.2 - Bug Fixes | ✅ Complete | Completed (Oct 27, 2025) | - |
 | Phase 2.3 - Production Readiness | ✅ Complete | Completed (Nov 1, 2025) | - |
-| Phase 3 - Subagent CRUD | 📅 Planned | TBD | Medium |
-| Phase 4 - Command Management | 📅 Planned | TBD | Medium |
-| Phase 5 - Hooks Configuration | 📅 Planned | TBD | Medium |
-| Phase 6 - MCP Server Management | 📅 Planned | TBD | Medium |
-| Phase 7+ - Advanced Features | 🔮 Future | TBD | Low |
+| Phase 3 - Copy Configuration (Backend) | ✅ Complete | Completed (Nov 5, 2025) | - |
+| Phase 3.1 - Copy Configuration (API & UI) | 📅 In Progress | TBD | High |
+| Phase 4 - Subagent CRUD | 📅 Planned | TBD | Medium |
+| Phase 5 - Command Management | 📅 Planned | TBD | Medium |
+| Phase 6 - Hooks Configuration | 📅 Planned | TBD | Medium |
+| Phase 7 - MCP Server Management | 📅 Planned | TBD | Medium |
+| Phase 8+ - Advanced Features | 🔮 Future | TBD | Low |
+
+---
+
+## Phase 3 - Copy Configuration (Backend Service)
+
+**Status:** ✅ Complete
+**Completion Date:** November 5, 2025
+**Priority:** High (Foundation for Phase 3.1 API & UI)
+
+### Objective
+
+Implement the backend service and validation logic for copying configuration items (agents, commands, hooks, MCP servers) between projects and scopes.
+
+### Features Implemented
+
+1. **Configuration-Specific Copy Methods**
+   - `copyAgent()` - File-based copy with YAML validation
+   - `copyCommand()` - File-based copy with nested directory support
+   - `copyHook()` - Complex 3-level merge algorithm (event → matcher → command)
+   - `copyMcp()` - JSON merge with dual file location support
+
+2. **Robust Conflict Handling**
+   - Automatic conflict detection for all config types
+   - Configurable resolution strategies: skip, overwrite, rename
+   - Safe rename logic with numeric suffixes
+   - Pre-copy validation without committing changes
+
+3. **Security & Validation**
+   - Path traversal protection on all operations
+   - YAML/JSON schema validation
+   - Permission verification before copy
+   - Atomic writes using temp file + rename pattern
+   - Symlink prevention
+
+4. **Smart Deduplication**
+   - Hooks: Deduplication by command field
+   - MCP servers: Deduplication by server name
+   - Agents/Commands: Filename-based duplicate detection
+
+### Results Achieved
+
+- ✅ **Complete copy service:** 1030 LOC with all config types supported
+- ✅ **111 comprehensive tests:** 100% pass rate
+  - Agent copy: 24 tests
+  - Command copy: 25 tests
+  - Hook copy: 45 tests
+  - MCP copy: 17 tests
+- ✅ **Robust error handling:** File system, validation, and edge cases
+- ✅ **Security hardening:** Path traversal and permission checks
+
+### Deferred to Future
+
+- **Skills copy** - Deferred until Skills viewing is implemented in UI
+- **API endpoints** - Will be added in Phase 3.1
+- **UI components** - Will be added in Phase 3.1
+
+### Next Phase: Phase 3.1 - Copy Configuration (API & UI)
+
+**Timeline:** Ready to Start
+**Focus:** Add API endpoints and user interface for copy operations
+**Deliverables:**
+- RESTful API endpoints for all copy operations
+- Copy modal and conflict resolution UI
+- Copy buttons integrated into configuration cards
+- E2E tests for complete copy workflows
 
 ---
 
@@ -197,6 +264,6 @@ Have ideas for features or improvements? See the following resources:
 
 ---
 
-**Last Updated:** 2025-11-01
-**Roadmap Version:** 1.2
-**Current Phase:** Phase 2.3 Complete ✅ - Production Ready (Next: Phase 3+ CRUD features)
+**Last Updated:** 2025-11-05
+**Roadmap Version:** 1.3
+**Current Phase:** Phase 3 Complete ✅ - Copy Configuration Backend (Next: Phase 3.1 - Copy Configuration API & UI)
