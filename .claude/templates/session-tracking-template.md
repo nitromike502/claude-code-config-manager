@@ -479,6 +479,127 @@
 
 ---
 
+## Phase 7: Post-Merge Cleanup
+
+> **PURPOSE:** Systematic checklist to ensure all cleanup steps are completed after PR merge. This phase ensures proper ticket closure, documentation archival, and readiness for next work.
+
+**Status:** [ ] Not Started | [ ] In Progress | [X] Complete
+
+### Cleanup Checklist
+
+**After user approves and PR is merged:**
+
+- [ ] **Move ticket to done status**
+  - Invoke `agile-ticket-manager` to move ticket from `review` to `done`
+  - Update ticket completion timestamp
+  - Document final merge commit hash in ticket
+
+- [ ] **Move all child tasks to done status**
+  - Verify all TASK-X.X.Y tickets moved to done
+  - Ensure no tasks left in `in-progress` or `todo` status
+  - Confirm ticket hierarchy reflects completion
+
+- [ ] **Archive session tracking document**
+  - Move this document from `docs/sessions/tracking/` to `docs/sessions/completed/`
+  - Preserve all content (do NOT delete)
+  - Verify document accessible in completed directory
+
+- [ ] **Verify feature branch cleanup**
+  - Confirm feature branch deleted locally (`git branch`)
+  - Confirm feature branch deleted remotely (`git branch -r`)
+  - No orphaned branches remaining
+
+- [ ] **Checkout parent branch and pull latest**
+  - Switch to parent branch (e.g., `phase-3`)
+  - Pull latest changes: `git pull origin [parent-branch]`
+  - Verify local branch is up-to-date with merged PR
+
+- [ ] **Query ticket manager for next available work**
+  - Invoke `agile-ticket-manager` to retrieve todo/backlog tickets
+  - Get recommendations for next logical ticket
+  - Consider dependencies and priorities
+
+- [ ] **Present final summary to user**
+  - Show completion metrics (time, tests, commits)
+  - Show recommended next tickets
+  - Offer to start next ticket or end session
+
+### Cleanup Execution Log
+
+**Started:** [YYYY-MM-DD HH:MM:SS]
+
+**Actions Performed:**
+
+1. **Ticket Status Update:**
+   - Time: [HH:MM:SS]
+   - Action: Moved [TICKET-ID] to done
+   - Result: ✅ Success | ❌ Failed - [reason]
+
+2. **Child Tasks Update:**
+   - Time: [HH:MM:SS]
+   - Tasks Moved: [count] tasks
+   - Result: ✅ Success | ❌ Failed - [reason]
+
+3. **Session Tracking Archive:**
+   - Time: [HH:MM:SS]
+   - Original Path: `docs/sessions/tracking/SESSION-[TICKET-ID]-[DATE].md`
+   - New Path: `docs/sessions/completed/SESSION-[TICKET-ID]-[DATE].md`
+   - Result: ✅ Success | ❌ Failed - [reason]
+
+4. **Branch Cleanup Verification:**
+   - Time: [HH:MM:SS]
+   - Feature Branch: [branch-name]
+   - Local Deleted: ✅ Yes | ❌ No
+   - Remote Deleted: ✅ Yes | ❌ No
+
+5. **Parent Branch Update:**
+   - Time: [HH:MM:SS]
+   - Current Branch: [branch-name]
+   - Pull Result: ✅ Up-to-date | ❌ Conflicts - [resolution]
+
+6. **Next Work Query:**
+   - Time: [HH:MM:SS]
+   - Available Tickets: [count] in todo, [count] in backlog
+   - Recommended: [TICKET-ID] - [Title]
+
+**Completed:** [YYYY-MM-DD HH:MM:SS]
+**Duration:** [total cleanup time]
+
+### Final Summary Presented to User
+
+```
+✅ [TICKET-ID] Complete!
+
+Merged: PR #[XX] → [parent-branch]
+Commits: [count] implementation + [count] documentation
+Tests: [XXX/XXX] passing (100%)
+Time: [total session duration]
+
+Next available work:
+- [TICKET-ID-1]: [Title] ([status]) - [estimate]
+- [TICKET-ID-2]: [Title] ([status]) - [estimate]
+- [TICKET-ID-3]: [Title] ([status]) - [estimate]
+
+Ready to start next ticket or end session.
+```
+
+### Post-Merge Notes
+
+**Lessons Learned:**
+- [What went well in this session]
+- [What could be improved for next time]
+- [Process improvements identified]
+
+**Cleanup Issues (if any):**
+- **Issue:** [Description]
+  - **Resolution:** [How it was handled]
+  - **Impact:** [Effect on workflow]
+
+**Session Complete:** ✅ Yes - All cleanup steps verified
+**Ready for Next Work:** ✅ Yes | ❌ No - [blocker]
+
+---
+
 ## Template Usage Instructions
 
 **For Main Agent:**
@@ -518,6 +639,9 @@
 
 ---
 
-**Template Version:** 1.0
-**Last Updated:** November 3, 2025
+**Template Version:** 1.1
+**Last Updated:** November 5, 2025
 **Template Location:** `.claude/templates/session-tracking-template.md`
+**Changelog:**
+- v1.1 (2025-11-05): Added Phase 7 Post-Merge Cleanup section with systematic checklist
+- v1.0 (2025-11-03): Initial template creation

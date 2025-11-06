@@ -28,6 +28,11 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 ```
 manager/
+├── .claude/
+│   ├── agents/                       # Project subagents
+│   ├── commands/                     # Project slash commands
+│   ├── templates/                    # Workflow templates (session tracking, testing, etc.)
+│   └── settings.json                 # Project Claude Code settings
 ├── docs/
 │   ├── prd/                          # Phase Requirements Documents
 │   ├── guides/                       # Development guides (see Quick Reference below)
@@ -45,6 +50,13 @@ manager/
 │   └── fixtures/                     # Mock data and test helpers
 └── CLAUDE.md                          # This file
 ```
+
+**Templates Location:** `.claude/templates/`
+- `session-tracking-template.md` - Template for SWARM workflow session tracking documents
+- `test-template.md` - Template for creating new test files
+- `test-creation-checklist.md` - Checklist for comprehensive test creation
+- `spec-review-checklist.md` - Checklist for reviewing official specifications
+- `development-strategies.md` - Guide for selecting development approaches
 
 **Note on Legacy Code:**
 - `/src/frontend/` (Phase 1 CDN-based code) has been removed
