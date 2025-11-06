@@ -283,10 +283,19 @@ All bugs were resolved with comprehensive test coverage.
   - When: Implementing from official specifications (Claude Code, Playwright, Vue, etc.)
   - Contains: 5-step pattern, BUG-030 case study, common pitfalls
 
+- **Coding standards:** `docs/guides/CODING-STANDARDS.md`
+  - When: Writing code, creating tests, or updating documentation
+  - Contains: Test data standards, import paths, documentation placement, CHANGELOG guidelines
+
 ### 🧪 Testing
 - **Test workflow & conventions:** `docs/guides/TESTING-GUIDE.md`
   - When: Running tests, creating new tests, or debugging test failures
-  - Contains: Automated quality gate, naming conventions, test types, troubleshooting
+  - Contains: Automated quality gate, naming conventions, test types, test data standards, troubleshooting
+
+### 🔧 Technical Specifications
+- **Technical documentation index:** `docs/technical/README.md`
+  - When: Understanding complex algorithms, data structures, or architecture
+  - Contains: Hook structure specs, merge algorithms, edge case documentation
 
 ### ⚙️ Setup & Operations
 - **First-time setup:** `docs/guides/SETUP-GUIDE.md`

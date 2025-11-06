@@ -87,6 +87,91 @@ wait
 - API integration
 - Visual verification
 
+## Test Fixtures and Data Standards
+
+### Model Values in Test Fixtures
+
+**Always use enum values, never full model IDs:**
+
+**Correct:**
+```yaml
+---
+name: test-agent
+model: sonnet
+---
+```
+
+**Incorrect:**
+```yaml
+---
+name: test-agent
+model: claude-3-5-sonnet-20241022  # ❌ Never use full model IDs
+---
+```
+
+**Valid Enum Values:**
+- `sonnet` - Latest Claude 3.5 Sonnet model
+- `haiku` - Latest Claude 3 Haiku model
+- `opus` - Latest Claude 3 Opus model
+
+**Rationale:**
+- Full model IDs change with each release
+- Enum values remain stable across Claude Code versions
+- Tests stay valid when new models are released
+
+### Frontmatter Properties for Comprehensive Coverage
+
+**Include optional properties to ensure thorough test coverage:**
+
+**Agents:**
+```yaml
+---
+name: test-agent
+description: Test agent description
+tools: [Read, Write, Bash]
+model: sonnet
+color: blue
+---
+```
+
+**Commands:**
+```yaml
+---
+name: test-command
+model: sonnet
+allowed-tools: [Read, Write]
+argument-hint: Optional hint text
+disable-model-invocation: false
+---
+```
+
+**Benefits:**
+- Exercises more code paths in parsers
+- Ensures optional fields are handled correctly
+- Catches edge cases in frontmatter processing
+
+**See:** `docs/guides/CODING-STANDARDS.md` for complete test data standards.
+
+### Import Path Conventions
+
+**Backend Tests (Jest):**
+```javascript
+// ✅ Use relative paths
+const copyService = require('../../../src/backend/services/copy-service');
+const { parseSubagent } = require('../../../src/backend/parsers/subagentParser');
+```
+
+**Frontend Tests (Playwright):**
+```javascript
+// ✅ Use @ aliases (Vite configured)
+import { useProjectStore } from '@/stores/projectStore';
+import ConfigCard from '@/components/ConfigCard.vue';
+```
+
+**Rationale:**
+- Backend: Jest doesn't have `@` alias configured
+- Frontend: Vite has `@` alias pointing to `/src`
+
 ## Test File Naming Convention
 
 All Playwright test files use numbered prefixes for easy identification:
@@ -318,6 +403,9 @@ Current test coverage:
 5. **Keep Tests Fast:** Optimize slow tests to maintain rapid feedback loops
 6. **Use Descriptive Names:** Test names should clearly describe what they verify
 7. **Document Test Purpose:** Add comments explaining complex test scenarios
+8. **Follow Test Data Standards:** Use enum model values and comprehensive frontmatter (see Test Fixtures section above)
+
+**See Also:** `docs/guides/CODING-STANDARDS.md` for complete coding and testing standards
 
 ## Troubleshooting
 

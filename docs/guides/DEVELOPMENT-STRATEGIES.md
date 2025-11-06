@@ -137,11 +137,26 @@ Select development strategy at session start:
 - Simple one-file changes (use Approved strategy)
 - Purely investigative tasks (use general-purpose agent)
 
+## Code Quality and Standards
+
+All development work must adhere to project coding standards:
+
+**Key Standards:**
+- **Test Data:** Use enum model values (`sonnet`, `haiku`, `opus`) not full IDs
+- **Import Paths:** Backend uses relative paths, frontend uses `@` aliases
+- **Documentation:** Brief comments in code, comprehensive docs in `docs/technical/`
+- **CHANGELOG:** Concise entries (3-4 bullets), user-facing features only
+- **Commits:** Don't commit test reports or generated documentation
+
+**See:** `docs/guides/CODING-STANDARDS.md` for complete standards and best practices
+
 ## Related Resources
 
 - **CLAUDE.md:** Project overview and complete documentation
 - **SWARM-WORKFLOW.md:** Complete SWARM workflow documentation
 - **PARALLEL-EXECUTION-GUIDE.md:** Parallelization decision criteria and patterns
+- **CODING-STANDARDS.md:** Coding standards and best practices
+- **TESTING-GUIDE.md:** Test execution and fixture standards
 - **development-strategies.md template:** Detailed implementation patterns
 - **/dev-strategy command:** Interactive strategy selection tool
 - **Workflow analyses:** Real-world examples in `/docs/sessions/workflow-analyses/`
