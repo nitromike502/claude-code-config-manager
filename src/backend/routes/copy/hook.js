@@ -1,4 +1,5 @@
 const copyService = require('../../services/copy-service');
+const { validateHookParams } = require('./validation');
 
 /**
  * POST /api/copy/hook
@@ -21,67 +22,27 @@ const copyService = require('../../services/copy-service');
  * }
  */
 async function copyHook(req, res) {
-  // 1. Validate request body structure
+  // 1. Validate request parameters
+  const validationError = validateHookParams(req.body);
+  if (validationError) {
+    return res.status(400).json({
+      success: false,
+      ...validationError
+    });
+  }
+
+  // 2. Extract parameters from request body
   const { sourceHook, targetScope, targetProjectId } = req.body;
 
-  // Validate sourceHook object exists
-  if (!sourceHook || typeof sourceHook !== 'object') {
-    return res.status(400).json({
-      success: false,
-      error: 'sourceHook is required and must be an object'
-    });
-  }
-
-  // Validate sourceHook required fields
-  if (!sourceHook.event || typeof sourceHook.event !== 'string') {
-    return res.status(400).json({
-      success: false,
-      error: 'sourceHook.event is required and must be a string'
-    });
-  }
-
-  if (!sourceHook.command || typeof sourceHook.command !== 'string') {
-    return res.status(400).json({
-      success: false,
-      error: 'sourceHook.command is required and must be a string'
-    });
-  }
-
-  // Validate targetScope
-  if (!targetScope || !['user', 'project'].includes(targetScope)) {
-    return res.status(400).json({
-      success: false,
-      error: 'targetScope is required and must be "user" or "project"'
-    });
-  }
-
-  // Validate targetProjectId (required if targetScope is 'project')
-  if (targetScope === 'project') {
-    if (!targetProjectId || typeof targetProjectId !== 'string') {
-      return res.status(400).json({
-        success: false,
-        error: 'targetProjectId is required when targetScope is "project"'
-      });
-    }
-
-    // Additional security: Check for empty strings
-    if (targetProjectId.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        error: 'targetProjectId must not be empty'
-      });
-    }
-  }
-
   try {
-    // 2. Call copy service with hook-specific request structure
+    // 3. Call copy service with hook-specific request structure
     const result = await copyService.copyHook({
       sourceHook,
       targetScope,
       targetProjectId
     });
 
-    // 3. Handle service response
+    // 4. Handle service response
     if (!result.success) {
       // Service returned error
       return res.status(500).json({
@@ -90,7 +51,7 @@ async function copyHook(req, res) {
       });
     }
 
-    // 4. Return success
+    // 5. Return success
     return res.status(200).json({
       success: true,
       message: 'Hook copied successfully',
@@ -99,7 +60,7 @@ async function copyHook(req, res) {
     });
 
   } catch (error) {
-    // 5. Map error to status code
+    // 6. Map error to status code
     const statusCode = mapErrorToStatus(error);
     return res.status(statusCode).json({
       success: false,

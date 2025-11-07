@@ -1,5 +1,5 @@
 const copyService = require('../../services/copy-service');
-const { validateCopyRequest } = require('./validation');
+const { validateMcpParams } = require('./validation');
 
 /**
  * POST /api/copy/mcp
@@ -23,48 +23,19 @@ const { validateCopyRequest } = require('./validation');
  */
 async function copyMcp(req, res) {
   // 1. Validate request parameters
-  // Note: For MCP copy, we need different validation than file-based copies
-  // We don't have a sourcePath (file), but rather sourceServerName and sourceMcpConfig
+  const validationError = validateMcpParams(req.body);
+  if (validationError) {
+    return res.status(400).json({
+      success: false,
+      ...validationError
+    });
+  }
+
+  // 2. Extract parameters from request body
   const { sourceServerName, sourceMcpConfig, targetScope, targetProjectId, conflictStrategy } = req.body;
 
-  // Custom validation for MCP-specific parameters
-  if (!sourceServerName || typeof sourceServerName !== 'string') {
-    return res.status(400).json({
-      success: false,
-      error: 'sourceServerName is required and must be a string'
-    });
-  }
-
-  if (!sourceMcpConfig || typeof sourceMcpConfig !== 'object') {
-    return res.status(400).json({
-      success: false,
-      error: 'sourceMcpConfig is required and must be an object'
-    });
-  }
-
-  if (!targetScope || !['user', 'project'].includes(targetScope)) {
-    return res.status(400).json({
-      success: false,
-      error: 'targetScope is required and must be "user" or "project"'
-    });
-  }
-
-  if (targetScope === 'project' && (!targetProjectId || typeof targetProjectId !== 'string')) {
-    return res.status(400).json({
-      success: false,
-      error: 'targetProjectId is required when targetScope is "project"'
-    });
-  }
-
-  if (conflictStrategy && !['skip', 'overwrite'].includes(conflictStrategy)) {
-    return res.status(400).json({
-      success: false,
-      error: 'conflictStrategy must be "skip" or "overwrite"'
-    });
-  }
-
   try {
-    // 2. Call copy service with MCP-specific request format
+    // 3. Call copy service with MCP-specific request format
     const result = await copyService.copyMcp({
       sourceServerName,
       sourceMcpConfig,
@@ -73,7 +44,7 @@ async function copyMcp(req, res) {
       conflictStrategy: conflictStrategy || 'skip'
     });
 
-    // 3. Handle conflict response
+    // 4. Handle conflict response
     if (result.conflict) {
       return res.status(409).json({
         success: false,
@@ -81,7 +52,7 @@ async function copyMcp(req, res) {
       });
     }
 
-    // 4. Handle skip response
+    // 5. Handle skip response
     if (result.skipped) {
       return res.status(200).json({
         success: false,
@@ -90,7 +61,7 @@ async function copyMcp(req, res) {
       });
     }
 
-    // 5. Handle error response
+    // 6. Handle error response
     if (result.error) {
       // Map error to appropriate status code
       const statusCode = mapErrorToStatus(new Error(result.error));
@@ -100,7 +71,7 @@ async function copyMcp(req, res) {
       });
     }
 
-    // 6. Return success response
+    // 7. Return success response
     return res.status(200).json({
       success: true,
       message: 'MCP server copied successfully',
@@ -109,7 +80,7 @@ async function copyMcp(req, res) {
     });
 
   } catch (error) {
-    // 7. Handle unexpected errors
+    // 8. Handle unexpected errors
     const statusCode = mapErrorToStatus(error);
     return res.status(statusCode).json({
       success: false,

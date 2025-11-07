@@ -1,5 +1,5 @@
 const copyService = require('../../services/copy-service');
-const { validateCopyRequest } = require('./validation');
+const { validateCopyParams } = require('./validation');
 
 /**
  * POST /api/copy/agent
@@ -17,33 +17,13 @@ const { validateCopyRequest } = require('./validation');
  * - Error (400/403/404/500/507): { success: false, error: 'Error message' }
  */
 async function copyAgent(req, res) {
-  // 1. Validate request using shared validation middleware
-  // Note: This function is designed to be used with Express middleware pattern
-  // However, since we're calling it directly, we need to handle the response
-  let validationError = null;
-
-  // Create a mock response object to capture validation errors
-  const mockRes = {
-    status: (code) => ({
-      json: (data) => {
-        validationError = { statusCode: code, data };
-        return mockRes;
-      }
-    })
-  };
-
-  // Create a mock next function
-  let validationPassed = false;
-  const mockNext = () => {
-    validationPassed = true;
-  };
-
-  // Run validation
-  validateCopyRequest(req, mockRes, mockNext);
-
-  // Check if validation failed
-  if (!validationPassed) {
-    return res.status(validationError.statusCode).json(validationError.data);
+  // 1. Validate request parameters
+  const validationError = validateCopyParams(req.body);
+  if (validationError) {
+    return res.status(400).json({
+      success: false,
+      ...validationError
+    });
   }
 
   // 2. Extract parameters from request body
