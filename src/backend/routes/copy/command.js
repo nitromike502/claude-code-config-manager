@@ -1,4 +1,5 @@
 const copyService = require('../../services/copy-service');
+const { validateCopyRequest } = require('./validation');
 
 /**
  * POST /api/copy/command
@@ -16,7 +17,34 @@ const copyService = require('../../services/copy-service');
  * - 400/403/404/500/507: { success: false, error: "Error message" }
  */
 async function copyCommand(req, res) {
-  // Extract parameters from request body
+  // 1. Validate request using shared validation middleware
+  let validationError = null;
+
+  // Create a mock response object to capture validation errors
+  const mockRes = {
+    status: (code) => ({
+      json: (data) => {
+        validationError = { statusCode: code, data };
+        return mockRes;
+      }
+    })
+  };
+
+  // Create a mock next function
+  let validationPassed = false;
+  const mockNext = () => {
+    validationPassed = true;
+  };
+
+  // Run validation
+  validateCopyRequest(req, mockRes, mockNext);
+
+  // Check if validation failed
+  if (!validationPassed) {
+    return res.status(validationError.statusCode).json(validationError.data);
+  }
+
+  // 2. Extract parameters from request body
   const { sourcePath, targetScope, targetProjectId, conflictStrategy } = req.body;
 
   try {
