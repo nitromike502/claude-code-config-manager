@@ -39,10 +39,12 @@ app.use((req, res, next) => {
 // Import routes
 const projectsRouter = require('./routes/projects');
 const userRouter = require('./routes/user');
+const copyRoutes = require('./routes/copy');
 
 // API routes
 app.use('/api/projects', projectsRouter);
 app.use('/api/user', userRouter);
+app.use('/api/copy', copyRoutes);
 
 // Serve static frontend files from built SPA (dist)
 // Fall back to frontend for development if dist is not available
