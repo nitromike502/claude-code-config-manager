@@ -154,6 +154,7 @@
 
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useToast } from 'primevue/usetoast'
 import * as api from '@/api/client'
 import ConfigCard from '@/components/cards/ConfigCard.vue'
 import ConfigItemList from '@/components/cards/ConfigItemList.vue'
@@ -174,6 +175,7 @@ export default {
   },
   setup() {
     // Initialize stores
+    const toast = useToast()
     const copyStore = useCopyStore()
     const projectsStore = useProjectsStore()
 
@@ -381,18 +383,33 @@ export default {
 
     const handleCopySuccess = (result) => {
       showCopyModal.value = false
-      // Toast notification will be added in TASK-3.6.5
-      console.log('Copy success:', result)
+      const filename = result.filename || result.source?.name || 'Configuration'
+      toast.add({
+        severity: 'success',
+        summary: 'Configuration Copied',
+        detail: `${filename} has been copied successfully`,
+        life: 5000
+      })
     }
 
     const handleCopyError = (error) => {
       showCopyModal.value = false
-      console.error('Copy error:', error)
+      toast.add({
+        severity: 'error',
+        summary: 'Copy Failed',
+        detail: error.message || 'An error occurred during the copy operation',
+        life: 0  // Manual dismiss
+      })
     }
 
     const handleCopyCancelled = () => {
       showCopyModal.value = false
-      console.log('Copy cancelled')
+      toast.add({
+        severity: 'info',
+        summary: 'Copy operation cancelled',
+        detail: '',
+        life: 3000
+      })
     }
 
     onMounted(() => {

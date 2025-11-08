@@ -16,6 +16,9 @@
       </ErrorBoundary>
     </main>
 
+    <!-- PrimeVue Toast Component -->
+    <Toast position="bottom-right" />
+
     <!-- Notifications Container -->
     <div class="notifications" v-if="notificationsStore.notifications.length">
       <div
@@ -36,11 +39,13 @@ import { useThemeStore } from './stores/theme'
 import { useNotificationsStore } from './stores/notifications'
 import { useProjectsStore } from './stores/projects'
 import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
+import Toast from 'primevue/toast'
 
 export default {
   name: 'App',
   components: {
-    ErrorBoundary
+    ErrorBoundary,
+    Toast
   },
   setup() {
     const themeStore = useThemeStore()

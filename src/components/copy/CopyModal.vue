@@ -6,6 +6,7 @@
     :style="{ width: '50vw' }"
     :draggable="false"
     class="copy-modal"
+    @hide="handleDialogHide"
   >
     <template #header>
       <div class="modal-header">
@@ -117,7 +118,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:visible', 'copy-success']);
+const emit = defineEmits(['update:visible', 'copy-success', 'copy-error', 'copy-cancelled']);
 
 // Initialize projects store
 const projectsStore = useProjectsStore();
@@ -166,9 +167,22 @@ const handleKeyDown = (event, destination) => {
   }
 };
 
+// Track if a selection was made
+let selectionMade = false;
+
+// Handle Dialog hide event (close button clicked or ESC pressed)
+const handleDialogHide = () => {
+  // Only emit cancelled if user didn't make a selection
+  if (!selectionMade) {
+    emit('copy-cancelled');
+  }
+  selectionMade = false; // Reset for next open
+};
+
 // Handle destination selection
 const selectDestination = (destination) => {
   console.log('Selected destination:', destination);
+  selectionMade = true;
   // Future: Will call API to perform copy operation
   // For now, just emit success and close modal
   emit('copy-success', { source: props.sourceConfig, destination });

@@ -13,8 +13,9 @@ import '@/styles/components.css'
 // Import PrimeIcons
 import 'primeicons/primeicons.css'
 
-// Import PrimeVue directives
+// Import PrimeVue directives and services
 import Tooltip from 'primevue/tooltip'
+import ToastService from 'primevue/toastservice'
 
 // Initialize Vue app
 const app = createApp(App)
@@ -28,6 +29,9 @@ app.use(router)
 app.use(PrimeVue, {
   unstyled: true // We use our own CSS variables for styling
 })
+
+// Use PrimeVue services
+app.use(ToastService)
 
 // Register PrimeVue directives globally
 app.directive('tooltip', Tooltip)
