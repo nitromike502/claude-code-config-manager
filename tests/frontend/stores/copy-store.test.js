@@ -7,7 +7,6 @@ vi.mock('@/api/client.js', () => ({
   default: {
     copyAgent: vi.fn(),
     copyCommand: vi.fn(),
-    copySkill: vi.fn(),
     copyHook: vi.fn(),
     copyMcp: vi.fn()
   }
