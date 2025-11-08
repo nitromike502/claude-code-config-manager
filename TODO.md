@@ -76,7 +76,7 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 - [ ] Add option to bulk-fix all YAML errors in a project
 
 ### UI/UX Enhancements
-_(Add UI improvement ideas here as they come up)_
+- [ ] **Migrate existing components to PrimeVue** - Installed PrimeVue in Phase 3 for copy feature components (CopyButton, CopyModal, ConflictResolver). Consider migrating existing custom HTML/CSS components (ConfigCard, ConfigDetailSidebar, etc.) to PrimeVue components for consistency and reduced maintenance. Low priority - focus on feature completion first.
 
 ### Performance Optimization Ideas
 - ✅ **RESOLVED: Jest test performance issue** - Copy service tests were split from one monolithic file (653 lines) into 5 focused test files. Now runs in ~0.3s with all 67 tests passing. Resolved in TASK-3.1.6 (November 2, 2025).

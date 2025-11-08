@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import PrimeVue from 'primevue/config'
 import App from '@/App.vue'
 import router from '@/router'
 import { useThemeStore } from '@/stores/theme'
@@ -12,6 +13,9 @@ import '@/styles/components.css'
 // Import PrimeIcons
 import 'primeicons/primeicons.css'
 
+// Import PrimeVue directives
+import Tooltip from 'primevue/tooltip'
+
 // Initialize Vue app
 const app = createApp(App)
 const pinia = createPinia()
@@ -19,6 +23,14 @@ const pinia = createPinia()
 // Use Pinia and Vue Router
 app.use(pinia)
 app.use(router)
+
+// Use PrimeVue (required for Dialog and other components)
+app.use(PrimeVue, {
+  unstyled: true // We use our own CSS variables for styling
+})
+
+// Register PrimeVue directives globally
+app.directive('tooltip', Tooltip)
 
 // Load theme before mounting
 const themeStore = useThemeStore()

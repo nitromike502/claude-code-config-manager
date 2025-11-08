@@ -21,7 +21,7 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 ## Tech Stack
 
 - **Backend:** Node.js + Express (port 8420)
-- **Frontend:** Vite + Vue 3 + Vue Router + Pinia (SPA on port 5173 in dev)
+- **Frontend:** Vite + Vue 3 + Vue Router + Pinia + PrimeVue (SPA on port 5173 in dev)
 - **Data Source:** Live file system reads (no database)
 
 ## Project Structure
