@@ -276,7 +276,7 @@ const selectDestination = (destination) => {
 }
 
 .config-type.type-mcp {
-  background: rgba(156, 39, 176, 0.2);
+  background: var(--color-mcp-bg);
   color: var(--color-mcp);
 }
 

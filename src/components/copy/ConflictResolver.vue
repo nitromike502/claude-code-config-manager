@@ -302,7 +302,7 @@ const onConfirm = () => {
 .option.selected {
   background: var(--bg-hover);
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(0, 122, 217, 0.1);
+  box-shadow: 0 0 0 2px var(--color-primary-focus-ring);
 }
 
 .option-content {
