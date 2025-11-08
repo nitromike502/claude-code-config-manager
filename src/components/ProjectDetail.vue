@@ -344,7 +344,10 @@ export default {
         agents.value = data.agents || []
         return data
       } catch (err) {
-        console.error('Error loading agents:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading agents:', err)
+        }
         agents.value = []
         throw err
       } finally {
@@ -359,7 +362,10 @@ export default {
         commands.value = data.commands || []
         return data
       } catch (err) {
-        console.error('Error loading commands:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading commands:', err)
+        }
         commands.value = []
         throw err
       } finally {
@@ -374,7 +380,10 @@ export default {
         hooks.value = data.hooks || []
         return data
       } catch (err) {
-        console.error('Error loading hooks:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading hooks:', err)
+        }
         hooks.value = []
         throw err
       } finally {
@@ -389,7 +398,10 @@ export default {
         mcpServers.value = data.mcp || []
         return data
       } catch (err) {
-        console.error('Error loading MCP servers:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading MCP servers:', err)
+        }
         mcpServers.value = []
         throw err
       } finally {

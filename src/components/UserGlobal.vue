@@ -278,7 +278,10 @@ export default {
         const data = await api.getUserAgents()
         agents.value = data.agents || []
       } catch (err) {
-        console.error('Error loading agents:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading agents:', err)
+        }
         agents.value = []
       } finally {
         loadingAgents.value = false
@@ -291,7 +294,10 @@ export default {
         const data = await api.getUserCommands()
         commands.value = data.commands || []
       } catch (err) {
-        console.error('Error loading commands:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading commands:', err)
+        }
         commands.value = []
       } finally {
         loadingCommands.value = false
@@ -304,7 +310,10 @@ export default {
         const data = await api.getUserHooks()
         hooks.value = data.hooks || []
       } catch (err) {
-        console.error('Error loading hooks:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading hooks:', err)
+        }
         hooks.value = []
       } finally {
         loadingHooks.value = false
@@ -317,7 +326,10 @@ export default {
         const data = await api.getUserMcp()
         mcpServers.value = data.mcp || []
       } catch (err) {
-        console.error('Error loading MCP servers:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading MCP servers:', err)
+        }
         mcpServers.value = []
       } finally {
         loadingMCP.value = false

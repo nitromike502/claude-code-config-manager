@@ -47,6 +47,7 @@
       <!-- User Global Card -->
       <div
         class="destination-card"
+        :class="{ 'selected': selectedDestination?.id === 'user-global' }"
         tabindex="0"
         role="button"
         aria-label="Copy to User Global"
@@ -62,7 +63,8 @@
           label="Copy Here"
           icon="pi pi-copy"
           class="card-button"
-          @click.stop="selectDestination({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
+          :disabled="selectedDestination?.id !== 'user-global'"
+          @click.stop="handleCopy"
         />
       </div>
 
@@ -72,6 +74,7 @@
           v-for="project in mockProjects"
           :key="project.id"
           class="destination-card"
+          :class="{ 'selected': selectedDestination?.id === project.id }"
           tabindex="0"
           role="button"
           :aria-label="`Copy to ${project.name}`"
@@ -87,7 +90,8 @@
             label="Copy Here"
             icon="pi pi-copy"
             class="card-button"
-            @click.stop="selectDestination(project)"
+            :disabled="selectedDestination?.id !== project.id"
+            @click.stop="handleCopy"
           />
         </div>
       </div>
@@ -96,7 +100,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import Divider from 'primevue/divider';
@@ -122,6 +126,16 @@ const emit = defineEmits(['update:visible', 'copy-success', 'copy-error', 'copy-
 
 // Initialize projects store
 const projectsStore = useProjectsStore();
+
+// Track selected destination
+const selectedDestination = ref(null);
+
+// Reset selection when modal opens
+watch(() => props.visible, (newVal) => {
+  if (newVal) {
+    selectedDestination.value = null;
+  }
+});
 
 // Computed property for v-model binding
 const isVisible = computed({
@@ -160,8 +174,14 @@ const formatType = (type) => {
 
 // Handle keyboard navigation on destination cards
 const handleKeyDown = (event, destination) => {
-  // Handle Enter and Space keys for accessibility
-  if (event.key === 'Enter' || event.key === ' ') {
+  // Handle Enter key to select and copy
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    selectDestination(destination);
+    handleCopy();
+  }
+  // Handle Space key to just select (not copy)
+  else if (event.key === ' ') {
     event.preventDefault();
     selectDestination(destination);
   }
@@ -179,14 +199,31 @@ const handleDialogHide = () => {
   selectionMade = false; // Reset for next open
 };
 
-// Handle destination selection
+// Handle destination selection (just selects, doesn't copy)
 const selectDestination = (destination) => {
   console.log('Selected destination:', destination);
-  selectionMade = true;
-  // Future: Will call API to perform copy operation
-  // For now, just emit success and close modal
-  emit('copy-success', { source: props.sourceConfig, destination });
-  emit('update:visible', false);
+  // Clear previous selection first
+  selectedDestination.value = null;
+  // Set new selection
+  selectedDestination.value = destination;
+};
+
+// Handle copy action
+const handleCopy = async () => {
+  if (!selectedDestination.value) {
+    return; // No destination selected
+  }
+
+  try {
+    selectionMade = true;
+    // Future: Will call API to perform copy operation
+    // For now, just emit success and close modal
+    emit('copy-success', { source: props.sourceConfig, destination: selectedDestination.value });
+    isVisible.value = false; // Close modal after success
+  } catch (error) {
+    emit('copy-error', error);
+    isVisible.value = false; // Close modal after error too
+  }
 };
 </script>
 
@@ -307,6 +344,13 @@ const selectDestination = (destination) => {
 .destination-card:focus {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+.destination-card.selected {
+  background: var(--bg-hover);
+  border-color: var(--color-primary);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .card-header {

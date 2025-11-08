@@ -64,7 +64,10 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
     if (!response.ok) {
       // Try to get error message from response body
       const error = await response.json().catch(() => ({ message: response.statusText }))
-      throw new Error(error.message || `HTTP ${response.status}: ${response.statusText}`)
+      const apiError = new Error(error.message || `HTTP ${response.status}: ${response.statusText}`)
+      // Mark as expected error to suppress console logging
+      apiError.isExpected = true
+      throw apiError
     }
 
     return response
@@ -73,7 +76,14 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
 
     // Handle abort errors (timeout)
     if (error.name === 'AbortError') {
-      throw new Error(`Request timeout after ${timeout}ms`)
+      const timeoutError = new Error(`Request timeout after ${timeout}ms`)
+      timeoutError.isExpected = true
+      throw timeoutError
+    }
+
+    // Mark network errors as expected (handled by UI)
+    if (!error.isExpected) {
+      error.isExpected = true
     }
 
     throw error
