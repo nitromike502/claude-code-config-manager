@@ -28,7 +28,10 @@
     "test:frontend:component": "playwright test tests/frontend",
     "test:frontend:e2e": "playwright test tests/e2e",
     "test:frontend:visual": "playwright test 300-visual-regression.spec.js",
-    "test:full": "npm run test:backend && npm run test:frontend",
+    "test:frontend:unit": "vitest run",
+    "test:frontend:unit:watch": "vitest",
+    "test:frontend:unit:coverage": "vitest run --coverage",
+    "test:full": "npm run test:backend && npm run test:frontend:unit && npm run test:frontend",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:visual:update": "playwright test 300-visual-regression.spec.js --update-snapshots",
@@ -56,8 +59,11 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
+    "@vue/test-utils": "^2.4.6",
+    "happy-dom": "^20.0.10",
     "jest": "^30.2.0",
-    "supertest": "^7.1.4"
+    "supertest": "^7.1.4",
+    "vitest": "^4.0.8"
   },
   "engines": {
     "node": ">=18.0.0"
