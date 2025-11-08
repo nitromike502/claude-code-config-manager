@@ -82,7 +82,10 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 - ✅ **RESOLVED: Jest test performance issue** - Copy service tests were split from one monolithic file (653 lines) into 5 focused test files. Now runs in ~0.3s with all 67 tests passing. Resolved in TASK-3.1.6 (November 2, 2025).
 
 ### Developer Experience Ideas
-_(Add DX improvement ideas here)_
+
+- [ ] **Review and optimize test suite** - With 1,300+ tests taking 5+ minutes to run, review all tests for duplicates, redundancy, and unnecessary coverage. Consider consolidating overlapping tests, removing trivial tests that don't add value, and restructuring test organization for faster execution. Goal: Reduce test suite to essential coverage only, targeting <2 minute full suite execution.
+
+- [ ] **Modify SWARM workflow for targeted testing** - Current workflow runs full test suite (1,300+ tests) after each task completion, causing significant delays. Update workflow to: (1) Run tests only after all development for a ticket is complete, not after each individual task, (2) Run only targeted/relevant tests for the changed code (e.g., only frontend tests for UI changes, only copy tests for copy feature changes), (3) Reserve full test suite for final PR validation. Update `docs/guides/SWARM-WORKFLOW.md` and `docs/guides/TESTING-GUIDE.md` to reflect this approach.
 
 ---
 
