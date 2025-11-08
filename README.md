@@ -13,6 +13,7 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 - **Vue 3.5.22** - Progressive JavaScript framework for reactive UIs
 - **Vue Router 4.6.3** - Official router for Vue.js with client-side routing
 - **Pinia 3.0.3** - Official state management library for Vue 3
+- **PrimeVue 4.4.1** - UI component library for modern, accessible components
 
 ### Backend
 - **Node.js 18+** - JavaScript runtime

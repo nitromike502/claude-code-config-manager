@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 const Dashboard = () => import('@/components/Dashboard.vue')
 const ProjectDetail = () => import('@/components/ProjectDetail.vue')
 const UserGlobal = () => import('@/components/UserGlobal.vue')
+const TestCopyComponents = () => import('@/components/copy/TestCopyComponents.vue')
 
 const routes = [
   {
@@ -21,6 +22,11 @@ const routes = [
     path: '/user',
     name: 'UserGlobal',
     component: UserGlobal
+  },
+  {
+    path: '/test/copy',
+    name: 'TestCopyComponents',
+    component: TestCopyComponents
   }
 ]
 
