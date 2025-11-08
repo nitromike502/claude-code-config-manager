@@ -20,7 +20,7 @@
       <div class="source-info">
         <div class="info-row">
           <span class="info-label">Filename:</span>
-          <span class="info-value">{{ sourceConfig.name }}</span>
+          <span class="info-value">{{ sourceConfig.name || sourceConfig.event }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Type:</span>
@@ -50,7 +50,7 @@
         role="button"
         aria-label="Copy to User Global"
         @click="selectDestination({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
-        @keydown.enter="selectDestination({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
+        @keydown="handleKeyDown($event, { id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
       >
         <div class="card-header">
           <i class="pi pi-user card-icon"></i>
@@ -75,7 +75,7 @@
           role="button"
           :aria-label="`Copy to ${project.name}`"
           @click="selectDestination(project)"
-          @keydown.enter="selectDestination(project)"
+          @keydown="handleKeyDown($event, project)"
         >
           <div class="card-header">
             <i :class="project.icon + ' card-icon'"></i>
@@ -95,10 +95,11 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted } from 'vue';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import Divider from 'primevue/divider';
+import { useProjectsStore } from '@/stores/projects';
 
 const props = defineProps({
   visible: {
@@ -109,13 +110,17 @@ const props = defineProps({
     type: Object,
     required: true,
     validator: (value) => {
-      return value && value.name && value.type &&
+      // Config items can have either 'name' (agents, commands, MCP) or 'event' (hooks)
+      return value && (value.name || value.event) && value.type &&
              ['agent', 'command', 'hook', 'mcp'].includes(value.type);
     }
   }
 });
 
 const emit = defineEmits(['update:visible', 'copy-success']);
+
+// Initialize projects store
+const projectsStore = useProjectsStore();
 
 // Computed property for v-model binding
 const isVisible = computed({
@@ -127,49 +132,18 @@ const isVisible = computed({
   }
 });
 
-// Mock projects data (will be replaced with API integration in STORY-3.5)
-const mockProjects = ref([
-  {
-    id: 'proj1',
-    name: 'Claude Code Manager',
-    path: '/home/claude/manager',
-    icon: 'pi pi-folder'
-  },
-  {
-    id: 'proj2',
-    name: 'My Website',
-    path: '/home/claude/projects/website',
-    icon: 'pi pi-folder'
-  },
-  {
-    id: 'proj3',
-    name: 'API Server',
-    path: '/home/claude/projects/api-server',
-    icon: 'pi pi-folder'
-  },
-  {
-    id: 'proj4',
-    name: 'Mobile App',
-    path: '/home/claude/projects/mobile-app',
-    icon: 'pi pi-folder'
-  },
-  {
-    id: 'proj5',
-    name: 'Data Analysis',
-    path: '/home/claude/projects/data-analysis',
-    icon: 'pi pi-folder'
-  }
-]);
+// Use projects from store instead of mock data
+const mockProjects = computed(() => projectsStore.projects);
 
 // Get icon for configuration type
 const getTypeIcon = (type) => {
   const icons = {
-    agent: 'pi pi-users',
-    command: 'pi pi-bolt',
-    hook: 'pi pi-link',
-    mcp: 'pi pi-server'
+    agent: ['pi', 'pi-users'],
+    command: ['pi', 'pi-bolt'],
+    hook: ['pi', 'pi-link'],
+    mcp: ['pi', 'pi-server']
   };
-  return icons[type] || 'pi pi-file';
+  return icons[type] || ['pi', 'pi-file'];
 };
 
 // Format type for display
@@ -181,6 +155,15 @@ const formatType = (type) => {
     mcp: 'MCP Server'
   };
   return formats[type] || type;
+};
+
+// Handle keyboard navigation on destination cards
+const handleKeyDown = (event, destination) => {
+  // Handle Enter and Space keys for accessibility
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    selectDestination(destination);
+  }
 };
 
 // Handle destination selection
