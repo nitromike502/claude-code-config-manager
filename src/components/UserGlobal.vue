@@ -381,8 +381,10 @@ export default {
       showCopyModal.value = true
     }
 
-    const handleCopySuccess = (result) => {
+    const handleCopySuccess = async (result) => {
       showCopyModal.value = false
+
+      // Show toast
       const filename = result.filename || result.source?.name || 'Configuration'
       toast.add({
         severity: 'success',
@@ -390,6 +392,20 @@ export default {
         detail: `${filename} has been copied successfully`,
         life: 5000
       })
+
+      // Refresh data if copied to user-level
+      if (result.destination?.id === 'user-global') {
+        const configType = result.source?.type
+        if (configType === 'agent') {
+          await loadAgents()
+        } else if (configType === 'command') {
+          await loadCommands()
+        } else if (configType === 'hook') {
+          await loadHooks()
+        } else if (configType === 'mcp') {
+          await loadMCP()
+        }
+      }
     }
 
     const handleCopyError = (error) => {
