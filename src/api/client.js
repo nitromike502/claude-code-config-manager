@@ -185,6 +185,71 @@ export async function healthCheck() {
   return response.json()
 }
 
+/**
+ * Copy agent to target scope
+ * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
+ * @returns {Promise<Object>} - { success: boolean, message: string, createdPath?: string }
+ */
+export async function copyAgent(request) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/agent`, {
+    method: 'POST',
+    body: JSON.stringify(request)
+  })
+  return response.json()
+}
+
+/**
+ * Copy command to target scope
+ * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
+ * @returns {Promise<Object>} - { success: boolean, message: string, createdPath?: string }
+ */
+export async function copyCommand(request) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/command`, {
+    method: 'POST',
+    body: JSON.stringify(request)
+  })
+  return response.json()
+}
+
+/**
+ * Copy skill to target scope
+ * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
+ * @returns {Promise<Object>} - { success: boolean, message: string, createdPath?: string }
+ */
+export async function copySkill(request) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/skill`, {
+    method: 'POST',
+    body: JSON.stringify(request)
+  })
+  return response.json()
+}
+
+/**
+ * Copy hook to target scope
+ * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
+ * @returns {Promise<Object>} - { success: boolean, message: string, warnings?: string[] }
+ */
+export async function copyHook(request) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/hook`, {
+    method: 'POST',
+    body: JSON.stringify(request)
+  })
+  return response.json()
+}
+
+/**
+ * Copy MCP server to target scope
+ * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
+ * @returns {Promise<Object>} - { success: boolean, message: string, warnings?: string[] }
+ */
+export async function copyMcp(request) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/mcp`, {
+    method: 'POST',
+    body: JSON.stringify(request)
+  })
+  return response.json()
+}
+
 // Default export with all API functions
 export default {
   BASE_URL,
@@ -198,5 +263,10 @@ export default {
   getUserCommands,
   getUserHooks,
   getUserMcp,
-  healthCheck
+  healthCheck,
+  copyAgent,
+  copyCommand,
+  copySkill,
+  copyHook,
+  copyMcp
 }
