@@ -74,10 +74,36 @@ export const useCopyStore = defineStore('copy', () => {
       // Call API
       const result = await api[endpointMethod](payload)
 
+      // Check for conflict (409) - return without throwing
+      // Conflicts are not errors - UI will handle resolution
+      if (result.conflict) {
+        lastCopyResult.value = result
+        return result
+      }
+
       // Update state with last operation result
       lastCopyResult.value = result
 
       return result
+    } catch (error) {
+      // Map HTTP errors to user-friendly messages
+      let userMessage
+
+      if (error.message.includes('403') || error.message.includes('Forbidden')) {
+        userMessage = 'Permission denied - Check file permissions'
+      } else if (error.message.includes('404') || error.message.includes('Not Found')) {
+        userMessage = 'Source file not found'
+      } else if (error.message.includes('400') || error.message.includes('Bad Request')) {
+        userMessage = `Invalid request - ${error.message}`
+      } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
+        userMessage = 'An error occurred - Please try again'
+      } else if (error.message.includes('fetch') || error.message.includes('network')) {
+        userMessage = 'Network error - Check your connection'
+      } else {
+        userMessage = `Copy failed - ${error.message}`
+      }
+
+      throw new Error(userMessage)
     } finally {
       // Always reset copying flag, even if error occurs
       copying.value = false
@@ -85,15 +111,26 @@ export const useCopyStore = defineStore('copy', () => {
   }
 
   /**
-   * Map configuration type to appropriate API endpoint method
+   * Map configuration type to appropriate API client method name
    *
-   * @param {string} type - Configuration type (agent, command, hook, mcp)
-   * @returns {string} API endpoint path segment
-   * @todo Implement in TASK-3.5.4
+   * @param {string} type - Configuration type (agent, command, skill, hook, mcp)
+   * @returns {string} API client method name
+   * @throws {Error} If type is unknown
    */
   function getEndpointForType(type) {
-    // TODO: Implement in TASK-3.5.4
-    throw new Error('getEndpointForType not yet implemented')
+    const typeMap = {
+      'agent': 'copyAgent',
+      'command': 'copyCommand',
+      'skill': 'copySkill',
+      'hook': 'copyHook',
+      'mcp': 'copyMcp'
+    }
+
+    if (!typeMap[type]) {
+      throw new Error(`Unknown configuration type: ${type}`)
+    }
+
+    return typeMap[type]
   }
 
   return {
