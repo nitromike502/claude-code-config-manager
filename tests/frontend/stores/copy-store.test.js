@@ -47,11 +47,6 @@ describe('Copy Store', () => {
       expect(store.getEndpointForType('command')).toBe('copyCommand')
     })
 
-    it('should map "skill" to "copySkill"', () => {
-      const store = useCopyStore()
-      expect(store.getEndpointForType('skill')).toBe('copySkill')
-    })
-
     it('should map "hook" to "copyHook"', () => {
       const store = useCopyStore()
       expect(store.getEndpointForType('hook')).toBe('copyHook')

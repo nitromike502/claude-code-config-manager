@@ -212,19 +212,6 @@ export async function copyCommand(request) {
 }
 
 /**
- * Copy skill to target scope
- * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
- * @returns {Promise<Object>} - { success: boolean, message: string, createdPath?: string }
- */
-export async function copySkill(request) {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/skill`, {
-    method: 'POST',
-    body: JSON.stringify(request)
-  })
-  return response.json()
-}
-
-/**
  * Copy hook to target scope
  * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
  * @returns {Promise<Object>} - { success: boolean, message: string, warnings?: string[] }
@@ -266,7 +253,6 @@ export default {
   healthCheck,
   copyAgent,
   copyCommand,
-  copySkill,
   copyHook,
   copyMcp
 }

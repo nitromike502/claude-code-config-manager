@@ -31,7 +31,7 @@ export const useCopyStore = defineStore('copy', () => {
    * @param {Object} request - Copy request parameters
    * @param {Object} request.sourceConfig - Source configuration object with type and path
    * @param {string} request.sourceConfig.type - Configuration type (agent, command, hook, mcp)
-   * @param {string} request.sourceConfig.path - Source file path (or filePath)
+   * @param {string} request.sourceConfig.path - Source file path (or filePath property)
    * @param {string} request.targetScope - Target scope: 'user' or 'project'
    * @param {string|null} request.targetProjectId - Target project ID (required if targetScope is 'project')
    * @param {string} request.conflictStrategy - How to handle conflicts (skip, overwrite, rename)
@@ -113,7 +113,7 @@ export const useCopyStore = defineStore('copy', () => {
   /**
    * Map configuration type to appropriate API client method name
    *
-   * @param {string} type - Configuration type (agent, command, skill, hook, mcp)
+   * @param {string} type - Configuration type (agent, command, hook, mcp)
    * @returns {string} API client method name
    * @throws {Error} If type is unknown
    */
@@ -121,7 +121,6 @@ export const useCopyStore = defineStore('copy', () => {
     const typeMap = {
       'agent': 'copyAgent',
       'command': 'copyCommand',
-      'skill': 'copySkill',
       'hook': 'copyHook',
       'mcp': 'copyMcp'
     }
