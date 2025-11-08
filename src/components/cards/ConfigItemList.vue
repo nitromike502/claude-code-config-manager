@@ -61,9 +61,23 @@ const emit = defineEmits({
 
 /**
  * Handle copy button click - emit event to parent
+ * Adds type field (singular form) to the item for CopyModal
  */
 const handleCopyClick = (item) => {
-  emit('copy-clicked', item);
+  // Convert itemType from plural ('agents', 'commands') to singular ('agent', 'command')
+  const typeMapping = {
+    'agents': 'agent',
+    'commands': 'command',
+    'hooks': 'hook',
+    'mcp': 'mcp'
+  };
+
+  const itemWithType = {
+    ...item,
+    type: typeMapping[props.itemType] || props.itemType
+  };
+
+  emit('copy-clicked', itemWithType);
 };
 
 /**

@@ -150,7 +150,20 @@ const handleToggle = () => {
 
 // Handle copy button click
 const handleCopyClick = (configItem) => {
-  emit('copy-clicked', configItem);
+  // Convert cardType from plural ('agents', 'commands') to singular ('agent', 'command')
+  const typeMapping = {
+    'agents': 'agent',
+    'commands': 'command',
+    'hooks': 'hook',
+    'mcp': 'mcp'
+  };
+
+  const itemWithType = {
+    ...configItem,
+    type: typeMapping[props.cardType] || props.cardType
+  };
+
+  emit('copy-clicked', itemWithType);
 };
 </script>
 
