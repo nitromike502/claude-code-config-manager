@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import api from '@/api/client.js'
 
 /**
  * Copy Store - Manages state for copy configuration operations
@@ -28,17 +29,59 @@ export const useCopyStore = defineStore('copy', () => {
    * Orchestrate a copy operation for a configuration item
    *
    * @param {Object} request - Copy request parameters
-   * @param {string} request.type - Configuration type (agent, command, hook, mcp)
-   * @param {string} request.itemId - Item identifier to copy
-   * @param {string} request.sourceProjectId - Source project ID (or 'user' for user-level)
-   * @param {string} request.targetProjectId - Target project ID (or 'user' for user-level)
-   * @param {string} [request.conflictStrategy] - How to handle conflicts (skip, overwrite, rename)
-   * @returns {Promise<Object>} Copy operation result
-   * @todo Implement in TASK-3.5.2
+   * @param {Object} request.sourceConfig - Source configuration object with type and path
+   * @param {string} request.sourceConfig.type - Configuration type (agent, command, hook, mcp)
+   * @param {string} request.sourceConfig.path - Source file path (or filePath)
+   * @param {string} request.targetScope - Target scope: 'user' or 'project'
+   * @param {string|null} request.targetProjectId - Target project ID (required if targetScope is 'project')
+   * @param {string} request.conflictStrategy - How to handle conflicts (skip, overwrite, rename)
+   * @returns {Promise<Object>} Copy operation result with success, message, conflict?, copiedPath?
    */
   async function copyConfiguration(request) {
-    // TODO: Implement in TASK-3.5.2
-    throw new Error('copyConfiguration not yet implemented')
+    copying.value = true
+
+    try {
+      const { sourceConfig, targetScope, targetProjectId, conflictStrategy } = request
+
+      // Validate required fields
+      if (!sourceConfig || !sourceConfig.type) {
+        throw new Error('sourceConfig.type is required')
+      }
+      if (!targetScope) {
+        throw new Error('targetScope is required')
+      }
+      if (targetScope === 'project' && !targetProjectId) {
+        throw new Error('targetProjectId is required when targetScope is "project"')
+      }
+
+      // Determine which API method to call based on config type
+      const endpointMethod = getEndpointForType(sourceConfig.type)
+
+      // Extract source path (handle both 'path' and 'filePath' properties)
+      const sourcePath = sourceConfig.path || sourceConfig.filePath
+      if (!sourcePath) {
+        throw new Error('sourceConfig must have either path or filePath property')
+      }
+
+      // Build request payload for API
+      const payload = {
+        sourcePath,
+        targetScope,
+        targetProjectId: targetScope === 'project' ? targetProjectId : null,
+        conflictStrategy
+      }
+
+      // Call API
+      const result = await api[endpointMethod](payload)
+
+      // Update state with last operation result
+      lastCopyResult.value = result
+
+      return result
+    } finally {
+      // Always reset copying flag, even if error occurs
+      copying.value = false
+    }
   }
 
   /**
