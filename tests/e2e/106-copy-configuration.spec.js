@@ -41,9 +41,9 @@ test.describe('106.001: Copy Configuration - Success Flows', () => {
    * 6. Verify agent appears in project B list (data refresh)
    */
   test('106.001.001: Copy agent between projects (success)', async ({ page }) => {
-    // Mock projects API
-    await page.route('**/api/projects', (route) => {
-      route.fulfill({
+    // Mock projects API (match both Vite proxy and direct API calls)
+    await page.route('**/api/projects', async (route) => {
+      await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
@@ -53,13 +53,15 @@ test.describe('106.001: Copy Configuration - Success Flows', () => {
               id: 'projecta',
               name: 'Project A',
               path: '/home/user/project-a',
-              stats: { agents: 1, commands: 0, hooks: 0, mcp: 0 }
+              stats: { agents: 1, commands: 0, hooks: 0, mcp: 0 },
+              icon: 'pi pi-folder'
             },
             {
               id: 'projectb',
               name: 'Project B',
               path: '/home/user/project-b',
-              stats: { agents: 0, commands: 0, hooks: 0, mcp: 0 }
+              stats: { agents: 0, commands: 0, hooks: 0, mcp: 0 },
+              icon: 'pi pi-folder'
             }
           ]
         })
@@ -178,15 +180,12 @@ test.describe('106.001: Copy Configuration - Success Flows', () => {
     await expect(modal).toContainText('test-agent');
     await expect(modal).toContainText('Agent');
 
-    // STEP 4: Select project B as destination
+    // STEP 4: Wait for projects to load in modal, then click on Project B card
+    await page.waitForTimeout(1000); // Wait for async project loading
     const projectBCard = modal.locator('.destination-card').filter({ hasText: 'Project B' });
-    await expect(projectBCard).toBeVisible();
-    await projectBCard.click();
+    await expect(projectBCard).toBeVisible({ timeout: 5000 });
 
-    // Verify selection
-    await expect(projectBCard).toHaveClass(/selected/);
-
-    // STEP 5: Click "Copy Here" button
+    // STEP 5: Click the "Copy Here" button within Project B card (triggers immediate copy)
     const copyHereButton = projectBCard.locator('.card-button');
     await copyHereButton.click();
 

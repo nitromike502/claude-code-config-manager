@@ -63,8 +63,7 @@
           label="Copy Here"
           icon="pi pi-copy"
           class="card-button"
-          :disabled="selectedDestination?.id !== 'user-global'"
-          @click.stop="handleCopy"
+          @click.stop="handleButtonCopy({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
         />
       </div>
 
@@ -90,8 +89,7 @@
             label="Copy Here"
             icon="pi pi-copy"
             class="card-button"
-            :disabled="selectedDestination?.id !== project.id"
-            @click.stop="handleCopy"
+            @click.stop="handleButtonCopy(project)"
           />
         </div>
       </div>
@@ -130,12 +128,14 @@ const projectsStore = useProjectsStore();
 // Track selected destination
 const selectedDestination = ref(null);
 
-// Reset selection when modal opens
-watch(() => props.visible, (newVal) => {
+// Reset selection and load projects when modal opens
+watch(() => props.visible, async (newVal) => {
   if (newVal) {
     selectedDestination.value = null;
+    // Always load fresh project list when modal opens
+    await projectsStore.loadProjects();
   }
-});
+}, { immediate: true });
 
 // Computed property for v-model binding
 const isVisible = computed({
@@ -173,17 +173,16 @@ const formatType = (type) => {
 };
 
 // Handle keyboard navigation on destination cards
-const handleKeyDown = (event, destination) => {
+const handleKeyDown = async (event, destination) => {
   // Handle Enter key to select and copy
   if (event.key === 'Enter') {
     event.preventDefault();
-    selectDestination(destination);
-    handleCopy();
+    await selectDestination(destination);
   }
-  // Handle Space key to just select (not copy)
+  // Handle Space key to also select and copy (same behavior)
   else if (event.key === ' ') {
     event.preventDefault();
-    selectDestination(destination);
+    await selectDestination(destination);
   }
 };
 
@@ -199,13 +198,14 @@ const handleDialogHide = () => {
   selectionMade = false; // Reset for next open
 };
 
-// Handle destination selection (just selects, doesn't copy)
-const selectDestination = (destination) => {
+// Handle destination selection (selects and triggers copy)
+const selectDestination = async (destination) => {
   console.log('Selected destination:', destination);
-  // Clear previous selection first
-  selectedDestination.value = null;
-  // Set new selection
+  // Set selection
   selectedDestination.value = destination;
+
+  // Immediately trigger copy operation
+  await handleCopy();
 };
 
 // Handle copy action
@@ -224,6 +224,14 @@ const handleCopy = async () => {
     emit('copy-error', error);
     isVisible.value = false; // Close modal after error too
   }
+};
+
+// Handle "Copy Here" button click (select and copy in one action)
+const handleButtonCopy = async (destination) => {
+  // Set selection
+  selectedDestination.value = destination;
+  // Perform copy
+  await handleCopy();
 };
 </script>
 

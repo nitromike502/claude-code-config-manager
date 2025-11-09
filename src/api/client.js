@@ -23,9 +23,10 @@ function getBaseUrl() {
   }
 
   // Priority 2: Development mode (Vite dev server on port 5173)
+  // Use empty string (same origin) to allow Vite proxy to forward API requests
   if (import.meta.env.DEV && window.location.port === '5173') {
-    const devUrl = 'http://localhost:8420';
-    console.log('[API Client] Using dev mode base URL:', devUrl);
+    const devUrl = ''; // Vite proxy will forward /api/* to localhost:8420
+    console.log('[API Client] Using dev mode with Vite proxy (same origin)');
     return devUrl;
   }
 
