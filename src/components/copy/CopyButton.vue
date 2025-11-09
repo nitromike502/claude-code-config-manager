@@ -3,7 +3,7 @@
     :label="showLabel ? 'Copy to...' : ''"
     icon="pi pi-copy"
     severity="secondary"
-    :disabled="disabled"
+    :disabled="isDisabled"
     :aria-label="ariaLabel"
     v-tooltip.top="tooltipText"
     @click="handleClick"
@@ -41,6 +41,16 @@ const emit = defineEmits({
   }
 });
 
+// Computed property for plugin detection
+const isPluginItem = computed(() => {
+  return props.configItem?.location === 'plugin';
+});
+
+// Computed property for combined disabled state (external prop OR plugin item)
+const isDisabled = computed(() => {
+  return props.disabled || isPluginItem.value;
+});
+
 // Computed property for ARIA label
 const ariaLabel = computed(() => {
   const itemName = props.configItem?.name || props.configItem?.event || 'configuration';
@@ -49,8 +59,8 @@ const ariaLabel = computed(() => {
 
 // Computed property for tooltip text
 const tooltipText = computed(() => {
-  // Check if disabled and from plugin
-  if (props.disabled && props.configItem?.location === 'plugin') {
+  // Check if disabled due to plugin
+  if (isPluginItem.value) {
     return 'This configuration is provided by a plugin and cannot be copied';
   }
   // Default tooltip
@@ -59,7 +69,7 @@ const tooltipText = computed(() => {
 
 // Handle button click
 const handleClick = () => {
-  if (!props.disabled) {
+  if (!isDisabled.value) {
     emit('copy-clicked', props.configItem);
   }
 };

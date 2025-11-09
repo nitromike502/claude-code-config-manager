@@ -59,12 +59,14 @@
           :showing-all="showingAllAgents"
           :initial-display-count="initialDisplayCount"
           @toggle-show-all="showingAllAgents = !showingAllAgents"
+          @copy-clicked="handleCopyClick"
         >
           <template #default="{ items }">
             <ConfigItemList
               :items="items"
               item-type="agents"
               @item-selected="(item) => showDetail(item, 'agents', agents)"
+              @copy-clicked="handleCopyClick"
             />
           </template>
         </ConfigCard>
@@ -81,12 +83,14 @@
           :showing-all="showingAllCommands"
           :initial-display-count="initialDisplayCount"
           @toggle-show-all="showingAllCommands = !showingAllCommands"
+          @copy-clicked="handleCopyClick"
         >
           <template #default="{ items }">
             <ConfigItemList
               :items="items"
               item-type="commands"
               @item-selected="(item) => showDetail(item, 'commands', commands)"
+              @copy-clicked="handleCopyClick"
             />
           </template>
         </ConfigCard>
@@ -103,12 +107,14 @@
           :showing-all="showingAllHooks"
           :initial-display-count="initialDisplayCount"
           @toggle-show-all="showingAllHooks = !showingAllHooks"
+          @copy-clicked="handleCopyClick"
         >
           <template #default="{ items }">
             <ConfigItemList
               :items="items"
               item-type="hooks"
               @item-selected="(item) => showDetail(item, 'hooks', hooks)"
+              @copy-clicked="handleCopyClick"
             />
           </template>
         </ConfigCard>
@@ -125,12 +131,14 @@
           :showing-all="showingAllMcp"
           :initial-display-count="initialDisplayCount"
           @toggle-show-all="showingAllMcp = !showingAllMcp"
+          @copy-clicked="handleCopyClick"
         >
           <template #default="{ items }">
             <ConfigItemList
               :items="items"
               item-type="mcp"
               @item-selected="(item) => showDetail(item, 'mcp', mcpServers)"
+              @copy-clicked="handleCopyClick"
             />
           </template>
         </ConfigCard>
@@ -150,24 +158,42 @@
       @close="sidebarVisible = false"
       @navigate="onNavigate"
     />
+
+    <!-- Copy Modal -->
+    <CopyModal
+      v-if="selectedConfig"
+      v-model:visible="showCopyModal"
+      :sourceConfig="selectedConfig"
+      @copy-success="handleCopySuccess"
+      @copy-error="handleCopyError"
+      @copy-cancelled="handleCopyCancelled"
+    />
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useToast } from 'primevue/usetoast'
 import * as api from '@/api/client'
 import ConfigCard from '@/components/cards/ConfigCard.vue'
 import ConfigItemList from '@/components/cards/ConfigItemList.vue'
 import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
 import ConfigDetailSidebar from '@/components/sidebars/ConfigDetailSidebar.vue'
+import CopyModal from '@/components/copy/CopyModal.vue'
+import { useCopyStore } from '@/stores/copy-store'
+import { useProjectsStore } from '@/stores/projects'
 
 export default {
   name: 'ProjectDetail',
-  components: { ConfigCard, ConfigItemList, BreadcrumbNavigation, ConfigDetailSidebar },
+  components: { ConfigCard, ConfigItemList, BreadcrumbNavigation, ConfigDetailSidebar, CopyModal },
   props: ['id'],
   setup(props) {
     const route = useRoute()
+    const toast = useToast()
+    const copyStore = useCopyStore()
+    const projectsStore = useProjectsStore()
+
     const projectId = computed(() => props.id || route.params.id)
     const projectName = ref('')
     const projectPath = ref('')
@@ -176,6 +202,10 @@ export default {
     const commands = ref([])
     const hooks = ref([])
     const mcpServers = ref([])
+
+    // Copy modal state
+    const showCopyModal = ref(false)
+    const selectedConfig = ref(null)
 
     const loading = ref(true)
     const loadingAgents = ref(false)
@@ -314,7 +344,10 @@ export default {
         agents.value = data.agents || []
         return data
       } catch (err) {
-        console.error('Error loading agents:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading agents:', err)
+        }
         agents.value = []
         throw err
       } finally {
@@ -329,7 +362,10 @@ export default {
         commands.value = data.commands || []
         return data
       } catch (err) {
-        console.error('Error loading commands:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading commands:', err)
+        }
         commands.value = []
         throw err
       } finally {
@@ -344,7 +380,10 @@ export default {
         hooks.value = data.hooks || []
         return data
       } catch (err) {
-        console.error('Error loading hooks:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading hooks:', err)
+        }
         hooks.value = []
         throw err
       } finally {
@@ -359,7 +398,10 @@ export default {
         mcpServers.value = data.mcp || []
         return data
       } catch (err) {
-        console.error('Error loading MCP servers:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading MCP servers:', err)
+        }
         mcpServers.value = []
         throw err
       } finally {
@@ -397,6 +439,60 @@ export default {
       } else if (direction === 'next') {
         navigateNext()
       }
+    }
+
+    // Copy modal handlers
+    const handleCopyClick = (configItem) => {
+      selectedConfig.value = configItem
+      showCopyModal.value = true
+    }
+
+    const handleCopySuccess = async (result) => {
+      showCopyModal.value = false
+
+      // Show toast
+      const filename = result.filename || result.source?.name || 'Configuration'
+      toast.add({
+        severity: 'success',
+        summary: 'Configuration Copied',
+        detail: `${filename} has been copied successfully`,
+        life: 5000
+      })
+
+      // Refresh data if copied to current project
+      const currentProjectId = route.params.id || props.id
+      if (result.destination?.id === currentProjectId) {
+        const configType = result.source?.type
+        if (configType === 'agent') {
+          await loadAgents()
+        } else if (configType === 'command') {
+          await loadCommands()
+        } else if (configType === 'hook') {
+          await loadHooks()
+        } else if (configType === 'mcp') {
+          await loadMCP()
+        }
+      }
+    }
+
+    const handleCopyError = (error) => {
+      showCopyModal.value = false
+      toast.add({
+        severity: 'error',
+        summary: 'Copy Failed',
+        detail: error.message || 'An error occurred during the copy operation',
+        life: 0  // Manual dismiss
+      })
+    }
+
+    const handleCopyCancelled = () => {
+      showCopyModal.value = false
+      toast.add({
+        severity: 'info',
+        summary: 'Copy operation cancelled',
+        detail: '',
+        life: 3000
+      })
     }
 
     // Watch for route changes
@@ -462,7 +558,13 @@ export default {
       showDetail,
       navigatePrev,
       navigateNext,
-      onNavigate
+      onNavigate,
+      showCopyModal,
+      selectedConfig,
+      handleCopyClick,
+      handleCopySuccess,
+      handleCopyError,
+      handleCopyCancelled
     }
   }
 }

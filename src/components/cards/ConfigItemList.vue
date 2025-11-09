@@ -12,16 +12,27 @@
           {{ getItemDescription(item, itemType) }}
         </div>
       </div>
-      <button class="view-details-btn" @click.stop="$emit('item-selected', item, itemType)">
-        <i class="pi pi-eye"></i>
-        View Details
-      </button>
+      <div class="item-actions">
+        <div @click.stop>
+          <CopyButton
+            :configItem="item"
+            :disabled="item.location === 'plugin'"
+            :showLabel="false"
+            @copy-clicked="handleCopyClick"
+          />
+        </div>
+        <button class="view-details-btn" @click.stop="$emit('item-selected', item, itemType)">
+          <i class="pi pi-eye"></i>
+          View Details
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { defineProps, defineEmits } from 'vue';
+import CopyButton from '@/components/copy/CopyButton.vue';
 
 const props = defineProps({
   items: {
@@ -42,8 +53,32 @@ const props = defineProps({
 const emit = defineEmits({
   'item-selected': (item, itemType) => {
     return item !== null && typeof itemType === 'string' && ['agents', 'commands', 'hooks', 'mcp'].includes(itemType)
+  },
+  'copy-clicked': (item) => {
+    return item !== null && typeof item === 'object';
   }
 });
+
+/**
+ * Handle copy button click - emit event to parent
+ * Adds type field (singular form) to the item for CopyModal
+ */
+const handleCopyClick = (item) => {
+  // Convert itemType from plural ('agents', 'commands') to singular ('agent', 'command')
+  const typeMapping = {
+    'agents': 'agent',
+    'commands': 'command',
+    'hooks': 'hook',
+    'mcp': 'mcp'
+  };
+
+  const itemWithType = {
+    ...item,
+    type: typeMapping[props.itemType] || props.itemType
+  };
+
+  emit('copy-clicked', itemWithType);
+};
 
 /**
  * Get the display name for an item based on its type
@@ -139,6 +174,13 @@ const getItemDescription = (item, type) => {
   white-space: nowrap;
 }
 
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0; /* Prevent actions container from shrinking */
+}
+
 .view-details-btn {
   display: flex;
   align-items: center;
@@ -175,8 +217,13 @@ const getItemDescription = (item, type) => {
     gap: 0.75rem;
   }
 
-  .view-details-btn {
+  .item-actions {
     width: 100%;
+    gap: 0.5rem;
+  }
+
+  .view-details-btn {
+    flex: 1; /* Both buttons share available width equally */
     justify-content: center;
   }
 }

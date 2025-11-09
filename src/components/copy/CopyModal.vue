@@ -6,6 +6,7 @@
     :style="{ width: '50vw' }"
     :draggable="false"
     class="copy-modal"
+    @hide="handleDialogHide"
   >
     <template #header>
       <div class="modal-header">
@@ -20,7 +21,7 @@
       <div class="source-info">
         <div class="info-row">
           <span class="info-label">Filename:</span>
-          <span class="info-value">{{ sourceConfig.name }}</span>
+          <span class="info-value">{{ sourceConfig.name || sourceConfig.event }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">Type:</span>
@@ -46,11 +47,12 @@
       <!-- User Global Card -->
       <div
         class="destination-card"
+        :class="{ 'selected': selectedDestination?.id === 'user-global' }"
         tabindex="0"
         role="button"
         aria-label="Copy to User Global"
         @click="selectDestination({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
-        @keydown.enter="selectDestination({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
+        @keydown="handleKeyDown($event, { id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
       >
         <div class="card-header">
           <i class="pi pi-user card-icon"></i>
@@ -61,7 +63,8 @@
           label="Copy Here"
           icon="pi pi-copy"
           class="card-button"
-          @click.stop="selectDestination({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
+          :disabled="selectedDestination?.id !== 'user-global'"
+          @click.stop="handleCopy"
         />
       </div>
 
@@ -71,11 +74,12 @@
           v-for="project in mockProjects"
           :key="project.id"
           class="destination-card"
+          :class="{ 'selected': selectedDestination?.id === project.id }"
           tabindex="0"
           role="button"
           :aria-label="`Copy to ${project.name}`"
           @click="selectDestination(project)"
-          @keydown.enter="selectDestination(project)"
+          @keydown="handleKeyDown($event, project)"
         >
           <div class="card-header">
             <i :class="project.icon + ' card-icon'"></i>
@@ -86,7 +90,8 @@
             label="Copy Here"
             icon="pi pi-copy"
             class="card-button"
-            @click.stop="selectDestination(project)"
+            :disabled="selectedDestination?.id !== project.id"
+            @click.stop="handleCopy"
           />
         </div>
       </div>
@@ -95,10 +100,11 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import Divider from 'primevue/divider';
+import { useProjectsStore } from '@/stores/projects';
 
 const props = defineProps({
   visible: {
@@ -109,13 +115,27 @@ const props = defineProps({
     type: Object,
     required: true,
     validator: (value) => {
-      return value && value.name && value.type &&
+      // Config items can have either 'name' (agents, commands, MCP) or 'event' (hooks)
+      return value && (value.name || value.event) && value.type &&
              ['agent', 'command', 'hook', 'mcp'].includes(value.type);
     }
   }
 });
 
-const emit = defineEmits(['update:visible', 'copy-success']);
+const emit = defineEmits(['update:visible', 'copy-success', 'copy-error', 'copy-cancelled']);
+
+// Initialize projects store
+const projectsStore = useProjectsStore();
+
+// Track selected destination
+const selectedDestination = ref(null);
+
+// Reset selection when modal opens
+watch(() => props.visible, (newVal) => {
+  if (newVal) {
+    selectedDestination.value = null;
+  }
+});
 
 // Computed property for v-model binding
 const isVisible = computed({
@@ -127,49 +147,18 @@ const isVisible = computed({
   }
 });
 
-// Mock projects data (will be replaced with API integration in STORY-3.5)
-const mockProjects = ref([
-  {
-    id: 'proj1',
-    name: 'Claude Code Manager',
-    path: '/home/claude/manager',
-    icon: 'pi pi-folder'
-  },
-  {
-    id: 'proj2',
-    name: 'My Website',
-    path: '/home/claude/projects/website',
-    icon: 'pi pi-folder'
-  },
-  {
-    id: 'proj3',
-    name: 'API Server',
-    path: '/home/claude/projects/api-server',
-    icon: 'pi pi-folder'
-  },
-  {
-    id: 'proj4',
-    name: 'Mobile App',
-    path: '/home/claude/projects/mobile-app',
-    icon: 'pi pi-folder'
-  },
-  {
-    id: 'proj5',
-    name: 'Data Analysis',
-    path: '/home/claude/projects/data-analysis',
-    icon: 'pi pi-folder'
-  }
-]);
+// Use projects from store instead of mock data
+const mockProjects = computed(() => projectsStore.projects);
 
 // Get icon for configuration type
 const getTypeIcon = (type) => {
   const icons = {
-    agent: 'pi pi-users',
-    command: 'pi pi-bolt',
-    hook: 'pi pi-link',
-    mcp: 'pi pi-server'
+    agent: ['pi', 'pi-users'],
+    command: ['pi', 'pi-bolt'],
+    hook: ['pi', 'pi-link'],
+    mcp: ['pi', 'pi-server']
   };
-  return icons[type] || 'pi pi-file';
+  return icons[type] || ['pi', 'pi-file'];
 };
 
 // Format type for display
@@ -183,13 +172,58 @@ const formatType = (type) => {
   return formats[type] || type;
 };
 
-// Handle destination selection
+// Handle keyboard navigation on destination cards
+const handleKeyDown = (event, destination) => {
+  // Handle Enter key to select and copy
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    selectDestination(destination);
+    handleCopy();
+  }
+  // Handle Space key to just select (not copy)
+  else if (event.key === ' ') {
+    event.preventDefault();
+    selectDestination(destination);
+  }
+};
+
+// Track if a selection was made
+let selectionMade = false;
+
+// Handle Dialog hide event (close button clicked or ESC pressed)
+const handleDialogHide = () => {
+  // Only emit cancelled if user didn't make a selection
+  if (!selectionMade) {
+    emit('copy-cancelled');
+  }
+  selectionMade = false; // Reset for next open
+};
+
+// Handle destination selection (just selects, doesn't copy)
 const selectDestination = (destination) => {
   console.log('Selected destination:', destination);
-  // Future: Will call API to perform copy operation
-  // For now, just emit success and close modal
-  emit('copy-success', { source: props.sourceConfig, destination });
-  emit('update:visible', false);
+  // Clear previous selection first
+  selectedDestination.value = null;
+  // Set new selection
+  selectedDestination.value = destination;
+};
+
+// Handle copy action
+const handleCopy = async () => {
+  if (!selectedDestination.value) {
+    return; // No destination selected
+  }
+
+  try {
+    selectionMade = true;
+    // Future: Will call API to perform copy operation
+    // For now, just emit success and close modal
+    emit('copy-success', { source: props.sourceConfig, destination: selectedDestination.value });
+    isVisible.value = false; // Close modal after success
+  } catch (error) {
+    emit('copy-error', error);
+    isVisible.value = false; // Close modal after error too
+  }
 };
 </script>
 
@@ -310,6 +344,13 @@ const selectDestination = (destination) => {
 .destination-card:focus {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+.destination-card.selected {
+  background: var(--bg-hover);
+  border-color: var(--color-primary);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .card-header {
