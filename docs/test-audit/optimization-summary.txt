@@ -1,0 +1,16 @@
+Tier 3 Optimizations:
+
+1. Replace waitForTimeout() with conditional waits (50 instances)
+   - Time saved: 40-60s
+
+2. Review parallel execution settings
+   - Already optimized
+
+3. Adjust screenshot comparison thresholds
+   - Reduces false positives
+
+4. Use test.skip() for audit trail
+   - Improves maintainability
+
+5. Verify backend file mocking
+   - Already well-optimized
