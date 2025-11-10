@@ -157,6 +157,7 @@
       :selected-index="currentIndex"
       @close="sidebarVisible = false"
       @navigate="onNavigate"
+      @copy-clicked="handleCopyClick"
     />
 
     <!-- Copy Modal -->

@@ -103,6 +103,7 @@ import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import Divider from 'primevue/divider';
 import { useProjectsStore } from '@/stores/projects';
+import { useCopyStore } from '@/stores/copy-store';
 
 const props = defineProps({
   visible: {
@@ -122,8 +123,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'copy-success', 'copy-error', 'copy-cancelled']);
 
-// Initialize projects store
+// Initialize stores
 const projectsStore = useProjectsStore();
+const copyStore = useCopyStore();
 
 // Track selected destination
 const selectedDestination = ref(null);
@@ -216,9 +218,37 @@ const handleCopy = async () => {
 
   try {
     selectionMade = true;
-    // Future: Will call API to perform copy operation
-    // For now, just emit success and close modal
-    emit('copy-success', { source: props.sourceConfig, destination: selectedDestination.value });
+
+    // Prepare copy request
+    const targetScope = selectedDestination.value.id === 'user-global' ? 'user' : 'project';
+    const targetProjectId = selectedDestination.value.id === 'user-global' ? null : selectedDestination.value.id;
+
+    const copyRequest = {
+      sourceConfig: props.sourceConfig,
+      targetScope,
+      targetProjectId,
+      conflictStrategy: 'skip' // Default strategy; in future, could prompt user
+    };
+
+    // Call copy store to perform the copy operation
+    const result = await copyStore.copyConfiguration(copyRequest);
+
+    // Check if there was a conflict
+    if (result.conflict) {
+      // Future: Could show conflict resolution UI
+      // For now, just treat as an error
+      emit('copy-error', new Error('Configuration already exists at destination'));
+      isVisible.value = false;
+      return;
+    }
+
+    // Success! Emit with result details
+    emit('copy-success', {
+      source: props.sourceConfig,
+      destination: selectedDestination.value,
+      filename: result.filename || props.sourceConfig.name || props.sourceConfig.event,
+      copiedPath: result.copiedPath
+    });
     isVisible.value = false; // Close modal after success
   } catch (error) {
     emit('copy-error', error);

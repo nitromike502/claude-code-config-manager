@@ -1582,3 +1582,282 @@
     flex-wrap: wrap;
   }
 }
+
+/* ========================================
+   PrimeVue Component Styles (Unstyled Mode)
+   ======================================== */
+
+/* PrimeVue Button Component */
+.p-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.p-button:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+.p-button:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.p-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--bg-tertiary);
+  color: var(--text-disabled);
+}
+
+.p-button-icon {
+  font-size: 1rem;
+}
+
+.p-button-label {
+  font-weight: 500;
+}
+
+/* Button Severities */
+.p-button.p-button-secondary {
+  background: var(--bg-secondary);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.p-button.p-button-secondary:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: white;
+}
+
+.p-button.p-button-success {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.p-button.p-button-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.p-button.p-button-danger {
+  background: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.p-button.p-button-danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+/* Icon-only buttons */
+.p-button.p-button-icon-only {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+}
+
+/* PrimeVue Dialog Component */
+.p-dialog-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1100;
+  transition: background-color 0.2s;
+}
+
+.p-dialog-mask.p-component-overlay {
+  pointer-events: auto;
+}
+
+.p-dialog {
+  position: relative;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+
+.p-dialog-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-primary);
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.p-dialog-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-emphasis);
+}
+
+.p-dialog-header-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.p-dialog-header-icon {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.p-dialog-header-icon:hover {
+  background: var(--bg-hover);
+  color: var(--text-emphasis);
+}
+
+.p-dialog-header-icon:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.p-dialog-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.p-dialog-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-primary);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Dialog animations */
+.p-dialog-mask-enter-active,
+.p-dialog-mask-leave-active {
+  transition: opacity 0.2s;
+}
+
+.p-dialog-mask-enter-from,
+.p-dialog-mask-leave-to {
+  opacity: 0;
+}
+
+.p-dialog-enter-active,
+.p-dialog-leave-active {
+  transition: all 0.2s;
+}
+
+.p-dialog-enter-from,
+.p-dialog-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* PrimeVue Divider Component */
+.p-divider {
+  border-top: 1px solid var(--border-primary);
+  margin: 1.5rem 0;
+}
+
+.p-divider-horizontal {
+  display: flex;
+  width: 100%;
+  position: relative;
+  align-items: center;
+}
+
+.p-divider-horizontal:before {
+  position: static;
+  display: block;
+  content: "";
+  border-top: 1px solid var(--border-primary);
+  width: 100%;
+  top: 50%;
+}
+
+/* PrimeVue Tooltip */
+.p-tooltip {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.p-tooltip.p-tooltip-active {
+  display: block;
+}
+
+.p-tooltip-text {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  box-shadow: var(--shadow-card);
+  white-space: nowrap;
+  max-width: 250px;
+}
+
+.p-tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+.p-tooltip-top .p-tooltip-arrow {
+  bottom: -5px;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px 5px 0;
+  border-top-color: var(--border-primary);
+}
+
+/* Copy Modal-specific styles */
+.copy-modal .p-dialog {
+  min-width: 500px;
+}
+
+.copy-modal .p-dialog-content {
+  min-height: 200px;
+}
+
+@media (max-width: 768px) {
+  .copy-modal .p-dialog {
+    min-width: 90vw;
+    width: 90vw !important;
+  }
+
+  .p-dialog {
+    max-width: 95vw;
+  }
+}
