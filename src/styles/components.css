@@ -1585,10 +1585,11 @@
 
 /* ========================================
    PrimeVue Component Styles (Unstyled Mode)
+   Using data-pc-* attributes for selectors
    ======================================== */
 
 /* PrimeVue Button Component */
-.p-button {
+[data-pc-name="button"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1605,70 +1606,71 @@
   white-space: nowrap;
 }
 
-.p-button:hover:not(:disabled) {
+[data-pc-name="button"]:hover:not(:disabled) {
   background: var(--color-primary-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-card);
 }
 
-.p-button:focus-visible {
+[data-pc-name="button"]:focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
 
-.p-button:disabled {
+[data-pc-name="button"]:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   background: var(--bg-tertiary);
   color: var(--text-disabled);
 }
 
-.p-button-icon {
+[data-pc-name="button"] [data-pc-section="icon"] {
   font-size: 1rem;
 }
 
-.p-button-label {
+[data-pc-name="button"] [data-pc-section="label"] {
   font-weight: 500;
 }
 
 /* Button Severities */
-.p-button.p-button-secondary {
+[data-pc-name="button"][data-p-severity="secondary"] {
   background: var(--bg-secondary);
   color: var(--color-primary);
   border-color: var(--color-primary);
 }
 
-.p-button.p-button-secondary:hover:not(:disabled) {
+[data-pc-name="button"][data-p-severity="secondary"]:hover:not(:disabled) {
   background: var(--color-primary);
   color: white;
 }
 
-.p-button.p-button-success {
+[data-pc-name="button"][data-p-severity="success"] {
   background: var(--color-success);
   border-color: var(--color-success);
 }
 
-.p-button.p-button-success:hover:not(:disabled) {
+[data-pc-name="button"][data-p-severity="success"]:hover:not(:disabled) {
   background: #059669;
 }
 
-.p-button.p-button-danger {
+[data-pc-name="button"][data-p-severity="danger"] {
   background: var(--color-error);
   border-color: var(--color-error);
 }
 
-.p-button.p-button-danger:hover:not(:disabled) {
+[data-pc-name="button"][data-p-severity="danger"]:hover:not(:disabled) {
   background: #dc2626;
 }
 
 /* Icon-only buttons */
-.p-button.p-button-icon-only {
+[data-pc-name="button"][data-p-icononly="true"] {
   width: 2.5rem;
   height: 2.5rem;
   padding: 0;
 }
 
 /* PrimeVue Dialog Component */
+[data-pc-name="dialog"].p-dialog-mask,
 .p-dialog-mask {
   position: fixed;
   top: 0;
@@ -1684,10 +1686,12 @@
   transition: background-color 0.2s;
 }
 
+[data-pc-name="dialog"].p-dialog-mask.p-component-overlay,
 .p-dialog-mask.p-component-overlay {
   pointer-events: auto;
 }
 
+[data-pc-section="root"],
 .p-dialog {
   position: relative;
   background: var(--bg-secondary);
@@ -1699,6 +1703,7 @@
   pointer-events: auto;
 }
 
+[data-pc-section="header"],
 .p-dialog-header {
   padding: 1.5rem;
   border-bottom: 1px solid var(--border-primary);
@@ -1708,18 +1713,21 @@
   justify-content: space-between;
 }
 
+[data-pc-section="title"],
 .p-dialog-title {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-emphasis);
 }
 
+[data-pc-section="headericons"],
 .p-dialog-header-icons {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
+[data-pc-section="closebutton"],
 .p-dialog-header-icon {
   width: 2rem;
   height: 2rem;
@@ -1734,22 +1742,26 @@
   transition: all 0.2s;
 }
 
+[data-pc-section="closebutton"]:hover,
 .p-dialog-header-icon:hover {
   background: var(--bg-hover);
   color: var(--text-emphasis);
 }
 
+[data-pc-section="closebutton"]:focus-visible,
 .p-dialog-header-icon:focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
 
+[data-pc-section="content"],
 .p-dialog-content {
   padding: 1.5rem;
   overflow-y: auto;
   flex: 1;
 }
 
+[data-pc-section="footer"],
 .p-dialog-footer {
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--border-primary);
@@ -1781,11 +1793,13 @@
 }
 
 /* PrimeVue Divider Component */
+[data-pc-name="divider"],
 .p-divider {
   border-top: 1px solid var(--border-primary);
   margin: 1.5rem 0;
 }
 
+[data-pc-name="divider"][data-pc-section="root"],
 .p-divider-horizontal {
   display: flex;
   width: 100%;
@@ -1793,6 +1807,7 @@
   align-items: center;
 }
 
+[data-pc-name="divider"][data-pc-section="root"]:before,
 .p-divider-horizontal:before {
   position: static;
   display: block;
@@ -1803,6 +1818,7 @@
 }
 
 /* PrimeVue Tooltip */
+[data-pc-name="tooltip"],
 .p-tooltip {
   position: absolute;
   display: none;
@@ -1810,10 +1826,12 @@
   z-index: 9999;
 }
 
+[data-pc-name="tooltip"].p-tooltip-active,
 .p-tooltip.p-tooltip-active {
   display: block;
 }
 
+[data-pc-section="text"],
 .p-tooltip-text {
   background: var(--bg-tertiary);
   color: var(--text-primary);
@@ -1826,6 +1844,7 @@
   max-width: 250px;
 }
 
+[data-pc-section="arrow"],
 .p-tooltip-arrow {
   position: absolute;
   width: 0;
@@ -1834,6 +1853,7 @@
   border-style: solid;
 }
 
+.p-tooltip-top [data-pc-section="arrow"],
 .p-tooltip-top .p-tooltip-arrow {
   bottom: -5px;
   left: 50%;
