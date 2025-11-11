@@ -44,8 +44,9 @@ export const useCopyStore = defineStore('copy', () => {
       const { sourceConfig, targetScope, targetProjectId, conflictStrategy } = request
 
       // Validate required fields
-      if (!sourceConfig || !sourceConfig.type) {
-        throw new Error('sourceConfig.type is required')
+      const configType = sourceConfig.configType || sourceConfig.type
+      if (!sourceConfig || !configType) {
+        throw new Error('sourceConfig must have type or configType field')
       }
       if (!targetScope) {
         throw new Error('targetScope is required')
@@ -55,7 +56,7 @@ export const useCopyStore = defineStore('copy', () => {
       }
 
       // Determine which API method to call based on config type
-      const endpointMethod = getEndpointForType(sourceConfig.type)
+      const endpointMethod = getEndpointForType(configType)
 
       // Build request payload based on config type (agents/commands use sourcePath, hooks/MCP use different structures)
       const payload = buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy)
@@ -132,10 +133,10 @@ export const useCopyStore = defineStore('copy', () => {
    * @returns {Object} API request payload
    */
   function buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy) {
-    const { type } = sourceConfig
+    const configType = sourceConfig.configType || sourceConfig.type
 
     // Agents and Commands use sourcePath
-    if (type === 'agent' || type === 'command') {
+    if (configType === 'agent' || configType === 'command') {
       const sourcePath = sourceConfig.path || sourceConfig.filePath
       if (!sourcePath) {
         throw new Error('sourceConfig must have either path or filePath property')
@@ -150,23 +151,36 @@ export const useCopyStore = defineStore('copy', () => {
     }
 
     // Hooks use sourceHook object
-    if (type === 'hook') {
+    if (configType === 'hook') {
+      const sourceHook = {
+        event: sourceConfig.event,
+        command: sourceConfig.command
+      }
+
+      // Only include optional fields if they exist in source
+      // Note: sourceConfig.type is the HOOK type ('command', 'shell', etc.), not the config type
+      if (sourceConfig.type !== undefined) {
+        sourceHook.type = sourceConfig.type
+      }
+      if (sourceConfig.matcher !== undefined) {
+        sourceHook.matcher = sourceConfig.matcher
+      }
+      if (sourceConfig.enabled !== undefined) {
+        sourceHook.enabled = sourceConfig.enabled
+      }
+      if (sourceConfig.timeout !== undefined) {
+        sourceHook.timeout = sourceConfig.timeout
+      }
+
       return {
-        sourceHook: {
-          event: sourceConfig.event,
-          matcher: sourceConfig.matcher || '*',
-          type: sourceConfig.type || 'command',
-          command: sourceConfig.command,
-          enabled: sourceConfig.enabled !== false,
-          timeout: sourceConfig.timeout || 60
-        },
+        sourceHook,
         targetScope,
         targetProjectId: targetScope === 'project' ? targetProjectId : null
       }
     }
 
     // MCP servers use sourceServerName and sourceMcpConfig
-    if (type === 'mcp') {
+    if (configType === 'mcp') {
       return {
         sourceServerName: sourceConfig.name,
         sourceMcpConfig: {
@@ -182,7 +196,7 @@ export const useCopyStore = defineStore('copy', () => {
       }
     }
 
-    throw new Error(`Unknown configuration type: ${type}`)
+    throw new Error(`Unknown configuration type: ${configType}`)
   }
 
   return {

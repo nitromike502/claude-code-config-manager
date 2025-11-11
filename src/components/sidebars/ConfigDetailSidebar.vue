@@ -193,9 +193,10 @@ const handleCopy = () => {
       'mcp': 'mcp'
     };
 
+    // Use configType to avoid overwriting hook's type field
     const itemWithType = {
       ...props.selectedItem,
-      type: typeMapping[props.selectedType] || props.selectedType
+      configType: typeMapping[props.selectedType] || props.selectedType
     };
 
     emit('copy-clicked', itemWithType)
