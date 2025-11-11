@@ -260,14 +260,24 @@ export default {
       loading.value = true
 
       try {
-        await Promise.all([
+        // Use allSettled to allow individual config loads to fail without breaking the entire page
+        const results = await Promise.allSettled([
           loadAgents(),
           loadCommands(),
           loadHooks(),
           loadMCP()
         ])
+
+        // Log any failures but don't break the page
+        results.forEach((result, index) => {
+          if (result.status === 'rejected') {
+            const configNames = ['agents', 'commands', 'hooks', 'MCP servers']
+            console.error(`Error loading user ${configNames[index]}:`, result.reason)
+          }
+        })
       } catch (err) {
-        console.error('Error loading user data:', err)
+        // This catch should rarely trigger since allSettled doesn't reject
+        console.error('Unexpected error loading user data:', err)
       } finally {
         loading.value = false
       }
