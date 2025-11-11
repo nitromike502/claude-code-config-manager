@@ -57,19 +57,8 @@ export const useCopyStore = defineStore('copy', () => {
       // Determine which API method to call based on config type
       const endpointMethod = getEndpointForType(sourceConfig.type)
 
-      // Extract source path (handle both 'path' and 'filePath' properties)
-      const sourcePath = sourceConfig.path || sourceConfig.filePath
-      if (!sourcePath) {
-        throw new Error('sourceConfig must have either path or filePath property')
-      }
-
-      // Build request payload for API
-      const payload = {
-        sourcePath,
-        targetScope,
-        targetProjectId: targetScope === 'project' ? targetProjectId : null,
-        conflictStrategy
-      }
+      // Build request payload based on config type (agents/commands use sourcePath, hooks/MCP use different structures)
+      const payload = buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy)
 
       // Call API
       const result = await api[endpointMethod](payload)
@@ -130,6 +119,70 @@ export const useCopyStore = defineStore('copy', () => {
     }
 
     return typeMap[type]
+  }
+
+  /**
+   * Build API request payload based on configuration type
+   * Different types have different request structures
+   *
+   * @param {Object} sourceConfig - Source configuration item
+   * @param {string} targetScope - Target scope ('user' or 'project')
+   * @param {string|null} targetProjectId - Target project ID
+   * @param {string} conflictStrategy - Conflict resolution strategy
+   * @returns {Object} API request payload
+   */
+  function buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy) {
+    const { type } = sourceConfig
+
+    // Agents and Commands use sourcePath
+    if (type === 'agent' || type === 'command') {
+      const sourcePath = sourceConfig.path || sourceConfig.filePath
+      if (!sourcePath) {
+        throw new Error('sourceConfig must have either path or filePath property')
+      }
+
+      return {
+        sourcePath,
+        targetScope,
+        targetProjectId: targetScope === 'project' ? targetProjectId : null,
+        conflictStrategy
+      }
+    }
+
+    // Hooks use sourceHook object
+    if (type === 'hook') {
+      return {
+        sourceHook: {
+          event: sourceConfig.event,
+          matcher: sourceConfig.matcher || '*',
+          type: sourceConfig.type || 'command',
+          command: sourceConfig.command,
+          enabled: sourceConfig.enabled !== false,
+          timeout: sourceConfig.timeout || 60
+        },
+        targetScope,
+        targetProjectId: targetScope === 'project' ? targetProjectId : null
+      }
+    }
+
+    // MCP servers use sourceServerName and sourceMcpConfig
+    if (type === 'mcp') {
+      return {
+        sourceServerName: sourceConfig.name,
+        sourceMcpConfig: {
+          command: sourceConfig.command,
+          args: sourceConfig.args || [],
+          env: sourceConfig.env || {},
+          ...(sourceConfig.transport && { transport: sourceConfig.transport }),
+          ...(sourceConfig.transportType && { transportType: sourceConfig.transportType })
+        },
+        targetScope,
+        targetProjectId: targetScope === 'project' ? targetProjectId : null,
+        conflictStrategy
+      }
+    }
+
+    throw new Error(`Unknown configuration type: ${type}`)
   }
 
   return {
