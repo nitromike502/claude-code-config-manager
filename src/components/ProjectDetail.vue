@@ -34,22 +34,24 @@
         </button>
       </div>
 
-      <!-- Warning Banner -->
-      <div v-else-if="warnings.length > 0" class="warning-banner">
-        <div class="warning-header">
-          <i class="pi pi-exclamation-circle"></i>
-          <span>{{ warnings.length }} Warning{{ warnings.length > 1 ? 's' : '' }}</span>
+      <!-- Content Area (warnings + config cards) -->
+      <div v-else>
+        <!-- Warning Banner -->
+        <div v-if="warnings.length > 0" class="warning-banner">
+          <div class="warning-header">
+            <i class="pi pi-exclamation-circle"></i>
+            <span>{{ warnings.length }} Warning{{ warnings.length > 1 ? 's' : '' }}</span>
+          </div>
+          <ul class="warning-list">
+            <li v-for="(warning, index) in warnings" :key="index">
+              <template v-if="typeof warning === 'string'">{{ warning }}</template>
+              <template v-else>{{ warning.message || warning }}</template>
+            </li>
+          </ul>
         </div>
-        <ul class="warning-list">
-          <li v-for="(warning, index) in warnings" :key="index">
-            <template v-if="typeof warning === 'string'">{{ warning }}</template>
-            <template v-else>{{ warning.message || warning }}</template>
-          </li>
-        </ul>
-      </div>
 
-      <!-- Config Cards Container -->
-      <div v-else class="config-cards-container">
+        <!-- Config Cards Container -->
+        <div class="config-cards-container">
         <!-- Agents Card -->
         <ConfigCard
           card-type="agents"
@@ -145,6 +147,7 @@
             />
           </template>
         </ConfigCard>
+        </div>
       </div>
     </div>
 
