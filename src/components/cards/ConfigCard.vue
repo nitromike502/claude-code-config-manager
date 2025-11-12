@@ -6,14 +6,6 @@
         <i :class="icon" :style="{ color: color }"></i>
         <span class="config-title">{{ title }} ({{ count }})</span>
       </div>
-      <div class="config-header-right">
-        <CopyButton
-          v-if="items.length > 0 && !loading"
-          :configItem="firstItem"
-          :show-label="false"
-          @copy-clicked="handleCopyClick"
-        />
-      </div>
     </div>
 
     <!-- Loading State -->
@@ -49,7 +41,6 @@
 
 <script setup>
 import { computed } from 'vue';
-import CopyButton from '@/components/copy/CopyButton.vue';
 
 const props = defineProps({
   title: {
@@ -100,9 +91,6 @@ const emit = defineEmits({
   'toggle-show-all': null,
   'item-selected': (item, itemType) => {
     return item !== null && typeof itemType === 'string'
-  },
-  'copy-clicked': (configItem) => {
-    return configItem && typeof configItem === 'object'
   }
 });
 
@@ -138,32 +126,9 @@ const buttonText = computed(() => {
   return `Show ${remainingCount} more`;
 });
 
-// Computed property for first item (used by CopyButton)
-const firstItem = computed(() => {
-  return props.items.length > 0 ? props.items[0] : null;
-});
-
 // Handle toggle event
 const handleToggle = () => {
   emit('toggle-show-all');
-};
-
-// Handle copy button click
-const handleCopyClick = (configItem) => {
-  // Convert cardType from plural ('agents', 'commands') to singular ('agent', 'command')
-  const typeMapping = {
-    'agents': 'agent',
-    'commands': 'command',
-    'hooks': 'hook',
-    'mcp': 'mcp'
-  };
-
-  const itemWithType = {
-    ...configItem,
-    type: typeMapping[props.cardType] || props.cardType
-  };
-
-  emit('copy-clicked', itemWithType);
 };
 </script>
 
@@ -201,12 +166,6 @@ const handleCopyClick = (configItem) => {
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-emphasis);
-}
-
-.config-header-right {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 /* Loading State */

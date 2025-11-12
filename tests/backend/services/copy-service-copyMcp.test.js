@@ -105,8 +105,9 @@ describe('CopyService.copyMcp()', () => {
       expect(config.mcpServers.gitlab).toEqual(validMcpConfig);
     });
 
-    test('merges MCP server to project scope (settings.json fallback)', async () => {
-      // No .mcp.json exists, should use settings.json
+    test('creates .mcp.json for project scope when it does not exist', async () => {
+      // No .mcp.json exists, should create it
+      const mcpJsonPath = path.join(testProjectPath, '.mcp.json');
       const request = {
         sourceServerName: 'bitbucket',
         sourceMcpConfig: validMcpConfig,
@@ -117,12 +118,12 @@ describe('CopyService.copyMcp()', () => {
       const result = await copyService.copyMcp(request);
 
       expect(result.success).toBe(true);
-      expect(result.mergedInto).toBe(path.join(testProjectPath, '.claude', 'settings.json'));
+      expect(result.mergedInto).toBe(mcpJsonPath);
       expect(result.serverName).toBe('bitbucket');
 
-      // Verify server was added
-      const settings = JSON.parse(await fs.readFile(result.mergedInto, 'utf8'));
-      expect(settings.mcpServers.bitbucket).toEqual(validMcpConfig);
+      // Verify .mcp.json was created
+      const mcpConfig = JSON.parse(await fs.readFile(mcpJsonPath, 'utf8'));
+      expect(mcpConfig.mcpServers.bitbucket).toEqual(validMcpConfig);
     });
 
     test('creates new file if target does not exist', async () => {
@@ -180,7 +181,8 @@ describe('CopyService.copyMcp()', () => {
       expect(settings.mcpServers['new-server']).toEqual(validMcpConfig);
     });
 
-    test('preserves other settings (hooks, etc.) when merging MCP server', async () => {
+    test('does not modify settings.json when copying MCP to project', async () => {
+      // For projects, MCP goes to .mcp.json, settings.json should not be touched
       const settingsPath = path.join(testProjectPath, '.claude', 'settings.json');
       const existingSettings = {
         hooks: {
@@ -190,8 +192,7 @@ describe('CopyService.copyMcp()', () => {
               hooks: [{ type: 'command', command: 'tsc', enabled: true, timeout: 60 }]
             }
           ]
-        },
-        mcpServers: {}
+        }
       };
       await fs.writeFile(settingsPath, JSON.stringify(existingSettings, null, 2), 'utf8');
 
@@ -205,18 +206,23 @@ describe('CopyService.copyMcp()', () => {
       const result = await copyService.copyMcp(request);
 
       expect(result.success).toBe(true);
+      expect(result.mergedInto).toBe(path.join(testProjectPath, '.mcp.json'));
 
-      // Verify hooks were preserved
+      // Verify settings.json was NOT modified (no mcpServers added)
       const settings = JSON.parse(await fs.readFile(settingsPath, 'utf8'));
       expect(settings.hooks).toEqual(existingSettings.hooks);
-      expect(settings.mcpServers['test-server']).toEqual(validMcpConfig);
+      expect(settings.mcpServers).toBeUndefined(); // Should not exist
+
+      // Verify MCP was written to .mcp.json
+      const mcpConfig = JSON.parse(await fs.readFile(result.mergedInto, 'utf8'));
+      expect(mcpConfig.mcpServers['test-server']).toEqual(validMcpConfig);
     });
   });
 
   describe('Conflict cases', () => {
     test('returns conflict when server name exists and no strategy provided', async () => {
-      const settingsPath = path.join(testProjectPath, '.claude', 'settings.json');
-      const existingSettings = {
+      const mcpJsonPath = path.join(testProjectPath, '.mcp.json');
+      const existingMcpConfig = {
         mcpServers: {
           'github': {
             command: 'existing',
@@ -224,7 +230,7 @@ describe('CopyService.copyMcp()', () => {
           }
         }
       };
-      await fs.writeFile(settingsPath, JSON.stringify(existingSettings, null, 2), 'utf8');
+      await fs.writeFile(mcpJsonPath, JSON.stringify(existingMcpConfig, null, 2), 'utf8');
 
       const request = {
         sourceServerName: 'github',
@@ -238,17 +244,17 @@ describe('CopyService.copyMcp()', () => {
       expect(result.success).toBe(false);
       expect(result.conflict).toBeDefined();
       expect(result.conflict.serverName).toBe('github');
-      expect(result.conflict.targetPath).toBe(settingsPath);
-      expect(result.conflict.existingConfig).toEqual(existingSettings.mcpServers.github);
+      expect(result.conflict.targetPath).toBe(mcpJsonPath);
+      expect(result.conflict.existingConfig).toEqual(existingMcpConfig.mcpServers.github);
 
       // Verify original config was not modified
-      const settings = JSON.parse(await fs.readFile(settingsPath, 'utf8'));
-      expect(settings.mcpServers.github).toEqual(existingSettings.mcpServers.github);
+      const mcpConfig = JSON.parse(await fs.readFile(mcpJsonPath, 'utf8'));
+      expect(mcpConfig.mcpServers.github).toEqual(existingMcpConfig.mcpServers.github);
     });
 
     test('skips merge when conflict strategy is "skip"', async () => {
-      const settingsPath = path.join(testProjectPath, '.claude', 'settings.json');
-      const existingSettings = {
+      const mcpJsonPath = path.join(testProjectPath, '.mcp.json');
+      const existingMcpConfig = {
         mcpServers: {
           'github': {
             command: 'existing',
@@ -256,7 +262,7 @@ describe('CopyService.copyMcp()', () => {
           }
         }
       };
-      await fs.writeFile(settingsPath, JSON.stringify(existingSettings, null, 2), 'utf8');
+      await fs.writeFile(mcpJsonPath, JSON.stringify(existingMcpConfig, null, 2), 'utf8');
 
       const request = {
         sourceServerName: 'github',
@@ -273,13 +279,13 @@ describe('CopyService.copyMcp()', () => {
       expect(result.message).toBe('Copy cancelled by user');
 
       // Verify original config was not modified
-      const settings = JSON.parse(await fs.readFile(settingsPath, 'utf8'));
-      expect(settings.mcpServers.github).toEqual(existingSettings.mcpServers.github);
+      const mcpConfig = JSON.parse(await fs.readFile(mcpJsonPath, 'utf8'));
+      expect(mcpConfig.mcpServers.github).toEqual(existingMcpConfig.mcpServers.github);
     });
 
     test('overwrites existing server when conflict strategy is "overwrite"', async () => {
-      const settingsPath = path.join(testProjectPath, '.claude', 'settings.json');
-      const existingSettings = {
+      const mcpJsonPath = path.join(testProjectPath, '.mcp.json');
+      const existingMcpConfig = {
         mcpServers: {
           'github': {
             command: 'old-command',
@@ -287,7 +293,7 @@ describe('CopyService.copyMcp()', () => {
           }
         }
       };
-      await fs.writeFile(settingsPath, JSON.stringify(existingSettings, null, 2), 'utf8');
+      await fs.writeFile(mcpJsonPath, JSON.stringify(existingMcpConfig, null, 2), 'utf8');
 
       const request = {
         sourceServerName: 'github',
@@ -303,13 +309,13 @@ describe('CopyService.copyMcp()', () => {
       expect(result.serverName).toBe('github');
 
       // Verify config was replaced with new one
-      const settings = JSON.parse(await fs.readFile(settingsPath, 'utf8'));
-      expect(settings.mcpServers.github).toEqual(validMcpConfig);
+      const mcpConfig = JSON.parse(await fs.readFile(mcpJsonPath, 'utf8'));
+      expect(mcpConfig.mcpServers.github).toEqual(validMcpConfig);
     });
 
     test('returns error for unknown conflict strategy', async () => {
-      const settingsPath = path.join(testProjectPath, '.claude', 'settings.json');
-      const existingSettings = {
+      const mcpJsonPath = path.join(testProjectPath, '.mcp.json');
+      const existingMcpConfig = {
         mcpServers: {
           'github': {
             command: 'existing',
@@ -317,7 +323,7 @@ describe('CopyService.copyMcp()', () => {
           }
         }
       };
-      await fs.writeFile(settingsPath, JSON.stringify(existingSettings, null, 2), 'utf8');
+      await fs.writeFile(mcpJsonPath, JSON.stringify(existingMcpConfig, null, 2), 'utf8');
 
       const request = {
         sourceServerName: 'github',
@@ -427,8 +433,8 @@ describe('CopyService.copyMcp()', () => {
     });
 
     test('handles malformed target JSON gracefully', async () => {
-      const settingsPath = path.join(testProjectPath, '.claude', 'settings.json');
-      await fs.writeFile(settingsPath, 'INVALID JSON{{{', 'utf8');
+      const mcpJsonPath = path.join(testProjectPath, '.mcp.json');
+      await fs.writeFile(mcpJsonPath, 'INVALID JSON{{{', 'utf8');
 
       const request = {
         sourceServerName: 'test-server',
@@ -474,8 +480,29 @@ describe('CopyService.copyMcp()', () => {
       expect(settings.mcpServers['test-server']).toBeUndefined();
     });
 
-    test('uses settings.json when .mcp.json does not exist', async () => {
-      // Only create settings.json
+    test('creates .mcp.json when it does not exist', async () => {
+      // Start with no .mcp.json file
+      const mcpJsonPath = path.join(testProjectPath, '.mcp.json');
+
+      const request = {
+        sourceServerName: 'test-server',
+        sourceMcpConfig: validMcpConfig,
+        targetScope: 'project',
+        targetProjectId: testProjectId
+      };
+
+      const result = await copyService.copyMcp(request);
+
+      expect(result.success).toBe(true);
+      expect(result.mergedInto).toBe(mcpJsonPath);
+
+      // Verify .mcp.json was created
+      const mcpConfig = JSON.parse(await fs.readFile(mcpJsonPath, 'utf8'));
+      expect(mcpConfig.mcpServers['test-server']).toEqual(validMcpConfig);
+    });
+
+    test('always uses .mcp.json for project scope (never settings.json)', async () => {
+      // Even if settings.json exists, should use .mcp.json for project MCP
       const settingsPath = path.join(testProjectPath, '.claude', 'settings.json');
       await fs.writeFile(settingsPath, JSON.stringify({ mcpServers: {} }, null, 2), 'utf8');
 
@@ -489,29 +516,16 @@ describe('CopyService.copyMcp()', () => {
       const result = await copyService.copyMcp(request);
 
       expect(result.success).toBe(true);
-      expect(result.mergedInto).toBe(settingsPath);
+      expect(result.mergedInto).toBe(path.join(testProjectPath, '.mcp.json'));
 
-      // Verify .mcp.json was not created
+      // Verify .mcp.json was created
       const mcpJsonPath = path.join(testProjectPath, '.mcp.json');
-      await expect(fs.access(mcpJsonPath)).rejects.toThrow();
-    });
+      const mcpConfig = JSON.parse(await fs.readFile(mcpJsonPath, 'utf8'));
+      expect(mcpConfig.mcpServers['test-server']).toEqual(validMcpConfig);
 
-    test('creates settings.json when neither file exists', async () => {
-      const request = {
-        sourceServerName: 'test-server',
-        sourceMcpConfig: validMcpConfig,
-        targetScope: 'project',
-        targetProjectId: testProjectId
-      };
-
-      const result = await copyService.copyMcp(request);
-
-      expect(result.success).toBe(true);
-      expect(result.mergedInto).toBe(path.join(testProjectPath, '.claude', 'settings.json'));
-
-      // Verify file was created
-      const settings = JSON.parse(await fs.readFile(result.mergedInto, 'utf8'));
-      expect(settings.mcpServers['test-server']).toEqual(validMcpConfig);
+      // Verify settings.json was NOT modified
+      const settings = JSON.parse(await fs.readFile(settingsPath, 'utf8'));
+      expect(settings.mcpServers['test-server']).toBeUndefined();
     });
   });
 
@@ -565,15 +579,15 @@ describe('CopyService.copyMcp()', () => {
     });
 
     test('preserves multiple existing MCP servers when adding new one', async () => {
-      const settingsPath = path.join(testProjectPath, '.claude', 'settings.json');
-      const existingSettings = {
+      const mcpJsonPath = path.join(testProjectPath, '.mcp.json');
+      const existingMcpConfig = {
         mcpServers: {
           'server1': { command: 'cmd1', args: ['arg1'] },
           'server2': { command: 'cmd2', args: ['arg2'] },
           'server3': { command: 'cmd3', args: ['arg3'] }
         }
       };
-      await fs.writeFile(settingsPath, JSON.stringify(existingSettings, null, 2), 'utf8');
+      await fs.writeFile(mcpJsonPath, JSON.stringify(existingMcpConfig, null, 2), 'utf8');
 
       const request = {
         sourceServerName: 'server4',
@@ -586,12 +600,12 @@ describe('CopyService.copyMcp()', () => {
 
       expect(result.success).toBe(true);
 
-      const settings = JSON.parse(await fs.readFile(settingsPath, 'utf8'));
-      expect(Object.keys(settings.mcpServers)).toHaveLength(4);
-      expect(settings.mcpServers.server1).toEqual(existingSettings.mcpServers.server1);
-      expect(settings.mcpServers.server2).toEqual(existingSettings.mcpServers.server2);
-      expect(settings.mcpServers.server3).toEqual(existingSettings.mcpServers.server3);
-      expect(settings.mcpServers.server4).toEqual(validMcpConfig);
+      const mcpConfig = JSON.parse(await fs.readFile(mcpJsonPath, 'utf8'));
+      expect(Object.keys(mcpConfig.mcpServers)).toHaveLength(4);
+      expect(mcpConfig.mcpServers.server1).toEqual(existingMcpConfig.mcpServers.server1);
+      expect(mcpConfig.mcpServers.server2).toEqual(existingMcpConfig.mcpServers.server2);
+      expect(mcpConfig.mcpServers.server3).toEqual(existingMcpConfig.mcpServers.server3);
+      expect(mcpConfig.mcpServers.server4).toEqual(validMcpConfig);
     });
 
     test('atomic write prevents corruption on failure', async () => {
