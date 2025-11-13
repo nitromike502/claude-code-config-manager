@@ -155,12 +155,12 @@ const mockProjects = computed(() => projectsStore.projects);
 // Get icon for configuration type
 const getTypeIcon = (type) => {
   const icons = {
-    agent: ['pi', 'pi-users'],
-    command: ['pi', 'pi-bolt'],
-    hook: ['pi', 'pi-link'],
-    mcp: ['pi', 'pi-server']
+    agent: 'pi pi-users',
+    command: 'pi pi-bolt',
+    hook: 'pi pi-link',
+    mcp: 'pi pi-server'
   };
-  return icons[type] || ['pi', 'pi-file'];
+  return icons[type] || 'pi pi-file';
 };
 
 // Format type for display

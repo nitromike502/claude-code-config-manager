@@ -382,8 +382,9 @@ export default {
     // Copy modal event handlers
     const handleCopyClick = (configItem) => {
       // Use type from configItem if already present (added by ConfigItemList)
+      // ConfigItemList uses 'configType', so check both 'configType' and 'type'
       // Otherwise, determine config type based on which array it belongs to
-      let type = configItem.type || null
+      let type = configItem.configType || configItem.type || null
       if (!type) {
         if (agents.value.includes(configItem)) {
           type = 'agent'

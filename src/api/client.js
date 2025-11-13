@@ -82,7 +82,15 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
       throw timeoutError
     }
 
-    // Mark network errors as expected (handled by UI)
+    // Handle network errors (Failed to fetch, etc)
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      const networkError = new Error('Failed to connect to server')
+      networkError.isExpected = true
+      networkError.name = 'NetworkError'
+      throw networkError
+    }
+
+    // Mark other errors as expected (handled by UI)
     if (!error.isExpected) {
       error.isExpected = true
     }

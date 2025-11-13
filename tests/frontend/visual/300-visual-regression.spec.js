@@ -638,6 +638,7 @@ test.describe('300.003: Visual Regression - Project Detail View', () => {
 
   test('300.003.004: project detail error state', async ({ page }) => {
     const projectId = 'homeuserprojectexisting';
+    const nonexistentId = 'nonexistent';
 
     // Mock projects list with one valid project
     await page.route('**/api/projects', (route) => {
@@ -658,13 +659,46 @@ test.describe('300.003: Visual Regression - Project Detail View', () => {
       });
     });
 
+    // Mock error responses for non-existent project detail endpoints
+    await page.route(`**/api/projects/${nonexistentId}/agents`, (route) => {
+      route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: false, error: 'Project not found' })
+      });
+    });
+    await page.route(`**/api/projects/${nonexistentId}/commands`, (route) => {
+      route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: false, error: 'Project not found' })
+      });
+    });
+    await page.route(`**/api/projects/${nonexistentId}/hooks`, (route) => {
+      route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: false, error: 'Project not found' })
+      });
+    });
+    await page.route(`**/api/projects/${nonexistentId}/mcp`, (route) => {
+      route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: false, error: 'Project not found' })
+      });
+    });
+
     // Navigate to non-existent project using Vue Router
     await page.goto('/project/nonexistent');
 
-    // Wait for page to load (may show error or empty state)
-    await page.waitForSelector('body', { timeout: 5000 });
+    // Wait for page to finish loading (will show warnings and config cards)
+    await page.waitForSelector('.project-detail', { timeout: 10000 });
 
-    // Capture error state
+    // Wait a bit for all async content to render
+    await page.waitForTimeout(500);
+
+    // Capture error state (page will show empty config cards with warnings)
     await expect(page).toHaveScreenshot('project-detail-error.png', {
       fullPage: true,
       maxDiffPixels: 100

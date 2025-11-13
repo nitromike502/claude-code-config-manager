@@ -311,25 +311,47 @@ export default {
           loadMCP()
         ])
 
-        // Process results and collect warnings
-        results.forEach((result, index) => {
-          if (result.status === 'fulfilled') {
-            // Success - collect warnings if any
-            if (result.value?.warnings && result.value.warnings.length > 0) {
-              warnings.value.push(...result.value.warnings)
-            }
-          } else {
-            // Failed - log error but don't break the page
-            const configNames = ['agents', 'commands', 'hooks', 'MCP servers']
-            console.error(`Error loading ${configNames[index]}:`, result.reason)
+        // Check if ALL config loads failed
+        const allFailed = results.every(result => result.status === 'rejected')
 
-            // Add warning message for this config type
-            warnings.value.push({
-              type: configNames[index],
-              message: `Failed to load ${configNames[index]}: ${result.reason?.message || 'Unknown error'}`
-            })
+        if (allFailed) {
+          // If all config loads failed, show error state instead of warnings
+          error.value = true
+          const firstError = results[0].reason
+
+          // Determine error message based on error type
+          const errorMsg = firstError?.message || ''
+
+          if (errorMsg.includes('404') || errorMsg.includes('400') || errorMsg.toLowerCase().includes('not found') || errorMsg.toLowerCase().includes('bad request')) {
+            errorMessage.value = 'Project not found'
+          } else if (errorMsg.includes('500') || errorMsg.toLowerCase().includes('internal server error') ||
+                     errorMsg.toLowerCase().includes('failed to fetch') || errorMsg.toLowerCase().includes('network') ||
+                     firstError?.name === 'TypeError' || firstError?.name === 'NetworkError') {
+            errorMessage.value = 'Failed to connect to server'
+          } else {
+            errorMessage.value = errorMsg || 'Failed to load project configurations'
           }
-        })
+        } else {
+          // Process results and collect warnings (only if not all failed)
+          results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+              // Success - collect warnings if any
+              if (result.value?.warnings && result.value.warnings.length > 0) {
+                warnings.value.push(...result.value.warnings)
+              }
+            } else {
+              // Failed - log error but don't break the page
+              const configNames = ['agents', 'commands', 'hooks', 'MCP servers']
+              console.error(`Error loading ${configNames[index]}:`, result.reason)
+
+              // Add warning message for this config type
+              warnings.value.push({
+                type: configNames[index],
+                message: `Failed to load ${configNames[index]}: ${result.reason?.message || 'Unknown error'}`
+              })
+            }
+          })
+        }
       } catch (err) {
         // This catch should rarely trigger since allSettled doesn't reject
         console.error('Unexpected error loading project data:', err)
@@ -451,7 +473,12 @@ export default {
 
     // Copy modal handlers
     const handleCopyClick = (configItem) => {
-      selectedConfig.value = configItem
+      // Normalize configType to type for CopyModal compatibility
+      const normalizedConfig = {
+        ...configItem,
+        type: configItem.configType || configItem.type
+      };
+      selectedConfig.value = normalizedConfig
       showCopyModal.value = true
     }
 
