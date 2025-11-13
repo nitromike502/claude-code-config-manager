@@ -44,8 +44,9 @@ export const useCopyStore = defineStore('copy', () => {
       const { sourceConfig, targetScope, targetProjectId, conflictStrategy } = request
 
       // Validate required fields
-      if (!sourceConfig || !sourceConfig.type) {
-        throw new Error('sourceConfig.type is required')
+      const configType = sourceConfig.configType || sourceConfig.type
+      if (!sourceConfig || !configType) {
+        throw new Error('sourceConfig must have type or configType field')
       }
       if (!targetScope) {
         throw new Error('targetScope is required')
@@ -55,21 +56,10 @@ export const useCopyStore = defineStore('copy', () => {
       }
 
       // Determine which API method to call based on config type
-      const endpointMethod = getEndpointForType(sourceConfig.type)
+      const endpointMethod = getEndpointForType(configType)
 
-      // Extract source path (handle both 'path' and 'filePath' properties)
-      const sourcePath = sourceConfig.path || sourceConfig.filePath
-      if (!sourcePath) {
-        throw new Error('sourceConfig must have either path or filePath property')
-      }
-
-      // Build request payload for API
-      const payload = {
-        sourcePath,
-        targetScope,
-        targetProjectId: targetScope === 'project' ? targetProjectId : null,
-        conflictStrategy
-      }
+      // Build request payload based on config type (agents/commands use sourcePath, hooks/MCP use different structures)
+      const payload = buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy)
 
       // Call API
       const result = await api[endpointMethod](payload)
@@ -130,6 +120,83 @@ export const useCopyStore = defineStore('copy', () => {
     }
 
     return typeMap[type]
+  }
+
+  /**
+   * Build API request payload based on configuration type
+   * Different types have different request structures
+   *
+   * @param {Object} sourceConfig - Source configuration item
+   * @param {string} targetScope - Target scope ('user' or 'project')
+   * @param {string|null} targetProjectId - Target project ID
+   * @param {string} conflictStrategy - Conflict resolution strategy
+   * @returns {Object} API request payload
+   */
+  function buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy) {
+    const configType = sourceConfig.configType || sourceConfig.type
+
+    // Agents and Commands use sourcePath
+    if (configType === 'agent' || configType === 'command') {
+      const sourcePath = sourceConfig.path || sourceConfig.filePath
+      if (!sourcePath) {
+        throw new Error('sourceConfig must have either path or filePath property')
+      }
+
+      return {
+        sourcePath,
+        targetScope,
+        targetProjectId: targetScope === 'project' ? targetProjectId : null,
+        conflictStrategy
+      }
+    }
+
+    // Hooks use sourceHook object
+    if (configType === 'hook') {
+      const sourceHook = {
+        event: sourceConfig.event,
+        command: sourceConfig.command
+      }
+
+      // Only include optional fields if they exist in source
+      // Note: sourceConfig.type is the HOOK type ('command', 'shell', etc.), not the config type
+      if (sourceConfig.type !== undefined) {
+        sourceHook.type = sourceConfig.type
+      }
+      if (sourceConfig.matcher !== undefined) {
+        sourceHook.matcher = sourceConfig.matcher
+      }
+      if (sourceConfig.enabled !== undefined) {
+        sourceHook.enabled = sourceConfig.enabled
+      }
+      if (sourceConfig.timeout !== undefined) {
+        sourceHook.timeout = sourceConfig.timeout
+      }
+
+      return {
+        sourceHook,
+        targetScope,
+        targetProjectId: targetScope === 'project' ? targetProjectId : null
+      }
+    }
+
+    // MCP servers use sourceServerName and sourceMcpConfig
+    if (configType === 'mcp') {
+      return {
+        sourceServerName: sourceConfig.name,
+        sourceMcpConfig: {
+          command: sourceConfig.command,
+          args: sourceConfig.args || [],
+          env: sourceConfig.env || {},
+          ...(sourceConfig.transport && { transport: sourceConfig.transport }),
+          ...(sourceConfig.transportType && { transportType: sourceConfig.transportType })
+        },
+        targetScope,
+        targetProjectId: targetScope === 'project' ? targetProjectId : null,
+        conflictStrategy
+      }
+    }
+
+    throw new Error(`Unknown configuration type: ${configType}`)
   }
 
   return {

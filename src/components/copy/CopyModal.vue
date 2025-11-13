@@ -63,8 +63,7 @@
           label="Copy Here"
           icon="pi pi-copy"
           class="card-button"
-          :disabled="selectedDestination?.id !== 'user-global'"
-          @click.stop="handleCopy"
+          @click.stop="handleButtonCopy({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
         />
       </div>
 
@@ -90,8 +89,7 @@
             label="Copy Here"
             icon="pi pi-copy"
             class="card-button"
-            :disabled="selectedDestination?.id !== project.id"
-            @click.stop="handleCopy"
+            @click.stop="handleButtonCopy(project)"
           />
         </div>
       </div>
@@ -105,6 +103,7 @@ import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import Divider from 'primevue/divider';
 import { useProjectsStore } from '@/stores/projects';
+import { useCopyStore } from '@/stores/copy-store';
 
 const props = defineProps({
   visible: {
@@ -124,18 +123,21 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'copy-success', 'copy-error', 'copy-cancelled']);
 
-// Initialize projects store
+// Initialize stores
 const projectsStore = useProjectsStore();
+const copyStore = useCopyStore();
 
 // Track selected destination
 const selectedDestination = ref(null);
 
-// Reset selection when modal opens
-watch(() => props.visible, (newVal) => {
+// Reset selection and load projects when modal opens
+watch(() => props.visible, async (newVal) => {
   if (newVal) {
     selectedDestination.value = null;
+    // Always load fresh project list when modal opens
+    await projectsStore.loadProjects();
   }
-});
+}, { immediate: true });
 
 // Computed property for v-model binding
 const isVisible = computed({
@@ -153,12 +155,12 @@ const mockProjects = computed(() => projectsStore.projects);
 // Get icon for configuration type
 const getTypeIcon = (type) => {
   const icons = {
-    agent: ['pi', 'pi-users'],
-    command: ['pi', 'pi-bolt'],
-    hook: ['pi', 'pi-link'],
-    mcp: ['pi', 'pi-server']
+    agent: 'pi pi-users',
+    command: 'pi pi-bolt',
+    hook: 'pi pi-link',
+    mcp: 'pi pi-server'
   };
-  return icons[type] || ['pi', 'pi-file'];
+  return icons[type] || 'pi pi-file';
 };
 
 // Format type for display
@@ -173,17 +175,16 @@ const formatType = (type) => {
 };
 
 // Handle keyboard navigation on destination cards
-const handleKeyDown = (event, destination) => {
+const handleKeyDown = async (event, destination) => {
   // Handle Enter key to select and copy
   if (event.key === 'Enter') {
     event.preventDefault();
-    selectDestination(destination);
-    handleCopy();
+    await selectDestination(destination);
   }
-  // Handle Space key to just select (not copy)
+  // Handle Space key to also select and copy (same behavior)
   else if (event.key === ' ') {
     event.preventDefault();
-    selectDestination(destination);
+    await selectDestination(destination);
   }
 };
 
@@ -199,13 +200,14 @@ const handleDialogHide = () => {
   selectionMade = false; // Reset for next open
 };
 
-// Handle destination selection (just selects, doesn't copy)
-const selectDestination = (destination) => {
+// Handle destination selection (selects and triggers copy)
+const selectDestination = async (destination) => {
   console.log('Selected destination:', destination);
-  // Clear previous selection first
-  selectedDestination.value = null;
-  // Set new selection
+  // Set selection
   selectedDestination.value = destination;
+
+  // Immediately trigger copy operation
+  await handleCopy();
 };
 
 // Handle copy action
@@ -216,14 +218,50 @@ const handleCopy = async () => {
 
   try {
     selectionMade = true;
-    // Future: Will call API to perform copy operation
-    // For now, just emit success and close modal
-    emit('copy-success', { source: props.sourceConfig, destination: selectedDestination.value });
+
+    // Prepare copy request
+    const targetScope = selectedDestination.value.id === 'user-global' ? 'user' : 'project';
+    const targetProjectId = selectedDestination.value.id === 'user-global' ? null : selectedDestination.value.id;
+
+    const copyRequest = {
+      sourceConfig: props.sourceConfig,
+      targetScope,
+      targetProjectId,
+      conflictStrategy: 'skip' // Default strategy; in future, could prompt user
+    };
+
+    // Call copy store to perform the copy operation
+    const result = await copyStore.copyConfiguration(copyRequest);
+
+    // Check if there was a conflict
+    if (result.conflict) {
+      // Future: Could show conflict resolution UI
+      // For now, just treat as an error
+      emit('copy-error', new Error('Configuration already exists at destination'));
+      isVisible.value = false;
+      return;
+    }
+
+    // Success! Emit with result details
+    emit('copy-success', {
+      source: props.sourceConfig,
+      destination: selectedDestination.value,
+      filename: result.filename || props.sourceConfig.name || props.sourceConfig.event,
+      copiedPath: result.copiedPath
+    });
     isVisible.value = false; // Close modal after success
   } catch (error) {
     emit('copy-error', error);
     isVisible.value = false; // Close modal after error too
   }
+};
+
+// Handle "Copy Here" button click (select and copy in one action)
+const handleButtonCopy = async (destination) => {
+  // Set selection
+  selectedDestination.value = destination;
+  // Perform copy
+  await handleCopy();
 };
 </script>
 

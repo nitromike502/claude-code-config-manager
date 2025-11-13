@@ -23,9 +23,10 @@ function getBaseUrl() {
   }
 
   // Priority 2: Development mode (Vite dev server on port 5173)
+  // Use empty string (same origin) to allow Vite proxy to forward API requests
   if (import.meta.env.DEV && window.location.port === '5173') {
-    const devUrl = 'http://localhost:8420';
-    console.log('[API Client] Using dev mode base URL:', devUrl);
+    const devUrl = ''; // Vite proxy will forward /api/* to localhost:8420
+    console.log('[API Client] Using dev mode with Vite proxy (same origin)');
     return devUrl;
   }
 
@@ -81,7 +82,15 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
       throw timeoutError
     }
 
-    // Mark network errors as expected (handled by UI)
+    // Handle network errors (Failed to fetch, etc)
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      const networkError = new Error('Failed to connect to server')
+      networkError.isExpected = true
+      networkError.name = 'NetworkError'
+      throw networkError
+    }
+
+    // Mark other errors as expected (handled by UI)
     if (!error.isExpected) {
       error.isExpected = true
     }

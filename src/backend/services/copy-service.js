@@ -836,21 +836,13 @@ class CopyService {
         // User scope: ~/.claude/settings.json
         targetPath = path.join(os.homedir(), '.claude', 'settings.json');
       } else if (targetScope === 'project') {
-        // Project scope: prefer .mcp.json, fallback to settings.json
+        // Project scope: Always use .mcp.json (create if doesn't exist)
         if (!targetProjectId) {
           throw new Error('targetProjectId is required when targetScope is "project"');
         }
 
         const projectPath = await this.getProjectPath(targetProjectId);
-        const mcpJsonPath = path.join(projectPath, '.mcp.json');
-        const settingsPath = path.join(projectPath, '.claude', 'settings.json');
-
-        // Check if .mcp.json exists
-        const mcpJsonExists = await fs.access(mcpJsonPath)
-          .then(() => true)
-          .catch(() => false);
-
-        targetPath = mcpJsonExists ? mcpJsonPath : settingsPath;
+        targetPath = path.join(projectPath, '.mcp.json');
       } else {
         throw new Error(`Invalid targetScope: must be 'project' or 'user'`);
       }

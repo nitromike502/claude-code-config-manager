@@ -87,6 +87,10 @@
       </div>
 
       <div class="sidebar-footer">
+        <button @click="handleCopy" class="action-btn copy-action-btn" :disabled="!selectedItem">
+          <i class="pi pi-copy"></i>
+          Copy
+        </button>
         <button @click="emit('close')" class="action-btn close-action-btn">
           <i class="pi pi-times"></i>
           Close
@@ -127,6 +131,9 @@ const emit = defineEmits({
   close: null,
   navigate: (payload) => {
     return payload && typeof payload.index === 'number' && payload.item !== undefined
+  },
+  'copy-clicked': (item) => {
+    return item && typeof item === 'object'
   }
 })
 
@@ -172,6 +179,27 @@ const handleNavigatePrev = () => {
 const handleNavigateNext = () => {
   if (hasNext.value) {
     emit('navigate', 'next')
+  }
+}
+
+// Handle copy button click
+const handleCopy = () => {
+  if (props.selectedItem) {
+    // Convert selectedType from plural ('agents', 'commands') to singular ('agent', 'command')
+    const typeMapping = {
+      'agents': 'agent',
+      'commands': 'command',
+      'hooks': 'hook',
+      'mcp': 'mcp'
+    };
+
+    // Use configType to avoid overwriting hook's type field
+    const itemWithType = {
+      ...props.selectedItem,
+      configType: typeMapping[props.selectedType] || props.selectedType
+    };
+
+    emit('copy-clicked', itemWithType)
   }
 }
 </script>
@@ -344,26 +372,53 @@ const handleNavigateNext = () => {
 .sidebar-footer {
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--border-primary);
+  display: flex;
+  gap: 0.75rem;
 }
 
 .action-btn {
-  width: 100%;
+  flex: 1;
   padding: 0.75rem 1rem;
-  background: var(--color-primary);
-  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.95rem;
+  font-weight: 500;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
-.action-btn:hover {
+.copy-action-btn {
+  background: var(--color-primary);
+  color: white;
+}
+
+.copy-action-btn:hover:not(:disabled) {
   background: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+.copy-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--bg-tertiary);
+  color: var(--text-disabled);
+}
+
+.close-action-btn {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+.close-action-btn:hover {
+  background: var(--bg-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
 }
 
 /* Responsive */

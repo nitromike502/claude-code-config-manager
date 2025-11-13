@@ -34,19 +34,24 @@
         </button>
       </div>
 
-      <!-- Warning Banner -->
-      <div v-else-if="warnings.length > 0" class="warning-banner">
-        <div class="warning-header">
-          <i class="pi pi-exclamation-circle"></i>
-          <span>{{ warnings.length }} Warning{{ warnings.length > 1 ? 's' : '' }}</span>
+      <!-- Content Area (warnings + config cards) -->
+      <div v-else>
+        <!-- Warning Banner -->
+        <div v-if="warnings.length > 0" class="warning-banner">
+          <div class="warning-header">
+            <i class="pi pi-exclamation-circle"></i>
+            <span>{{ warnings.length }} Warning{{ warnings.length > 1 ? 's' : '' }}</span>
+          </div>
+          <ul class="warning-list">
+            <li v-for="(warning, index) in warnings" :key="index">
+              <template v-if="typeof warning === 'string'">{{ warning }}</template>
+              <template v-else>{{ warning.message || warning }}</template>
+            </li>
+          </ul>
         </div>
-        <ul class="warning-list">
-          <li v-for="(warning, index) in warnings" :key="index">{{ warning }}</li>
-        </ul>
-      </div>
 
-      <!-- Config Cards Container -->
-      <div v-else class="config-cards-container">
+        <!-- Config Cards Container -->
+        <div class="config-cards-container">
         <!-- Agents Card -->
         <ConfigCard
           card-type="agents"
@@ -142,6 +147,7 @@
             />
           </template>
         </ConfigCard>
+        </div>
       </div>
     </div>
 
@@ -157,6 +163,7 @@
       :selected-index="currentIndex"
       @close="sidebarVisible = false"
       @navigate="onNavigate"
+      @copy-clicked="handleCopyClick"
     />
 
     <!-- Copy Modal -->
@@ -296,37 +303,60 @@ export default {
       projectName.value = projectPath.value.split('/').pop()
 
       try {
-        const results = await Promise.all([
+        // Use allSettled to allow individual config loads to fail without breaking the entire page
+        const results = await Promise.allSettled([
           loadAgents(),
           loadCommands(),
           loadHooks(),
           loadMCP()
         ])
 
-        // Collect warnings from all config loads
-        results.forEach(result => {
-          if (result?.warnings && result.warnings.length > 0) {
-            warnings.value.push(...result.warnings)
-          }
-        })
-      } catch (err) {
-        console.error('Error loading project data:', err)
-        error.value = true
+        // Check if ALL config loads failed
+        const allFailed = results.every(result => result.status === 'rejected')
 
-        // Parse error message
-        if (err.message.includes('timeout')) {
-          errorMessage.value = 'Request timed out. Please try again.'
-        } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-          errorMessage.value = 'Failed to connect to server. Please check your connection.'
-        } else if (err.message.includes('400')) {
-          errorMessage.value = 'Project not found'
-        } else if (err.message.includes('404')) {
-          errorMessage.value = 'Project not found'
-        } else if (err.message.includes('500')) {
-          errorMessage.value = 'Failed to connect to server'
+        if (allFailed) {
+          // If all config loads failed, show error state instead of warnings
+          error.value = true
+          const firstError = results[0].reason
+
+          // Determine error message based on error type
+          const errorMsg = firstError?.message || ''
+
+          if (errorMsg.includes('404') || errorMsg.includes('400') || errorMsg.toLowerCase().includes('not found') || errorMsg.toLowerCase().includes('bad request')) {
+            errorMessage.value = 'Project not found'
+          } else if (errorMsg.includes('500') || errorMsg.toLowerCase().includes('internal server error') ||
+                     errorMsg.toLowerCase().includes('failed to fetch') || errorMsg.toLowerCase().includes('network') ||
+                     firstError?.name === 'TypeError' || firstError?.name === 'NetworkError') {
+            errorMessage.value = 'Failed to connect to server'
+          } else {
+            errorMessage.value = errorMsg || 'Failed to load project configurations'
+          }
         } else {
-          errorMessage.value = err.message || 'An error occurred while loading the project'
+          // Process results and collect warnings (only if not all failed)
+          results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+              // Success - collect warnings if any
+              if (result.value?.warnings && result.value.warnings.length > 0) {
+                warnings.value.push(...result.value.warnings)
+              }
+            } else {
+              // Failed - log error but don't break the page
+              const configNames = ['agents', 'commands', 'hooks', 'MCP servers']
+              console.error(`Error loading ${configNames[index]}:`, result.reason)
+
+              // Add warning message for this config type
+              warnings.value.push({
+                type: configNames[index],
+                message: `Failed to load ${configNames[index]}: ${result.reason?.message || 'Unknown error'}`
+              })
+            }
+          })
         }
+      } catch (err) {
+        // This catch should rarely trigger since allSettled doesn't reject
+        console.error('Unexpected error loading project data:', err)
+        error.value = true
+        errorMessage.value = err.message || 'An unexpected error occurred while loading the project'
       } finally {
         loading.value = false
       }
@@ -443,7 +473,12 @@ export default {
 
     // Copy modal handlers
     const handleCopyClick = (configItem) => {
-      selectedConfig.value = configItem
+      // Normalize configType to type for CopyModal compatibility
+      const normalizedConfig = {
+        ...configItem,
+        type: configItem.configType || configItem.type
+      };
+      selectedConfig.value = normalizedConfig
       showCopyModal.value = true
     }
 

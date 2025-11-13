@@ -579,14 +579,14 @@ async function getProjectHooks(projectPath) {
 }
 
 /**
- * Gets MCP servers for a specific project (from .mcp.json and settings files)
+ * Gets MCP servers for a specific project (from .mcp.json only)
+ * Per Claude Code spec: project MCP servers are stored in .mcp.json
+ * User-level MCP servers are stored in ~/.claude/settings.json
  * @param {string} projectPath - Absolute project path
  * @returns {Promise<Object>} Object with mcp array and warnings array
  */
 async function getProjectMCP(projectPath) {
   const mcpPath = path.join(projectPath, '.mcp.json');
-  const settingsPath = path.join(projectPath, '.claude', 'settings.json');
-  const localSettingsPath = path.join(projectPath, '.claude', 'settings.local.json');
 
   const mcp = [];
   const warnings = [];
@@ -620,76 +620,6 @@ async function getProjectMCP(projectPath) {
       console.warn(`Failed to parse ${mcpPath}: ${error.message}`);
       warnings.push({
         file: mcpPath,
-        error: error.message,
-        skipped: true
-      });
-    }
-  }
-
-  // Try reading .claude/settings.json for MCP servers
-  try {
-    const settings = await readJSON(settingsPath);
-
-    if (settings && settings.mcpServers) {
-      // Type check before Object.entries()
-      if (typeof settings.mcpServers === 'object' && !Array.isArray(settings.mcpServers)) {
-        mcp.push(...Object.entries(settings.mcpServers).map(([name, serverConfig]) => ({
-          name,
-          ...serverConfig,
-          source: 'settings.json'
-        })));
-      } else {
-        // Unexpected type
-        const actualType = Array.isArray(settings.mcpServers) ? 'array' : typeof settings.mcpServers;
-        console.warn(`Unexpected mcpServers format in ${settingsPath}: ${actualType}`);
-        warnings.push({
-          file: settingsPath,
-          error: `mcpServers is ${actualType}, expected object`,
-          skipped: true
-        });
-      }
-    }
-  } catch (error) {
-    if (error.code !== 'ENOENT') {
-      // Log non-ENOENT errors (malformed JSON, etc.)
-      console.warn(`Failed to parse ${settingsPath}: ${error.message}`);
-      warnings.push({
-        file: settingsPath,
-        error: error.message,
-        skipped: true
-      });
-    }
-  }
-
-  // Try reading .claude/settings.local.json for MCP servers
-  try {
-    const localSettings = await readJSON(localSettingsPath);
-
-    if (localSettings && localSettings.mcpServers) {
-      // Type check before Object.entries()
-      if (typeof localSettings.mcpServers === 'object' && !Array.isArray(localSettings.mcpServers)) {
-        mcp.push(...Object.entries(localSettings.mcpServers).map(([name, serverConfig]) => ({
-          name,
-          ...serverConfig,
-          source: 'settings.local.json'
-        })));
-      } else {
-        // Unexpected type
-        const actualType = Array.isArray(localSettings.mcpServers) ? 'array' : typeof localSettings.mcpServers;
-        console.warn(`Unexpected mcpServers format in ${localSettingsPath}: ${actualType}`);
-        warnings.push({
-          file: localSettingsPath,
-          error: `mcpServers is ${actualType}, expected object`,
-          skipped: true
-        });
-      }
-    }
-  } catch (error) {
-    if (error.code !== 'ENOENT') {
-      // Log non-ENOENT errors (malformed JSON, etc.)
-      console.warn(`Failed to parse ${localSettingsPath}: ${error.message}`);
-      warnings.push({
-        file: localSettingsPath,
         error: error.message,
         skipped: true
       });

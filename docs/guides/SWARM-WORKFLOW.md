@@ -190,7 +190,7 @@ Main agent immediately begins workflow with specified ticket.
 
 ### Phase 3: Implementation
 
-**Objective:** Execute all tasks with proper testing and commits
+**Objective:** Execute all tasks with validation and commits
 
 **Main Agent Coordinates Based on Orchestrator Recommendations:**
 
@@ -209,41 +209,39 @@ When tasks have dependencies or modify same files:
    - Focus on single task only
    - Write implementation code
    - Create or update tests for this specific task
-   - **Developer tests immediately** (do NOT wait for separate test phase)
+   - **Developer validates changes manually** (browser, CLI, visual inspection)
+   - Run targeted tests if making risky changes (optional)
 
 3. **Developer reports completion**
-   - "TASK-3.1.1 complete: Created copy-service.js with base structure. All tests passing."
-   - Include summary of changes and test results
+   - "TASK-3.1.1 complete: Created copy-service.js with base structure. Changes validated manually."
+   - Include summary of changes and validation performed
 
 4. **Main agent updates tracking document and TodoWrite**
    - Mark task as completed with timestamp
    - Document key decisions made
    - Note any issues encountered
 
-5. **Main agent invokes test-automation-engineer**
-   - Run full test suite (backend + frontend)
-   - Verify no regressions introduced
-   - **HARD GATE:** If tests fail, return to developer to fix (loop until pass)
-
-6. **Tests pass → Main agent invokes git-workflow-specialist**
+5. **Main agent invokes git-workflow-specialist**
    - Commit THIS TASK only with descriptive message
    - Format: `feat: create backend service structure (TASK-3.1.1)`
    - Push commit to remote
 
-7. **Repeat for next task** (steps 1-6)
+6. **Repeat for next task** (steps 1-5)
 
 **Example Sequential Flow:**
 ```
 00:00 - Start TASK-3.1.1 (backend-architect)
-00:25 - TASK-3.1.1 complete, tests pass
+00:25 - TASK-3.1.1 complete, validated manually
 00:27 - Commit "feat: create backend service structure (TASK-3.1.1)"
 00:28 - Start TASK-3.1.2 (backend-architect)
-00:48 - TASK-3.1.2 complete, tests pass
+00:48 - TASK-3.1.2 complete, validated manually
 00:50 - Commit "feat: implement path validation (TASK-3.1.2)"
 00:51 - Start TASK-3.1.3 (backend-architect)
-01:16 - TASK-3.1.3 complete, tests pass
+01:16 - TASK-3.1.3 complete, validated manually
 01:18 - Commit "feat: add conflict detection (TASK-3.1.3)"
 ```
+
+**Note:** Comprehensive testing is deferred until Phase 4 (Code Review & Test) to avoid the bottleneck of running full test suite (1,300+ tests, 5-7 minutes) after every single task.
 
 #### Parallel Execution (When Safe)
 
@@ -261,18 +259,14 @@ When orchestrator recommends AND main agent agrees (independent files/concerns):
 2. **Each agent works independently**
    - No file conflicts (different files)
    - No logical dependencies
-   - Each agent tests their own changes
+   - Each agent validates their changes manually
 
 3. **Main agent monitors completion**
    - Wait for ALL parallel tasks to finish
    - Aggregate results from all agents
-   - Verify all tests pass
+   - Confirm all tasks validated successfully
 
-4. **Main agent invokes test-automation-engineer**
-   - Run full test suite with ALL changes
-   - **HARD GATE:** If any tests fail, return to appropriate developer
-
-5. **All tests pass → Main agent invokes git-workflow-specialist**
+4. **Main agent invokes git-workflow-specialist**
    - **Batch commit for parallel work:** `feat: implement conflict resolver and path generator (TASK-3.1.4, TASK-3.1.5)`
    - Push commit to remote
 
@@ -280,8 +274,7 @@ When orchestrator recommends AND main agent agrees (independent files/concerns):
 ```
 00:00 - Start TASK-3.1.4 (backend-architect-1) || TASK-3.1.5 (backend-architect-2)
 00:18 - Both tasks complete (longest task determines duration)
-00:20 - Run full test suite (all tests pass)
-00:22 - Batch commit "feat: implement conflict resolver and path generator (TASK-3.1.4, TASK-3.1.5)"
+00:20 - Batch commit "feat: implement conflict resolver and path generator (TASK-3.1.4, TASK-3.1.5)"
 ```
 
 **Time Savings:**
@@ -301,26 +294,106 @@ After each milestone (task or parallel batch):
 
 ---
 
-### Phase 4: Commit Code Changes
+### Phase 4: Code Review & Test
 
-**Objective:** Persist all implementation work to git with proper commit structure
+**Objective:** Validate all implementation work with comprehensive testing before creating PR
 
-This phase is integrated into Phase 3 (commits happen after each task/batch completion), but represents a distinct workflow step that git-workflow-specialist owns.
+**When:** After all tasks for a story are complete and committed
 
-**Git Workflow Specialist Responsibilities:**
+**Main Agent Actions:**
 
-1. **Verify working directory is clean** before commit
-2. **Stage appropriate files** (only files related to current task)
-3. **Create commit with proper format**
-   - Conventional commits format: `type: description (TASK-ID)`
-   - Include ticket reference in every commit message
-4. **Push to remote** immediately after commit
-5. **Confirm push succeeded** before returning control
+#### Step 1: Targeted Testing
 
-**Main Agent Updates:**
-- Document commit hash in session tracking document
-- Update git history section with commit message
-- Verify ticket ID is properly referenced
+Run tests based on files changed during implementation:
+
+1. **Main agent analyzes changed files**
+   - Use `git diff origin/phase-3...HEAD --name-only` to see all changes
+   - Determine which test suite(s) to run
+
+2. **Main agent invokes test-automation-engineer** with targeted scope:
+   - **Frontend changes only** (.vue, .js in src/):
+     ```bash
+     npm run test:frontend
+     ```
+   - **Backend changes only** (src/backend/):
+     ```bash
+     npm run test:backend
+     ```
+   - **Config/mixed changes** (.claude/, settings, both frontend & backend):
+     ```bash
+     npm test  # Full suite
+     ```
+
+3. **Targeted tests run** (2-3 minutes instead of 5-7 minutes)
+   - If failures occur: Return to developer, fix issues, re-run targeted tests only
+   - Loop until targeted tests pass
+
+#### Step 2: Full Test Suite Validation
+
+Once targeted tests pass, validate entire system:
+
+1. **Main agent invokes test-automation-engineer** to run comprehensive suite
+   ```bash
+   npm test  # All 1,300+ tests
+   ```
+
+2. **All tests must pass** before proceeding
+   - **HARD GATE:** Cannot create PR with test failures
+   - If failures occur: Fix and re-run full suite
+   - **Exception:** Accept documented flaky tests (see Step 3)
+
+3. **Time investment:** One-time 5-7 minute test run per story
+   - Much better than 15-20 runs × 7 min = 105-140 minutes (old approach)
+   - **Savings: ~100-130 minutes (1.6-2.2 hours) per story**
+
+#### Step 3: Handle Known Flaky Tests
+
+Some browser-specific tests may fail intermittently:
+
+1. **Document known flaky tests** in session tracking
+   - Test name, failure reason, platform-specific issues
+   - Example: "Playwright screenshot tests occasionally fail on Windows WSL2"
+
+2. **Don't block on documented flaky tests**
+   - If test is in known flaky list, proceed with PR
+   - Note flaky tests in PR description
+   - User will review test results before merge
+
+3. **Maintain flaky test list** in session tracking document
+   - Helps future sessions identify acceptable failures
+   - Prevents wasted time re-investigating same issues
+
+**Example Targeted Testing Flow:**
+```
+Phase 3 Complete: All 5 tasks committed (TASK-3.1.1 through TASK-3.1.5)
+↓
+Check files changed: All in src/backend/services/
+↓
+Run targeted: npm run test:backend (2 min)
+  Result: ✅ 276/276 backend tests pass
+↓
+Run full suite: npm test (7 min)
+  Result: ✅ 1,300/1,300 tests pass
+↓
+Proceed to Phase 5 (Documentation)
+```
+
+**Automatic Testing Script Example:**
+```bash
+# Determine test scope from git diff
+CHANGED_FILES=$(git diff origin/phase-3...HEAD --name-only)
+
+if echo "$CHANGED_FILES" | grep -q "^src/.*\\.vue$\|^src/.*\\.js$" && ! echo "$CHANGED_FILES" | grep -q "^src/backend/"; then
+  echo "Running frontend tests only..."
+  npm run test:frontend
+elif echo "$CHANGED_FILES" | grep -q "^src/backend/"; then
+  echo "Running backend tests only..."
+  npm run test:backend
+else
+  echo "Running full test suite..."
+  npm test
+fi
+```
 
 ---
 
@@ -375,8 +448,9 @@ The `docs/sessions/tracking/SESSION-*.md` file is NOT maintained by documentatio
    - Create comprehensive PR body with:
      - Summary of changes
      - List of completed tasks
-     - Testing performed
+     - Testing performed (include test results from Phase 4)
      - Documentation updates
+     - Any known flaky tests (if applicable)
    - Use proper PR template format
    - Push PR to remote (GitHub/GitLab)
 
@@ -388,7 +462,7 @@ The `docs/sessions/tracking/SESSION-*.md` file is NOT maintained by documentatio
 3. **Invoke code-reviewer** for comprehensive analysis
    - Review code quality and standards compliance
    - Check for security vulnerabilities
-   - Verify test coverage is adequate
+   - Verify test coverage is adequate (tests already passed in Phase 4)
    - Ensure documentation is complete
    - Validate commit message conventions
    - Check for code duplication or tech debt
@@ -399,10 +473,10 @@ The `docs/sessions/tracking/SESSION-*.md` file is NOT maintained by documentatio
 
 5. **If changes requested:**
    - Main agent invokes appropriate developer agent(s)
-   - Developer fixes issues
-   - Main agent invokes test-automation-engineer
-   - Tests pass → Main agent invokes git-workflow-specialist (commit fixes)
-   - Repeat code review if needed
+   - Developer fixes issues and validates manually
+   - Main agent invokes git-workflow-specialist (commit fixes)
+   - Main agent invokes test-automation-engineer (run targeted tests for fixes)
+   - Tests pass → Repeat code review if needed
 
 6. **Code approved → Main agent invokes agile-ticket-manager**
    - Move ticket to `approved` status (sub-status of `review`)
@@ -447,13 +521,17 @@ PR #63 created: "feat(copy): Backend Copy Service Infrastructure (STORY-3.1)"
 URL: https://github.com/user/repo/pull/63
 
 Code review: ✅ Approved
-All tests: ✅ Passing (879/879)
+Targeted tests: ✅ Passing (276/276 backend tests)
+Full test suite: ✅ Passing (1,300/1,300 tests)
 Documentation: ✅ Updated
+
+Note: Full test suite will run automatically in CI/CD pipeline
 
 Ready for your final review. Please:
 1. Review the PR on GitHub
-2. Test functionality if desired
-3. Provide merge approval
+2. Verify CI/CD tests pass (automatic)
+3. Test functionality if desired
+4. Provide merge approval
 
 Reply with "approved" to merge, or provide feedback for changes.
 ```
@@ -532,42 +610,132 @@ Reply with "approved" to merge, or provide feedback for changes.
    - Commit message references all task IDs involved
    - Only valid when tasks truly executed simultaneously
 
-4. **Test Immediately After Each Task**
-   - Developers test their implementation before declaring complete
-   - Full test suite runs before each commit
-   - Tests are HARD GATE - code cannot progress with failures
+4. **Validate Changes During Development**
+   - Developers validate changes manually (browser, CLI, visual inspection)
+   - Defer comprehensive testing until Phase 4 (story completion)
+   - Running full test suite after every task creates massive bottleneck
 
-5. **Ticket Status Must Be Current**
+5. **Comprehensive Testing Before PR**
+   - Run targeted tests first (Phase 4, Step 1)
+   - Run full test suite once (Phase 4, Step 2)
+   - Tests are HARD GATE - cannot create PR with failures
+   - Exception: Accept documented flaky tests
+
+6. **Ticket Status Must Be Current**
    - Update status at ALL key transitions:
      - `todo` → `in-progress` (work starts)
      - `in-progress` → `review` (implementation complete, tests pass)
      - `review` → `done` (user approves, PR merged)
      - `review` → `in-progress` (user requests changes)
 
-6. **Git Operations Exclusively via git-workflow-specialist**
+7. **Git Operations Exclusively via git-workflow-specialist**
    - Developers NEVER create branches, commits, or PRs
    - All git commands go through git-workflow-specialist
    - Ensures consistency and proper conventions
 
-7. **User Approval is Mandatory Gate**
+8. **User Approval is Mandatory Gate**
    - Tickets cannot move to `done` without user review
    - Main agent MUST present PR to user and wait for approval
    - User has authority to request changes or approve
 
-8. **Session Tracking is Main Agent's Responsibility**
+9. **Session Tracking is Main Agent's Responsibility**
    - Main agent creates and maintains session tracking document
    - NOT delegated to documentation-engineer
    - Must be comprehensive enough for session resumption
 
-9. **Documentation Updates After Implementation**
-   - Documentation changes happen in Phase 5
-   - Always after implementation complete
-   - Committed separately from implementation code
+10. **Documentation Updates After Implementation**
+    - Documentation changes happen in Phase 5
+    - Always after implementation complete
+    - Committed separately from implementation code
 
-10. **TodoWrite Mirrors Session Tracking**
+11. **TodoWrite Mirrors Session Tracking**
     - TodoWrite provides real-time status visibility
     - Updated after each milestone completion
     - Kept in sync with session tracking document
+
+---
+
+## Testing Strategy Guidelines
+
+### When to Run Tests
+
+**During Development (Phase 3 - Per Task):**
+- ❌ DO NOT run full test suite after each task
+- ❌ DO NOT run targeted test suite after each task
+- ✅ DO validate changes manually (browser, CLI, visual inspection)
+- ✅ DO run targeted tests if making particularly risky changes (optional)
+
+**Before PR Creation (Phase 4 - Per Story):**
+- ✅ Run targeted test suite based on changed files (Step 1)
+- ✅ Run full test suite once as final validation (Step 2)
+- ✅ Accept documented flaky tests, don't block on them (Step 3)
+
+**Before PR Merge (Phase 7):**
+- ✅ Full test suite runs automatically in CI/CD pipeline
+- ✅ User reviews test results before approving merge
+- ✅ Distinguish between new failures and known flaky tests
+
+### Targeted Testing Commands
+
+Determine which tests to run based on files changed:
+
+```bash
+# Frontend changes only (.vue, .js in src/ excluding backend)
+npm run test:frontend
+
+# Backend changes only (src/backend/)
+npm run test:backend
+
+# Mixed or config changes
+npm test  # Full suite
+```
+
+**Automatic Detection Script:**
+```bash
+# Use git diff to determine test scope
+CHANGED_FILES=$(git diff origin/phase-3...HEAD --name-only)
+
+if echo "$CHANGED_FILES" | grep -q "^src/.*\\.vue$\|^src/.*\\.js$" && ! echo "$CHANGED_FILES" | grep -q "^src/backend/"; then
+  echo "Running frontend tests only..."
+  npm run test:frontend
+elif echo "$CHANGED_FILES" | grep -q "^src/backend/"; then
+  echo "Running backend tests only..."
+  npm run test:backend
+else
+  echo "Running full test suite..."
+  npm test
+fi
+```
+
+### Time Savings Analysis
+
+**Old Approach (Test After Every Task):**
+- 5 tasks × 7 min (full suite) = 35 minutes of testing time
+- Plus 15 additional test runs for fixes/iterations = 105 minutes total
+- **Total: 2-2.5 hours of testing per story**
+
+**New Approach (Test Once at Story Completion):**
+- 1 targeted run (2-3 min) + 1 full run (7 min) = 10 minutes total
+- Plus occasional re-runs for fixes = ~15 minutes total
+- **Total: 10-15 minutes of testing per story**
+
+**Productivity Gain:**
+- **Time saved: 90-135 minutes (1.5-2.25 hours) per story**
+- **Efficiency improvement: 85-90% reduction in test time**
+- **Allows 3-4× faster iteration during development**
+
+### Evidence from Real Sessions
+
+**Workflow Analysis Session 4c65af2e (November 8, 2025):**
+- First half: Ran full test suite after every task → 61% of session time spent waiting for tests
+- Second half: Switched to "Rapid Development Mode" (defer testing) → Productivity increased 3-4×
+- **Conclusion:** Testing after every task creates massive bottleneck that slows development
+
+**Recommended Strategy:**
+- Trust manual validation during development (Phase 3)
+- Defer comprehensive testing until story completion (Phase 4)
+- Run targeted tests first, then full suite once
+- Accept known flaky tests to avoid analysis paralysis
 
 ---
 
@@ -583,10 +751,12 @@ SWARM workflow builds on top of feature branch workflow:
 
 ### Relationship to Testing Strategy
 
-Testing is integrated throughout SWARM:
-- Developers test immediately after implementation (Phase 3)
-- Full test suite runs before each commit (Phase 3)
-- Test-automation-engineer provides quality gate (Phase 3)
+Testing is strategically deferred to avoid bottlenecks:
+- Developers validate manually during implementation (Phase 3)
+- Targeted testing runs once after story complete (Phase 4, Step 1)
+- Full test suite runs once before PR creation (Phase 4, Step 2)
+- Test-automation-engineer provides quality gate before PR (Phase 4)
+- CI/CD runs full suite automatically before merge (Phase 7)
 - See `docs/guides/TESTING-GUIDE.md` for test conventions
 
 ### Relationship to Ticket Manager
@@ -624,23 +794,36 @@ Agile-ticket-manager acts as API for ticket operations:
 - Both operations query agile-ticket-manager independently
 - Result: Immediate responses, no waiting
 
+**Session 4c65af2e (STORY-3.6 - November 8, 2025):**
+
+★ **Insight:** Testing after every task is a massive bottleneck
+- First half: Ran full suite after every task → 61% of session time waiting for tests
+- Second half: Deferred testing to story completion → Productivity increased 3-4×
+- Result: Changed workflow to validate manually during development, test comprehensively at end
+- Key: Full test suite (1,300+ tests, 5-7 min) is too expensive to run 15-20 times per story
+
 **General Patterns:**
 
 ✅ **DO:**
 - Break work into small tasks (30-60 min max)
-- Test immediately after each task implementation
+- Validate changes manually during development (browser, CLI)
+- Defer comprehensive testing until story completion (Phase 4)
+- Run targeted tests first, then full suite once before PR
 - Commit after every task completion (sequential) or batch (parallel)
 - Update ticket status at every transition
 - Document decisions in session tracking as they happen
 - Use parallel execution when safe and beneficial
+- Accept documented flaky tests to avoid blocking progress
 
 ❌ **DON'T:**
+- Run full test suite after every task (massive time sink)
 - Bundle multiple sequential tasks into one commit
-- Wait until end to run tests (test continuously)
+- Skip comprehensive testing before creating PR
 - Skip user approval gate before merging
 - Let documentation-engineer maintain session tracking
 - Parallelize when file conflicts or dependencies exist
 - Create massive tasks (>1 hour is too large)
+- Block on known flaky tests (document and proceed)
 
 ---
 
@@ -659,27 +842,39 @@ Agile-ticket-manager acts as API for ticket operations:
 
 **Main Agent Pattern:**
 ```
+PHASE 1-2: Session Init & Git Setup
 1. Invoke orchestrator (create plan)
 2. Invoke ticket-manager (move to in-progress)
 3. Present plan to user (get approval)
 4. Invoke git-specialist (create branch)
 5. Create session tracking doc
 6. Create TodoWrite list
-7. For each task:
-   - Invoke developer (implement)
-   - Invoke test-engineer (verify)
-   - Invoke git-specialist (commit)
-   - Update tracking & TodoWrite
-8. Invoke documentation-engineer (if needed)
-9. Invoke git-specialist (commit docs)
-10. Invoke git-specialist (create PR)
-11. Invoke ticket-manager (move to review)
-12. Invoke code-reviewer (analyze)
-13. Present to user (wait for approval)
-14. Move tracking doc to .deleted/
-15. Invoke git-specialist (merge PR)
-16. Invoke ticket-manager (move to done)
-17. Present final summary
+
+PHASE 3: Implementation (for each task)
+7. Invoke developer (implement + validate manually)
+8. Invoke git-specialist (commit)
+9. Update tracking & TodoWrite
+
+PHASE 4: Code Review & Test (once after all tasks)
+10. Invoke test-engineer (run targeted tests)
+11. Invoke test-engineer (run full test suite)
+12. If failures: Return to developer, fix, re-run targeted tests, then full suite
+
+PHASE 5: Documentation
+13. Invoke documentation-engineer (if needed)
+14. Invoke git-specialist (commit docs)
+
+PHASE 6: PR Creation
+15. Invoke git-specialist (create PR)
+16. Invoke ticket-manager (move to review)
+17. Invoke code-reviewer (analyze)
+
+PHASE 7: User Approval & Merge
+18. Present to user (wait for approval)
+19. Move tracking doc to .deleted/
+20. Invoke git-specialist (merge PR)
+21. Invoke ticket-manager (move to done)
+22. Present final summary
 ```
 
 ---
@@ -705,15 +900,28 @@ Agile-ticket-manager acts as API for ticket operations:
 3. Read session tracking document to resume
 4. Continue from last documented state
 
-### Tests Failing After Task Completion
+### Tests Failing in Phase 4
 
-**Problem:** Developer reports task complete but test-automation-engineer finds failures
+**Problem:** Targeted or full test suite fails after story implementation complete
 **Solution:**
-1. Do NOT commit - tests are HARD GATE
-2. Return task to developer with specific test failures
-3. Developer fixes issues and re-tests
-4. Loop until all tests pass
-5. Only then proceed to commit
+1. Identify which tests are failing
+2. Return to Phase 3 - invoke developer to fix issues
+3. Developer fixes and validates manually
+4. Commit fix with descriptive message
+5. Re-run targeted tests for the fix
+6. If targeted tests pass, re-run full suite
+7. Loop until all tests pass (or document as known flaky)
+8. Only then proceed to create PR
+
+### Known Flaky Tests
+
+**Problem:** Same tests fail intermittently on specific platforms
+**Solution:**
+1. Document in session tracking: test name, platform, failure pattern
+2. If test is known flaky, proceed with PR
+3. Note flaky tests in PR description
+4. User reviews and decides if acceptable
+5. Don't waste hours debugging known flaky tests
 
 ### User Unavailable for Approval
 
@@ -736,6 +944,7 @@ Agile-ticket-manager acts as API for ticket operations:
 
 ---
 
-**Last Updated:** November 3, 2025
-**Version:** 1.0
+**Last Updated:** November 8, 2025
+**Version:** 1.1
 **Status:** Official Workflow Standard
+**Key Changes in v1.1:** Implemented targeted testing strategy (defer comprehensive testing to Phase 4, avoid per-task test bottleneck)

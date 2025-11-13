@@ -28,7 +28,10 @@ export const useProjectsStore = defineStore('projects', () => {
       projects.value = data.projects || []
     } catch (err) {
       error.value = err.message
-      console.error('Error loading projects:', err)
+      // Only log unexpected errors to console
+      if (!err.isExpected) {
+        console.error('Error loading projects:', err)
+      }
     } finally {
       isLoading.value = false
     }
@@ -41,7 +44,10 @@ export const useProjectsStore = defineStore('projects', () => {
       await loadProjects()
     } catch (err) {
       error.value = err.message
-      console.error('Error refreshing projects:', err)
+      // Only log unexpected errors to console
+      if (!err.isExpected) {
+        console.error('Error refreshing projects:', err)
+      }
     }
   }
 
