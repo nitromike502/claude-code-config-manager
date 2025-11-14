@@ -6,9 +6,11 @@
     :closeOnEscape="true"
     :dismissableMask="true"
     :draggable="false"
+    appendTo="body"
     class="copy-modal"
     :pt="{
-      root: { style: `width: ${modalWidth}; max-width: ${modalMaxWidth}` }
+      root: { style: `width: ${modalWidth}; max-width: ${modalMaxWidth}` },
+      mask: { style: 'background-color: rgba(0, 0, 0, 0.4)' }
     }"
     @hide="handleDialogHide"
   >
@@ -505,18 +507,6 @@ const handleButtonCopy = async (destination) => {
 
 .card-button {
   flex-shrink: 0;
-}
-
-/* Override PrimeVue Button to display icon and label horizontally */
-:deep(.card-button[data-pc-section="root"]) {
-  flex-direction: row !important;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-}
-
-:deep(.card-button .p-button-icon) {
-  margin-bottom: 0 !important;
-  font-size: 0.875rem;
 }
 
 /* Custom scrollbar for destinations container */
