@@ -3,9 +3,13 @@
     v-model:visible="isVisible"
     modal
     :closable="true"
-    :style="{ width: '50vw' }"
+    :closeOnEscape="true"
+    :dismissableMask="true"
     :draggable="false"
     class="copy-modal"
+    :pt="{
+      root: { style: `width: ${modalWidth}; max-width: ${modalMaxWidth}` }
+    }"
     @hide="handleDialogHide"
   >
     <template #header>
@@ -15,82 +19,93 @@
       </div>
     </template>
 
-    <!-- Source Configuration Section -->
-    <div class="source-section">
-      <h3 class="section-title">Source Configuration</h3>
-      <div class="source-info">
-        <div class="info-row">
-          <span class="info-label">Filename:</span>
-          <span class="info-value">{{ sourceConfig.name || sourceConfig.event }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Type:</span>
-          <span class="info-value config-type" :class="`type-${sourceConfig.type}`">
-            <i :class="getTypeIcon(sourceConfig.type)"></i>
-            {{ formatType(sourceConfig.type) }}
-          </span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Current Location:</span>
-          <span class="info-value">{{ sourceConfig.path || 'User Global' }}</span>
-        </div>
-      </div>
-    </div>
+    <!-- 2-Column Layout Container -->
+    <div class="modal-body">
+      <!-- Left Column: Source Configuration -->
+      <div class="source-column">
+        <h3 class="section-title">Source</h3>
 
-    <!-- Divider -->
-    <Divider />
-
-    <!-- Destination Section -->
-    <div class="destination-section">
-      <h3 class="section-title">Select Destination</h3>
-
-      <!-- User Global Card -->
-      <div
-        class="destination-card"
-        :class="{ 'selected': selectedDestination?.id === 'user-global' }"
-        tabindex="0"
-        role="button"
-        aria-label="Copy to User Global"
-        @click="selectDestination({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
-        @keydown="handleKeyDown($event, { id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
-      >
-        <div class="card-header">
-          <i class="pi pi-user card-icon"></i>
-          <h4 class="card-name">User Global</h4>
-        </div>
-        <div class="card-path">~/.claude/</div>
-        <Button
-          label="Copy Here"
-          icon="pi pi-copy"
-          class="card-button"
-          @click.stop="handleButtonCopy({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
-        />
-      </div>
-
-      <!-- Project Cards Container -->
-      <div class="projects-container">
-        <div
-          v-for="project in mockProjects"
-          :key="project.id"
-          class="destination-card"
-          :class="{ 'selected': selectedDestination?.id === project.id }"
-          tabindex="0"
-          role="button"
-          :aria-label="`Copy to ${project.name}`"
-          @click="selectDestination(project)"
-          @keydown="handleKeyDown($event, project)"
-        >
-          <div class="card-header">
-            <i :class="project.icon + ' card-icon'"></i>
-            <h4 class="card-name">{{ project.name }}</h4>
+        <!-- Type -->
+        <div class="source-field">
+          <div class="field-row">
+            <span class="field-label">Type</span>
+            <span class="config-type" :class="`type-${sourceConfig.type}`">
+              <i :class="getTypeIcon(sourceConfig.type)"></i>
+              {{ formatType(sourceConfig.type) }}
+            </span>
           </div>
-          <div class="card-path">{{ project.path }}</div>
-          <Button
-            label="Copy Here"
-            icon="pi pi-copy"
-            class="card-button"
-            @click.stop="handleButtonCopy(project)"
-          />
+        </div>
+
+        <!-- Name -->
+        <div class="source-field">
+          <div class="field-value">{{ sourceConfig.name || sourceConfig.event }}</div>
+          <div class="field-sublabel">Name</div>
+        </div>
+
+        <!-- Project -->
+        <div class="source-field">
+          <div class="field-value">{{ sourceConfig.projectId || 'User Global' }}</div>
+          <div class="field-sublabel">Project</div>
+        </div>
+      </div>
+
+      <!-- Right Column: Destination Selection -->
+      <div class="destination-column">
+        <h3 class="section-title">Target</h3>
+        <div class="destinations-container">
+          <!-- User Global Card -->
+          <div
+            class="destination-card"
+            :class="{ 'selected': selectedDestination?.id === 'user-global' }"
+            tabindex="0"
+            role="button"
+            aria-label="Copy to User Global"
+            @click="selectDestination({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
+            @keydown="handleKeyDown($event, { id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
+          >
+            <div class="card-header">
+              <div class="card-title">
+                <i class="pi pi-user card-icon"></i>
+                <h4 class="card-name">User Global</h4>
+              </div>
+              <Button
+                label="Copy Here"
+                icon="pi pi-copy"
+                iconPos="left"
+                class="card-button"
+                @click.stop="handleButtonCopy({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
+              />
+            </div>
+            <div class="card-path">~/.claude/</div>
+          </div>
+
+          <!-- Project Cards -->
+          <div
+            v-for="project in mockProjects"
+            :key="project.id"
+            class="destination-card"
+            :class="{ 'selected': selectedDestination?.id === project.id }"
+            tabindex="0"
+            role="button"
+            :aria-label="`Copy to ${project.name}`"
+            @click="selectDestination(project)"
+            @keydown="handleKeyDown($event, project)"
+          >
+            <div class="card-header">
+              <div class="card-title">
+                <i :class="project.icon + ' card-icon'"></i>
+                <h4 class="card-name">{{ project.name }}</h4>
+              </div>
+              <Button
+                label="Copy Here"
+                icon="pi pi-copy"
+                iconPos="left"
+                class="card-button"
+                @click.stop="handleButtonCopy(project)"
+              />
+            </div>
+            <div class="card-path">{{ project.path }}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -98,10 +113,9 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
-import Divider from 'primevue/divider';
 import { useProjectsStore } from '@/stores/projects';
 import { useCopyStore } from '@/stores/copy-store';
 
@@ -129,6 +143,34 @@ const copyStore = useCopyStore();
 
 // Track selected destination
 const selectedDestination = ref(null);
+
+// Responsive modal width
+const windowWidth = ref(window.innerWidth);
+const updateWindowWidth = () => {
+  windowWidth.value = window.innerWidth;
+};
+
+onMounted(() => {
+  window.addEventListener('resize', updateWindowWidth);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateWindowWidth);
+});
+
+const modalWidth = computed(() => {
+  if (windowWidth.value <= 1024) {
+    return '95vw';
+  }
+  return '70vw';
+});
+
+const modalMaxWidth = computed(() => {
+  if (windowWidth.value <= 1024) {
+    return 'none';
+  }
+  return '1200px';
+});
 
 // Reset selection and load projects when modal opens
 watch(() => props.visible, async (newVal) => {
@@ -280,9 +322,29 @@ const handleButtonCopy = async (destination) => {
   font-size: 1.5rem;
 }
 
-/* Source Section */
-.source-section {
-  margin-bottom: 1rem;
+/* 2-Column Layout */
+.modal-body {
+  display: flex;
+  gap: 1.5rem;
+  min-height: 400px;
+  max-height: 600px;
+  width: 100%;
+}
+
+/* Left Column - Source */
+.source-column {
+  flex: 0 0 40%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Allows content to wrap/truncate if needed */
+}
+
+/* Right Column - Destination */
+.destination-column {
+  flex: 1 1 60%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Allows flex item to shrink below content size */
 }
 
 .section-title {
@@ -294,33 +356,43 @@ const handleButtonCopy = async (destination) => {
   letter-spacing: 0.5px;
 }
 
-.source-info {
-  background: var(--bg-tertiary);
-  padding: 1rem;
-  border-radius: 6px;
-  border: 1px solid var(--border-primary);
+/* Source Fields */
+.source-field {
+  margin-bottom: 1.5rem;
 }
 
-.info-row {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.info-row:last-child {
+.source-field:last-child {
   margin-bottom: 0;
 }
 
-.info-label {
-  font-weight: 600;
-  color: var(--text-primary);
-  min-width: 140px;
+/* Type field - 50/50 layout */
+.field-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.info-value {
-  color: var(--text-secondary);
-  word-break: break-all;
+.field-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+/* Name and Project fields - value on top, label below */
+.field-value {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-emphasis);
+  margin-bottom: 0.25rem;
+  word-break: break-word;
+}
+
+.field-sublabel {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 .config-type {
@@ -352,9 +424,14 @@ const handleButtonCopy = async (destination) => {
   color: var(--color-mcp);
 }
 
-/* Destination Section */
-.destination-section {
-  margin-top: 1rem;
+/* Destinations Container (Scrollable) */
+.destinations-container {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-right: 0.5rem;
 }
 
 /* Destination Card */
@@ -365,11 +442,7 @@ const handleButtonCopy = async (destination) => {
   cursor: pointer;
   transition: all 0.2s ease;
   background: var(--bg-secondary);
-  margin-bottom: 0.75rem;
-}
-
-.destination-card:last-child {
-  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .destination-card:hover {
@@ -394,13 +467,23 @@ const handleButtonCopy = async (destination) => {
 .card-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: space-between;
+  gap: 1rem;
   margin-bottom: 0.5rem;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0; /* Allow text to truncate if needed */
 }
 
 .card-icon {
   font-size: 1.5rem;
   color: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .card-name {
@@ -408,6 +491,9 @@ const handleButtonCopy = async (destination) => {
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-emphasis);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card-path {
@@ -418,64 +504,81 @@ const handleButtonCopy = async (destination) => {
 }
 
 .card-button {
-  width: 100%;
+  flex-shrink: 0;
 }
 
-/* Projects Container (Scrollable) */
-.projects-container {
-  max-height: 300px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding-right: 0.5rem;
+/* Override PrimeVue Button to display icon and label horizontally */
+:deep(.card-button[data-pc-section="root"]) {
+  flex-direction: row !important;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
 }
 
-/* Custom scrollbar for projects container */
-.projects-container::-webkit-scrollbar {
+:deep(.card-button .p-button-icon) {
+  margin-bottom: 0 !important;
+  font-size: 0.875rem;
+}
+
+/* Custom scrollbar for destinations container */
+.destinations-container::-webkit-scrollbar {
   width: 8px;
 }
 
-.projects-container::-webkit-scrollbar-track {
+.destinations-container::-webkit-scrollbar-track {
   background: var(--bg-tertiary);
   border-radius: 4px;
 }
 
-.projects-container::-webkit-scrollbar-thumb {
+.destinations-container::-webkit-scrollbar-thumb {
   background: var(--border-primary);
   border-radius: 4px;
 }
 
-.projects-container::-webkit-scrollbar-thumb:hover {
+.destinations-container::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary);
 }
 
-/* Divider spacing */
-:deep(.p-divider) {
-  margin: 1.5rem 0;
+/* Modal Overlay/Mask */
+:deep(.p-dialog-mask) {
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
-/* Responsive */
+/* Close Button Styling */
+:deep(.p-dialog-header-close) {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+:deep(.p-dialog-header-close:hover) {
+  background: var(--bg-hover);
+  color: var(--text-emphasis);
+}
+
+:deep(.p-dialog-header-close:focus) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Modal Width - Responsive */
+.copy-modal :deep(.p-dialog) {
+  width: 70vw !important; /* Laptop - larger modal */
+  max-width: 1200px !important;
+}
+
+/* Tablet and smaller - full width */
 @media (max-width: 1024px) {
-  :deep(.p-dialog) {
-    width: 70vw !important;
+  .copy-modal :deep(.p-dialog) {
+    width: 95vw !important;
+    max-width: none !important;
   }
 }
 
+/* Tablet - adjust layout */
 @media (max-width: 768px) {
-  :deep(.p-dialog) {
-    width: 90vw !important;
-  }
-
-  .info-row {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .info-label {
-    min-width: unset;
-  }
-
   .card-header {
     flex-direction: column;
     align-items: flex-start;
@@ -483,11 +586,8 @@ const handleButtonCopy = async (destination) => {
   }
 }
 
+/* Mobile - smaller text */
 @media (max-width: 480px) {
-  :deep(.p-dialog) {
-    width: 95vw !important;
-  }
-
   .modal-header {
     font-size: 1rem;
   }

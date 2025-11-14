@@ -473,10 +473,11 @@ export default {
 
     // Copy modal handlers
     const handleCopyClick = (configItem) => {
-      // Normalize configType to type for CopyModal compatibility
+      // Normalize configType to type and add projectId for CopyModal compatibility
       const normalizedConfig = {
         ...configItem,
-        type: configItem.configType || configItem.type
+        type: configItem.configType || configItem.type,
+        projectId: projectId.value
       };
       selectedConfig.value = normalizedConfig
       showCopyModal.value = true
