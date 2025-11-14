@@ -28,31 +28,28 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 
 ## Future Enhancement Ideas
 
-### Phase 3 - Subagent CRUD (Next Major Feature)
+### Phase 4 - Subagent CRUD (Next Major Feature)
 - [ ] Create, edit, and delete subagent definitions
 - [ ] YAML frontmatter validation
 - [ ] Live preview of subagent content
 - [ ] Template system for common subagent types
 
-### Phase 4 - Command Management
+### Phase 5 - Command Management
 - [ ] Create, edit, and delete slash commands
 - [ ] Command testing and validation
 - [ ] Nested directory support
 - [ ] Import/export command libraries
 
-### Phase 5 - Hooks Configuration
+### Phase 6 - Hooks Configuration
 - [ ] Visual hook editor
 - [ ] Hook testing and validation
 - [ ] Pre-built hook templates
 - [ ] Hook dependency management
 
-### Technical Verification Tasks
-- [ ] **Verify Claude Code Manager hook array handling**: Confirm that our backend parsers and frontend UI correctly handle `.claude/settings.json` hooks with multiple scripts per event as arrays (e.g., `"pre-commit": ["script1", "script2"]`). Claude Code supports this format, but our Manager app may only display/parse single-script hooks currently. Test with array-format hooks and update parsers/UI if needed before implementing Copy Configuration feature.
-
 ### Project Discovery Improvements
 - [ ] **Filter projects without `.claude` directory**: Modify project discovery to ignore any projects from the project listing if the directory does not contain a `.claude` directory. This prevents listing directories that aren't actually Claude Code projects, improving accuracy of the project list and reducing clutter.
 
-### Phase 6 - MCP Server Management
+### Phase 7 - MCP Server Management
 - [ ] Add, edit, and remove MCP servers
 - [ ] Server configuration validation
 - [ ] Connection testing
@@ -96,5 +93,6 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 
 These ideas were originally captured in this TODO and have since been completed:
 
+- ✅ **Copy Configuration (Phase 3)** - Copy agents, commands, hooks, and MCP servers between projects with conflict resolution (Completed 2025-11-13)
 - ✅ **Vite Migration (Phase 2)** - Modernize frontend architecture with Vite build system, Vue Router, and Pinia state management (Completed 2025-10-20)
 - ✅ **NPX Support** - Allow running Claude Code Manager via `npx claude-code-config-manager` without local installation (Completed 2025-10-17)
