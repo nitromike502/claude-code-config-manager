@@ -396,10 +396,17 @@ test.describe('02.005: Error Handling', () => {
   });
 
   test('02.005.002: shows error when project ID is not found', async ({ page }) => {
-    // Mock config endpoints to return 404 error
-    // Setup centralized mocks BEFORE navigation
-    await setupMocks(page);
-
+    // Mock config endpoints to return 404 error BEFORE setupMocks
+    await page.route('**/api/projects/nonexistent/agents', (route) => {
+      route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: false,
+          error: 'Project not found'
+        })
+      });
+    });
 
     await page.route('**/api/projects/nonexistent/commands', (route) => {
       route.fulfill({
@@ -434,23 +441,24 @@ test.describe('02.005: Error Handling', () => {
       });
     });
 
+    // Setup centralized mocks AFTER error routes
+    await setupMocks(page);
+
     // Navigate with non-existent project ID
     await page.goto('/project/nonexistent');
 
-
     // Wait for Vue app to mount
     await page.waitForSelector('.app-container');
- // Verify error state is displayed
+
+    // Verify error state is displayed
     const errorState = page.locator('.error-state');
     await expect(errorState).toBeVisible({ timeout: 10000 });
     await expect(errorState).toContainText('Project not found');
   });
 
   test('02.005.003: shows error when API returns HTTP error status', async ({ page }) => {
-    // Setup centralized mocks BEFORE navigation
-    await setupMocks(page);
-
     // Mock all config endpoints to return 500 error
+    // Do NOT call setupMocks() as it would override these error routes
     const errorRoutes = ['agents', 'commands', 'hooks', 'mcp'];
     for (const endpoint of errorRoutes) {
       await page.route(`**/api/projects/anyproject/${endpoint}`, (route) => {
@@ -478,10 +486,8 @@ test.describe('02.005: Error Handling', () => {
   });
 
   test('02.005.004: shows error when network request fails', async ({ page }) => {
-    // Setup centralized mocks BEFORE navigation
-    await setupMocks(page);
-
     // Mock all config endpoints to fail
+    // Do NOT call setupMocks() as it would override these error routes
     const errorRoutes = ['agents', 'commands', 'hooks', 'mcp'];
     for (const endpoint of errorRoutes) {
       await page.route(`**/api/projects/anyproject/${endpoint}`, (route) => {
@@ -504,6 +510,7 @@ test.describe('02.005: Error Handling', () => {
     const requestCounts = { agents: 0, commands: 0, hooks: 0, mcp: 0 };
 
     // Mock each config endpoint to fail once, then succeed
+    // Do NOT call setupMocks() as it would override these custom routes
     const mockEndpoint = (endpoint) => {
       page.route(`**/api/projects/retryproject/${endpoint}`, (route) => {
         requestCounts[endpoint]++;
@@ -538,10 +545,10 @@ test.describe('02.005: Error Handling', () => {
 
     await page.goto('/project/retryproject');
 
-
     // Wait for Vue app to mount
     await page.waitForSelector('.app-container');
- // Wait for error state
+
+    // Wait for error state
     const errorState = page.locator('.error-state');
     await expect(errorState).toBeVisible({ timeout: 10000 });
 

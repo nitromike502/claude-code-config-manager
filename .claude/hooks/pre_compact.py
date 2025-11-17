@@ -19,11 +19,11 @@ except ImportError:
 
 def get_project_root():
     """
-    Get project root from CLAUDE_PROJECT_ROOT environment variable.
+    Get project root from CLAUDE_PROJECT_DIR environment variable.
     Falls back to finding .claude directory if not set.
     """
     # First, try environment variable
-    env_root = os.getenv('CLAUDE_PROJECT_ROOT')
+    env_root = os.getenv('CLAUDE_PROJECT_DIR')
     if env_root:
         return Path(env_root)
 

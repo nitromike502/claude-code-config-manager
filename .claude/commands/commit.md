@@ -12,6 +12,8 @@ Automates the complete git commit workflow by delegating to the git-workflow-spe
 
 **User Instructions:** $ARGUMENTS
 
+**SWARM Integration:** This command implements Phase 4 (Commit Code Changes) of the SWARM workflow when used standalone. Within SWARM execution, git-workflow-specialist is invoked by the main agent after each task completion.
+
 ## Critical Workflow Requirements
 
 This command enforces the following mandatory workflow:
@@ -19,10 +21,12 @@ This command enforces the following mandatory workflow:
 1. **Feature Branch Creation FIRST** - Create a dedicated feature branch BEFORE any commits (NEVER commit directly to main)
 2. **Review All Changes** - Examine all uncommitted changes and untracked files
 3. **Logical Commit Grouping** - Group related changes into well-structured commits
-4. **Conventional Commits Format** - Use proper commit message formatting
+4. **Conventional Commits Format** - Use proper commit message formatting (see GIT-WORKFLOW.md)
 5. **Push to Feature Branch** - Push all commits to the feature branch
 6. **Create Pull Request** - Generate PR with appropriate title and description
 7. **Auto-Merge** - Merge PR automatically unless user explicitly requests review
+
+**See:** `docs/guides/GIT-WORKFLOW.md` for complete git workflow and commit conventions
 
 ## Execution
 
@@ -318,6 +322,26 @@ Result: Creates feature branch, commits, creates PR, but does NOT auto-merge
 - Trust the git-workflow-specialist to group commits appropriately
 - Review the summary to understand what was committed
 
+## SWARM Workflow Pattern
+
+**Within SWARM execution (`/swarm` command):**
+- Main agent invokes git-workflow-specialist after each task completion
+- Commits include ticket IDs (e.g., `feat: description (TASK-3.1.1)`)
+- Sequential tasks get individual commits
+- Parallel tasks get batch commits
+- See Phase 3 and Phase 4 in `docs/guides/SWARM-WORKFLOW.md`
+
+**Standalone usage (this command):**
+- Useful for quick commits outside SWARM workflow
+- Documentation updates
+- Configuration changes
+- Small fixes or adjustments
+
 ---
 
 **Ready to commit!** I'll delegate to git-workflow-specialist to handle your commit workflow with full feature branch enforcement.
+
+## Related Documentation
+
+- **Git Workflow:** `docs/guides/GIT-WORKFLOW.md` - Feature branch workflow and commit conventions
+- **SWARM Workflow:** `docs/guides/SWARM-WORKFLOW.md` - Complete SWARM workflow with git integration

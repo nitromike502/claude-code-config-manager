@@ -34,19 +34,24 @@
         </button>
       </div>
 
-      <!-- Warning Banner -->
-      <div v-else-if="warnings.length > 0" class="warning-banner">
-        <div class="warning-header">
-          <i class="pi pi-exclamation-circle"></i>
-          <span>{{ warnings.length }} Warning{{ warnings.length > 1 ? 's' : '' }}</span>
+      <!-- Content Area (warnings + config cards) -->
+      <div v-else>
+        <!-- Warning Banner -->
+        <div v-if="warnings.length > 0" class="warning-banner">
+          <div class="warning-header">
+            <i class="pi pi-exclamation-circle"></i>
+            <span>{{ warnings.length }} Warning{{ warnings.length > 1 ? 's' : '' }}</span>
+          </div>
+          <ul class="warning-list">
+            <li v-for="(warning, index) in warnings" :key="index">
+              <template v-if="typeof warning === 'string'">{{ warning }}</template>
+              <template v-else>{{ warning.message || warning }}</template>
+            </li>
+          </ul>
         </div>
-        <ul class="warning-list">
-          <li v-for="(warning, index) in warnings" :key="index">{{ warning }}</li>
-        </ul>
-      </div>
 
-      <!-- Config Cards Container -->
-      <div v-else class="config-cards-container">
+        <!-- Config Cards Container -->
+        <div class="config-cards-container">
         <!-- Agents Card -->
         <ConfigCard
           card-type="agents"
@@ -59,12 +64,14 @@
           :showing-all="showingAllAgents"
           :initial-display-count="initialDisplayCount"
           @toggle-show-all="showingAllAgents = !showingAllAgents"
+          @copy-clicked="handleCopyClick"
         >
           <template #default="{ items }">
             <ConfigItemList
               :items="items"
               item-type="agents"
               @item-selected="(item) => showDetail(item, 'agents', agents)"
+              @copy-clicked="handleCopyClick"
             />
           </template>
         </ConfigCard>
@@ -81,12 +88,14 @@
           :showing-all="showingAllCommands"
           :initial-display-count="initialDisplayCount"
           @toggle-show-all="showingAllCommands = !showingAllCommands"
+          @copy-clicked="handleCopyClick"
         >
           <template #default="{ items }">
             <ConfigItemList
               :items="items"
               item-type="commands"
               @item-selected="(item) => showDetail(item, 'commands', commands)"
+              @copy-clicked="handleCopyClick"
             />
           </template>
         </ConfigCard>
@@ -103,12 +112,14 @@
           :showing-all="showingAllHooks"
           :initial-display-count="initialDisplayCount"
           @toggle-show-all="showingAllHooks = !showingAllHooks"
+          @copy-clicked="handleCopyClick"
         >
           <template #default="{ items }">
             <ConfigItemList
               :items="items"
               item-type="hooks"
               @item-selected="(item) => showDetail(item, 'hooks', hooks)"
+              @copy-clicked="handleCopyClick"
             />
           </template>
         </ConfigCard>
@@ -125,15 +136,18 @@
           :showing-all="showingAllMcp"
           :initial-display-count="initialDisplayCount"
           @toggle-show-all="showingAllMcp = !showingAllMcp"
+          @copy-clicked="handleCopyClick"
         >
           <template #default="{ items }">
             <ConfigItemList
               :items="items"
               item-type="mcp"
               @item-selected="(item) => showDetail(item, 'mcp', mcpServers)"
+              @copy-clicked="handleCopyClick"
             />
           </template>
         </ConfigCard>
+        </div>
       </div>
     </div>
 
@@ -149,6 +163,17 @@
       :selected-index="currentIndex"
       @close="sidebarVisible = false"
       @navigate="onNavigate"
+      @copy-clicked="handleCopyClick"
+    />
+
+    <!-- Copy Modal -->
+    <CopyModal
+      v-if="selectedConfig"
+      v-model:visible="showCopyModal"
+      :sourceConfig="selectedConfig"
+      @copy-success="handleCopySuccess"
+      @copy-error="handleCopyError"
+      @copy-cancelled="handleCopyCancelled"
     />
   </div>
 </template>
@@ -156,18 +181,26 @@
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useToast } from 'primevue/usetoast'
 import * as api from '@/api/client'
 import ConfigCard from '@/components/cards/ConfigCard.vue'
 import ConfigItemList from '@/components/cards/ConfigItemList.vue'
 import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
 import ConfigDetailSidebar from '@/components/sidebars/ConfigDetailSidebar.vue'
+import CopyModal from '@/components/copy/CopyModal.vue'
+import { useCopyStore } from '@/stores/copy-store'
+import { useProjectsStore } from '@/stores/projects'
 
 export default {
   name: 'ProjectDetail',
-  components: { ConfigCard, ConfigItemList, BreadcrumbNavigation, ConfigDetailSidebar },
+  components: { ConfigCard, ConfigItemList, BreadcrumbNavigation, ConfigDetailSidebar, CopyModal },
   props: ['id'],
   setup(props) {
     const route = useRoute()
+    const toast = useToast()
+    const copyStore = useCopyStore()
+    const projectsStore = useProjectsStore()
+
     const projectId = computed(() => props.id || route.params.id)
     const projectName = ref('')
     const projectPath = ref('')
@@ -176,6 +209,10 @@ export default {
     const commands = ref([])
     const hooks = ref([])
     const mcpServers = ref([])
+
+    // Copy modal state
+    const showCopyModal = ref(false)
+    const selectedConfig = ref(null)
 
     const loading = ref(true)
     const loadingAgents = ref(false)
@@ -266,37 +303,60 @@ export default {
       projectName.value = projectPath.value.split('/').pop()
 
       try {
-        const results = await Promise.all([
+        // Use allSettled to allow individual config loads to fail without breaking the entire page
+        const results = await Promise.allSettled([
           loadAgents(),
           loadCommands(),
           loadHooks(),
           loadMCP()
         ])
 
-        // Collect warnings from all config loads
-        results.forEach(result => {
-          if (result?.warnings && result.warnings.length > 0) {
-            warnings.value.push(...result.warnings)
-          }
-        })
-      } catch (err) {
-        console.error('Error loading project data:', err)
-        error.value = true
+        // Check if ALL config loads failed
+        const allFailed = results.every(result => result.status === 'rejected')
 
-        // Parse error message
-        if (err.message.includes('timeout')) {
-          errorMessage.value = 'Request timed out. Please try again.'
-        } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-          errorMessage.value = 'Failed to connect to server. Please check your connection.'
-        } else if (err.message.includes('400')) {
-          errorMessage.value = 'Project not found'
-        } else if (err.message.includes('404')) {
-          errorMessage.value = 'Project not found'
-        } else if (err.message.includes('500')) {
-          errorMessage.value = 'Failed to connect to server'
+        if (allFailed) {
+          // If all config loads failed, show error state instead of warnings
+          error.value = true
+          const firstError = results[0].reason
+
+          // Determine error message based on error type
+          const errorMsg = firstError?.message || ''
+
+          if (errorMsg.includes('404') || errorMsg.includes('400') || errorMsg.toLowerCase().includes('not found') || errorMsg.toLowerCase().includes('bad request')) {
+            errorMessage.value = 'Project not found'
+          } else if (errorMsg.includes('500') || errorMsg.toLowerCase().includes('internal server error') ||
+                     errorMsg.toLowerCase().includes('failed to fetch') || errorMsg.toLowerCase().includes('network') ||
+                     firstError?.name === 'TypeError' || firstError?.name === 'NetworkError') {
+            errorMessage.value = 'Failed to connect to server'
+          } else {
+            errorMessage.value = errorMsg || 'Failed to load project configurations'
+          }
         } else {
-          errorMessage.value = err.message || 'An error occurred while loading the project'
+          // Process results and collect warnings (only if not all failed)
+          results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+              // Success - collect warnings if any
+              if (result.value?.warnings && result.value.warnings.length > 0) {
+                warnings.value.push(...result.value.warnings)
+              }
+            } else {
+              // Failed - log error but don't break the page
+              const configNames = ['agents', 'commands', 'hooks', 'MCP servers']
+              console.error(`Error loading ${configNames[index]}:`, result.reason)
+
+              // Add warning message for this config type
+              warnings.value.push({
+                type: configNames[index],
+                message: `Failed to load ${configNames[index]}: ${result.reason?.message || 'Unknown error'}`
+              })
+            }
+          })
         }
+      } catch (err) {
+        // This catch should rarely trigger since allSettled doesn't reject
+        console.error('Unexpected error loading project data:', err)
+        error.value = true
+        errorMessage.value = err.message || 'An unexpected error occurred while loading the project'
       } finally {
         loading.value = false
       }
@@ -314,7 +374,10 @@ export default {
         agents.value = data.agents || []
         return data
       } catch (err) {
-        console.error('Error loading agents:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading agents:', err)
+        }
         agents.value = []
         throw err
       } finally {
@@ -329,7 +392,10 @@ export default {
         commands.value = data.commands || []
         return data
       } catch (err) {
-        console.error('Error loading commands:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading commands:', err)
+        }
         commands.value = []
         throw err
       } finally {
@@ -344,7 +410,10 @@ export default {
         hooks.value = data.hooks || []
         return data
       } catch (err) {
-        console.error('Error loading hooks:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading hooks:', err)
+        }
         hooks.value = []
         throw err
       } finally {
@@ -359,7 +428,10 @@ export default {
         mcpServers.value = data.mcp || []
         return data
       } catch (err) {
-        console.error('Error loading MCP servers:', err)
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading MCP servers:', err)
+        }
         mcpServers.value = []
         throw err
       } finally {
@@ -397,6 +469,66 @@ export default {
       } else if (direction === 'next') {
         navigateNext()
       }
+    }
+
+    // Copy modal handlers
+    const handleCopyClick = (configItem) => {
+      // Normalize configType to type and add projectId for CopyModal compatibility
+      const normalizedConfig = {
+        ...configItem,
+        type: configItem.configType || configItem.type,
+        projectId: projectId.value
+      };
+      selectedConfig.value = normalizedConfig
+      showCopyModal.value = true
+    }
+
+    const handleCopySuccess = async (result) => {
+      showCopyModal.value = false
+
+      // Show toast
+      const filename = result.filename || result.source?.name || 'Configuration'
+      toast.add({
+        severity: 'success',
+        summary: 'Configuration Copied',
+        detail: `${filename} has been copied successfully`,
+        life: 5000
+      })
+
+      // Refresh data if copied to current project
+      const currentProjectId = route.params.id || props.id
+      if (result.destination?.id === currentProjectId) {
+        const configType = result.source?.type
+        if (configType === 'agent') {
+          await loadAgents()
+        } else if (configType === 'command') {
+          await loadCommands()
+        } else if (configType === 'hook') {
+          await loadHooks()
+        } else if (configType === 'mcp') {
+          await loadMCP()
+        }
+      }
+    }
+
+    const handleCopyError = (error) => {
+      showCopyModal.value = false
+      toast.add({
+        severity: 'error',
+        summary: 'Copy Failed',
+        detail: error.message || 'An error occurred during the copy operation',
+        life: 0  // Manual dismiss
+      })
+    }
+
+    const handleCopyCancelled = () => {
+      showCopyModal.value = false
+      toast.add({
+        severity: 'info',
+        summary: 'Copy operation cancelled',
+        detail: '',
+        life: 3000
+      })
     }
 
     // Watch for route changes
@@ -462,7 +594,13 @@ export default {
       showDetail,
       navigatePrev,
       navigateNext,
-      onNavigate
+      onNavigate,
+      showCopyModal,
+      selectedConfig,
+      handleCopyClick,
+      handleCopySuccess,
+      handleCopyError,
+      handleCopyCancelled
     }
   }
 }

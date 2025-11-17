@@ -1,8 +1,7 @@
 ---
 name: workflow-analyzer
 description: Use proactively for analyzing Claude Code session transcripts, development workflows, and subagent usage patterns to identify inefficiencies, optimization opportunities, and areas for improvement. Specialist for reviewing logs from .claude/logs/ directories.
-tools: Read, Glob, Grep, Bash, Write
-skills: transcript-condenser, session-analyzer
+tools: Read, Glob, Grep, Bash, Write, WebFetch, TodoWrite, WebSearch, BashOutput, KillShell, Edit, NotebookEdit, AskUserQuestion, Skill
 model: sonnet
 color: cyan
 ---

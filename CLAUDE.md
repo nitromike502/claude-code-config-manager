@@ -8,20 +8,29 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Deployment:** Local web server accessible at `http://localhost:5173`
 
-**Current Phase:** Phase 2.3 - ✅ COMPLETE
+**Current Release:** v2.1.0 - Released November 13, 2025
 
-**Phase 2.3 Focus:** Production readiness fixes including critical bug fixes, accessibility compliance, and documentation updates.
+**Latest Features:**
+- Copy configuration feature for agents, commands, hooks, and MCP servers
+- Smart conflict resolution with skip/overwrite/rename strategies
+- WCAG 2.1 AA accessibility compliance
+- Modern PrimeVue UI components
 
 ## Tech Stack
 
 - **Backend:** Node.js + Express (port 8420)
-- **Frontend:** Vite + Vue 3 + Vue Router + Pinia (SPA on port 5173 in dev)
+- **Frontend:** Vite + Vue 3 + Vue Router + Pinia + PrimeVue (SPA on port 5173 in dev)
 - **Data Source:** Live file system reads (no database)
 
 ## Project Structure
 
 ```
 manager/
+├── .claude/
+│   ├── agents/                       # Project subagents
+│   ├── commands/                     # Project slash commands
+│   ├── templates/                    # Workflow templates (session tracking, testing, etc.)
+│   └── settings.json                 # Project Claude Code settings
 ├── docs/
 │   ├── prd/                          # Phase Requirements Documents
 │   ├── guides/                       # Development guides (see Quick Reference below)
@@ -34,74 +43,58 @@ manager/
 │   ├── api/client.js                 # Centralized API client
 │   └── styles/                       # CSS variables & theming
 ├── tests/
-│   ├── backend/                      # Jest tests (276 tests)
-│   ├── frontend/, e2e/, responsive/  # Playwright tests (603 tests)
+│   ├── backend/                      # Jest tests (511 tests)
+│   ├── frontend/, e2e/, responsive/  # Playwright tests (644 tests)
 │   └── fixtures/                     # Mock data and test helpers
 └── CLAUDE.md                          # This file
 ```
 
+**Templates Location:** `.claude/templates/`
+- `session-tracking-template.md` - Template for SWARM workflow session tracking documents
+- `test-template.md` - Template for creating new test files
+- `test-creation-checklist.md` - Checklist for comprehensive test creation
+- `spec-review-checklist.md` - Checklist for reviewing official specifications
+- `development-strategies.md` - Guide for selecting development approaches
+
 **Note on Legacy Code:**
-- `/src/frontend/` (Phase 1 CDN-based code) has been removed
+- `/src/frontend/` (CDN-based code) has been removed
 - All active code now uses Vite + Vue 3 SPA architecture
 
-## Phase Summary
+## Current Features
 
-### Phase 1 MVP - ✅ COMPLETE
-**Core Functionality:**
-1. **Project Discovery** - Read from `~/.claude.json` to list all Claude Code projects
-2. **Subagent Viewing** - Display subagents from `.claude/agents/*.md`
-3. **Slash Command Viewing** - Display commands from `.claude/commands/**/*.md`
-4. **Hooks Viewing** - Display hooks from `.claude/settings.json` files
-5. **MCP Server Viewing** - Display MCP servers from `.mcp.json` and settings files
+### Configuration Viewing
+- **Project Discovery** - Automatically discovers all Claude Code projects from `~/.claude.json`
+- **Subagent Viewing** - Browse and view project and user-level subagents with full frontmatter specs
+- **Slash Command Viewing** - View all custom slash commands across projects
+- **Hooks Viewing** - Display configured hooks from settings files
+- **MCP Server Viewing** - View MCP server configurations
+- **Search & Filter** - Quickly find specific configurations
+- **Detail Sidebar** - View full content with markdown rendering
 
-**Key Constraints:** Read-only, manual refresh, dark mode, no authentication
+### Configuration Management
+- **Copy Configuration** - Copy agents, commands, hooks, and MCP servers between projects
+- **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
+- **Cross-Scope Copy** - Copy between user-level and project-level configurations
+- **Smart Merging** - Intelligent merge for hooks and MCP configurations
 
-### Phase 2 - Vite Migration - ✅ COMPLETE
-- Modern dev server with HMR (< 1s reload)
-- Vue Router for SPA navigation
-- Pinia state management
-- 100% Phase 1 feature parity maintained
-- **Testing:** 879 tests (100% pass rate)
+### User Experience
+- **SPA Navigation** - Client-side routing with no page reloads
+- **Dark/Light Mode** - Toggle between themes
+- **Responsive Design** - Works on desktop, tablet, and mobile
+- **WCAG 2.1 AA Accessibility** - Keyboard navigation, screen reader support
+- **Toast Notifications** - Success/error feedback
 
-**See:** `docs/guides/archives/PHASE1-SUCCESS-CRITERIA.md` and `docs/guides/archives/PHASE2-COMPLETION-SUMMARY.md` for complete details.
+## Future Enhancements
 
-### Phase 2.1 - Component Refactoring - ✅ COMPLETE
-**Completion Date:** October 26, 2025 (PR #45)
+**Upcoming Features:**
+- **Skills Support** - Copy and manage Claude Code skills between projects
+- **MCP Server Management** - Enable/disable MCP servers from UI
+- **Team Builder** - Create groups of agents, commands, and configurations to copy as a unit
+- **Subagent CRUD** - Create, edit, and delete subagent definitions
+- **Command Management** - Create, edit, and delete slash commands
+- **Hooks Configuration** - Visual editor for configuring hooks
 
-**Achievements:**
-- Created 6 reusable components (ConfigCard, ConfigItemList, ConfigDetailSidebar, LoadingState, EmptyState, BreadcrumbNavigation)
-- Reduced code duplication from 62% to <10% (83% reduction)
-- ProjectDetail.vue: -52.3% LOC (1,191 → 568 lines)
-- UserGlobal.vue: -61.1% LOC (984 → 383 lines)
-- All 4 stories completed (2.1-2.4)
-- 270/270 tests passing with full coverage
-
-**See:** `docs/prd/PRD-Phase2-Extension-Component-Refactoring.md` for complete details.
-
-### Phase 2.2 - Bug Fixes - ✅ COMPLETE
-**Completion Date:** October 27, 2025
-
-**Achievements:**
-- Fixed agent color/model/tools display in sidebars (BUG-027, BUG-028, BUG-029)
-- Fixed user configuration card persistence (BUG-035)
-- Resolved event handler signature mismatch (HIGH-011)
-- Fixed memory leak in Dashboard event listener (CRITICAL-005)
-- All bugs resolved with comprehensive test coverage
-
-### Phase 2.3 - Production Readiness - ✅ COMPLETE
-**Completion Date:** November 1, 2025
-
-**Achievements:**
-- Added MIT LICENSE file for legal compliance
-- Created favicon.svg for professional appearance
-- Updated Vite to 7.1.12 (resolved security vulnerability)
-- Added dist/ to NPM package for instant NPX startup
-- Achieved WCAG 2.1 AA accessibility compliance
-- Updated all documentation for test count consistency
-- **Testing:** 879 tests (276 backend + 603 frontend) with 100% pass rate
-
-### Future Phases
-**See:** `docs/guides/ROADMAP.md` for Phase 2.1-7+ planning (Component Refactoring, Subagent CRUD, Command Management, Hooks, MCP Servers, Advanced Features)
+**See:** `docs/guides/ROADMAP.md` for detailed planning and timelines
 
 ## Data Sources
 
@@ -149,34 +142,115 @@ POST /api/projects/scan              - Trigger project list refresh
 
 ## Implementation Approach
 
-Building with **parallel subagent teams** using the SWARM method:
+Building with **SWARM architecture** (Specialized Workflow with Autonomous Resource Management):
 
-1. **Backend Team** - API endpoints, file parsing, project discovery (includes immediate testing)
-2. **Frontend Team** - Vue components, SPA architecture, routing, state management (includes immediate testing)
-3. **Quality Team** - Code review, cross-platform verification, documentation
+- **Main Agent Coordination:** Only main agent invokes subagents
+- **Orchestrator Role:** Creates execution plans, recommends parallelization
+- **Ticket Manager:** Acts as API for ticket operations (like Jira/Azure DevOps)
+- **7-Phase Workflow:** Session Init → Git Setup → Implementation → Code Commit → Docs Commit → PR/Review → User Approval/Merge
+
+**Architecture Principle:** Subagents cannot invoke other subagents. Main agent coordinates all work based on orchestrator's recommendations.
+
+See `docs/guides/SWARM-WORKFLOW.md` for complete workflow documentation.
 
 **Note:** Testing is integrated into development, not a separate phase. Each developer tests their implementation immediately before code review.
 
 See subagent proposals in project `.claude/agents/` directory.
 
-## Current Status & Priorities
+## Ticketing Workflow
 
-### Recent Bug Fixes (October 24, 2025)
-- **BUG-027:** Agent color field now displays in sidebars ✅
-- **BUG-028:** Agent model field now displays in sidebars ✅
-- **BUG-029:** Agent tools field now displays in sidebars ✅
-- **BUG-035:** User configuration card now persists after navigation ✅
+**Agile Ticketing System:** `/home/tickets/claude/manager/`
 
-All bugs were resolved with comprehensive test coverage.
+The project uses a file-based Agile ticketing system managed by the `agile-ticket-manager` subagent. This system functions like enterprise tools (Jira, Azure DevOps, Linear) but uses a hierarchical directory structure.
+
+### Ticket Hierarchy
+```
+Epics → Stories → Tasks
+  ↓        ↓        ↓
+EPIC-001  STORY-2.1  TASK-2.1.1
+```
+
+### Status Workflow
+```
+backlog → todo → in-progress → review → done
+```
+
+### Roles & Responsibilities
+
+**Business Analyst (`/ba` command):**
+- Creates PRDs and requirements documentation
+- Designs UI/UX wireframes
+- Provides implementation recommendations
+- **Does NOT create tickets**
+
+**Project Manager (`project-manager` subagent):**
+- **Creates ALL tickets** (Epics, Stories, Tasks, Bugs)
+- Writes ticket files with frontmatter
+- Invokes `agile-ticket-manager` to organize tickets
+- Sets priorities and dependencies
+
+**Ticket Manager (`agile-ticket-manager` subagent):**
+- Organizes ticket files into directory structure
+- Provides ticket retrieval and querying
+- Manages status transitions
+- Maintains Epic/Story/Task relationships
+
+**Orchestrator (`subagent-orchestrator` subagent):**
+- Queries ticket manager for available work
+- Assigns tickets to developers
+- Requests status updates throughout workflow
+- **Does NOT create tickets**
+
+### Workflow Integration
+
+1. **Feature Request** → User runs `/ba` command
+2. **Analysis** → BA creates PRD in `docs/ba-sessions/`
+3. **Planning** → User invokes `project-manager` to create tickets from PRD
+4. **Organization** → Project manager invokes `agile-ticket-manager` to organize tickets
+5. **Execution** → User runs `/swarm <ticket-id>`
+   - See `docs/guides/SWARM-WORKFLOW.md` for complete execution workflow
+   - Main agent coordinates all subagents (orchestrator creates plans only)
+   - Session tracking document maintained at `docs/sessions/tracking/`
+6. **Coordination** → Orchestrator queries ticket manager, assigns work, updates statuses
+7. **Completion** → Tickets moved to `done` after PR merge
+
+**See:** `docs/guides/TICKET-MANAGER-INTEGRATION.md` for complete integration patterns
+
+## Current Status
+
+**Release:** v2.1.0 (November 13, 2025)
+
+**Latest Updates:**
+- Copy configuration feature released
+- WCAG 2.1 AA accessibility compliance achieved
+- PrimeVue UI components integrated
+- 1,155 tests across backend and frontend
+
+**Quality Metrics:**
+- 511 backend tests (100% pass rate)
+- 644 frontend tests (80% pass rate, 20% deferred for manual testing)
+- WCAG 2.1 AA compliant (96%, 0 critical violations)
+- Performance: Grade A+
 
 ## Quick Reference - Development Guides
 
 **Read these documents when you need them:**
 
+### 🎯 SWARM Workflow
+- **Complete workflow guide:** `docs/guides/SWARM-WORKFLOW.md`
+  - When: Implementing any ticket (Story/Task/Bug)
+  - Contains: Complete 7-phase workflow from ticket selection through PR merge
+  - Key commands: /project-status (ticket selection), /swarm <ticket-id> (execution)
+
+- **Parallelization guide:** `docs/guides/PARALLEL-EXECUTION-GUIDE.md`
+  - When: Orchestrator recommends parallel execution
+  - Contains: Decision criteria, examples, troubleshooting
+  - Performance: 40-62% time reduction demonstrated in real sessions
+
 ### 🚀 Starting Development
 - **Choose your workflow:** `docs/guides/DEVELOPMENT-STRATEGIES.md`
   - When: Beginning a new session or task
-  - Contains: Strategy selection (Approved/Rapid/Parallel), real-world evidence, decision criteria
+  - Contains: Strategy selection (Approved/Rapid/Parallel/SWARM), real-world evidence, decision criteria
 
 ### 📝 Git & Commits
 - **Feature branch workflow:** `docs/guides/GIT-WORKFLOW.md`
@@ -188,10 +262,19 @@ All bugs were resolved with comprehensive test coverage.
   - When: Implementing from official specifications (Claude Code, Playwright, Vue, etc.)
   - Contains: 5-step pattern, BUG-030 case study, common pitfalls
 
+- **Coding standards:** `docs/guides/CODING-STANDARDS.md`
+  - When: Writing code, creating tests, or updating documentation
+  - Contains: Test data standards, import paths, documentation placement, CHANGELOG guidelines
+
 ### 🧪 Testing
 - **Test workflow & conventions:** `docs/guides/TESTING-GUIDE.md`
   - When: Running tests, creating new tests, or debugging test failures
-  - Contains: Automated quality gate, naming conventions, test types, troubleshooting
+  - Contains: Automated quality gate, naming conventions, test types, test data standards, troubleshooting
+
+### 🔧 Technical Specifications
+- **Technical documentation index:** `docs/technical/README.md`
+  - When: Understanding complex algorithms, data structures, or architecture
+  - Contains: Hook structure specs, merge algorithms, edge case documentation
 
 ### ⚙️ Setup & Operations
 - **First-time setup:** `docs/guides/SETUP-GUIDE.md`
@@ -228,3 +311,46 @@ This project uses Claude Code with specialized subagents. See `.claude/agents/` 
 
 **All contributions must follow the Git Workflow** - See `docs/guides/GIT-WORKFLOW.md` for complete details.
 - Move files to delete to the `.deleted/` directory, so I can review and delete them manually
+
+---
+
+## Developer Documentation
+
+This section contains detailed development workflow information for contributors.
+
+### Development History
+
+**Completed Development Phases:**
+- **Phase 1 (MVP):** Core viewing functionality (October 2025)
+- **Phase 2 (Vite Migration):** Modern Vue 3 + Vite architecture (October 2025)
+- **Phase 2.1 (Component Refactoring):** Created reusable components, reduced duplication by 83% (October 26, 2025)
+- **Phase 2.2 (Bug Fixes):** Fixed agent display and memory leak issues (October 27, 2025)
+- **Phase 2.3 (Production Readiness):** Added LICENSE, favicon, security updates (November 1, 2025)
+- **Phase 3 (Copy Configuration):** Complete copy feature with conflict resolution (November 2-13, 2025)
+
+**Phase Documentation:**
+- `docs/guides/archives/PHASE1-SUCCESS-CRITERIA.md` - Phase 1 complete requirements
+- `docs/guides/archives/PHASE2-COMPLETION-SUMMARY.md` - Phase 2 achievements
+- `docs/prd/` - Phase Requirements Documents for historical reference
+
+### Test Coverage Details
+
+**Backend Tests (511 tests, 100% pass rate):**
+- API endpoints: 276 tests
+- Copy service: 111 tests (agents: 24, commands: 25, hooks: 45, MCP: 17)
+- Performance: 5 tests (Grade A+, 200x-500x faster than targets)
+
+**Frontend Tests (644 tests, 80% pass rate):**
+- 514 passing tests (E2E workflows, component tests, responsive design)
+- 130 deferred for post-release manual testing (Test 106 E2E workflows)
+- 31 accessibility tests (WCAG 2.1 AA compliance verified)
+
+### Future Phase Planning
+
+**Next Phases (Not Yet Started):**
+- Subagent CRUD operations
+- Command management features
+- Visual hooks configuration
+- Advanced MCP server management
+
+**See:** `docs/guides/ROADMAP.md` for complete future feature planning

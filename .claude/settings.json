@@ -43,8 +43,5 @@
         ]
       }
     ]
-  },
-  "env": {
-    "CLAUDE_PROJECT_ROOT": "/home/claude/manager"
   }
 }

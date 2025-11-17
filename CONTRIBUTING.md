@@ -27,6 +27,7 @@ Open http://localhost:5173 to see the application.
 - **Vue 3.5.22** - Single File Components (.vue files)
 - **Vue Router 4.6.3** - Client-side routing
 - **Pinia 3.0.3** - State management
+- **PrimeVue 4.4.1** - UI component library (Dialog, Button, RadioButton, etc.)
 
 ### Backend
 - **Node.js 18+** - JavaScript runtime

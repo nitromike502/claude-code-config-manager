@@ -1314,6 +1314,178 @@
   }
 }
 
+/* PrimeVue Toast Styles */
+[data-pc-name="toast"],
+.p-toast {
+  opacity: 1 !important;
+  width: 25rem;
+}
+
+[data-pc-section="message"],
+.p-toast-message {
+  margin: 0 0 1rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+  border-width: 0;
+  border-left-width: 6px;
+  border-style: solid;
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem;
+}
+
+[data-pc-section="content"],
+.p-toast-message-content {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+  gap: 0.75rem;
+}
+
+[data-pc-section="icon"],
+.p-toast-message-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+[data-pc-section="text"],
+.p-toast-message-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+[data-pc-section="summary"],
+.p-toast-summary {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+[data-pc-section="detail"],
+.p-toast-detail {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+[data-pc-section="closebutton"],
+[data-pc-section="button"],
+.p-toast-icon-close {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+[data-pc-section="closebutton"]:hover,
+[data-pc-section="button"]:hover,
+.p-toast-icon-close:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] [data-pc-section="closebutton"]:hover,
+[data-theme="dark"] [data-pc-section="button"]:hover,
+[data-theme="dark"] .p-toast-icon-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-pc-section="closeicon"],
+.p-toast-icon-close-icon {
+  font-size: 1rem;
+}
+
+/* Toast severity variants */
+.p-toast-message-success {
+  background-color: #f0fdf4;
+  border-left-color: #10b981;
+}
+
+[data-theme="dark"] .p-toast-message-success {
+  background-color: #064e3b;
+  border-left-color: #34d399;
+}
+
+.p-toast-message-success .p-toast-message-icon,
+.p-toast-message-success .p-toast-summary {
+  color: #059669;
+}
+
+[data-theme="dark"] .p-toast-message-success .p-toast-message-icon,
+[data-theme="dark"] .p-toast-message-success .p-toast-summary {
+  color: #34d399;
+}
+
+.p-toast-message-info {
+  background-color: #eff6ff;
+  border-left-color: #3b82f6;
+}
+
+[data-theme="dark"] .p-toast-message-info {
+  background-color: #1e3a8a;
+  border-left-color: #60a5fa;
+}
+
+.p-toast-message-info .p-toast-message-icon,
+.p-toast-message-info .p-toast-summary {
+  color: #2563eb;
+}
+
+[data-theme="dark"] .p-toast-message-info .p-toast-message-icon,
+[data-theme="dark"] .p-toast-message-info .p-toast-summary {
+  color: #60a5fa;
+}
+
+.p-toast-message-warn {
+  background-color: #fffbeb;
+  border-left-color: #f59e0b;
+}
+
+[data-theme="dark"] .p-toast-message-warn {
+  background-color: #78350f;
+  border-left-color: #fbbf24;
+}
+
+.p-toast-message-warn .p-toast-message-icon,
+.p-toast-message-warn .p-toast-summary {
+  color: #d97706;
+}
+
+[data-theme="dark"] .p-toast-message-warn .p-toast-message-icon,
+[data-theme="dark"] .p-toast-message-warn .p-toast-summary {
+  color: #fbbf24;
+}
+
+.p-toast-message-error {
+  background-color: #fef2f2;
+  border-left-color: #ef4444;
+}
+
+[data-theme="dark"] .p-toast-message-error {
+  background-color: #7f1d1d;
+  border-left-color: #f87171;
+}
+
+.p-toast-message-error .p-toast-message-icon,
+.p-toast-message-error .p-toast-summary {
+  color: #dc2626;
+}
+
+[data-theme="dark"] .p-toast-message-error .p-toast-message-icon,
+[data-theme="dark"] .p-toast-message-error .p-toast-summary {
+  color: #f87171;
+}
+
 /* MCPCard Specific Styles */
 .mcp-card .card-header {
   display: flex;
@@ -1436,5 +1608,304 @@
 
   .mcp-header {
     flex-wrap: wrap;
+  }
+}
+
+/* ========================================
+   PrimeVue Component Styles (Unstyled Mode)
+   Using data-pc-* attributes for selectors
+   ======================================== */
+
+/* PrimeVue Button Component */
+[data-pc-name="button"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+[data-pc-name="button"]:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+[data-pc-name="button"]:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+[data-pc-name="button"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--bg-tertiary);
+  color: var(--text-disabled);
+}
+
+[data-pc-name="button"] [data-pc-section="icon"] {
+  font-size: 1rem;
+}
+
+[data-pc-name="button"] [data-pc-section="label"] {
+  font-weight: 500;
+}
+
+/* Button Severities */
+[data-pc-name="button"][data-p-severity="secondary"] {
+  background: var(--bg-secondary);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+[data-pc-name="button"][data-p-severity="secondary"]:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: white;
+}
+
+[data-pc-name="button"][data-p-severity="success"] {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+[data-pc-name="button"][data-p-severity="success"]:hover:not(:disabled) {
+  background: #059669;
+}
+
+[data-pc-name="button"][data-p-severity="danger"] {
+  background: var(--color-error);
+  border-color: var(--color-error);
+}
+
+[data-pc-name="button"][data-p-severity="danger"]:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+/* Icon-only buttons */
+[data-pc-name="button"][data-p-icononly="true"] {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+}
+
+/* PrimeVue Dialog Component */
+[data-pc-name="dialog"].p-dialog-mask,
+.p-dialog-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1100;
+  transition: background-color 0.2s;
+}
+
+[data-pc-name="dialog"].p-dialog-mask.p-component-overlay,
+.p-dialog-mask.p-component-overlay {
+  pointer-events: auto;
+}
+
+[data-pc-section="root"],
+.p-dialog {
+  position: relative;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+}
+
+[data-pc-section="header"],
+.p-dialog-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-primary);
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+[data-pc-section="title"],
+.p-dialog-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-emphasis);
+}
+
+[data-pc-section="headericons"],
+.p-dialog-header-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+[data-pc-section="closebutton"],
+.p-dialog-header-icon {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+[data-pc-section="closebutton"]:hover,
+.p-dialog-header-icon:hover {
+  background: var(--bg-hover);
+  color: var(--text-emphasis);
+}
+
+[data-pc-section="closebutton"]:focus-visible,
+.p-dialog-header-icon:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+[data-pc-section="content"],
+.p-dialog-content {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+[data-pc-section="footer"],
+.p-dialog-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-primary);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Dialog animations */
+.p-dialog-mask-enter-active,
+.p-dialog-mask-leave-active {
+  transition: opacity 0.2s;
+}
+
+.p-dialog-mask-enter-from,
+.p-dialog-mask-leave-to {
+  opacity: 0;
+}
+
+.p-dialog-enter-active,
+.p-dialog-leave-active {
+  transition: all 0.2s;
+}
+
+.p-dialog-enter-from,
+.p-dialog-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* PrimeVue Divider Component */
+[data-pc-name="divider"],
+.p-divider {
+  border-top: 1px solid var(--border-primary);
+  margin: 1.5rem 0;
+}
+
+[data-pc-name="divider"][data-pc-section="root"],
+.p-divider-horizontal {
+  display: flex;
+  width: 100%;
+  position: relative;
+  align-items: center;
+}
+
+[data-pc-name="divider"][data-pc-section="root"]:before,
+.p-divider-horizontal:before {
+  position: static;
+  display: block;
+  content: "";
+  border-top: 1px solid var(--border-primary);
+  width: 100%;
+  top: 50%;
+}
+
+/* PrimeVue Tooltip */
+[data-pc-name="tooltip"],
+.p-tooltip {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+[data-pc-name="tooltip"].p-tooltip-active,
+.p-tooltip.p-tooltip-active {
+  display: block;
+}
+
+[data-pc-section="text"],
+.p-tooltip-text {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  box-shadow: var(--shadow-card);
+  white-space: nowrap;
+  max-width: 250px;
+}
+
+[data-pc-section="arrow"],
+.p-tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+.p-tooltip-top [data-pc-section="arrow"],
+.p-tooltip-top .p-tooltip-arrow {
+  bottom: -5px;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px 5px 0;
+  border-top-color: var(--border-primary);
+}
+
+/* Copy Modal-specific styles */
+.copy-modal .p-dialog {
+  min-width: 500px;
+}
+
+.copy-modal .p-dialog-content {
+  min-height: 200px;
+}
+
+@media (max-width: 768px) {
+  .copy-modal .p-dialog {
+    min-width: 90vw;
+    width: 90vw !important;
+  }
+
+  .p-dialog {
+    max-width: 95vw;
   }
 }

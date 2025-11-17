@@ -13,6 +13,7 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 - **Vue 3.5.22** - Progressive JavaScript framework for reactive UIs
 - **Vue Router 4.6.3** - Official router for Vue.js with client-side routing
 - **Pinia 3.0.3** - Official state management library for Vue 3
+- **PrimeVue 4.4.1** - UI component library for modern, accessible components
 
 ### Backend
 - **Node.js 18+** - JavaScript runtime
@@ -31,6 +32,8 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 ## Features
 
 ### Core Functionality
+
+**Configuration Viewing:**
 - **Project Discovery** - Automatically discovers all Claude Code projects from `~/.claude.json`
 - **Subagent Viewing** - Browse and view all project and user-level subagents with full frontmatter specs
 - **Slash Command Viewing** - View all custom slash commands across projects
@@ -38,6 +41,13 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 - **MCP Server Viewing** - View MCP server configurations
 - **Search & Filter** - Quickly find specific configurations
 - **Detail Sidebar** - View full content with markdown rendering and syntax highlighting
+
+**Configuration Management (NEW in v2.1.0):**
+- **Copy Configuration** - Copy agents, commands, hooks, and MCP servers between projects
+- **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
+- **Single-Click Copy** - Streamlined UX for quick configuration duplication
+- **Cross-Scope Copy** - Copy between user-level and project-level configurations
+- **Smart Merging** - Intelligent merge for hooks and MCP configurations
 
 ### User Experience
 - **SPA Navigation** - Client-side routing with no page reloads
@@ -53,11 +63,17 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 - **Instant Navigation** - No page reloads between views
 
 ### Testing
-- **879 Tests** - 100% pass rate across all test suites
-  - 276 Backend tests (Jest) - API endpoints, parsers, error handling
-  - 603 Frontend tests (Playwright) - E2E, Component, Responsive, and Visual tests
+- **1,155 Tests** - Comprehensive test coverage across all features
+  - **511 Backend tests (Jest)** - 100% pass rate
+    - API endpoints, parsers, error handling
+    - Copy service with 111 tests (agents, commands, hooks, MCP)
+    - Performance tests (Grade A+)
+  - **644 Frontend tests (Playwright)** - 80% pass rate (514 passing)
+    - E2E workflows, component tests, responsive design
+    - Accessibility tests (WCAG 2.1 AA - 96% compliance)
+    - 130 tests deferred for post-release manual testing
 - **Cross-Browser** - Verified on Chromium, Firefox, and WebKit
-- **Automated Quality** - Comprehensive test coverage with continuous validation
+- **Quality Gates** - Automated validation with comprehensive coverage
 - **Test Reports** - Saved to `docs/testing/test-reports/`
 
 ## Prerequisites
@@ -214,31 +230,22 @@ Claude Code Manager works on:
 
 ## Roadmap
 
-**Phase 2.1 - Component Refactoring** (Ready for Implementation)
-- Extract reusable configuration card components
-- Reduce code duplication from 62% to <10%
-- Establish scalable patterns for future development
-- Improve maintainability and consistency
-- Timeline: 3-4 hours implementation
+**Current Release: v2.1.0** - Copy Configuration Feature ✅
+- Copy agents, commands, hooks, and MCP servers between projects
+- Smart conflict resolution with skip/overwrite/rename
+- WCAG 2.1 AA accessibility compliance
+- See `CHANGELOG.md` for complete release notes
 
-**Phase 3 - Subagent CRUD** (Planned)
-- Create, edit, and delete subagent definitions
-- YAML frontmatter validation
-- Live preview of subagent content
-- Template system for common subagent types
+**Future Enhancements** (Planned)
+- **Skills Support** - Copy and manage Claude Code skills between projects
+- **MCP Server Management** - Enable/disable MCP servers directly from the UI
+- **Team Builder** - Create groups of agents, commands, and configurations to copy as a unit
+- **Subagent CRUD** - Create, edit, and delete subagent definitions with YAML validation
+- **Command Management** - Create, edit, and delete slash commands with testing
+- **Hooks Configuration** - Visual editor for configuring hooks with templates
+- **Advanced Features** - Real-time file watching, version history, bulk operations
 
-**Phase 4 - Command Management** (Planned)
-- Create, edit, and delete slash commands
-- Command testing and validation
-- Nested directory support
-- Import/export command libraries
-
-**Phase 5+ - Advanced Features** (Future)
-- Hooks configuration editor
-- MCP server management
-- Real-time file watching for automatic updates
-- Configuration version history and rollback
-- Bulk operations and batch editing
+See `docs/guides/ROADMAP.md` for detailed planning.
 
 ## License
 

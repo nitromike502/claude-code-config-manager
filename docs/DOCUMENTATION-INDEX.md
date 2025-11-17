@@ -162,6 +162,24 @@ Located in `/.claude/templates/` (project root):
 
 ## Specialized Documentation
 
+### Validation Reports
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [validation/README.md](validation/README.md) | Validation reports directory guide | ✅ Current |
+| [validation/BUG-038-SPECIFICATION-VALIDATION-REPORT.md](validation/BUG-038-SPECIFICATION-VALIDATION-REPORT.md) | Hooks parsing spec compliance analysis | ✅ Complete |
+
+**Purpose:** Technical specification validation reports for bug fixes ensuring strict compliance with official specs (Claude Code, Playwright, Vue, etc.)
+
+### Implementation Plans
+
+| Document | Purpose | Status |
+|----------|---------|--------|
+| [implementation-plans/README.md](implementation-plans/README.md) | Implementation plans directory guide | ✅ Current |
+| [implementation-plans/BUG-038-IMPLEMENTATION-PLAN.md](implementation-plans/BUG-038-IMPLEMENTATION-PLAN.md) | Hooks spec compliance step-by-step guide | Ready for Implementation |
+
+**Purpose:** Detailed step-by-step implementation guides for developers executing complex bug fixes and feature work.
+
 ### Feature Documentation
 
 | Feature | Location | Status |
@@ -261,6 +279,12 @@ docs/
 │   ├── phase-1/
 │   ├── phase-2/
 │   └── phase-2-extension/
+├── validation/                      # Specification validation reports
+│   ├── README.md
+│   └── BUG-038-SPECIFICATION-VALIDATION-REPORT.md
+├── implementation-plans/            # Developer implementation guides
+│   ├── README.md
+│   └── BUG-038-IMPLEMENTATION-PLAN.md
 ├── wireframes/                      # UI wireframes
 └── [other specialized docs]
 ```
@@ -277,6 +301,7 @@ For questions about documentation:
 
 ---
 
-**Document Maintained By:** Documentation Engineer
+**Document Maintained By:** Documentation Engineer, Agile Ticket Manager
 **Last Full Review:** October 26, 2025
+**Last Updated:** November 2, 2025 (Added validation and implementation-plans directories)
 **Next Scheduled Review:** After Phase 2.1 completion

@@ -1,6 +1,6 @@
 {
   "name": "claude-code-config-manager",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "description": "Web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers",
   "main": "src/backend/server.js",
   "bin": {
@@ -22,13 +22,16 @@
     "dev:backend": "node --watch src/backend/server.js",
     "server:check": "./scripts/ensure-server-running.sh",
     "server:restart": "./scripts/ensure-server-running.sh --restart",
-    "test": "jest",
-    "test:backend": "jest tests/backend",
+    "test": "NODE_OPTIONS='--max-old-space-size=4096' jest",
+    "test:backend": "NODE_OPTIONS='--max-old-space-size=4096' jest tests/backend",
     "test:frontend": "playwright test",
     "test:frontend:component": "playwright test tests/frontend",
     "test:frontend:e2e": "playwright test tests/e2e",
     "test:frontend:visual": "playwright test 300-visual-regression.spec.js",
-    "test:full": "npm run test:backend && npm run test:frontend",
+    "test:frontend:unit": "vitest run",
+    "test:frontend:unit:watch": "vitest",
+    "test:frontend:unit:coverage": "vitest run --coverage",
+    "test:full": "npm run test:backend && npm run test:frontend:unit && npm run test:frontend",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:visual:update": "playwright test 300-visual-regression.spec.js --update-snapshots",
@@ -49,14 +52,19 @@
     "gray-matter": "^4.0.3",
     "pinia": "^3.0.3",
     "primeicons": "^7.0.0",
+    "primevue": "^4.4.1",
     "vite": "^7.1.10",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
+    "@vue/test-utils": "^2.4.6",
+    "axe-playwright": "^2.2.2",
+    "happy-dom": "^20.0.10",
     "jest": "^30.2.0",
-    "supertest": "^7.1.4"
+    "supertest": "^7.1.4",
+    "vitest": "^4.0.8"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -91,6 +91,14 @@
   --color-mcp: #9C27B0;       /* Purple for MCP servers */
   --color-user: #9C27B0;      /* Purple for user-level configs */
 
+  /* ========== Background Variants ========== */
+  /* Background colors with opacity for badges and highlights */
+  --color-mcp-bg: rgba(156, 39, 176, 0.2);  /* MCP badge background */
+
+  /* ========== Focus Indicators ========== */
+  /* Focus ring for interactive elements */
+  --color-primary-focus-ring: rgba(0, 122, 217, 0.1);  /* Primary focus ring background */
+
   /* ========== Shadows ========== */
   /* Card: Default card elevation
      Card-hover: Lifted card state
@@ -156,6 +164,14 @@
   --color-hooks: #f57c00;
   --color-mcp: #7b1fa2;
   --color-user: #7b1fa2;
+
+  /* ========== Background Variants ========== */
+  /* Background colors with opacity for badges and highlights */
+  --color-mcp-bg: rgba(123, 31, 162, 0.2);  /* MCP badge background */
+
+  /* ========== Focus Indicators ========== */
+  /* Focus ring for interactive elements */
+  --color-primary-focus-ring: rgba(25, 118, 210, 0.1);  /* Primary focus ring background */
 
   /* ========== Shadows ========== */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);

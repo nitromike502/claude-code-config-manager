@@ -23,9 +23,10 @@ function getBaseUrl() {
   }
 
   // Priority 2: Development mode (Vite dev server on port 5173)
+  // Use empty string (same origin) to allow Vite proxy to forward API requests
   if (import.meta.env.DEV && window.location.port === '5173') {
-    const devUrl = 'http://localhost:8420';
-    console.log('[API Client] Using dev mode base URL:', devUrl);
+    const devUrl = ''; // Vite proxy will forward /api/* to localhost:8420
+    console.log('[API Client] Using dev mode with Vite proxy (same origin)');
     return devUrl;
   }
 
@@ -64,7 +65,10 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
     if (!response.ok) {
       // Try to get error message from response body
       const error = await response.json().catch(() => ({ message: response.statusText }))
-      throw new Error(error.message || `HTTP ${response.status}: ${response.statusText}`)
+      const apiError = new Error(error.message || `HTTP ${response.status}: ${response.statusText}`)
+      // Mark as expected error to suppress console logging
+      apiError.isExpected = true
+      throw apiError
     }
 
     return response
@@ -73,7 +77,22 @@ async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
 
     // Handle abort errors (timeout)
     if (error.name === 'AbortError') {
-      throw new Error(`Request timeout after ${timeout}ms`)
+      const timeoutError = new Error(`Request timeout after ${timeout}ms`)
+      timeoutError.isExpected = true
+      throw timeoutError
+    }
+
+    // Handle network errors (Failed to fetch, etc)
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      const networkError = new Error('Failed to connect to server')
+      networkError.isExpected = true
+      networkError.name = 'NetworkError'
+      throw networkError
+    }
+
+    // Mark other errors as expected (handled by UI)
+    if (!error.isExpected) {
+      error.isExpected = true
     }
 
     throw error
@@ -185,6 +204,58 @@ export async function healthCheck() {
   return response.json()
 }
 
+/**
+ * Copy agent to target scope
+ * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
+ * @returns {Promise<Object>} - { success: boolean, message: string, createdPath?: string }
+ */
+export async function copyAgent(request) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/agent`, {
+    method: 'POST',
+    body: JSON.stringify(request)
+  })
+  return response.json()
+}
+
+/**
+ * Copy command to target scope
+ * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
+ * @returns {Promise<Object>} - { success: boolean, message: string, createdPath?: string }
+ */
+export async function copyCommand(request) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/command`, {
+    method: 'POST',
+    body: JSON.stringify(request)
+  })
+  return response.json()
+}
+
+/**
+ * Copy hook to target scope
+ * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
+ * @returns {Promise<Object>} - { success: boolean, message: string, warnings?: string[] }
+ */
+export async function copyHook(request) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/hook`, {
+    method: 'POST',
+    body: JSON.stringify(request)
+  })
+  return response.json()
+}
+
+/**
+ * Copy MCP server to target scope
+ * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
+ * @returns {Promise<Object>} - { success: boolean, message: string, warnings?: string[] }
+ */
+export async function copyMcp(request) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/mcp`, {
+    method: 'POST',
+    body: JSON.stringify(request)
+  })
+  return response.json()
+}
+
 // Default export with all API functions
 export default {
   BASE_URL,
@@ -198,5 +269,9 @@ export default {
   getUserCommands,
   getUserHooks,
   getUserMcp,
-  healthCheck
+  healthCheck,
+  copyAgent,
+  copyCommand,
+  copyHook,
+  copyMcp
 }
