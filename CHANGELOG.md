@@ -7,14 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.1.0] - 2025-11-05
+## [2.1.0] - 2025-11-13
 
 ### Added
-- Backend copy service for agents, commands, hooks, and MCP servers with conflict detection and resolution strategies
-- PrimeVue UI component library for modern, accessible components (Dialog, Button, RadioButton, etc.)
-- Security hardening with path validation and atomic writes
-- Smart deduplication for hooks and MCP configurations
-- Comprehensive test coverage: 111 tests (100% pass rate)
+- Copy configuration feature: Copy agents, commands, hooks, and MCP servers between projects
+- Smart conflict resolution with skip/overwrite/rename strategies
+- PrimeVue UI components for modern, accessible interface
+- WCAG 2.1 AA accessibility compliance (96%, 0 critical violations)
+
+### Changed
+- Improved copy workflow with single-click UX and toast notifications
 
 ---
 
