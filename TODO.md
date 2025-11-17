@@ -28,32 +28,11 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 
 ## Future Enhancement Ideas
 
-### Phase 4 - Subagent CRUD (Next Major Feature)
-- [ ] Create, edit, and delete subagent definitions
-- [ ] YAML frontmatter validation
-- [ ] Live preview of subagent content
-- [ ] Template system for common subagent types
-
-### Phase 5 - Command Management
-- [ ] Create, edit, and delete slash commands
-- [ ] Command testing and validation
-- [ ] Nested directory support
-- [ ] Import/export command libraries
-
-### Phase 6 - Hooks Configuration
-- [ ] Visual hook editor
-- [ ] Hook testing and validation
-- [ ] Pre-built hook templates
-- [ ] Hook dependency management
+### Namespaced Agents & Commands
+- [ ] Nested directory support for Subagents and Slash Commands
 
 ### Project Discovery Improvements
 - [ ] **Filter projects without `.claude` directory**: Modify project discovery to ignore any projects from the project listing if the directory does not contain a `.claude` directory. This prevents listing directories that aren't actually Claude Code projects, improving accuracy of the project list and reducing clutter.
-
-### Phase 7 - MCP Server Management
-- [ ] Add, edit, and remove MCP servers
-- [ ] Server configuration validation
-- [ ] Connection testing
-- [ ] Server discovery and recommendations
 
 ### Scripts to Skills Migration
 - [ ] Migrate utility scripts from `scripts/` directory to Claude Code skills
@@ -86,6 +65,9 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 - [ ] **Review and optimize test suite** - With 1,300+ tests taking 5+ minutes to run, review all tests for duplicates, redundancy, and unnecessary coverage. Consider consolidating overlapping tests, removing trivial tests that don't add value, and restructuring test organization for faster execution. Goal: Reduce test suite to essential coverage only, targeting <2 minute full suite execution.
 
 - [ ] **Modify SWARM workflow for targeted testing** - Current workflow runs full test suite (1,300+ tests) after each task completion, causing significant delays. Update workflow to: (1) Run tests only after all development for a ticket is complete, not after each individual task, (2) Run only targeted/relevant tests for the changed code (e.g., only frontend tests for UI changes, only copy tests for copy feature changes), (3) Reserve full test suite for final PR validation. Update `docs/guides/SWARM-WORKFLOW.md` and `docs/guides/TESTING-GUIDE.md` to reflect this approach.
+
+- ✅ **Add LICENSE file** - Include MIT LICENSE for legal compliance (Completed in Phase 2.3, 2025-11-01)
+- ✅ **Add favicon** - Create professional favicon for browser tab identification (Completed in Phase 2.3, 2025-11-01 - `public/favicon.svg`)
 
 ---
 
