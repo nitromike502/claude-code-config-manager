@@ -236,19 +236,16 @@ Claude Code Manager works on:
 - WCAG 2.1 AA accessibility compliance
 - See `CHANGELOG.md` for complete release notes
 
-**Next Phase: Phase 4 - Subagent CRUD** (Planned)
-- Create, edit, and delete subagent definitions
-- YAML frontmatter validation
-- Live preview of subagent content
-- Template system for common subagent types
+**Future Enhancements** (Planned)
+- **Skills Support** - Copy and manage Claude Code skills between projects
+- **MCP Server Management** - Enable/disable MCP servers directly from the UI
+- **Team Builder** - Create groups of agents, commands, and configurations to copy as a unit
+- **Subagent CRUD** - Create, edit, and delete subagent definitions with YAML validation
+- **Command Management** - Create, edit, and delete slash commands with testing
+- **Hooks Configuration** - Visual editor for configuring hooks with templates
+- **Advanced Features** - Real-time file watching, version history, bulk operations
 
-**Future Phases** (Planned)
-- **Phase 5:** Command Management (create, edit, delete, testing)
-- **Phase 6:** Hooks Configuration (visual editor, templates)
-- **Phase 7:** MCP Server Management (add, edit, connection testing)
-- **Phase 8+:** Advanced Features (real-time watching, version history, bulk operations)
-
-See `docs/guides/ROADMAP.md` for detailed phase planning.
+See `docs/guides/ROADMAP.md` for detailed planning.
 
 ## License
 

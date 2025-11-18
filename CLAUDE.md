@@ -8,27 +8,13 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Deployment:** Local web server accessible at `http://localhost:5173`
 
-**Current Phase:** Phase 3 - 🔄 READY FOR RELEASE (v2.1.0 - Copy Configuration Feature)
+**Current Release:** v2.1.0 - Released November 13, 2025
 
-**Phase 3 Focus:** Complete copy configuration feature including backend service, API endpoints, and user interface for copying agents, commands, hooks, and MCP servers between projects.
-
-**Phase 3 Status:** All 7 stories complete, ready for v2.1.0 release
-- ✅ Backend Service (Stories 3.1-3.2) - Complete
-- ✅ API Endpoints (Story 3.3) - Complete
-- ✅ Frontend Components (Story 3.4) - Complete
-- ✅ State Management (Story 3.5) - Complete
-- ✅ UI Integration (Story 3.6) - Complete
-- ✅ Testing & Validation (Story 3.7) - Complete
-- ✅ Production-ready with comprehensive test coverage
-
-**Quality Metrics (Phase 3 Completion):**
-- ✅ 511 backend tests (100% pass rate)
-- ✅ 644 frontend tests created (514 passing, 130 deferred for manual testing)
-- ✅ WCAG 2.1 AA accessibility (96% compliance, 0 critical violations)
-- ✅ Performance: Grade A+ (200x-500x faster than targets)
-- ✅ Cross-platform validated (Linux baseline, high confidence Windows/macOS)
-
-**Next Phase:** Phase 4 - Subagent CRUD
+**Latest Features:**
+- Copy configuration feature for agents, commands, hooks, and MCP servers
+- Smart conflict resolution with skip/overwrite/rename strategies
+- WCAG 2.1 AA accessibility compliance
+- Modern PrimeVue UI components
 
 ## Tech Stack
 
@@ -71,102 +57,44 @@ manager/
 - `development-strategies.md` - Guide for selecting development approaches
 
 **Note on Legacy Code:**
-- `/src/frontend/` (Phase 1 CDN-based code) has been removed
+- `/src/frontend/` (CDN-based code) has been removed
 - All active code now uses Vite + Vue 3 SPA architecture
 
-## Phase Summary
+## Current Features
 
-### Phase 1 MVP - ✅ COMPLETE
-**Core Functionality:**
-1. **Project Discovery** - Read from `~/.claude.json` to list all Claude Code projects
-2. **Subagent Viewing** - Display subagents from `.claude/agents/*.md`
-3. **Slash Command Viewing** - Display commands from `.claude/commands/**/*.md`
-4. **Hooks Viewing** - Display hooks from `.claude/settings.json` files
-5. **MCP Server Viewing** - Display MCP servers from `.mcp.json` and settings files
+### Configuration Viewing
+- **Project Discovery** - Automatically discovers all Claude Code projects from `~/.claude.json`
+- **Subagent Viewing** - Browse and view project and user-level subagents with full frontmatter specs
+- **Slash Command Viewing** - View all custom slash commands across projects
+- **Hooks Viewing** - Display configured hooks from settings files
+- **MCP Server Viewing** - View MCP server configurations
+- **Search & Filter** - Quickly find specific configurations
+- **Detail Sidebar** - View full content with markdown rendering
 
-**Key Constraints:** Read-only, manual refresh, dark mode, no authentication
+### Configuration Management
+- **Copy Configuration** - Copy agents, commands, hooks, and MCP servers between projects
+- **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
+- **Cross-Scope Copy** - Copy between user-level and project-level configurations
+- **Smart Merging** - Intelligent merge for hooks and MCP configurations
 
-### Phase 2 - Vite Migration - ✅ COMPLETE
-- Modern dev server with HMR (< 1s reload)
-- Vue Router for SPA navigation
-- Pinia state management
-- 100% Phase 1 feature parity maintained
-- **Testing:** 879 tests (100% pass rate)
+### User Experience
+- **SPA Navigation** - Client-side routing with no page reloads
+- **Dark/Light Mode** - Toggle between themes
+- **Responsive Design** - Works on desktop, tablet, and mobile
+- **WCAG 2.1 AA Accessibility** - Keyboard navigation, screen reader support
+- **Toast Notifications** - Success/error feedback
 
-**See:** `docs/guides/archives/PHASE1-SUCCESS-CRITERIA.md` and `docs/guides/archives/PHASE2-COMPLETION-SUMMARY.md` for complete details.
+## Future Enhancements
 
-### Phase 2.1 - Component Refactoring - ✅ COMPLETE
-**Completion Date:** October 26, 2025 (PR #45)
+**Upcoming Features:**
+- **Skills Support** - Copy and manage Claude Code skills between projects
+- **MCP Server Management** - Enable/disable MCP servers from UI
+- **Team Builder** - Create groups of agents, commands, and configurations to copy as a unit
+- **Subagent CRUD** - Create, edit, and delete subagent definitions
+- **Command Management** - Create, edit, and delete slash commands
+- **Hooks Configuration** - Visual editor for configuring hooks
 
-**Achievements:**
-- Created 6 reusable components (ConfigCard, ConfigItemList, ConfigDetailSidebar, LoadingState, EmptyState, BreadcrumbNavigation)
-- Reduced code duplication from 62% to <10% (83% reduction)
-- ProjectDetail.vue: -52.3% LOC (1,191 → 568 lines)
-- UserGlobal.vue: -61.1% LOC (984 → 383 lines)
-- All 4 stories completed (2.1-2.4)
-- 270/270 tests passing with full coverage
-
-**See:** `docs/prd/PRD-Phase2-Extension-Component-Refactoring.md` for complete details.
-
-### Phase 2.2 - Bug Fixes - ✅ COMPLETE
-**Completion Date:** October 27, 2025
-
-**Achievements:**
-- Fixed agent color/model/tools display in sidebars (BUG-027, BUG-028, BUG-029)
-- Fixed user configuration card persistence (BUG-035)
-- Resolved event handler signature mismatch (HIGH-011)
-- Fixed memory leak in Dashboard event listener (CRITICAL-005)
-- All bugs resolved with comprehensive test coverage
-
-### Phase 2.3 - Production Readiness - ✅ COMPLETE
-**Completion Date:** November 1, 2025
-
-**Achievements:**
-- Added MIT LICENSE file for legal compliance
-- Created favicon.svg for professional appearance
-- Updated Vite to 7.1.12 (resolved security vulnerability)
-- Added dist/ to NPM package for instant NPX startup
-- Achieved WCAG 2.1 AA accessibility compliance
-- Updated all documentation for test count consistency
-- **Testing:** 879 tests (276 backend + 603 frontend) with 100% pass rate at Phase 2 completion
-
-### Phase 3 - Copy Configuration Feature - ✅ COMPLETE
-**Started:** November 2, 2025
-**Completed:** November 13, 2025
-**Epic:** EPIC-003 (7 stories)
-
-**Achievements:**
-- ✅ Backend copy service infrastructure (STORY-3.1)
-- ✅ Configuration-specific copy logic (STORY-3.2)
-- ✅ Copy API endpoints (STORY-3.3)
-- ✅ Frontend copy UI components (STORY-3.4)
-- ✅ State management and API integration (STORY-3.5)
-- ✅ UI integration and accessibility (STORY-3.6)
-- ✅ Testing and cross-platform validation (STORY-3.7)
-
-**Key Features:**
-- Implemented `copyAgent()`, `copyCommand()`, `copyHook()`, `copyMcp()` methods
-- 3-level nested merge algorithm for hooks (event → matcher → command)
-- Smart deduplication by command field (hooks) and server name (MCP)
-- Robust conflict handling with skip/overwrite/rename strategies
-- Security hardening with path traversal protection
-- Atomic writes using temp file + rename pattern
-- Complete copy UI with modal, conflict resolution, and single-click UX
-- WCAG 2.1 AA accessibility compliance (96%, 0 critical violations)
-
-**Test Coverage:**
-- **Backend:** 511 tests (100% pass rate)
-  - Copy service: 111 tests (agents: 24, commands: 25, hooks: 45, MCP: 17)
-  - Performance: 5 tests (A+ grade, 200x-500x faster than targets)
-- **Frontend:** 644 tests created
-  - 514 passing (80% pass rate)
-  - 130 deferred for post-release manual testing (Test 106 E2E workflows)
-  - Accessibility: 31 tests (WCAG 2.1 AA compliance verified)
-
-**See:** `docs/prd/features/copy-configuration/FEATURE-OVERVIEW.md` for complete feature documentation.
-
-### Future Phases
-**See:** `docs/guides/ROADMAP.md` for Phase 4+ planning (Subagent CRUD, Command Management, Advanced Features)
+**See:** `docs/guides/ROADMAP.md` for detailed planning and timelines
 
 ## Data Sources
 
@@ -288,17 +216,21 @@ backlog → todo → in-progress → review → done
 
 **See:** `docs/guides/TICKET-MANAGER-INTEGRATION.md` for complete integration patterns
 
-## Current Status & Priorities
+## Current Status
 
-### Phase 3 Complete - Ready for v2.1.0 Release (November 13, 2025)
-- **EPIC-003:** Copy Configuration Feature - All 7 stories complete ✅
-- **Quality:** 511 backend tests (100%), 644 frontend tests (80% passing, 20% deferred)
-- **Accessibility:** WCAG 2.1 AA compliant (96%, 0 critical violations) ✅
-- **Performance:** Grade A+ (200x-500x faster than targets) ✅
-- **Next Steps:** v2.1.0 release, then Phase 4 planning (Subagent CRUD)
+**Release:** v2.1.0 (November 13, 2025)
 
-### Historical Bug Fixes
-- **Phase 2.2 (October 24, 2025):** Fixed agent display bugs (BUG-027, 028, 029, 035) ✅
+**Latest Updates:**
+- Copy configuration feature released
+- WCAG 2.1 AA accessibility compliance achieved
+- PrimeVue UI components integrated
+- 1,155 tests across backend and frontend
+
+**Quality Metrics:**
+- 511 backend tests (100% pass rate)
+- 644 frontend tests (80% pass rate, 20% deferred for manual testing)
+- WCAG 2.1 AA compliant (96%, 0 critical violations)
+- Performance: Grade A+
 
 ## Quick Reference - Development Guides
 
@@ -379,3 +311,46 @@ This project uses Claude Code with specialized subagents. See `.claude/agents/` 
 
 **All contributions must follow the Git Workflow** - See `docs/guides/GIT-WORKFLOW.md` for complete details.
 - Move files to delete to the `.deleted/` directory, so I can review and delete them manually
+
+---
+
+## Developer Documentation
+
+This section contains detailed development workflow information for contributors.
+
+### Development History
+
+**Completed Development Phases:**
+- **Phase 1 (MVP):** Core viewing functionality (October 2025)
+- **Phase 2 (Vite Migration):** Modern Vue 3 + Vite architecture (October 2025)
+- **Phase 2.1 (Component Refactoring):** Created reusable components, reduced duplication by 83% (October 26, 2025)
+- **Phase 2.2 (Bug Fixes):** Fixed agent display and memory leak issues (October 27, 2025)
+- **Phase 2.3 (Production Readiness):** Added LICENSE, favicon, security updates (November 1, 2025)
+- **Phase 3 (Copy Configuration):** Complete copy feature with conflict resolution (November 2-13, 2025)
+
+**Phase Documentation:**
+- `docs/guides/archives/PHASE1-SUCCESS-CRITERIA.md` - Phase 1 complete requirements
+- `docs/guides/archives/PHASE2-COMPLETION-SUMMARY.md` - Phase 2 achievements
+- `docs/prd/` - Phase Requirements Documents for historical reference
+
+### Test Coverage Details
+
+**Backend Tests (511 tests, 100% pass rate):**
+- API endpoints: 276 tests
+- Copy service: 111 tests (agents: 24, commands: 25, hooks: 45, MCP: 17)
+- Performance: 5 tests (Grade A+, 200x-500x faster than targets)
+
+**Frontend Tests (644 tests, 80% pass rate):**
+- 514 passing tests (E2E workflows, component tests, responsive design)
+- 130 deferred for post-release manual testing (Test 106 E2E workflows)
+- 31 accessibility tests (WCAG 2.1 AA compliance verified)
+
+### Future Phase Planning
+
+**Next Phases (Not Yet Started):**
+- Subagent CRUD operations
+- Command management features
+- Visual hooks configuration
+- Advanced MCP server management
+
+**See:** `docs/guides/ROADMAP.md` for complete future feature planning

@@ -10,41 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.1.0] - 2025-11-13
 
 ### Added
-
-#### Copy Configuration Feature (Phase 3 - EPIC-003)
-Complete implementation of configuration copying between projects and scopes with robust conflict handling and accessibility compliance.
-
-**Backend Service:**
-- Backend copy service for agents, commands, hooks, and MCP servers
-- Configuration-specific copy methods: `copyAgent()`, `copyCommand()`, `copyHook()`, `copyMcp()`
-- 3-level nested merge algorithm for hooks (event → matcher → command)
-- Smart deduplication by command field (hooks) and server name (MCP)
-- Robust conflict detection with skip/overwrite/rename strategies
-- Security hardening with path traversal protection
-- Atomic writes using temp file + rename pattern
-- 111 backend tests for copy service (100% pass rate)
-
-**API Endpoints:**
-- RESTful copy endpoints: POST /api/copy/agent, /api/copy/command, /api/copy/hook, /api/copy/mcp
-- Comprehensive error handling and validation
-- Conflict resolution support
-
-**User Interface:**
-- PrimeVue UI component library for modern, accessible components
-- CopyModal component with project selection and conflict resolution
-- ConflictResolver component with skip/overwrite/rename options
-- Single-click copy UX (improved from original two-click design)
-- Copy buttons integrated into all configuration cards and item lists
-- Toast notifications for success, error, and cancellation feedback
+- Copy configuration feature: Copy agents, commands, hooks, and MCP servers between projects
+- Smart conflict resolution with skip/overwrite/rename strategies
+- PrimeVue UI components for modern, accessible interface
 - WCAG 2.1 AA accessibility compliance (96%, 0 critical violations)
-- 31 accessibility tests verifying keyboard navigation, screen readers, focus management
 
-**Testing & Quality:**
-- 511 backend tests (100% pass rate)
-- 644 frontend tests created (514 passing, 130 deferred for manual testing)
-- Performance: Grade A+ (200x-500x faster than targets)
-- Cross-platform validated (Linux baseline, high confidence for Windows/macOS)
-- 5 performance tests ensuring sub-millisecond copy operations
+### Changed
+- Improved copy workflow with single-click UX and toast notifications
 
 ---
 
