@@ -19,10 +19,11 @@ Session summaries document completed work, bugs fixed, features delivered, and l
 
 | Date | File | Topics | Key Outcomes |
 |------|------|--------|--------------|
-| 2025-10-26 | [cleanup-2025-10-26/](cleanup-2025-10-26/) | Production readiness review: documentation, code, subagents, tests | Comprehensive cleanup before Phase 2 release. 9/10 confidence, approved for production after 2.5 hrs of fixes. 581 tests passing (100%). |
 | 2025-10-24 | [SESSION-SUMMARY-20251024.md](summaries/SESSION-SUMMARY-20251024.md) | Bug fixes: agent metadata display, user config persistence | Fixed BUG-027, BUG-028, BUG-029, BUG-035 with 100% test coverage (313 tests). Established sidebar field display pattern for future fixes. |
 
 **Format:** Session summaries include overview, bugs fixed, code changes, test results, lessons learned, and next steps.
+
+**Note:** Ephemeral session tracking documents are not stored in git. See `tracking/README.md` for guidelines.
 
 ---
 
@@ -30,13 +31,17 @@ Session summaries document completed work, bugs fixed, features delivered, and l
 
 Workflow analyses provide deep dives into development sessions, examining what went well, what went poorly, and how to improve processes.
 
+**Archive Location:** `/home/tickets/claude/manager/archives/workflow-analyses/`
+
 | Date | File | Session ID | Topics | Key Findings |
 |------|------|------------|--------|--------------|
-| 2025-10-07 | [workflow-analysis-20251007.md](workflow-analyses/workflow-analysis-20251007.md) | bb8fbe33 + 5 others | October 7 revert incident, feature branch violations, massive scope | **Critical Issues:** 100% work on main branch, 2-3 hour feature chunks, testing only after completion, 350+ errors. Established new mandatory workflow: feature branches, 30-60 min tasks, test-after-each-feature. |
-| 2025-10-12 | [workflow-analysis-20251012-session-c6d23edd.md](workflow-analyses/workflow-analysis-20251012-session-c6d23edd.md) | c6d23edd | Story 3.1 completion, SWARM methodology success | **Exemplary Execution:** 100% task completion (3/3), 100% test pass (36/36), zero workflow violations, zero errors. Demonstrated that new workflow prevents catastrophic failures. Rated 5/5 stars. |
-| 2025-10-22 | [workflow-analysis-20251022.md](workflow-analyses/workflow-analysis-20251022.md) | 48b4cb87 | EPIC-001 bug fix sprint (16 bugs, 4 groups) | **Best-Practice Workflow:** Systematic group execution, 100% test pass rate (270 tests), zero regressions, excellent git hygiene. Root cause analysis identified shared fixes. Rated 5/5 stars. |
+| 2025-10-07 | [workflow-analysis-20251007.md](/home/tickets/claude/manager/archives/workflow-analyses/workflow-analysis-20251007.md) | bb8fbe33 + 5 others | October 7 revert incident, feature branch violations, massive scope | **Critical Issues:** 100% work on main branch, 2-3 hour feature chunks, testing only after completion, 350+ errors. Established new mandatory workflow: feature branches, 30-60 min tasks, test-after-each-feature. |
+| 2025-10-12 | [workflow-analysis-20251012-session-c6d23edd.md](/home/tickets/claude/manager/archives/workflow-analyses/workflow-analysis-20251012-session-c6d23edd.md) | c6d23edd | Story 3.1 completion, SWARM methodology success | **Exemplary Execution:** 100% task completion (3/3), 100% test pass (36/36), zero workflow violations, zero errors. Demonstrated that new workflow prevents catastrophic failures. Rated 5/5 stars. |
+| 2025-10-22 | [workflow-analysis-20251022.md](/home/tickets/claude/manager/archives/workflow-analyses/workflow-analysis-20251022.md) | 48b4cb87 | EPIC-001 bug fix sprint (16 bugs, 4 groups) | **Best-Practice Workflow:** Systematic group execution, 100% test pass rate (270 tests), zero regressions, excellent git hygiene. Root cause analysis identified shared fixes. Rated 5/5 stars. |
 
 **Format:** Workflow analyses include executive summary, session metrics, strengths observed, issues identified, recommendations, and examples from logs.
+
+**Note:** These analyses are archived in the ticketing system for historical reference and project evaluation.
 
 ---
 
