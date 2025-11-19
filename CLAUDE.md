@@ -287,8 +287,8 @@ backlog → todo → in-progress → review → done
   - Contains: Phase 2.1-7+ plans, timelines, dependencies
 
 ### 📚 Historical Reference
-- **Phase archives:** `/home/tickets/claude/manager/archives/phases/` - Completed phase PRDs and documentation
-- **Workflow analyses:** `/home/tickets/claude/manager/archives/workflow-analyses/` - Critical workflow lessons learned
+- **Phase archives:** Completed phase PRDs and documentation (archived in ticketing system)
+- **Workflow analyses:** Critical workflow lessons learned (archived in ticketing system)
 - **Development history:** `docs/sessions/INDEX.md` - Full session history index
 
 ## Development History
@@ -299,9 +299,11 @@ This project has undergone continuous improvement since Phase 1 MVP. Key session
 - [October 24, 2025](docs/sessions/summaries/SESSION-SUMMARY-20251024.md) - Fixed 4 critical display bugs with 100% test coverage
 
 **Workflow Analyses** (archived in ticketing system):
-- [October 7, 2025](/home/tickets/claude/manager/archives/workflow-analyses/workflow-analysis-20251007.md) - Critical incident analysis: established mandatory workflow improvements
-- [October 12, 2025](/home/tickets/claude/manager/archives/workflow-analyses/workflow-analysis-20251012-session-c6d23edd.md) - Exemplary execution: 100% task completion, zero errors
-- [October 22, 2025](/home/tickets/claude/manager/archives/workflow-analyses/workflow-analysis-20251022.md) - Best-practice bug sprint: 16 bugs fixed systematically
+- October 7, 2025 - Critical incident analysis: established mandatory workflow improvements
+- October 12, 2025 - Exemplary execution: 100% task completion, zero errors
+- October 22, 2025 - Best-practice bug sprint: 16 bugs fixed systematically
+
+**Note:** Workflow analyses are maintained by the agile-ticket-manager agent in the ticketing system. Claude Code agents can access these archives as needed.
 
 **Complete Archive:** See [docs/sessions/INDEX.md](docs/sessions/INDEX.md) for full development history.
 
@@ -329,7 +331,7 @@ This section contains detailed development workflow information for contributors
 - **Phase 3 (Copy Configuration):** Complete copy feature with conflict resolution (November 2-13, 2025)
 
 **Phase Documentation:**
-- `/home/tickets/claude/manager/archives/phases/` - Completed phase PRDs and achievements
+- Completed phase PRDs and achievements (archived in ticketing system, managed by agile-ticket-manager)
 - `docs/prd/` - Active Phase Requirements Documents (Phase 3+)
 
 ### Test Coverage Details

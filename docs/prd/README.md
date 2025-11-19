@@ -11,25 +11,31 @@ This directory contains Product Requirements Documents for the Claude Code Manag
 - **Status**: Implemented and released in v2.1.0
 - **Features**: Copy agents, commands, hooks, and MCP servers between projects with conflict resolution
 
-### Phase 4: Subagents Management 📅 Planned
-- **PRD**: `PRD-Phase4-Subagents.md`
+### Subagents Management 📅 Planned
+- **PRD**: `PRD-Subagents.md`
 - **Scope**: Create, edit, and delete subagent definitions from the UI
 - **Status**: Design phase
+- **Priority**: High
 
-### Phase 5: Commands Management 📅 Planned
-- **PRD**: `PRD-Phase5-Commands.md`
+### Commands Management 📅 Planned
+- **PRD**: `PRD-Commands.md`
 - **Scope**: Create, edit, and delete slash commands from the UI
 - **Status**: Design phase
+- **Priority**: Medium
 
-### Phase 6: Hooks Configuration 📅 Planned
-- **PRD**: `PRD-Phase6-Hooks.md`
+### Hooks Configuration 📅 Planned
+- **PRD**: `PRD-Hooks.md`
 - **Scope**: Visual editor for configuring Claude Code hooks
 - **Status**: Design phase
+- **Priority**: Medium
 
-### Phase 7: MCP Management 📅 Future
-- **PRD**: `PRD-Phase7-MCP.md`
+### MCP Management 📅 Future
+- **PRD**: `PRD-MCP.md`
 - **Scope**: Enable/disable MCP servers, advanced configuration
 - **Status**: Future planning
+- **Priority**: Medium
+
+**Note:** Implementation order for planned features will be determined based on user feedback and project priorities.
 
 ## Feature Research
 
@@ -39,11 +45,7 @@ The `features/` subdirectory contains research and analysis for potential featur
 
 ## Historical PRDs
 
-Completed Phase 1-2 PRDs have been archived in the ticketing system for historical reference:
-- Phase 1 (MVP): `/home/tickets/claude/manager/archives/phases/phase1/`
-- Phase 2 (Vite Migration): `/home/tickets/claude/manager/archives/phases/phase2/`
-
-These archives preserve the requirements and completion criteria for completed phases without cluttering the active documentation.
+Completed Phase 1-2 PRDs have been archived in the ticketing system for historical reference. The agile-ticket-manager agent maintains these archives to preserve requirements and completion criteria for completed phases without cluttering the active documentation.
 
 ## PRD Lifecycle
 
@@ -56,4 +58,4 @@ These archives preserve the requirements and completion criteria for completed p
 
 - **Roadmap**: `docs/guides/ROADMAP.md` - Phase timeline and dependencies
 - **SWARM Workflow**: `docs/guides/SWARM-WORKFLOW.md` - Implementation process
-- **Archives**: `/home/tickets/claude/manager/archives/phases/` - Completed phase documentation
+- **Archives**: Completed phase documentation (archived in ticketing system, managed by agile-ticket-manager)

@@ -31,11 +31,12 @@ Session tracking documents are **not tracked in git** by default (see `.gitignor
 If a session contains strategic insights that should be preserved (e.g., critical incident analysis, workflow improvements), those insights should be:
 1. Extracted into a workflow analysis document (see `docs/sessions/summaries/`)
 2. Incorporated into relevant guides (e.g., `docs/guides/SWARM-WORKFLOW.md`)
-3. Then archived in the ticketing system at `/home/tickets/claude/manager/archives/workflow-analyses/`
+3. Then archived by the agile-ticket-manager agent in the ticketing system
 
 ## Historical Context
 
 For historical workflow analyses and lessons learned, see:
-- `/home/tickets/claude/manager/archives/workflow-analyses/` - Critical workflow analyses (Oct 2025)
+- `docs/sessions/INDEX.md` - Complete session history index with workflow analysis summaries
 - `docs/sessions/summaries/` - Session summaries with key outcomes
-- `docs/sessions/INDEX.md` - Complete session history index
+
+**Note:** Full workflow analysis documents are archived in the ticketing system and managed by the agile-ticket-manager agent.

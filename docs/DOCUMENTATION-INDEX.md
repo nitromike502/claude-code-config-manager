@@ -19,7 +19,7 @@ This index provides a comprehensive guide to all documentation in the Claude Cod
 - **Testing Guide:** [docs/testing/README.md](testing/README.md)
 - **Development Guides:** [docs/guides/](guides/)
 - **Development History:** [docs/sessions/INDEX.md](sessions/INDEX.md)
-- **Historical Archives:** `/home/tickets/claude/manager/archives/`
+- **Historical Archives:** Managed by agile-ticket-manager in ticketing system
 
 ---
 
@@ -46,23 +46,25 @@ This index provides a comprehensive guide to all documentation in the Claude Cod
 
 ### Completed Phases (Archived)
 
-| Phase | Archive Location | Completion Date |
-|-------|------------------|-----------------|
-| Phase 1 MVP | `/home/tickets/claude/manager/archives/phases/phase1/` | October 2025 |
-| Phase 2 - Vite Migration | `/home/tickets/claude/manager/archives/phases/phase2/` | October 2025 |
-| Phase 2.1 - Component Refactoring | `/home/tickets/claude/manager/archives/phases/phase2/` | October 26, 2025 |
-| Phase 2.2 - Bug Fixes | Completed via bug fixes | October 27, 2025 |
-| Phase 2.3 - Production Readiness | Completed via production fixes | November 1, 2025 |
+| Phase | Completion Date | Notes |
+|-------|-----------------|-------|
+| Phase 1 MVP | October 2025 | Archived in ticketing system |
+| Phase 2 - Vite Migration | October 2025 | Archived in ticketing system |
+| Phase 2.1 - Component Refactoring | October 26, 2025 | Archived in ticketing system |
+| Phase 2.2 - Bug Fixes | October 27, 2025 | Completed via bug fixes |
+| Phase 2.3 - Production Readiness | November 1, 2025 | Completed via production fixes |
 
-### Active/Planned Phases
+**Note:** Completed phase documentation is managed by the agile-ticket-manager agent in the ticketing system.
 
-| Phase | Document | Status | Priority |
-|-------|----------|--------|----------|
-| Phase 3 - Copy Configuration | [PRD-Phase3-Copy-Configuration.md](prd/PRD-Phase3-Copy-Configuration.md) | ✅ Complete | Released v2.1.0 |
-| Phase 4 - Subagent CRUD | [PRD-Phase4-Subagents.md](prd/PRD-Phase4-Subagents.md) | 📝 Planned | High |
-| Phase 5 - Command Management | [PRD-Phase5-Commands.md](prd/PRD-Phase5-Commands.md) | 📝 Planned | Medium |
-| Phase 6 - Hooks Configuration | [PRD-Phase6-Hooks.md](prd/PRD-Phase6-Hooks.md) | 📝 Planned | Medium |
-| Phase 7 - MCP Server Management | [PRD-Phase7-MCP.md](prd/PRD-Phase7-MCP.md) | 📝 Planned | Medium |
+### Active/Planned Features
+
+| Feature | Document | Status | Priority |
+|---------|----------|--------|----------|
+| Copy Configuration | [PRD-Phase3-Copy-Configuration.md](prd/PRD-Phase3-Copy-Configuration.md) | ✅ Complete | Released v2.1.0 |
+| Subagent Management | [PRD-Subagents.md](prd/PRD-Subagents.md) | 📝 Planned | High |
+| Command Management | [PRD-Commands.md](prd/PRD-Commands.md) | 📝 Planned | Medium |
+| Hooks Configuration | [PRD-Hooks.md](prd/PRD-Hooks.md) | 📝 Planned | Medium |
+| MCP Server Management | [PRD-MCP.md](prd/PRD-MCP.md) | 📝 Planned | Medium |
 
 ---
 

@@ -31,17 +31,15 @@ Session summaries document completed work, bugs fixed, features delivered, and l
 
 Workflow analyses provide deep dives into development sessions, examining what went well, what went poorly, and how to improve processes.
 
-**Archive Location:** `/home/tickets/claude/manager/archives/workflow-analyses/`
-
-| Date | File | Session ID | Topics | Key Findings |
-|------|------|------------|--------|--------------|
-| 2025-10-07 | [workflow-analysis-20251007.md](/home/tickets/claude/manager/archives/workflow-analyses/workflow-analysis-20251007.md) | bb8fbe33 + 5 others | October 7 revert incident, feature branch violations, massive scope | **Critical Issues:** 100% work on main branch, 2-3 hour feature chunks, testing only after completion, 350+ errors. Established new mandatory workflow: feature branches, 30-60 min tasks, test-after-each-feature. |
-| 2025-10-12 | [workflow-analysis-20251012-session-c6d23edd.md](/home/tickets/claude/manager/archives/workflow-analyses/workflow-analysis-20251012-session-c6d23edd.md) | c6d23edd | Story 3.1 completion, SWARM methodology success | **Exemplary Execution:** 100% task completion (3/3), 100% test pass (36/36), zero workflow violations, zero errors. Demonstrated that new workflow prevents catastrophic failures. Rated 5/5 stars. |
-| 2025-10-22 | [workflow-analysis-20251022.md](/home/tickets/claude/manager/archives/workflow-analyses/workflow-analysis-20251022.md) | 48b4cb87 | EPIC-001 bug fix sprint (16 bugs, 4 groups) | **Best-Practice Workflow:** Systematic group execution, 100% test pass rate (270 tests), zero regressions, excellent git hygiene. Root cause analysis identified shared fixes. Rated 5/5 stars. |
+| Date | Session ID | Topics | Key Findings |
+|------|------------|--------|--------------|
+| 2025-10-07 | bb8fbe33 + 5 others | October 7 revert incident, feature branch violations, massive scope | **Critical Issues:** 100% work on main branch, 2-3 hour feature chunks, testing only after completion, 350+ errors. Established new mandatory workflow: feature branches, 30-60 min tasks, test-after-each-feature. |
+| 2025-10-12 | c6d23edd | Story 3.1 completion, SWARM methodology success | **Exemplary Execution:** 100% task completion (3/3), 100% test pass (36/36), zero workflow violations, zero errors. Demonstrated that new workflow prevents catastrophic failures. Rated 5/5 stars. |
+| 2025-10-22 | 48b4cb87 | EPIC-001 bug fix sprint (16 bugs, 4 groups) | **Best-Practice Workflow:** Systematic group execution, 100% test pass rate (270 tests), zero regressions, excellent git hygiene. Root cause analysis identified shared fixes. Rated 5/5 stars. |
 
 **Format:** Workflow analyses include executive summary, session metrics, strengths observed, issues identified, recommendations, and examples from logs.
 
-**Note:** These analyses are archived in the ticketing system for historical reference and project evaluation.
+**Note:** These analyses are archived in the ticketing system (managed by agile-ticket-manager). Contact the ticket manager agent to access full analysis documents for project evaluation.
 
 ---
 
