@@ -1,7 +1,7 @@
 # Documentation Index
 
-**Last Updated:** November 1, 2025
-**Version:** Phase 2.3 Complete - Production Ready
+**Last Updated:** November 18, 2025
+**Version:** Phase 3 Complete - Documentation Reorganized
 
 This index provides a comprehensive guide to all documentation in the Claude Code Manager project. Use this as your starting point to find information about any aspect of the system.
 
@@ -12,13 +12,14 @@ This index provides a comprehensive guide to all documentation in the Claude Cod
 **New to the project?** Start here:
 1. [README.md](../README.md) - Overview, installation, usage
 2. [CLAUDE.md](../CLAUDE.md) - Complete project context for developers
-3. [docs/prd/PRD-Phase2-Vite-Migration.md](prd/PRD-Phase2-Vite-Migration.md) - Current architecture
+3. [docs/prd/README.md](prd/README.md) - Phase Requirements Documents index
 
 **Looking for specific information?**
 - **API Reference:** [docs/API.md](API.md)
-- **Testing Guide:** [docs/testing/TESTING-README.md](testing/TESTING-README.md)
-- **Production Readiness:** [docs/PRODUCTION-READINESS-PHASE2.md](PRODUCTION-READINESS-PHASE2.md)
+- **Testing Guide:** [docs/testing/README.md](testing/README.md)
+- **Development Guides:** [docs/guides/](guides/)
 - **Development History:** [docs/sessions/INDEX.md](sessions/INDEX.md)
+- **Historical Archives:** Managed by agile-ticket-manager in ticketing system
 
 ---
 
@@ -29,7 +30,6 @@ This index provides a comprehensive guide to all documentation in the Claude Cod
 | Document | Purpose | Audience | Status |
 |----------|---------|----------|--------|
 | [README.md](../README.md) | Project overview, installation, usage guide | End users, new developers | ✅ Current |
-| [PRODUCTION-READINESS-PHASE2.md](PRODUCTION-READINESS-PHASE2.md) | Phase 2 production assessment | Project managers, stakeholders | ✅ Complete |
 
 ### Developer Documentation
 
@@ -37,36 +37,34 @@ This index provides a comprehensive guide to all documentation in the Claude Cod
 |----------|---------|----------|--------|
 | [CLAUDE.md](../CLAUDE.md) | Complete project context, architecture, workflows | All developers, AI agents | ✅ Current |
 | [API.md](API.md) | Backend API reference with examples | Backend developers | ✅ Current |
-| [PHASE2-MIGRATION-GUIDE.md](PHASE2-MIGRATION-GUIDE.md) | Guide to migrating from Phase 1 to Phase 2 | Developers upgrading | ✅ Complete |
-| [PHASE2-QUICK-REFERENCE.md](PHASE2-QUICK-REFERENCE.md) | Quick reference for Phase 2 features | All developers | ✅ Current |
 
 ---
 
 ## Phase Requirements Documents (PRDs)
 
-### Completed Phases
+**Active PRDs:** See [docs/prd/README.md](prd/README.md) for complete phase documentation.
 
-| Phase | Document | Status | Completion Date |
-|-------|----------|--------|-----------------|
-| Phase 1 MVP | [PRD-Phase1-MVP.md](prd/PRD-Phase1-MVP.md) | ✅ Complete | October 2025 |
-| Phase 2 - Vite Migration | [PRD-Phase2-Vite-Migration.md](prd/PRD-Phase2-Vite-Migration.md) | ✅ Complete | October 2025 |
+### Completed Phases (Archived)
 
-### Completed Phases (continued)
+| Phase | Completion Date | Notes |
+|-------|-----------------|-------|
+| Phase 1 MVP | October 2025 | Archived in ticketing system |
+| Phase 2 - Vite Migration | October 2025 | Archived in ticketing system |
+| Phase 2.1 - Component Refactoring | October 26, 2025 | Archived in ticketing system |
+| Phase 2.2 - Bug Fixes | October 27, 2025 | Completed via bug fixes |
+| Phase 2.3 - Production Readiness | November 1, 2025 | Completed via production fixes |
 
-| Phase | Document | Status | Completion Date |
-|-------|----------|--------|-----------------|
-| Phase 2.1 - Component Refactoring | [PRD-Phase2-Extension-Component-Refactoring.md](prd/PRD-Phase2-Extension-Component-Refactoring.md) | ✅ Complete | October 26, 2025 |
-| Phase 2.2 - Bug Fixes | Completed via bug fixes | ✅ Complete | October 27, 2025 |
-| Phase 2.3 - Production Readiness | Completed via production fixes | ✅ Complete | November 1, 2025 |
+**Note:** Completed phase documentation is managed by the agile-ticket-manager agent in the ticketing system.
 
-### Planned Phases
+### Active/Planned Features
 
-| Phase | Document | Status | Priority |
-|-------|----------|--------|----------|
-| Phase 3 - Subagent CRUD | [PRD-Phase3-Subagents.md](prd/PRD-Phase3-Subagents.md) | 📝 Planned | High |
-| Phase 4 - Command Management | [PRD-Phase4-Commands.md](prd/PRD-Phase4-Commands.md) | 📝 Planned | Medium |
-| Phase 5 - Hooks Configuration | [PRD-Phase5-Hooks.md](prd/PRD-Phase5-Hooks.md) | 📝 Planned | Medium |
-| Phase 6 - MCP Server Management | [PRD-Phase6-MCP.md](prd/PRD-Phase6-MCP.md) | 📝 Planned | Medium |
+| Feature | Document | Status | Priority |
+|---------|----------|--------|----------|
+| Copy Configuration | [PRD-Phase3-Copy-Configuration.md](prd/PRD-Phase3-Copy-Configuration.md) | ✅ Complete | Released v2.1.0 |
+| Subagent Management | [PRD-Subagents.md](prd/PRD-Subagents.md) | 📝 Planned | High |
+| Command Management | [PRD-Commands.md](prd/PRD-Commands.md) | 📝 Planned | Medium |
+| Hooks Configuration | [PRD-Hooks.md](prd/PRD-Hooks.md) | 📝 Planned | Medium |
+| MCP Server Management | [PRD-MCP.md](prd/PRD-MCP.md) | 📝 Planned | Medium |
 
 ---
 
@@ -76,7 +74,7 @@ This index provides a comprehensive guide to all documentation in the Claude Cod
 
 | Document | Purpose | Audience | Status |
 |----------|---------|----------|--------|
-| [testing/TESTING-README.md](testing/TESTING-README.md) | Main testing guide, quick start, infrastructure | All developers | ✅ Current |
+| [testing/README.md](testing/README.md) | Main testing guide, quick start, infrastructure | All developers | ✅ Current |
 | [testing/TEST-FILE-INDEX.md](testing/TEST-FILE-INDEX.md) | Comprehensive index of all 879 tests | Test engineers | ✅ Current |
 | [FRONTEND_TEST_INFRASTRUCTURE.md](FRONTEND_TEST_INFRASTRUCTURE.md) | Frontend test suite overview (603 tests) | Frontend developers | ✅ Current |
 
