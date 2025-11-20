@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
+import Aura from '@primevue/themes/aura'
 import App from '@/App.vue'
 import router from '@/router'
 import { useThemeStore } from '@/stores/theme'
@@ -25,9 +26,22 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
-// Use PrimeVue (required for Dialog and other components)
+// Use PrimeVue with Aura theme preset
+// - Aura preset provides modern, styled components (Dialog, Toast, etc.)
+// - darkModeSelector syncs with our theme store's [data-theme="dark"] attribute
+// - CSS layer ordering ensures PrimeVue styles integrate correctly
+// - Semantic tokens (--p-*) are mapped in variables.css to our custom theme
 app.use(PrimeVue, {
-  unstyled: true // We use our own CSS variables for styling
+  theme: {
+    preset: Aura,
+    options: {
+      darkModeSelector: '[data-theme="dark"]',
+      cssLayer: {
+        name: 'primevue',
+        order: 'tailwind-base, primevue, tailwind-utilities'
+      }
+    }
+  }
 })
 
 // Use PrimeVue services

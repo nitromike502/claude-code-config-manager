@@ -12,13 +12,71 @@
    Both themes define the SAME variable names
    with different values for seamless switching.
 
-   PrimeVue Compatibility:
-   --surface-* aliases are maintained for potential
-   future PrimeVue component integration.
+   PrimeVue Aura Theme Integration:
+   - PrimeVue semantic tokens (--p-*) map to our custom variables
+   - Aura theme preset configured in main.js with dark mode selector
+   - Enables styled PrimeVue components (Dialog, Toast, etc.)
+   - Legacy --surface-* aliases maintained for backward compatibility
    ============================================ */
 
 /* Dark Mode Theme (Default) */
 :root[data-theme="dark"] {
+
+  /* ========== PrimeVue Aura Theme Tokens ========== */
+  /* Map PrimeVue semantic tokens to our existing CSS variables */
+
+  /* Primary color scale - brand colors */
+  --p-primary-50: #e3f2fd;
+  --p-primary-100: #bbdefb;
+  --p-primary-200: #90caf9;
+  --p-primary-300: #64b5f6;
+  --p-primary-400: #42a5f5;
+  --p-primary-500: var(--color-primary);  /* #007ad9 */
+  --p-primary-600: var(--color-primary-hover);  /* #005fa3 */
+  --p-primary-700: var(--color-primary-active);  /* #004d82 */
+  --p-primary-800: var(--color-primary-disabled);  /* #003d66 */
+  --p-primary-900: #002147;
+
+  /* Surface colors - backgrounds and cards */
+  --p-surface-0: var(--bg-primary);  /* #121212 - page background */
+  --p-surface-50: var(--bg-secondary);  /* #1e1e1e - card background */
+  --p-surface-100: var(--bg-tertiary);  /* #252525 - subtle backgrounds */
+  --p-surface-200: var(--bg-hover);  /* #2a2a2a - hover states */
+  --p-surface-300: #303030;
+  --p-surface-400: #383838;
+  --p-surface-500: #424242;
+  --p-surface-600: #505050;
+  --p-surface-700: #616161;
+  --p-surface-800: #757575;
+  --p-surface-900: #9e9e9e;
+
+  /* Text colors */
+  --p-text-color: var(--text-primary);  /* #e0e0e0 */
+  --p-text-muted-color: var(--text-secondary);  /* #a0a0a0 */
+  --p-text-hover-color: var(--text-emphasis);  /* #ffffff */
+
+  /* Border colors */
+  --p-content-border-color: var(--border-primary);  /* #3e3e3e */
+
+  /* State colors - success, warning, error, info */
+  --p-green-500: var(--color-success);  /* #4CAF50 */
+  --p-green-600: #43a047;
+  --p-green-700: #388e3c;
+
+  --p-orange-500: var(--color-warning);  /* #FFA726 */
+  --p-orange-600: #fb8c00;
+  --p-orange-700: var(--color-warning-bg);  /* #e65100 */
+
+  --p-red-500: var(--color-error);  /* #EF5350 */
+  --p-red-600: #e53935;
+  --p-red-700: var(--color-error-bg);  /* #b71c1c */
+
+  --p-blue-500: var(--color-info);  /* #2196F3 */
+  --p-blue-600: #1e88e5;
+  --p-blue-700: var(--color-info-bg);  /* #0d47a1 */
+
+  /* Focus ring */
+  --p-focus-ring-color: var(--border-focus);  /* #007ad9 */
 
   /* ========== Backgrounds ========== */
   /* Primary: Page background
@@ -112,6 +170,62 @@
 
 /* Light Mode Theme */
 :root[data-theme="light"] {
+
+  /* ========== PrimeVue Aura Theme Tokens ========== */
+  /* Map PrimeVue semantic tokens to our existing CSS variables */
+
+  /* Primary color scale - brand colors */
+  --p-primary-50: #e3f2fd;
+  --p-primary-100: #bbdefb;
+  --p-primary-200: #90caf9;
+  --p-primary-300: #64b5f6;
+  --p-primary-400: #42a5f5;
+  --p-primary-500: var(--color-primary);  /* #1976d2 */
+  --p-primary-600: var(--color-primary-hover);  /* #1565c0 */
+  --p-primary-700: var(--color-primary-active);  /* #0d47a1 */
+  --p-primary-800: #0a3d82;
+  --p-primary-900: #002147;
+
+  /* Surface colors - backgrounds and cards */
+  --p-surface-0: var(--bg-primary);  /* #f5f5f5 - page background */
+  --p-surface-50: var(--bg-secondary);  /* #ffffff - card background */
+  --p-surface-100: var(--bg-tertiary);  /* #fafafa - subtle backgrounds */
+  --p-surface-200: var(--bg-hover);  /* #fafafa - hover states */
+  --p-surface-300: #f0f0f0;
+  --p-surface-400: #e8e8e8;
+  --p-surface-500: #e0e0e0;
+  --p-surface-600: #d0d0d0;
+  --p-surface-700: #b0b0b0;
+  --p-surface-800: #909090;
+  --p-surface-900: #707070;
+
+  /* Text colors */
+  --p-text-color: var(--text-primary);  /* #212121 */
+  --p-text-muted-color: var(--text-secondary);  /* #616161 */
+  --p-text-hover-color: var(--text-emphasis);  /* #000000 */
+
+  /* Border colors */
+  --p-content-border-color: var(--border-primary);  /* #e0e0e0 */
+
+  /* State colors - success, warning, error, info */
+  --p-green-500: var(--color-success);  /* #388e3c */
+  --p-green-600: #2e7d32;
+  --p-green-700: #1b5e20;
+
+  --p-orange-500: var(--color-warning);  /* #f57c00 */
+  --p-orange-600: #ef6c00;
+  --p-orange-700: #e65100;
+
+  --p-red-500: var(--color-error);  /* #d32f2f */
+  --p-red-600: #c62828;
+  --p-red-700: #b71c1c;
+
+  --p-blue-500: var(--color-info);  /* #1976d2 */
+  --p-blue-600: #1565c0;
+  --p-blue-700: #0d47a1;
+
+  /* Focus ring */
+  --p-focus-ring-color: var(--border-focus);  /* #1976d2 */
 
   /* ========== Backgrounds ========== */
   --bg-primary: #f5f5f5;

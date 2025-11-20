@@ -46,6 +46,7 @@
   "author": "Mike Eckert",
   "license": "MIT",
   "dependencies": {
+    "@primevue/themes": "^4.4.1",
     "@vitejs/plugin-vue": "^6.0.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",
