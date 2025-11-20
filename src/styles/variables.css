@@ -12,9 +12,11 @@
    Both themes define the SAME variable names
    with different values for seamless switching.
 
-   PrimeVue Compatibility:
-   --surface-* aliases are maintained for potential
-   future PrimeVue component integration.
+   PrimeVue Aura Theme Integration:
+   - PrimeVue semantic tokens (--p-*) map to our custom variables
+   - Aura theme preset configured in main.js with dark mode selector
+   - Enables styled PrimeVue components (Dialog, Toast, etc.)
+   - Legacy --surface-* aliases maintained for backward compatibility
    ============================================ */
 
 /* Dark Mode Theme (Default) */

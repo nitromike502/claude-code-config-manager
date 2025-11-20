@@ -27,6 +27,10 @@ app.use(pinia)
 app.use(router)
 
 // Use PrimeVue with Aura theme preset
+// - Aura preset provides modern, styled components (Dialog, Toast, etc.)
+// - darkModeSelector syncs with our theme store's [data-theme="dark"] attribute
+// - CSS layer ordering ensures PrimeVue styles integrate correctly
+// - Semantic tokens (--p-*) are mapped in variables.css to our custom theme
 app.use(PrimeVue, {
   theme: {
     preset: Aura,
