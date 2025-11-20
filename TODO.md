@@ -1,11 +1,80 @@
-# TODO
+# TODO - Future Tasks & Ideas
 
-## Current Todos
+## Purpose
 
-- Filter projects without `.claude` directory from dashboard
+This file is a **personal idea backlog** for the Claude Code Manager project. It serves as a collection point for:
+- Feature ideas and enhancement suggestions
+- Potential improvements discovered during development
+- Nice-to-have functionality for future phases
+- Technical debt or refactoring opportunities worth exploring
 
-## Future Enhancements
+**This is NOT a project status tracker.** Project progress and task completion are tracked via:
+- Git commits (one commit per completed task)
+- Pull requests and code reviews
+- Test suite execution and results
+- Documentation in `CLAUDE.md` (for architecture/feature status)
 
-- **Skills Support:** Add ability to copy and manage skills between projects
-- **MCP Server Management:** Enable/disable MCP servers directly from the UI
-- **Team Builder:** Create groups of agents, commands, and configurations to copy as a unit
+## Guidelines
+
+- **Add freely**: Capture ideas as they emerge during development
+- **Keep it rough**: Ideas don't need to be fully fleshed out
+- **Organize loosely**: Group related ideas by category/phase when it makes sense
+- **Review occasionally**: Periodically review to identify patterns or priorities
+- **Link to PR/commits**: When an idea becomes a task, link it to the PR/commit that implements it
+
+**Note:** Changes to this file can be included in any branch/PR regardless of the feature being developed.
+
+---
+
+## Future Enhancement Ideas
+
+### Namespaced Agents & Commands
+- [ ] Nested directory support for Subagents and Slash Commands
+
+### Project Discovery Improvements
+- [ ] **Filter projects without `.claude` directory**: Modify project discovery to ignore any projects from the project listing if the directory does not contain a `.claude` directory. This prevents listing directories that aren't actually Claude Code projects, improving accuracy of the project list and reducing clutter.
+
+### Scripts to Skills Migration
+- [ ] Migrate utility scripts from `scripts/` directory to Claude Code skills
+- [ ] Convert `ensure-server-running.sh` to a reusable skill
+- [ ] Evaluate other scripts for skill conversion potential
+- [ ] Update documentation to reference skills instead of direct script paths
+
+### Workflow Analyzer Script Integration
+- [ ] Update `/analyze-workflow` slash command to utilize condense-transcript.js helper script
+- [ ] Update `workflow-analyzer` agent instructions to leverage condense-transcript.js for large transcripts
+- [ ] Add documentation in workflow-analyzer about when/how to use the transcript condenser
+- [ ] Test workflow analysis with condensed vs. raw transcripts for efficiency comparison
+
+### YAML Frontmatter Validation & Auto-Fix
+- [ ] Add YAML validation UI that highlights files with parsing errors
+- [ ] Implement "Fix YAML" button/feature to auto-correct common issues
+- [ ] Support unquoted text values (add quotes where needed)
+- [ ] Handle special characters in YAML values (colons, brackets, etc.)
+- [ ] Provide diff preview before applying fixes
+- [ ] Add option to bulk-fix all YAML errors in a project
+
+### UI/UX Enhancements
+- [ ] **Migrate existing components to PrimeVue** - Installed PrimeVue in Phase 3 for copy feature components (CopyButton, CopyModal, ConflictResolver). Consider migrating existing custom HTML/CSS components (ConfigCard, ConfigDetailSidebar, etc.) to PrimeVue components for consistency and reduced maintenance. Low priority - focus on feature completion first.
+
+### Performance Optimization Ideas
+- ✅ **RESOLVED: Jest test performance issue** - Copy service tests were split from one monolithic file (653 lines) into 5 focused test files. Now runs in ~0.3s with all 67 tests passing. Resolved in TASK-3.1.6 (November 2, 2025).
+
+### Developer Experience Ideas
+
+- ✅ **Review and optimize test suite** - Addressed during Phase 3 development. Copy service tests split from monolithic 653-line file into 5 focused files (~0.3s execution). Test audit performed with detailed optimization recommendations documented in dedicated branch. (Completed 2025-11-08)
+
+- ✅ **Modify SWARM workflow for targeted testing** - Implemented targeted testing strategy in SWARM-WORKFLOW.md v1.1. Tests now run only after story completion (not per task), with targeted tests first (2-3 min) followed by full suite (5-7 min). Reduced testing overhead from 61% to ~20% of development time. (Completed 2025-11-08, commit b78acbd)
+
+- ✅ **Add LICENSE file** - Include MIT LICENSE for legal compliance (Completed in Phase 2.3, 2025-11-01)
+- ✅ **Add favicon** - Create professional favicon for browser tab identification (Completed in Phase 2.3, 2025-11-01 - `public/favicon.svg`)
+
+---
+
+## Ideas That Have Been Implemented
+
+These ideas were originally captured in this TODO and have since been completed:
+
+- ✅ **Copy Configuration (Phase 3)** - Copy agents, commands, hooks, and MCP servers between projects with conflict resolution (Completed 2025-11-13)
+- ✅ **Vite Migration (Phase 2)** - Modernize frontend architecture with Vite build system, Vue Router, and Pinia state management (Completed 2025-10-20)
+- ✅ **NPX Support** - Allow running Claude Code Manager via `npx claude-code-config-manager` without local installation (Completed 2025-10-17)
