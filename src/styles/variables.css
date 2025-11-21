@@ -152,20 +152,32 @@
   /* ========== Background Variants ========== */
   /* Background colors with opacity for badges and highlights */
   --color-mcp-bg: rgba(156, 39, 176, 0.2);  /* MCP badge background */
+  --color-badge-bg: rgba(33, 150, 243, 0.2);  /* Blue badge background */
+  --color-badge-text: #90caf9;  /* Blue badge text */
 
   /* ========== Focus Indicators ========== */
   /* Focus ring for interactive elements */
   --color-primary-focus-ring: rgba(0, 122, 217, 0.1);  /* Primary focus ring background */
 
+  /* ========== Overlays ========== */
+  /* Modal masks and overlay backgrounds */
+  --overlay-modal-mask: rgba(0, 0, 0, 0.6);  /* Modal backdrop */
+
   /* ========== Shadows ========== */
   /* Card: Default card elevation
      Card-hover: Lifted card state
      Card-active: Pressed card state
-     Sidebar: Sidebar/drawer shadow */
+     Sidebar: Sidebar/drawer shadow
+     Hover variants: Hover state elevations
+     Selected: Selected item ring shadow */
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-card-active: 0 1px 4px rgba(0, 0, 0, 0.2);
   --shadow-sidebar: -4px 0 16px rgba(0, 0, 0, 0.5);
+  --shadow-hover-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-hover-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-hover-lg: 0 6px 16px rgba(0, 0, 0, 0.4);
+  --shadow-selected: 0 0 0 2px rgba(0, 122, 217, 0.3);  /* Selected state ring */
 }
 
 /* Light Mode Theme */
@@ -282,14 +294,30 @@
   /* ========== Background Variants ========== */
   /* Background colors with opacity for badges and highlights */
   --color-mcp-bg: rgba(123, 31, 162, 0.2);  /* MCP badge background */
+  --color-badge-bg: rgba(25, 118, 210, 0.15);  /* Blue badge background */
+  --color-badge-text: #1565c0;  /* Blue badge text */
 
   /* ========== Focus Indicators ========== */
   /* Focus ring for interactive elements */
   --color-primary-focus-ring: rgba(25, 118, 210, 0.1);  /* Primary focus ring background */
 
+  /* ========== Overlays ========== */
+  /* Modal masks and overlay backgrounds */
+  --overlay-modal-mask: rgba(0, 0, 0, 0.4);  /* Modal backdrop */
+
   /* ========== Shadows ========== */
+  /* Card: Default card elevation
+     Card-hover: Lifted card state
+     Card-active: Pressed card state
+     Sidebar: Sidebar/drawer shadow
+     Hover variants: Hover state elevations
+     Selected: Selected item ring shadow */
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
   --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
   --shadow-card-active: 0 1px 2px rgba(0, 0, 0, 0.1);
   --shadow-sidebar: -2px 0 8px rgba(0, 0, 0, 0.1);
+  --shadow-hover-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-hover-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-hover-lg: 0 6px 16px rgba(0, 0, 0, 0.15);
+  --shadow-selected: 0 0 0 2px rgba(25, 118, 210, 0.3);  /* Selected state ring */
 }
