@@ -79,16 +79,16 @@ test.describe('08.001: CopyModal Rendering', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Check for header icon
-          const headerIcon = modal.locator('.modal-header .pi-copy, .p-dialog-header .pi-copy');
+          // Check for header icon - use .modal-header specifically since PrimeVue wraps it
+          const headerIcon = modal.locator('.modal-header .pi-copy');
           const hasIcon = await headerIcon.count() > 0;
 
           if (hasIcon) {
             await expect(headerIcon).toBeVisible();
           }
 
-          // Check for header text
-          const headerText = modal.locator('.modal-header, .p-dialog-header');
+          // Check for header text - use .modal-header to avoid strict mode violation
+          const headerText = modal.locator('.modal-header');
           await expect(headerText).toContainText('Copy Configuration');
         }
       }
