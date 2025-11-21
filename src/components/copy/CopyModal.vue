@@ -10,7 +10,7 @@
     class="copy-modal"
     :pt="{
       root: { style: `width: ${modalWidth}; max-width: ${modalMaxWidth}` },
-      mask: { style: 'background-color: rgba(0, 0, 0, 0.4)' }
+      mask: { style: 'background-color: var(--overlay-modal-mask)' }
     }"
     @hide="handleDialogHide"
   >
@@ -451,7 +451,7 @@ const handleButtonCopy = async (destination) => {
   background: var(--bg-hover);
   border-color: var(--color-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-hover-sm);
 }
 
 .destination-card:focus {
@@ -463,7 +463,7 @@ const handleButtonCopy = async (destination) => {
   background: var(--bg-hover);
   border-color: var(--color-primary);
   border-width: 2px;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: var(--shadow-selected);
 }
 
 .card-header {
@@ -530,7 +530,7 @@ const handleButtonCopy = async (destination) => {
 
 /* Modal Overlay/Mask */
 :deep(.p-dialog-mask) {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: var(--overlay-modal-mask);
 }
 
 /* Close Button Styling */

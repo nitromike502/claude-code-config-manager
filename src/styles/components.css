@@ -425,8 +425,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem;
-  background-color: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background-color: var(--color-info-bg);
+  border: 1px solid rgba(33, 150, 243, 0.3);
   border-radius: 6px;
   color: var(--text-secondary);
   font-size: 0.875rem;
@@ -472,11 +472,12 @@
 }
 
 .btn-copy.copied {
-  background-color: #10b981;
+  background-color: var(--color-success);
 }
 
 .btn-copy.copied:hover {
-  background-color: #059669;
+  background-color: var(--color-success);
+  opacity: 0.9;
 }
 
 .btn-close {
@@ -755,8 +756,8 @@
 }
 
 .status-badge.status-disabled {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
@@ -921,7 +922,7 @@
 
 .error-message i {
   font-size: 2rem;
-  color: #ef4444;
+  color: var(--color-error);
   margin-bottom: 0.75rem;
 }
 
@@ -1005,7 +1006,7 @@
 
 .agent-name .error-icon {
   font-size: 0.875rem;
-  color: #f59e0b;
+  color: var(--color-warning);
 }
 
 .agent-description {
@@ -1158,7 +1159,7 @@
 
 .command-name .error-icon {
   font-size: 0.875rem;
-  color: #f59e0b;
+  color: var(--color-warning);
 }
 
 .command-description {
@@ -1274,13 +1275,13 @@
 }
 
 .scope-badge.scope-user {
-  background-color: rgba(168, 85, 247, 0.15);
+  background-color: var(--color-mcp-bg);
   color: var(--color-mcp);
   border: 1px solid rgba(168, 85, 247, 0.3);
 }
 
 .scope-badge.scope-project {
-  background-color: rgba(249, 115, 22, 0.15);
+  background-color: var(--color-hooks-bg);
   color: var(--color-hooks);
   border: 1px solid rgba(249, 115, 22, 0.3);
 }
@@ -1407,83 +1408,83 @@
 
 /* Toast severity variants */
 .p-toast-message-success {
-  background-color: #f0fdf4;
-  border-left-color: #10b981;
+  background-color: var(--color-success-bg);
+  border-left-color: var(--color-success);
 }
 
 [data-theme="dark"] .p-toast-message-success {
-  background-color: #064e3b;
-  border-left-color: #34d399;
+  background-color: var(--color-success-bg);
+  border-left-color: var(--color-success);
 }
 
 .p-toast-message-success .p-toast-message-icon,
 .p-toast-message-success .p-toast-summary {
-  color: #059669;
+  color: var(--color-success);
 }
 
 [data-theme="dark"] .p-toast-message-success .p-toast-message-icon,
 [data-theme="dark"] .p-toast-message-success .p-toast-summary {
-  color: #34d399;
+  color: var(--color-success);
 }
 
 .p-toast-message-info {
-  background-color: #eff6ff;
-  border-left-color: #3b82f6;
+  background-color: var(--color-info-bg);
+  border-left-color: var(--color-info);
 }
 
 [data-theme="dark"] .p-toast-message-info {
-  background-color: #1e3a8a;
-  border-left-color: #60a5fa;
+  background-color: var(--color-info-bg);
+  border-left-color: var(--color-info);
 }
 
 .p-toast-message-info .p-toast-message-icon,
 .p-toast-message-info .p-toast-summary {
-  color: #2563eb;
+  color: var(--color-info);
 }
 
 [data-theme="dark"] .p-toast-message-info .p-toast-message-icon,
 [data-theme="dark"] .p-toast-message-info .p-toast-summary {
-  color: #60a5fa;
+  color: var(--color-info);
 }
 
 .p-toast-message-warn {
-  background-color: #fffbeb;
-  border-left-color: #f59e0b;
+  background-color: var(--color-warning-bg);
+  border-left-color: var(--color-warning);
 }
 
 [data-theme="dark"] .p-toast-message-warn {
-  background-color: #78350f;
-  border-left-color: #fbbf24;
+  background-color: var(--color-warning-bg);
+  border-left-color: var(--color-warning);
 }
 
 .p-toast-message-warn .p-toast-message-icon,
 .p-toast-message-warn .p-toast-summary {
-  color: #d97706;
+  color: var(--color-warning);
 }
 
 [data-theme="dark"] .p-toast-message-warn .p-toast-message-icon,
 [data-theme="dark"] .p-toast-message-warn .p-toast-summary {
-  color: #fbbf24;
+  color: var(--color-warning);
 }
 
 .p-toast-message-error {
-  background-color: #fef2f2;
-  border-left-color: #ef4444;
+  background-color: var(--color-error-bg);
+  border-left-color: var(--color-error);
 }
 
 [data-theme="dark"] .p-toast-message-error {
-  background-color: #7f1d1d;
-  border-left-color: #f87171;
+  background-color: var(--color-error-bg);
+  border-left-color: var(--color-error);
 }
 
 .p-toast-message-error .p-toast-message-icon,
 .p-toast-message-error .p-toast-summary {
-  color: #dc2626;
+  color: var(--color-error);
 }
 
 [data-theme="dark"] .p-toast-message-error .p-toast-message-icon,
 [data-theme="dark"] .p-toast-message-error .p-toast-summary {
-  color: #f87171;
+  color: var(--color-error);
 }
 
 /* MCPCard Specific Styles */
@@ -1586,7 +1587,7 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.025em;
-  background-color: rgba(168, 85, 247, 0.15);
+  background-color: var(--color-mcp-bg);
   color: var(--color-mcp);
   border: 1px solid rgba(168, 85, 247, 0.3);
 }
@@ -1678,7 +1679,7 @@
 }
 
 [data-pc-name="button"][data-p-severity="success"]:hover:not(:disabled) {
-  background: #059669;
+  background: #059669;  /* Darker green for hover contrast */
 }
 
 [data-pc-name="button"][data-p-severity="danger"] {
@@ -1687,7 +1688,7 @@
 }
 
 [data-pc-name="button"][data-p-severity="danger"]:hover:not(:disabled) {
-  background: #dc2626;
+  background: #dc2626;  /* Darker red for hover contrast */
 }
 
 /* Icon-only buttons */

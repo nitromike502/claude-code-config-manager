@@ -723,7 +723,7 @@ export default {
 
 .error-container i {
   font-size: 3rem;
-  color: #ef4444;
+  color: var(--color-error);
   margin-bottom: 1rem;
 }
 
@@ -759,16 +759,16 @@ export default {
 
 /* Warning Banner */
 .warning-banner {
-  background: #fef3c7;
-  border: 1px solid #fbbf24;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
   border-radius: 8px;
   padding: 1rem 1.5rem;
   margin-bottom: 1.5rem;
 }
 
 [data-theme="dark"] .warning-banner {
-  background: #78350f;
-  border-color: #f59e0b;
+  background: var(--color-warning-bg);
+  border-color: var(--color-warning);
 }
 
 .warning-header {
@@ -776,12 +776,12 @@ export default {
   align-items: center;
   gap: 0.75rem;
   font-weight: 600;
-  color: #92400e;
+  color: var(--color-warning);
   margin-bottom: 0.5rem;
 }
 
 [data-theme="dark"] .warning-header {
-  color: #fbbf24;
+  color: var(--color-warning);
 }
 
 .warning-header i {
@@ -791,11 +791,11 @@ export default {
 .warning-list {
   margin: 0;
   padding-left: 2rem;
-  color: #78350f;
+  color: var(--color-warning);
 }
 
 [data-theme="dark"] .warning-list {
-  color: #fcd34d;
+  color: var(--color-warning);
 }
 
 .warning-list li {

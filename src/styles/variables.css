@@ -154,6 +154,7 @@
   --color-mcp-bg: rgba(156, 39, 176, 0.2);  /* MCP badge background */
   --color-badge-bg: rgba(33, 150, 243, 0.2);  /* Blue badge background */
   --color-badge-text: #90caf9;  /* Blue badge text */
+  --color-hooks-bg: rgba(255, 152, 0, 0.15);  /* Hooks badge background */
 
   /* ========== Focus Indicators ========== */
   /* Focus ring for interactive elements */
@@ -296,6 +297,7 @@
   --color-mcp-bg: rgba(123, 31, 162, 0.2);  /* MCP badge background */
   --color-badge-bg: rgba(25, 118, 210, 0.15);  /* Blue badge background */
   --color-badge-text: #1565c0;  /* Blue badge text */
+  --color-hooks-bg: rgba(245, 124, 0, 0.12);  /* Hooks badge background */
 
   /* ========== Focus Indicators ========== */
   /* Focus ring for interactive elements */
