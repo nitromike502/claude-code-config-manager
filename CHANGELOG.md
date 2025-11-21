@@ -9,11 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Light Mode Display Issues:** Fixed poor contrast and readability in light mode by replacing 20+ hardcoded colors with theme-aware CSS variables. All UI components now properly adapt to light and dark themes. (STORY-3.10)
+
 ### Changed
 - Enabled PrimeVue Aura theme preset for styled components
 - Added PrimeVue semantic token mappings (--p-* variables) to CSS
 - Configured dark mode integration with Aura theme system
 - Established foundation for 85% CSS reduction in Phase 3.1
+- **Theme System:** Added 11 new CSS variables for badges, overlays, and shadows with light/dark mode variants. Modified 6 files to use centralized theme variables instead of hardcoded hex/rgba values for seamless theme switching. (STORY-3.10)
 
 ---
 
