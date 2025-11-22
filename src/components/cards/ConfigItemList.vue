@@ -1,18 +1,21 @@
 <template>
-  <div class="items-list">
+  <div class="flex flex-col gap-3">
     <div
       v-for="(item, index) in items"
       :key="index"
       class="config-item"
       @click="$emit('item-selected', item, itemType)"
     >
-      <div class="item-content">
-        <div class="item-name">{{ getItemName(item) }}</div>
-        <div class="item-description" :class="{ 'truncated': truncateDescription }">
+      <div class="flex-1 min-w-0 flex flex-col gap-1">
+        <div class="font-semibold text-[0.95rem] text-text-primary">{{ getItemName(item) }}</div>
+        <div
+          class="text-[0.85rem] text-text-secondary leading-[1.4]"
+          :class="{ 'truncate': truncateDescription }"
+        >
           {{ getItemDescription(item, itemType) }}
         </div>
       </div>
-      <div class="item-actions">
+      <div class="flex items-center gap-2 shrink-0">
         <div @click.stop>
           <CopyButton
             :configItem="item"
@@ -128,12 +131,7 @@ const getItemDescription = (item, type) => {
 </script>
 
 <style scoped>
-.items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
+/* Config Item - Core styling with Tailwind-managed layout */
 .config-item {
   display: flex;
   align-items: center;
@@ -153,56 +151,7 @@ const getItemDescription = (item, type) => {
   box-shadow: var(--shadow-card);
 }
 
-.item-content {
-  flex: 1;
-  min-width: 0; /* Allow text truncation */
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.item-name {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--text-primary);
-}
-
-.item-description {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.item-description.truncated {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.item-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0; /* Prevent actions container from shrinking */
-}
-
-.view-details-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: transparent;
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-  flex-shrink: 0; /* Prevent button from shrinking */
-}
-
+/* View Details Button - Preserve PrimeVue Button hover effects */
 .view-details-btn:hover {
   background: var(--color-primary);
   color: var(--text-emphasis);
@@ -210,11 +159,7 @@ const getItemDescription = (item, type) => {
   box-shadow: var(--shadow-card);
 }
 
-.view-details-btn i {
-  font-size: 0.9rem;
-}
-
-/* Responsive Design */
+/* Responsive Design - Mobile layout */
 @media (max-width: 768px) {
   .config-item {
     flex-direction: column;
@@ -222,17 +167,11 @@ const getItemDescription = (item, type) => {
     gap: 0.75rem;
   }
 
-  .item-actions {
-    width: 100%;
-    gap: 0.5rem;
-  }
-
   .view-details-btn {
-    flex: 1; /* Both buttons share available width equally */
+    flex: 1;
     justify-content: center;
   }
 }
 
 /* Dark/Light Mode Support - Handled by CSS Variables */
-/* The component automatically supports both themes via the variables defined in variables.css */
 </style>

@@ -103,73 +103,50 @@
              Tailwind: class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 auto-fit"
              Note: Tailwind auto-fit not directly available, use grid-cols-[repeat(auto-fit,minmax(320px,1fr))] or responsive cols -->
         <div v-else class="project-grid">
-          <!-- PHASE 2: Replace .project-card flex layout with Tailwind
-               Current: background, border, padding, flex-direction: column, gap, cursor, transition, hover effects
-               Tailwind: class="bg-slate-800 border border-slate-700 rounded-lg p-6 flex flex-col gap-4 cursor-pointer transition-all hover:border-blue-500 hover:shadow-lg hover:-translate-y-0.5"
-               Note: user-card variant styling (different border/background) will be handled with conditional classes -->
-          <div
+          <!-- Using PrimeVue Card component with passthrough props -->
+          <Card
             v-for="project in sortedProjects"
             :key="project.id"
-            class="project-card"
-            :class="{ 'user-card': project.isUser }"
+            :pt="projectCardPt"
+            :class="['project-card', { 'user-card': project.isUser }]"
             @click="navigateToProject(project.id)"
           >
-            <!-- PHASE 2: Replace .project-header flex with Tailwind
-                 Current: display: flex; align-items: center; gap: 0.75rem
-                 Tailwind: class="flex items-center gap-3" -->
-            <div class="project-header">
-              <!-- PHASE 2: Replace icon color with Tailwind
-                   Current: font-size: 1.5rem; color: var(--color-primary) / var(--color-user)
-                   Tailwind: class="text-2xl text-blue-500" or "text-2xl text-purple-500" (for user-card) -->
-              <i :class="project.isUser ? 'pi pi-user' : 'pi pi-folder'"></i>
-              <!-- PHASE 2: Replace .project-name with Tailwind
-                   Current: font-size: 1.1rem; color: var(--text-primary); font-weight: 600; text-overflow: ellipsis
-                   Tailwind: class="text-lg text-slate-100 font-semibold truncate" -->
-              <h3 class="project-name">{{ project.name }}</h3>
-            </div>
+            <!-- Header slot -->
+            <template #header>
+              <div class="project-header">
+                <i :class="project.isUser ? 'pi pi-user' : 'pi pi-folder'"></i>
+                <h3 class="project-name">{{ project.name }}</h3>
+              </div>
+            </template>
 
-            <!-- PHASE 2: Replace .project-path with Tailwind
-                 Current: font-size: 0.85rem; color: var(--text-secondary); line-clamp: 2
-                 Tailwind: class="text-sm text-slate-400 line-clamp-2" -->
-            <div class="project-path">{{ project.path }}</div>
+            <!-- Content slot -->
+            <template #content>
+              <div class="project-path">{{ project.path }}</div>
 
-            <!-- PHASE 2: Replace .project-stats grid with Tailwind
-                 Current: display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem
-                 Tailwind: class="grid grid-cols-2 gap-2" -->
-            <div class="project-stats">
-              <!-- PHASE 2: Replace .stat flex with Tailwind
-                   Current: display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem
-                   Tailwind: class="flex items-center gap-2 text-sm text-slate-400" -->
-              <div class="stat stat-agents">
-                <!-- PHASE 2: Replace icon colors with Tailwind
-                     Current: var(--color-agents) = green / var(--color-commands) = blue, etc.
-                     Tailwind: class="text-green-500" / class="text-blue-500" / class="text-amber-500" / class="text-purple-500" -->
-                <i class="pi pi-users"></i>
-                <span>{{ project.stats?.agents || 0 }} Agents</span>
+              <div class="project-stats">
+                <div class="stat stat-agents">
+                  <i class="pi pi-users"></i>
+                  <span>{{ project.stats?.agents || 0 }} Agents</span>
+                </div>
+                <div class="stat stat-commands">
+                  <i class="pi pi-bolt"></i>
+                  <span>{{ project.stats?.commands || 0 }} Commands</span>
+                </div>
+                <div class="stat stat-hooks">
+                  <i class="pi pi-link"></i>
+                  <span>{{ project.stats?.hooks || 0 }} Hooks</span>
+                </div>
+                <div class="stat stat-mcp">
+                  <i class="pi pi-server"></i>
+                  <span>{{ project.stats?.mcp || 0 }} MCP</span>
+                </div>
               </div>
-              <div class="stat stat-commands">
-                <i class="pi pi-bolt"></i>
-                <span>{{ project.stats?.commands || 0 }} Commands</span>
-              </div>
-              <div class="stat stat-hooks">
-                <i class="pi pi-link"></i>
-                <span>{{ project.stats?.hooks || 0 }} Hooks</span>
-              </div>
-              <div class="stat stat-mcp">
-                <i class="pi pi-server"></i>
-                <span>{{ project.stats?.mcp || 0 }} MCP</span>
-              </div>
-            </div>
 
-            <!-- PHASE 2: Replace .project-footer with Tailwind
-                 Current: margin-top: auto; padding-top: 0.5rem; border-top: 1px solid var(--border-primary)
-                 Tailwind: class="mt-auto pt-2 border-t border-slate-700" -->
-            <div class="project-footer">
-              <!-- PHASE 2: PrimeVue Button - Keep as-is (PrimeVue provides theming)
-                   Note: .view-btn styling will be removed, Button component handles styling -->
-              <Button label="View" icon="pi pi-arrow-right" iconPos="right" class="view-btn" />
-            </div>
-          </div>
+              <div class="project-footer">
+                <Button label="View" icon="pi pi-arrow-right" iconPos="right" class="view-btn" />
+              </div>
+            </template>
+          </Card>
         </div>
       </div>
     </div>
@@ -182,10 +159,11 @@ import { useRouter } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
 import * as api from '@/api/client'
 import Button from 'primevue/button'
+import Card from 'primevue/card'
 
 export default {
   name: 'Dashboard',
-  components: { Button },
+  components: { Button, Card },
   setup() {
     const router = useRouter()
     const projectsStore = useProjectsStore()
@@ -303,6 +281,30 @@ export default {
       window.removeEventListener('header-search', handleHeaderSearch)
     })
 
+    // PrimeVue Card passthrough configuration
+    const projectCardPt = {
+      root: {
+        class: 'project-card-root',
+        style: { overflow: 'hidden' }
+      },
+      header: {
+        class: 'project-card-header',
+        style: {
+          padding: '0',
+          backgroundColor: 'transparent',
+          border: 'none'
+        }
+      },
+      body: {
+        class: 'project-card-body',
+        style: { padding: '0' }
+      },
+      content: {
+        class: 'project-card-content',
+        style: { padding: '1.5rem' }
+      }
+    }
+
     return {
       projectsStore,
       sortBy,
@@ -310,7 +312,8 @@ export default {
       sortedProjects,
       loadProjects,
       handleRescan,
-      navigateToProject
+      navigateToProject,
+      projectCardPt
     }
   }
 }
@@ -515,27 +518,20 @@ export default {
   font-size: 1rem;
 }
 
-/* PHASE 2: Projects Grid */
-/* DELETE .project-grid (replaced with grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5)
-   Note: auto-fill responsive column sizing will use grid-cols-[repeat(auto-fit,minmax(320px,1fr))] or responsive breakdown -->
+/* Projects Grid */
 .project-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.25rem;
 }
 
-/* DELETE .project-card (replaced with bg-slate-800 border border-slate-700 rounded-lg p-6 flex flex-col gap-4...)
-   Includes hover states: hover:border-blue-500 hover:shadow-lg hover:-translate-y-0.5 -->
+/* Project Card - PrimeVue Card customization */
 .project-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 8px;
-  padding: 1.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 }
 
 .project-card:hover {
@@ -544,7 +540,7 @@ export default {
   transform: translateY(-2px);
 }
 
-/* DELETE .project-card.user-card variant (replaced with user-card:border-purple-500 user-card:bg-slate-700) -->
+/* User Card Variant */
 .project-card.user-card {
   border-color: var(--color-user);
   background: var(--bg-primary);
@@ -555,25 +551,23 @@ export default {
   box-shadow: var(--shadow-hover-md);
 }
 
-/* DELETE .project-header (replaced with flex items-center gap-3) */
+/* Project Card Header */
 .project-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  padding: 1.25rem 1.5rem 0.75rem;
 }
 
-/* DELETE .project-header i (replaced with text-2xl text-blue-500) */
 .project-header i {
   font-size: 1.5rem;
   color: var(--color-primary);
 }
 
-/* DELETE .user-card .project-header i (replaced with user-card:text-purple-500) -->
 .user-card .project-header i {
   color: var(--color-user);
 }
 
-/* DELETE .project-name (replaced with text-lg text-slate-100 font-semibold truncate) */
 .project-name {
   margin: 0;
   font-size: 1.1rem;
@@ -582,9 +576,10 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
 }
 
-/* DELETE .project-path (replaced with text-sm text-slate-400 line-clamp-2) */
+/* Project Card Content */
 .project-path {
   font-size: 0.85rem;
   color: var(--text-secondary);
@@ -594,16 +589,16 @@ export default {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  margin-bottom: 1rem;
 }
 
-/* DELETE .project-stats (replaced with grid grid-cols-2 gap-2) */
 .project-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
-/* DELETE .stat (replaced with flex items-center gap-2 text-sm text-slate-400) */
 .stat {
   display: flex;
   align-items: center;
@@ -616,47 +611,20 @@ export default {
   font-size: 1rem;
 }
 
-/* DELETE .stat-agents/commands/hooks/mcp icon colors
-   Replace with Tailwind color modifiers:
-   - stat-agents i: text-green-500
-   - stat-commands i: text-blue-500
-   - stat-hooks i: text-amber-500
-   - stat-mcp i: text-purple-500 -->
+/* Domain-specific stat icon colors */
 .stat-agents i { color: var(--color-agents); }
 .stat-commands i { color: var(--color-commands); }
 .stat-hooks i { color: var(--color-hooks); }
 .stat-mcp i { color: var(--color-mcp); }
 
-/* DELETE .project-footer (replaced with mt-auto pt-2 border-t border-slate-700) */
+/* Project Card Footer */
 .project-footer {
-  margin-top: auto;
-  padding-top: 0.5rem;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--border-primary);
 }
 
-/* DELETE .view-btn (PrimeVue Button handles styling) */
 .view-btn {
   width: 100%;
-  padding: 0.5rem 1rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: background 0.2s;
-}
-
-.view-btn:hover {
-  background: var(--color-primary-hover);
-}
-
-.view-btn i {
-  font-size: 0.9rem;
 }
 
 /* PHASE 2: Responsive Breakpoints
