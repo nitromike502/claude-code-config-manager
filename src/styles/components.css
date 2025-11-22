@@ -1,4 +1,199 @@
-/* Component-Specific Styles */
+/* ============================================
+   TABLE OF CONTENTS
+   ============================================
+   1. Domain-Specific Styling (Configuration Type Colors)
+   2. App Header & Navigation
+   3. Layout Containers
+   4. Project Cards & Grid
+   5. Configuration Cards
+   6. Info Bars (Project & User)
+   7. Detail Sidebar (Overlay & Content)
+   8. Domain-Specific: Agents
+   9. Domain-Specific: Commands
+   10. Domain-Specific: Hooks
+   11. Domain-Specific: MCP Servers
+   12. Markdown & Content Rendering
+   13. Structured Content (Metadata, Environment Variables)
+   14. State Components (Loading, Empty, Error)
+   15. Toast Notifications
+   16. PrimeVue Component Overrides
+   17. Responsive Breakpoints & Utilities
+   ============================================ */
+
+/* ============================================
+   1. DOMAIN-SPECIFIC STYLES (Configuration Types)
+   ============================================
+
+   These styles must remain custom and cannot be replaced by Tailwind utilities
+   or generic CSS because they implement domain logic for Claude Code configuration types.
+
+   Category Color System:
+   - --color-agents: #4CAF50 (green) - Used for subagent indicators
+   - --color-commands: #2196F3 (blue) - Used for slash command indicators
+   - --color-hooks: #FF9800 (orange) - Used for hook indicators
+   - --color-mcp: #9C27B0 (purple) - Used for MCP server indicators
+
+   These colors are applied to:
+   1. Card type indicators (icon colors, badge backgrounds)
+   2. Count badges on card headers
+   3. Scope badges for hooks (user/project level)
+   4. Transport badges for MCP servers
+
+   Justification for custom rules:
+   - Each configuration type has specific visual identity in UI (green/blue/orange/purple)
+   - Count badges use type-specific colors to create visual scanning pattern
+   - Scope badges distinguish user-level vs project-level configurations
+   - These patterns are core to the application's information architecture
+   - Cannot be replaced by Tailwind without losing semantic meaning
+   ============================================ */
+
+/* Configuration Type Icon Colors */
+/* Used in card headers and list items to identify configuration type at a glance */
+
+.stat-agents i {
+  color: var(--color-agents);
+}
+
+.stat-commands i {
+  color: var(--color-commands);
+}
+
+.stat-hooks i {
+  color: var(--color-hooks);
+}
+
+.stat-mcp i {
+  color: var(--color-mcp);
+}
+
+/* Agent Card Type Styling */
+.agent-card .card-icon {
+  font-size: 1.5rem;
+  color: var(--color-agents);
+}
+
+.agent-card .count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.5rem;
+  background-color: var(--color-agents);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Command Card Type Styling */
+.command-card .card-icon {
+  font-size: 1.5rem;
+  color: var(--color-commands);
+}
+
+.command-card .count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.5rem;
+  background-color: var(--color-commands);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Hook Card Type Styling */
+.hook-card .card-icon {
+  font-size: 1.5rem;
+  color: var(--color-hooks);
+}
+
+.hook-card .count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.5rem;
+  background-color: var(--color-hooks);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Scope Badges - Distinguish user-level vs project-level hooks */
+.scope-badge.scope-user {
+  background-color: var(--color-mcp-bg);
+  color: var(--color-mcp);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.scope-badge.scope-project {
+  background-color: var(--color-hooks-bg);
+  color: var(--color-hooks);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+/* MCP Card Type Styling */
+.mcp-card .card-icon {
+  font-size: 1.5rem;
+  color: var(--color-mcp);
+}
+
+.mcp-card .count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.5rem;
+  background-color: var(--color-mcp);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Transport Badges - MCP server transport type indicators */
+.transport-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  background-color: var(--color-mcp-bg);
+  color: var(--color-mcp);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* User Info Bar - Accent with MCP color for user-level configurations */
+.user-info-bar {
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--color-mcp);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.user-info-bar .project-info-title i {
+  color: var(--color-mcp);
+}
+
+/* ============================================
+   END DOMAIN-SPECIFIC STYLES
+   ============================================ */
 
 /* App Header */
 .app-header {
@@ -44,7 +239,13 @@
   }
 }
 
-/* Project Grid */
+/* ============================================
+   3. LAYOUT CONTAINERS
+   ============================================ */
+
+/* ============================================
+   4. PROJECT CARDS & GRID
+   ============================================ */
 .project-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -130,23 +331,9 @@
   font-size: 1.25rem;
 }
 
-.stat-agents i {
-  color: var(--color-agents);
-}
-
-.stat-commands i {
-  color: var(--color-commands);
-}
-
-.stat-hooks i {
-  color: var(--color-hooks);
-}
-
-.stat-mcp i {
-  color: var(--color-mcp);
-}
-
-/* Config Cards Container */
+/* ============================================
+   5. CONFIGURATION CARDS
+   ============================================ */
 .config-cards-container {
   max-width: 960px;
   margin: 0 auto;
@@ -263,23 +450,13 @@
   font-size: 0.875rem;
 }
 
-/* User Info Bar (Purple accent) */
-.user-info-bar {
-  background-color: var(--bg-secondary);
-  border: 2px solid var(--color-mcp);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  max-width: 960px;
-  margin-left: auto;
-  margin-right: auto;
-}
+/* ============================================
+   6. INFO BARS (PROJECT & USER)
+   ============================================ */
 
-.user-info-bar .project-info-title i {
-  color: var(--color-mcp);
-}
-
-/* Detail Sidebar Overlay */
+/* ============================================
+   7. DETAIL SIDEBAR (OVERLAY & CONTENT)
+   ============================================ */
 .detail-sidebar-overlay {
   position: fixed;
   top: 0;
@@ -437,7 +614,9 @@
   background-color: var(--bg-tertiary);
 }
 
-/* Markdown Content */
+/* ============================================
+   12. MARKDOWN & CONTENT RENDERING
+   ============================================ */
 .markdown-content {
   color: var(--text-primary);
   line-height: 1.7;
@@ -567,7 +746,9 @@
   padding: 2rem;
 }
 
-/* Structured Content (Hooks & MCP) */
+/* ============================================
+   13. STRUCTURED CONTENT (METADATA & ENV VARS)
+   ============================================ */
 .structured-content {
   color: var(--text-primary);
 }
@@ -709,7 +890,9 @@
   }
 }
 
-/* Breadcrumb Styling */
+/* ============================================
+   17. RESPONSIVE BREAKPOINTS & UTILITIES
+   ============================================ */
 .p-breadcrumb {
   background-color: transparent !important;
   border: none !important;
@@ -766,7 +949,9 @@
   }
 }
 
-/* AgentCard Specific Styles */
+/* ============================================
+   8. DOMAIN-SPECIFIC: AGENTS
+   ============================================ */
 .agent-card .card-header {
   display: flex;
   justify-content: space-between;
@@ -785,30 +970,13 @@
   color: var(--text-emphasis);
 }
 
-.agent-card .card-icon {
-  font-size: 1.5rem;
-  color: var(--color-agents);
-}
-
-.agent-card .count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 0.5rem;
-  background-color: var(--color-agents);
-  color: white;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
 .agent-card .card-content {
   padding: 0;
 }
 
-/* Loading Skeleton */
+/* ============================================
+   14. STATE COMPONENTS (LOADING, EMPTY, ERROR)
+   ============================================ */
 .loading-skeleton {
   padding: 1rem 1.25rem;
 }
@@ -936,7 +1104,9 @@
   }
 }
 
-/* CommandCard Specific Styles */
+/* ============================================
+   9. DOMAIN-SPECIFIC: COMMANDS
+   ============================================ */
 .command-card .card-header {
   display: flex;
   justify-content: space-between;
@@ -953,25 +1123,6 @@
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-emphasis);
-}
-
-.command-card .card-icon {
-  font-size: 1.5rem;
-  color: var(--color-commands);
-}
-
-.command-card .count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 0.5rem;
-  background-color: var(--color-commands);
-  color: white;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
 }
 
 .command-card .card-content {
@@ -1038,7 +1189,9 @@
   }
 }
 
-/* HookCard Specific Styles */
+/* ============================================
+   10. DOMAIN-SPECIFIC: HOOKS
+   ============================================ */
 .hook-card .card-header {
   display: flex;
   justify-content: space-between;
@@ -1055,25 +1208,6 @@
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-emphasis);
-}
-
-.hook-card .card-icon {
-  font-size: 1.5rem;
-  color: var(--color-hooks);
-}
-
-.hook-card .count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 0.5rem;
-  background-color: var(--color-hooks);
-  color: white;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
 }
 
 .hook-card .card-content {
@@ -1121,30 +1255,6 @@
   font-size: 0.9375rem;
 }
 
-.scope-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-.scope-badge.scope-user {
-  background-color: var(--color-mcp-bg);
-  color: var(--color-mcp);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.scope-badge.scope-project {
-  background-color: var(--color-hooks-bg);
-  color: var(--color-hooks);
-  border: 1px solid rgba(249, 115, 22, 0.3);
-}
-
 .hook-command {
   color: var(--text-primary);
   font-size: 0.875rem;
@@ -1174,7 +1284,9 @@
   }
 }
 
-/* PrimeVue Toast Styles */
+/* ============================================
+   15. TOAST NOTIFICATIONS
+   ============================================ */
 .p-toast {
   opacity: 1 !important;
   width: 25rem;
@@ -1332,7 +1444,9 @@
   color: var(--color-error);
 }
 
-/* MCPCard Specific Styles */
+/* ============================================
+   11. DOMAIN-SPECIFIC: MCP SERVERS
+   ============================================ */
 .mcp-card .card-header {
   display: flex;
   justify-content: space-between;
@@ -1349,25 +1463,6 @@
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-emphasis);
-}
-
-.mcp-card .card-icon {
-  font-size: 1.5rem;
-  color: var(--color-mcp);
-}
-
-.mcp-card .count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 0.5rem;
-  background-color: var(--color-mcp);
-  color: white;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
 }
 
 .mcp-card .card-content {
@@ -1422,21 +1517,6 @@
   gap: 0.5rem;
 }
 
-.transport-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-  background-color: var(--color-mcp-bg);
-  color: var(--color-mcp);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
 .mcp-command {
   color: var(--text-primary);
   font-size: 0.875rem;
@@ -1457,7 +1537,9 @@
   }
 }
 
-/* PrimeVue Dialog Overrides */
+/* ============================================
+   16. PRIMEVUE COMPONENT OVERRIDES
+   ============================================ */
 .p-dialog-mask {
   position: fixed;
   top: 0;

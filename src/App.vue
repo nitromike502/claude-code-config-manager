@@ -3,7 +3,13 @@
     <header class="app-header">
       <div class="header-content">
         <h1>Claude Code Manager</h1>
-        <button @click="themeStore.toggleTheme" class="theme-toggle" :title="`Switch to ${themeStore.currentTheme === 'light' ? 'dark' : 'light'} mode`">
+        <!-- TAILWIND PHASE 2: Replace theme-toggle button with PrimeVue Button component -->
+        <button
+          @click="themeStore.toggleTheme"
+          class="theme-toggle"
+          :title="`Switch to ${themeStore.currentTheme === 'light' ? 'dark' : 'light'} mode`"
+          aria-label="Toggle theme"
+        >
           <span class="theme-icon">{{ themeStore.currentTheme === 'light' ? '🌙' : '☀️' }}</span>
           <span class="theme-text">{{ themeStore.currentTheme === 'light' ? 'Dark' : 'Light' }}</span>
         </button>
@@ -19,7 +25,8 @@
     <!-- PrimeVue Toast Component -->
     <Toast position="bottom-right" />
 
-    <!-- Notifications Container -->
+    <!-- TAILWIND PHASE 2: Remove custom notifications container, migrate to PrimeVue Toast -->
+    <!-- Notifications Container (legacy - to be replaced with Toast service) -->
     <div class="notifications" v-if="notificationsStore.notifications.length">
       <div
         v-for="notification in notificationsStore.notifications"
@@ -28,7 +35,12 @@
         :class="'notification-' + notification.type"
       >
         <p>{{ notification.message }}</p>
-        <button @click="notificationsStore.removeNotification(notification.id)">✕</button>
+        <button
+          @click="notificationsStore.removeNotification(notification.id)"
+          aria-label="Close notification"
+        >
+          ✕
+        </button>
       </div>
     </div>
   </div>
@@ -62,18 +74,26 @@ export default {
 </script>
 
 <style scoped>
+/* ============================================
+   App Layout - Core Flex Structure
+   Candidates for Tailwind: flex, min-h, flex-col, flex-1
+   ============================================ */
 .app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
+/* TAILWIND PHASE 2: bg-*, py-*, px-*, border-b
+   Current: var(--bg-header), padding, border-bottom */
 .app-header {
   background: var(--bg-header);
   padding: 1rem 2rem;
   border-bottom: 1px solid var(--border-primary);
 }
 
+/* TAILWIND PHASE 2: flex, justify-between, items-center, mb-*
+   Current: display: flex, justify-content, align-items, margin */
 .header-content {
   display: flex;
   justify-content: space-between;
@@ -81,6 +101,9 @@ export default {
   margin-bottom: 0.5rem;
 }
 
+/* TAILWIND PHASE 2: bg-*, border, px-*, py-*, rounded,
+   flex, items-center, gap, hover:bg-*, transition
+   Current: button styling with CSS custom properties */
 .theme-toggle {
   background: none;
   border: 1px solid var(--border-primary);
@@ -109,10 +132,16 @@ export default {
   color: var(--text-primary);
 }
 
+/* TAILWIND PHASE 2: flex-1 */
 .app-main {
   flex: 1;
 }
 
+/* ============================================
+   Notifications Container
+   TAILWIND PHASE 2: Remove entirely, migrate to PrimeVue Toast service
+   Current utilities: fixed, bottom-*, right-*, flex, flex-col, gap, z-*
+   ============================================ */
 .notifications {
   position: fixed;
   bottom: 1rem;
@@ -123,6 +152,9 @@ export default {
   z-index: 1000;
 }
 
+/* TAILWIND PHASE 2: p-*, rounded, bg-*, shadow,
+   flex, justify-between, items-center, gap, animation
+   Recommendation: Migrate to Toast component for consistency with PrimeVue design system */
 .notification {
   padding: 1rem;
   border-radius: 4px;
@@ -135,6 +167,7 @@ export default {
   animation: slideIn 0.3s ease-out;
 }
 
+/* Status-specific border colors - will be handled by Toast severity variants */
 .notification-success {
   border-left: 4px solid var(--color-success);
 }
@@ -151,6 +184,8 @@ export default {
   border-left: 4px solid var(--color-info);
 }
 
+/* TAILWIND PHASE 2: button reset styles, text-*, cursor-pointer
+   Current: background, border, cursor, font-size, color */
 .notification button {
   background: none;
   border: none;
@@ -159,6 +194,11 @@ export default {
   color: var(--text-muted);
 }
 
+/* ============================================
+   Animation Utilities
+   TAILWIND PHASE 2: Replace with Tailwind animate-* or custom animation config
+   Current: Custom keyframe for slide-in from right
+   ============================================ */
 @keyframes slideIn {
   from {
     transform: translateX(400px);
@@ -170,5 +210,13 @@ export default {
   }
 }
 
-/* Theme-specific overrides are now handled in variables.css */
+/* ============================================
+   Theme System
+   Status: Complete - CSS custom properties (--bg-*, --text-*, --color-*, --shadow-*)
+   are properly defined in variables.css
+
+   Phase 2 Note: Tailwind CSS + tailwindcss-primeui will replace the need for
+   these custom property utilities. Both themes (light/dark) are already
+   properly segregated in variables.css with data-theme attribute selector.
+   ============================================ */
 </style>
