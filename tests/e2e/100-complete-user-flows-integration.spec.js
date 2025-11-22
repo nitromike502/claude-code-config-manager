@@ -930,15 +930,14 @@ test.describe('100.004: E2E Integration: Error Handling & Recovery', () => {
     await page.waitForSelector('.project-detail', { timeout: 10000 });
 
     // NOTE: ProjectDetail uses Promise.allSettled() for resilient loading
-    // When individual config endpoints return 404, they fail gracefully and show warnings
-    // instead of breaking the entire page. This is better UX than showing an error state.
-    // Verify warning banner appears (not error state)
-    const warningBanner = page.locator('.warning-banner');
-    await expect(warningBanner).toBeVisible({ timeout: 10000 });
+    // When ALL config endpoints return 404, the component shows an error state
+    // (not warnings) because the project doesn't exist. This is better UX.
+    // Verify error state appears (not warning banner)
+    const errorState = page.locator('.error-state');
+    await expect(errorState).toBeVisible({ timeout: 10000 });
 
-    // Verify warning messages for failed config loads
-    const warningList = page.locator('.warning-list li');
-    expect(await warningList.count()).toBeGreaterThanOrEqual(1);
+    // Verify error message shows "Project not found"
+    await expect(errorState).toContainText('Project not found');
 
     // Verify user can navigate back to dashboard (FIX 4: .breadcrumb-link selector)
     // Use .breadcrumb-link to target the dashboard link in breadcrumbs
