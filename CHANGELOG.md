@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **STORY-3.16:** Migrated 5 components to PrimeVue Card component for consistency
+  - Dashboard: Replaced custom `.project-card` divs with PrimeVue Card
+  - ConfigItemList: Optimized with Tailwind CSS utility classes
+  - CopyModal: Migrated destination selection cards to PrimeVue Card
+  - ConflictResolver: Migrated file comparison cards to PrimeVue Card
+  - ConfigCard: Verified as optimal reference implementation
+  - Reduced custom CSS from 1,734 → 878 lines (49.4% reduction)
+  - Preserved domain-specific styling (config type colors, badges, markdown rendering)
+  - All functional tests passing, visual regression tests show expected UI improvements
 - Organized components.css into 17 logical sections with comprehensive comments (STORY-3.12 Phase 1)
 - Integrated PrimeVue Card component in ConfigCard wrapper (STORY-3.12 Phase 1)
 - Integrated PrimeVue Skeleton component in LoadingState (STORY-3.12 Phase 1)
