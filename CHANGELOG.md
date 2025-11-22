@@ -9,16 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-- Organized components.css into 17 logical sections with comprehensive comments (STORY-3.12 Phase 1)
-- Integrated PrimeVue Card component in ConfigCard wrapper (STORY-3.12 Phase 1)
-- Integrated PrimeVue Skeleton component in LoadingState (STORY-3.12 Phase 1)
-- Prepared codebase for Tailwind CSS v4 integration (STORY-3.12 Phase 1)
-- Commented out 18 duplicate utility classes in global.css for Phase 2 removal (STORY-3.12 Phase 1)
-- Enabled PrimeVue Aura theme preset for styled components (STORY-3.9)
-- Added PrimeVue semantic token mappings (--p-* variables) to CSS (STORY-3.9)
-- Configured dark mode integration with Aura theme system (STORY-3.9)
-
 ---
 
 ## [2.1.0] - 2025-11-13
