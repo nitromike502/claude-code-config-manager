@@ -21,10 +21,13 @@
             @copy-clicked="handleCopyClick"
           />
         </div>
-        <button class="view-details-btn" @click.stop="$emit('item-selected', item, itemType)">
-          <i class="pi pi-eye"></i>
-          View Details
-        </button>
+        <Button
+          label="View Details"
+          icon="pi pi-eye"
+          outlined
+          @click.stop="$emit('item-selected', item, itemType)"
+          class="view-details-btn"
+        />
       </div>
     </div>
   </div>
@@ -32,6 +35,7 @@
 
 <script setup>
 import { defineProps, defineEmits } from 'vue';
+import Button from 'primevue/button';
 import CopyButton from '@/components/copy/CopyButton.vue';
 
 const props = defineProps({

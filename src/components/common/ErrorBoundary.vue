@@ -5,12 +5,18 @@
       <h3>Something went wrong</h3>
       <p class="error-text">{{ errorMessage }}</p>
       <div class="error-actions">
-        <button @click="reset" class="btn-retry">
-          Try Again
-        </button>
-        <button @click="reportIssue" class="btn-report">
-          Report Issue
-        </button>
+        <Button
+          @click="reset"
+          label="Try Again"
+          severity="danger"
+          class="btn-retry"
+        />
+        <Button
+          @click="reportIssue"
+          label="Report Issue"
+          outlined
+          class="btn-report"
+        />
       </div>
       <details v-if="errorDetails" class="error-details">
         <summary>Technical Details</summary>
@@ -23,6 +29,7 @@
 
 <script setup>
 import { ref, onErrorCaptured } from 'vue'
+import Button from 'primevue/button'
 
 const hasError = ref(false)
 const errorMessage = ref('')

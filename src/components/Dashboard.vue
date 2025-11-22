@@ -11,14 +11,14 @@
               <option value="agents">Most Agents</option>
               <option value="commands">Most Commands</option>
             </select>
-            <button
+            <Button
               @click="handleRescan"
               :disabled="scanning"
+              :label="scanning ? 'Scanning...' : 'Rescan'"
+              icon="pi pi-refresh"
+              :iconClass="{ spinning: scanning }"
               class="rescan-btn"
-            >
-              <i class="pi pi-refresh" :class="{ spinning: scanning }"></i>
-              {{ scanning ? 'Scanning...' : 'Rescan' }}
-            </button>
+            />
           </div>
         </div>
 
@@ -32,7 +32,7 @@
         <div v-else-if="projectsStore.error" class="error-state">
           <h4>Error Loading Projects</h4>
           <p>{{ projectsStore.error }}</p>
-          <button @click="loadProjects" class="retry-btn">Retry</button>
+          <Button @click="loadProjects" label="Retry" severity="danger" class="retry-btn" />
         </div>
 
         <!-- Empty State -->
@@ -78,10 +78,7 @@
             </div>
 
             <div class="project-footer">
-              <button class="view-btn">
-                View
-                <i class="pi pi-arrow-right"></i>
-              </button>
+              <Button label="View" icon="pi pi-arrow-right" iconPos="right" class="view-btn" />
             </div>
           </div>
         </div>
@@ -95,9 +92,11 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
 import * as api from '@/api/client'
+import Button from 'primevue/button'
 
 export default {
   name: 'Dashboard',
+  components: { Button },
   setup() {
     const router = useRouter()
     const projectsStore = useProjectsStore()

@@ -29,18 +29,19 @@
     </div>
 
     <!-- Expand/Collapse Button -->
-    <button
+    <Button
       v-if="!loading && items.length > initialDisplayCount"
       @click="handleToggle"
+      :label="buttonText"
+      text
       class="btn-show-more"
-    >
-      {{ buttonText }}
-    </button>
+    />
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
+import Button from 'primevue/button';
 
 const props = defineProps({
   title: {

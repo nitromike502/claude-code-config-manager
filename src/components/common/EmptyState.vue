@@ -3,18 +3,19 @@
     <i :class="icon"></i>
     <h3>{{ title }}</h3>
     <p>{{ message }}</p>
-    <button
+    <Button
       v-if="actionText"
       @click="emit('action')"
+      :label="actionText"
+      :icon="actionIcon"
       class="action-btn"
-    >
-      <i v-if="actionIcon" :class="actionIcon"></i>
-      {{ actionText }}
-    </button>
+    />
   </div>
 </template>
 
 <script setup>
+import Button from 'primevue/button'
+
 defineProps({
   icon: {
     type: String,
