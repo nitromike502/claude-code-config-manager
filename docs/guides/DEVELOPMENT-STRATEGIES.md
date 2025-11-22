@@ -145,7 +145,7 @@ All development work must adhere to project coding standards:
 - **Test Data:** Use enum model values (`sonnet`, `haiku`, `opus`) not full IDs
 - **Import Paths:** Backend uses relative paths, frontend uses `@` aliases
 - **Documentation:** Brief comments in code, comprehensive docs in `docs/technical/`
-- **CHANGELOG:** Concise entries (3-4 bullets), user-facing features only
+- **CHANGELOG:** Updated at release time only (not during PR development)
 - **Commits:** Don't commit test reports or generated documentation
 
 **See:** `docs/guides/CODING-STANDARDS.md` for complete standards and best practices

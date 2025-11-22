@@ -9,7 +9,7 @@ This document codifies coding standards and best practices learned from code rev
 1. [Test Fixtures and Data](#test-fixtures-and-data)
 2. [Import Paths](#import-paths)
 3. [Documentation Placement](#documentation-placement)
-4. [CHANGELOG Guidelines](#changelog-guidelines)
+4. [CHANGELOG Policy](#changelog-policy)
 5. [What NOT to Commit](#what-not-to-commit)
 6. [Documentation Organization](#documentation-organization)
 
@@ -212,9 +212,28 @@ In docs/technical/: Comprehensive details with examples
 
 ---
 
-## CHANGELOG Guidelines
+## CHANGELOG Policy
 
-### Keep Entries Concise
+### Release-Time Updates Only
+
+**IMPORTANT: CHANGELOG.md is maintained by project maintainers**
+- Updates occur ONLY when cutting a new release (not during PR development)
+- Do NOT update CHANGELOG.md in feature branches
+- Do NOT include CHANGELOG updates in pull requests
+- Follow "Keep a Changelog" format: https://keepachangelog.com/
+
+**During Feature Development:**
+- Focus on code comments, README updates, and inline documentation
+- Update API documentation if endpoints change
+- Update user guides if workflows change
+- **Skip CHANGELOG** - it will be updated at release time
+
+**At Release Time:**
+- Project maintainer reviews all merged PRs since last release
+- Maintainer adds consolidated CHANGELOG entry for the release
+- Entry includes version number, date, and categorized changes
+
+### Keep Entries Concise (When Release Time Comes)
 
 **Maximum:** 3-4 bullet points per version
 **Focus:** User-facing features only
@@ -478,7 +497,7 @@ function parseHooks(settings) { ... }
 2. **Frontmatter:** Include optional properties for comprehensive test coverage
 3. **Imports:** Backend uses relative paths, frontend uses `@` aliases
 4. **Documentation:** Brief comments in code, comprehensive docs in `docs/technical/`
-5. **CHANGELOG:** 3-4 concise bullets, user-facing features only
+5. **CHANGELOG:** Updated at release time only (not during PR development)
 6. **Git Commits:** Don't commit test reports, generated docs, or IDE files
 7. **File Organization:** Follow established directory structure
 8. **Duplication:** One source of truth per concept
