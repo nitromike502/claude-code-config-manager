@@ -56,58 +56,76 @@
         <h3 class="section-title">Target</h3>
         <div class="destinations-container">
           <!-- User Global Card -->
-          <div
-            class="destination-card"
+          <Card
             :class="{ 'selected': selectedDestination?.id === 'user-global' }"
+            :pt="{
+              root: { class: 'destination-card' },
+              header: { class: 'destination-card-header' },
+              body: { class: 'destination-card-body' },
+              content: { class: 'destination-card-content' }
+            }"
             tabindex="0"
             role="button"
             aria-label="Copy to User Global"
             @click="selectDestination({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
             @keydown="handleKeyDown($event, { id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
           >
-            <div class="card-header">
-              <div class="card-title">
-                <i class="pi pi-user card-icon"></i>
-                <h4 class="card-name">User Global</h4>
+            <template #header>
+              <div class="card-header">
+                <div class="card-title">
+                  <i class="pi pi-user card-icon"></i>
+                  <h4 class="card-name">User Global</h4>
+                </div>
+                <Button
+                  label="Copy Here"
+                  icon="pi pi-copy"
+                  iconPos="left"
+                  class="card-button"
+                  @click.stop="handleButtonCopy({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
+                />
               </div>
-              <Button
-                label="Copy Here"
-                icon="pi pi-copy"
-                iconPos="left"
-                class="card-button"
-                @click.stop="handleButtonCopy({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
-              />
-            </div>
-            <div class="card-path">~/.claude/</div>
-          </div>
+            </template>
+            <template #content>
+              <div class="card-path">~/.claude/</div>
+            </template>
+          </Card>
 
           <!-- Project Cards -->
-          <div
+          <Card
             v-for="project in mockProjects"
             :key="project.id"
-            class="destination-card"
             :class="{ 'selected': selectedDestination?.id === project.id }"
+            :pt="{
+              root: { class: 'destination-card' },
+              header: { class: 'destination-card-header' },
+              body: { class: 'destination-card-body' },
+              content: { class: 'destination-card-content' }
+            }"
             tabindex="0"
             role="button"
             :aria-label="`Copy to ${project.name}`"
             @click="selectDestination(project)"
             @keydown="handleKeyDown($event, project)"
           >
-            <div class="card-header">
-              <div class="card-title">
-                <i :class="project.icon + ' card-icon'"></i>
-                <h4 class="card-name">{{ project.name }}</h4>
+            <template #header>
+              <div class="card-header">
+                <div class="card-title">
+                  <i :class="project.icon + ' card-icon'"></i>
+                  <h4 class="card-name">{{ project.name }}</h4>
+                </div>
+                <Button
+                  label="Copy Here"
+                  icon="pi pi-copy"
+                  iconPos="left"
+                  class="card-button"
+                  @click.stop="handleButtonCopy(project)"
+                />
               </div>
-              <Button
-                label="Copy Here"
-                icon="pi pi-copy"
-                iconPos="left"
-                class="card-button"
-                @click.stop="handleButtonCopy(project)"
-              />
-            </div>
-            <div class="card-path">{{ project.path }}</div>
-          </div>
+            </template>
+            <template #content>
+              <div class="card-path">{{ project.path }}</div>
+            </template>
+          </Card>
         </div>
       </div>
     </div>
@@ -118,6 +136,7 @@
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
+import Card from 'primevue/card';
 import { useProjectsStore } from '@/stores/projects';
 import { useCopyStore } from '@/stores/copy-store';
 
@@ -436,9 +455,8 @@ const handleButtonCopy = async (destination) => {
   padding-right: 0.5rem;
 }
 
-/* Destination Card */
-.destination-card {
-  padding: 1rem;
+/* Destination Card - PrimeVue Card Overrides */
+:deep(.destination-card) {
   border: 1px solid var(--border-primary);
   border-radius: 6px;
   cursor: pointer;
@@ -447,23 +465,36 @@ const handleButtonCopy = async (destination) => {
   flex-shrink: 0;
 }
 
-.destination-card:hover {
+:deep(.destination-card:hover) {
   background: var(--bg-hover);
   border-color: var(--color-primary);
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover-sm);
 }
 
-.destination-card:focus {
+:deep(.destination-card:focus) {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
-.destination-card.selected {
+:deep(.selected .destination-card) {
   background: var(--bg-hover);
   border-color: var(--color-primary);
   border-width: 2px;
   box-shadow: var(--shadow-selected);
+}
+
+/* PrimeVue Card body/content padding adjustments */
+:deep(.destination-card-header) {
+  padding: 1rem 1rem 0.5rem 1rem;
+}
+
+:deep(.destination-card-body) {
+  padding: 0;
+}
+
+:deep(.destination-card-content) {
+  padding: 0 1rem 1rem 1rem;
 }
 
 .card-header {

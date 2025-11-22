@@ -401,13 +401,21 @@ fi
 
 **Objective:** Update project documentation to reflect new features/changes
 
+**IMPORTANT: CHANGELOG Policy**
+- CHANGELOG.md is updated ONLY when cutting a release
+- Do NOT update CHANGELOG during feature development or PR creation
+- Documentation updates during development should focus on:
+  - README.md (if setup/usage changed)
+  - API documentation (if endpoints changed)
+  - Code comments and guides
+
 **Main Agent Decision Point:**
 
 Documentation is only needed if:
 - New features added (update README, guides)
 - API changes (update API documentation)
-- Breaking changes (update CHANGELOG)
 - Configuration changes (update setup guides)
+- Code patterns changed (update developer guides)
 
 If documentation updates needed:
 
@@ -415,12 +423,14 @@ If documentation updates needed:
    - Specify which documents need updates
    - Provide context about changes made
    - Reference implementation details from session tracking
+   - **Do NOT ask for CHANGELOG updates** (release-time only)
 
 2. **Documentation engineer updates files**
-   - CHANGELOG.md (follows Keep a Changelog format)
    - README.md (if setup/usage changed)
    - API documentation (if endpoints changed)
    - Guides (if workflows changed)
+   - Code comments and JSDoc (inline documentation)
+   - **NOT CHANGELOG.md** (release-time only)
 
 3. **Main agent updates session tracking document**
    - Note which documentation was updated
@@ -429,7 +439,7 @@ If documentation updates needed:
 
 4. **Main agent invokes git-workflow-specialist**
    - Commit documentation changes separately
-   - Format: `docs: update CHANGELOG for copy service feature (STORY-3.1)`
+   - Format: `docs: update API documentation for copy service feature (STORY-3.1)`
    - Push to remote
 
 **Note on Session Tracking Document:**
@@ -501,7 +511,7 @@ Implemented backend copy service infrastructure for Story 3.1, including path va
 - ✅ No regressions introduced
 
 ## Documentation Updates
-- Updated CHANGELOG.md with new features
+- Updated README.md with new feature descriptions
 - Added API documentation for copy service endpoints
 
 ## Related Tickets
@@ -783,9 +793,10 @@ Agile-ticket-manager acts as API for ticket operations:
 
 ★ **Insight:** Parallel documentation + code review at end
 - After implementation complete, two activities can run simultaneously:
-  - documentation-engineer updates CHANGELOG/README
+  - documentation-engineer updates README/API docs/guides
   - code-reviewer analyzes implementation
 - Result: Faster PR preparation without sacrificing quality
+- Note: CHANGELOG is updated only at release time, not during PR development
 
 **Session 0c608e8c (Ticket Manager Enhancement - November 2, 2025):**
 

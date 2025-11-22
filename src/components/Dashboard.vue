@@ -1,16 +1,38 @@
 <template>
+  <!-- PHASE 2: Replace .dashboard/.main-content/.dashboard-container with Tailwind utility classes
+       Current: Custom CSS with flex, padding, max-width
+       Tailwind: class="w-full" / class="px-8 py-8" / class="max-w-7xl mx-auto" -->
   <div class="dashboard">
+    <!-- PHASE 2: Replace .main-content with px-8 py-8 (padding: 2rem) -->
     <div class="main-content">
+      <!-- PHASE 2: Replace .dashboard-container with max-w-7xl mx-auto (max-width: 1400px; margin: auto) -->
       <div class="dashboard-container">
+        <!-- PHASE 2: Replace .dashboard-header flex layout with Tailwind
+             Current: display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem
+             Tailwind: class="flex justify-between items-center flex-wrap gap-4" -->
         <div class="dashboard-header">
+          <!-- PHASE 2: Replace h2 styling with Tailwind
+               Current: font-size: 1.75rem; color: var(--text-primary)
+               Tailwind: class="text-2xl text-slate-100 dark:text-slate-100" -->
           <h2>Projects</h2>
+          <!-- PHASE 2: Replace .dashboard-actions flex layout with Tailwind
+               Current: display: flex; gap: 0.75rem; align-items: center
+               Tailwind: class="flex gap-3 items-center" -->
           <div class="dashboard-actions">
+            <!-- PHASE 2: Replace .sort-dropdown with Tailwind form styling
+                 Current: Custom styling with border, background, color, font-size
+                 Tailwind: class="px-4 py-2 border border-slate-600 rounded bg-slate-800 text-slate-100 text-sm cursor-pointer min-w-[200px]"
+                 Hover: class="hover:border-blue-500" -->
             <select v-model="sortBy" class="sort-dropdown">
               <option value="name-asc">Name (A-Z)</option>
               <option value="name-desc">Name (Z-A)</option>
               <option value="agents">Most Agents</option>
               <option value="commands">Most Commands</option>
             </select>
+            <!-- PHASE 2: PrimeVue Button component - Keep as-is (PrimeVue provides Tailwind-like theming)
+                 Note: .rescan-btn styling will be removed - Button component handles styling
+                 Spinning animation (keyframe spin) will be managed by Tailwind animation classes
+                 Alternative: animate-spin utility class, or custom animation via Tailwind config -->
             <Button
               @click="handleRescan"
               :disabled="scanning"
@@ -23,64 +45,108 @@
         </div>
 
         <!-- Loading State -->
+        <!-- PHASE 2: Replace .loading-container with Tailwind
+             Current: text-align: center; padding: 3rem 1rem
+             Tailwind: class="text-center py-12 px-4" -->
         <div v-if="projectsStore.isLoading" class="loading-container">
+          <!-- PHASE 2: Replace .spinner with Tailwind
+               Current: Custom border animation with 40px size
+               Tailwind: class="w-10 h-10 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"
+               Note: animate-spin utility handles rotation, no need for custom @keyframes -->
           <div class="spinner"></div>
+          <!-- PHASE 2: Replace paragraph color with Tailwind
+               Current: color: var(--text-secondary)
+               Tailwind: class="text-slate-400" -->
           <p>Loading projects...</p>
         </div>
 
         <!-- Error State -->
+        <!-- PHASE 2: Replace .error-state with Tailwind
+             Current: text-align: center; padding: 3rem 1rem; color: var(--color-error)
+             Tailwind: class="text-center py-12 px-4 text-red-500" -->
         <div v-else-if="projectsStore.error" class="error-state">
+          <!-- PHASE 2: Replace h4 styling with Tailwind
+               Current: font-size: 1.25rem; margin: 0 0 0.5rem 0
+               Tailwind: class="text-xl mb-2" -->
           <h4>Error Loading Projects</h4>
+          <!-- PHASE 2: Replace paragraph with Tailwind
+               Current: margin: 0 0 1.5rem 0
+               Tailwind: class="mb-6" -->
           <p>{{ projectsStore.error }}</p>
+          <!-- PHASE 2: PrimeVue Button - Keep severity="danger" (PrimeVue theming)
+               Note: .retry-btn styling will be removed, Button component handles styling -->
           <Button @click="loadProjects" label="Retry" severity="danger" class="retry-btn" />
         </div>
 
         <!-- Empty State -->
+        <!-- PHASE 2: Replace .empty-state with Tailwind
+             Current: text-align: center; padding: 4rem 1rem; color: var(--text-secondary)
+             Tailwind: class="text-center py-16 px-4 text-slate-400" -->
         <div v-else-if="sortedProjects.length === 0" class="empty-state">
+          <!-- PHASE 2: Replace .empty-state i with Tailwind
+               Current: font-size: 4rem; opacity: 0.3; margin-bottom: 1rem
+               Tailwind: class="text-6xl opacity-30 mb-4" -->
           <i class="pi pi-folder"></i>
+          <!-- PHASE 2: Replace h3 with Tailwind
+               Current: font-size: 1.5rem; margin: 0 0 0.5rem 0; color: var(--text-primary)
+               Tailwind: class="text-2xl mb-2 text-slate-100" -->
           <h3>No Projects Found</h3>
+          <!-- PHASE 2: Replace p with Tailwind
+               Current: margin: 0; font-size: 1rem
+               Tailwind: class="text-base" -->
           <p>Add projects in Claude Code and click "Rescan" to see them here.</p>
         </div>
 
         <!-- Projects Grid -->
+        <!-- PHASE 2: Replace .project-grid with Tailwind
+             Current: display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem
+             Tailwind: class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 auto-fit"
+             Note: Tailwind auto-fit not directly available, use grid-cols-[repeat(auto-fit,minmax(320px,1fr))] or responsive cols -->
         <div v-else class="project-grid">
-          <div
+          <!-- Using PrimeVue Card component with passthrough props -->
+          <Card
             v-for="project in sortedProjects"
             :key="project.id"
-            class="project-card"
-            :class="{ 'user-card': project.isUser }"
+            :pt="projectCardPt"
+            :class="['project-card', { 'user-card': project.isUser }]"
             @click="navigateToProject(project.id)"
           >
-            <div class="project-header">
-              <i :class="project.isUser ? 'pi pi-user' : 'pi pi-folder'"></i>
-              <h3 class="project-name">{{ project.name }}</h3>
-            </div>
+            <!-- Header slot -->
+            <template #header>
+              <div class="project-header">
+                <i :class="project.isUser ? 'pi pi-user' : 'pi pi-folder'"></i>
+                <h3 class="project-name">{{ project.name }}</h3>
+              </div>
+            </template>
 
-            <div class="project-path">{{ project.path }}</div>
+            <!-- Content slot -->
+            <template #content>
+              <div class="project-path">{{ project.path }}</div>
 
-            <div class="project-stats">
-              <div class="stat stat-agents">
-                <i class="pi pi-users"></i>
-                <span>{{ project.stats?.agents || 0 }} Agents</span>
+              <div class="project-stats">
+                <div class="stat stat-agents">
+                  <i class="pi pi-users"></i>
+                  <span>{{ project.stats?.agents || 0 }} Agents</span>
+                </div>
+                <div class="stat stat-commands">
+                  <i class="pi pi-bolt"></i>
+                  <span>{{ project.stats?.commands || 0 }} Commands</span>
+                </div>
+                <div class="stat stat-hooks">
+                  <i class="pi pi-link"></i>
+                  <span>{{ project.stats?.hooks || 0 }} Hooks</span>
+                </div>
+                <div class="stat stat-mcp">
+                  <i class="pi pi-server"></i>
+                  <span>{{ project.stats?.mcp || 0 }} MCP</span>
+                </div>
               </div>
-              <div class="stat stat-commands">
-                <i class="pi pi-bolt"></i>
-                <span>{{ project.stats?.commands || 0 }} Commands</span>
-              </div>
-              <div class="stat stat-hooks">
-                <i class="pi pi-link"></i>
-                <span>{{ project.stats?.hooks || 0 }} Hooks</span>
-              </div>
-              <div class="stat stat-mcp">
-                <i class="pi pi-server"></i>
-                <span>{{ project.stats?.mcp || 0 }} MCP</span>
-              </div>
-            </div>
 
-            <div class="project-footer">
-              <Button label="View" icon="pi pi-arrow-right" iconPos="right" class="view-btn" />
-            </div>
-          </div>
+              <div class="project-footer">
+                <Button label="View" icon="pi pi-arrow-right" iconPos="right" class="view-btn" />
+              </div>
+            </template>
+          </Card>
         </div>
       </div>
     </div>
@@ -93,10 +159,11 @@ import { useRouter } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
 import * as api from '@/api/client'
 import Button from 'primevue/button'
+import Card from 'primevue/card'
 
 export default {
   name: 'Dashboard',
-  components: { Button },
+  components: { Button, Card },
   setup() {
     const router = useRouter()
     const projectsStore = useProjectsStore()
@@ -214,6 +281,30 @@ export default {
       window.removeEventListener('header-search', handleHeaderSearch)
     })
 
+    // PrimeVue Card passthrough configuration
+    const projectCardPt = {
+      root: {
+        class: 'project-card-root',
+        style: { overflow: 'hidden' }
+      },
+      header: {
+        class: 'project-card-header',
+        style: {
+          padding: '0',
+          backgroundColor: 'transparent',
+          border: 'none'
+        }
+      },
+      body: {
+        class: 'project-card-body',
+        style: { padding: '0' }
+      },
+      content: {
+        class: 'project-card-content',
+        style: { padding: '1.5rem' }
+      }
+    }
+
     return {
       projectsStore,
       sortBy,
@@ -221,26 +312,45 @@ export default {
       sortedProjects,
       loadProjects,
       handleRescan,
-      navigateToProject
+      navigateToProject,
+      projectCardPt
     }
   }
 }
 </script>
 
+<!-- PHASE 2: Complete stylesheet migration from custom CSS to Tailwind
+     This entire <style> block will be removed and replaced with Tailwind utility classes
+     applied directly to template elements. See template comments for Tailwind equivalents.
+
+     Migration Strategy:
+     1. Layout utilities (flex, grid, gap) - Tailwind layout classes
+     2. Spacing (padding, margin) - Tailwind p-*, m-*, px-*, py-* classes
+     3. Colors (CSS variables) - Tailwind color classes (slate-*, blue-*, etc.)
+     4. Typography (font-size, font-weight) - Tailwind text-*, font-* classes
+     5. Shadows & transitions - Tailwind shadow-*, transition-* classes
+     6. Responsive (media queries) - Tailwind responsive modifiers (md:, lg:, xl:)
+     7. Animations (@keyframes) - Tailwind animate-* utilities (e.g., animate-spin)
+-->
+
 <style scoped>
+/* PHASE 2: DELETE .dashboard (replaced with w-full) */
 .dashboard {
   width: 100%;
 }
 
+/* PHASE 2: DELETE .main-content (replaced with px-8 py-8) */
 .main-content {
   padding: 2rem;
 }
 
+/* PHASE 2: DELETE .dashboard-container (replaced with max-w-7xl mx-auto) */
 .dashboard-container {
   max-width: 1400px;
   margin: 0 auto;
 }
 
+/* PHASE 2: DELETE .dashboard-header (replaced with flex justify-between items-center flex-wrap gap-4) */
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -250,18 +360,23 @@ export default {
   gap: 1rem;
 }
 
+/* PHASE 2: DELETE .dashboard-header h2 (replaced with text-2xl text-slate-100) */
 .dashboard-header h2 {
   margin: 0;
   font-size: 1.75rem;
   color: var(--text-primary);
 }
 
+/* PHASE 2: DELETE .dashboard-actions (replaced with flex gap-3 items-center) */
 .dashboard-actions {
   display: flex;
   gap: 0.75rem;
   align-items: center;
 }
 
+/* PHASE 2: DELETE .sort-dropdown and convert to Tailwind form styling
+   New Tailwind classes: px-4 py-2 border border-slate-600 rounded bg-slate-800 text-slate-100 text-sm cursor-pointer min-w-[200px]
+   Hover: hover:border-blue-500 -->
 .sort-dropdown {
   padding: 0.5rem 1rem;
   border: 1px solid var(--border-primary);
@@ -277,6 +392,9 @@ export default {
   border-color: var(--color-primary);
 }
 
+/* PHASE 2: DELETE .rescan-btn (PrimeVue Button handles styling)
+   Note: Button component in PrimeVue already applies appropriate styling
+   No need for .rescan-btn custom CSS -->
 .rescan-btn {
   padding: 0.5rem 1.25rem;
   background: var(--color-primary);
@@ -300,21 +418,29 @@ export default {
   cursor: not-allowed;
 }
 
+/* PHASE 2: DELETE .rescan-btn i.spinning
+   Replace with Tailwind: animate-spin (uses built-in rotate animation)
+   No custom @keyframes needed -->
 .rescan-btn i.spinning {
   animation: spin 1s linear infinite;
 }
 
+/* PHASE 2: DELETE @keyframes spin
+   Tailwind provides animate-spin utility that handles rotation 360deg -->
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-/* Loading State */
+/* PHASE 2: Loading State */
+/* DELETE .loading-container (replaced with text-center py-12 px-4) */
 .loading-container {
   text-align: center;
   padding: 3rem 1rem;
 }
 
+/* DELETE .spinner (replaced with Tailwind spin animation)
+   Tailwind: w-10 h-10 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin mx-auto mb-4 -->
 .spinner {
   border: 3px solid var(--border-primary);
   border-top: 3px solid var(--color-primary);
@@ -325,26 +451,31 @@ export default {
   margin: 0 auto 1rem;
 }
 
+/* DELETE .loading-container p (replaced with text-slate-400) */
 .loading-container p {
   color: var(--text-secondary);
 }
 
-/* Error State */
+/* PHASE 2: Error State */
+/* DELETE .error-state (replaced with text-center py-12 px-4 text-red-500) */
 .error-state {
   text-align: center;
   padding: 3rem 1rem;
   color: var(--color-error);
 }
 
+/* DELETE .error-state h4 (replaced with text-xl mb-2) */
 .error-state h4 {
   margin: 0 0 0.5rem 0;
   font-size: 1.25rem;
 }
 
+/* DELETE .error-state p (replaced with mb-6) */
 .error-state p {
   margin: 0 0 1.5rem 0;
 }
 
+/* DELETE .retry-btn (PrimeVue Button handles styling) */
 .retry-btn {
   padding: 0.5rem 1.5rem;
   background: var(--color-error);
@@ -359,25 +490,29 @@ export default {
   background: var(--color-error);
 }
 
-/* Empty State */
+/* PHASE 2: Empty State */
+/* DELETE .empty-state (replaced with text-center py-16 px-4 text-slate-400) */
 .empty-state {
   text-align: center;
   padding: 4rem 1rem;
   color: var(--text-secondary);
 }
 
+/* DELETE .empty-state i (replaced with text-6xl opacity-30 mb-4) */
 .empty-state i {
   font-size: 4rem;
   opacity: 0.3;
   margin-bottom: 1rem;
 }
 
+/* DELETE .empty-state h3 (replaced with text-2xl mb-2 text-slate-100) */
 .empty-state h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.5rem;
   color: var(--text-primary);
 }
 
+/* DELETE .empty-state p (replaced with text-base) */
 .empty-state p {
   margin: 0;
   font-size: 1rem;
@@ -390,16 +525,13 @@ export default {
   gap: 1.25rem;
 }
 
+/* Project Card - PrimeVue Card customization */
 .project-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 8px;
-  padding: 1.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 }
 
 .project-card:hover {
@@ -408,6 +540,7 @@ export default {
   transform: translateY(-2px);
 }
 
+/* User Card Variant */
 .project-card.user-card {
   border-color: var(--color-user);
   background: var(--bg-primary);
@@ -418,10 +551,12 @@ export default {
   box-shadow: var(--shadow-hover-md);
 }
 
+/* Project Card Header */
 .project-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  padding: 1.25rem 1.5rem 0.75rem;
 }
 
 .project-header i {
@@ -441,8 +576,10 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
 }
 
+/* Project Card Content */
 .project-path {
   font-size: 0.85rem;
   color: var(--text-secondary);
@@ -452,12 +589,14 @@ export default {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  margin-bottom: 1rem;
 }
 
 .project-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .stat {
@@ -472,42 +611,28 @@ export default {
   font-size: 1rem;
 }
 
+/* Domain-specific stat icon colors */
 .stat-agents i { color: var(--color-agents); }
 .stat-commands i { color: var(--color-commands); }
 .stat-hooks i { color: var(--color-hooks); }
 .stat-mcp i { color: var(--color-mcp); }
 
+/* Project Card Footer */
 .project-footer {
-  margin-top: auto;
-  padding-top: 0.5rem;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--border-primary);
 }
 
 .view-btn {
   width: 100%;
-  padding: 0.5rem 1rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: background 0.2s;
 }
 
-.view-btn:hover {
-  background: var(--color-primary-hover);
-}
-
-.view-btn i {
-  font-size: 0.9rem;
-}
-
-/* Responsive */
+/* PHASE 2: Responsive Breakpoints
+   Current: Single @media query at 768px
+   Tailwind: Responsive modifiers built into utility classes
+   - sm: (640px) - md:, lg:, xl:, 2xl: modifiers in template classes
+   - Example: grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+   - No need for separate @media blocks */
 @media (max-width: 768px) {
   .dashboard-header {
     flex-direction: column;

@@ -9,12 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-- Enabled PrimeVue Aura theme preset for styled components
-- Added PrimeVue semantic token mappings (--p-* variables) to CSS
-- Configured dark mode integration with Aura theme system
-- Established foundation for 85% CSS reduction in Phase 3.1
-
 ---
 
 ## [2.1.0] - 2025-11-13

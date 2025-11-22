@@ -8,6 +8,7 @@ import { useThemeStore } from '@/stores/theme'
 
 // Import global styles
 import '@/styles/variables.css'
+import '@/styles/tailwind.css' // Tailwind base, components, utilities
 import '@/styles/global.css'
 import '@/styles/components.css'
 

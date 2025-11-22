@@ -16,39 +16,61 @@
 
     <!-- File Info Cards -->
     <div class="file-info-cards">
-      <div class="file-card source-card">
-        <div class="card-header">
-          <i class="pi pi-file-import"></i>
-          <strong>Source file: {{ conflict.source.name }}</strong>
-        </div>
-        <div class="card-body">
-          <div class="info-row">
-            <span class="label">Path:</span>
-            <span class="value">{{ conflict.source.path }}</span>
+      <Card
+        :pt="{
+          root: { class: 'file-card source-card' },
+          header: { class: 'file-card-header' },
+          body: { class: 'file-card-body' },
+          content: { class: 'file-card-content' }
+        }"
+      >
+        <template #header>
+          <div class="card-header">
+            <i class="pi pi-file-import"></i>
+            <strong>Source file: {{ conflict.source.name }}</strong>
           </div>
-          <div class="info-row">
-            <span class="label">Modified:</span>
-            <span class="value">{{ conflict.source.modifiedAt }}</span>
+        </template>
+        <template #content>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">Path:</span>
+              <span class="value">{{ conflict.source.path }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Modified:</span>
+              <span class="value">{{ conflict.source.modifiedAt }}</span>
+            </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </Card>
 
-      <div class="file-card target-card">
-        <div class="card-header">
-          <i class="pi pi-file"></i>
-          <strong>Target file: {{ conflict.target.name }}</strong>
-        </div>
-        <div class="card-body">
-          <div class="info-row">
-            <span class="label">Path:</span>
-            <span class="value">{{ conflict.target.path }}</span>
+      <Card
+        :pt="{
+          root: { class: 'file-card target-card' },
+          header: { class: 'file-card-header' },
+          body: { class: 'file-card-body' },
+          content: { class: 'file-card-content' }
+        }"
+      >
+        <template #header>
+          <div class="card-header">
+            <i class="pi pi-file"></i>
+            <strong>Target file: {{ conflict.target.name }}</strong>
           </div>
-          <div class="info-row">
-            <span class="label">Modified:</span>
-            <span class="value">{{ conflict.target.modifiedAt }}</span>
+        </template>
+        <template #content>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">Path:</span>
+              <span class="value">{{ conflict.target.path }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Modified:</span>
+              <span class="value">{{ conflict.target.modifiedAt }}</span>
+            </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </Card>
     </div>
 
     <!-- Resolution Options -->
@@ -105,6 +127,7 @@ import { ref, computed } from 'vue'
 import Dialog from 'primevue/dialog'
 import RadioButton from 'primevue/radiobutton'
 import Button from 'primevue/button'
+import Card from 'primevue/card'
 
 const props = defineProps({
   visible: {
@@ -219,26 +242,38 @@ const onConfirm = () => {
   margin-bottom: 1.5rem;
 }
 
-.file-card {
+/* PrimeVue Card overrides */
+:deep(.file-card) {
   background: var(--bg-tertiary);
   border: 2px solid;
   border-radius: 8px;
-  padding: 1rem;
 }
 
-.source-card {
+:deep(.source-card) {
   border-color: var(--color-primary);
 }
 
-.target-card {
+:deep(.target-card) {
   border-color: var(--color-warning);
+}
+
+/* PrimeVue Card header/body/content padding adjustments */
+:deep(.file-card-header) {
+  padding: 1rem 1rem 0 1rem;
+}
+
+:deep(.file-card-body) {
+  padding: 0;
+}
+
+:deep(.file-card-content) {
+  padding: 0 1rem 1rem 1rem;
 }
 
 .card-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
   font-size: 1rem;
 }
 
@@ -246,11 +281,11 @@ const onConfirm = () => {
   font-size: 1.1rem;
 }
 
-.source-card .card-header i {
+:deep(.source-card) .card-header i {
   color: var(--color-primary);
 }
 
-.target-card .card-header i {
+:deep(.target-card) .card-header i {
   color: var(--color-warning);
 }
 

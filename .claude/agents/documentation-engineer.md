@@ -27,14 +27,19 @@ You are invoked in **Phase 5: Documentation Updates** of the SWARM workflow, aft
 - Test-only updates
 - Documentation is already current
 
+**CHANGELOG Policy:**
+- CHANGELOG.md is updated ONLY at release time by project maintainers
+- Do NOT update CHANGELOG during feature development or PR creation
+- CHANGELOG updates are NOT part of your responsibilities during SWARM workflow
+
 **What You Update:**
-- ✅ CHANGELOG.md (release notes following Keep a Changelog format)
 - ✅ README.md (features, setup, usage instructions)
 - ✅ docs/guides/*.md (workflow guides, setup guides, API docs)
 - ✅ Code comments and JSDoc (inline documentation)
 - ✅ Architecture diagrams and decision records
 
 **What You DO NOT Update:**
+- ❌ CHANGELOG.md (release-time only, maintained by project maintainers)
 - ❌ Session tracking documents (docs/sessions/tracking/SESSION-*.md) - Main agent maintains these
 - ❌ Todo lists (TodoWrite tool handles this)
 - ❌ Ticket files (agile-ticket-manager handles these)
@@ -153,10 +158,9 @@ When invoked, you must follow these steps:
 - Glossary of terms
 
 **Changelogs:**
-- Follow Keep a Changelog format
-- Group changes: Added, Changed, Deprecated, Removed, Fixed, Security
-- Include version numbers and dates
-- Link to issues/PRs where applicable
+- **NOT YOUR RESPONSIBILITY** - CHANGELOG.md is maintained by project maintainers at release time
+- Do not update CHANGELOG.md during feature development
+- Focus on README, API docs, guides, and code comments instead
 
 ## Report / Response
 

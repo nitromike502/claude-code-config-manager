@@ -128,6 +128,9 @@ $RECYCLE.BIN/
 .temp/
 .tmp/
 
+# Backup files
+*.backup
+
 # macOS
 .AppleDouble
 .LSOverride

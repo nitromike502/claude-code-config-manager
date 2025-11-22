@@ -1,47 +1,54 @@
 <template>
-  <div :class="['config-card', cardTypeClass]">
+  <Card :pt="cardPt" :class="['config-card', cardTypeClass]">
     <!-- Header -->
-    <div class="config-header">
-      <div class="config-header-left">
-        <i :class="icon" :style="{ color: color }"></i>
-        <span class="config-title">{{ title }} ({{ count }})</span>
+    <template #header>
+      <div class="config-header">
+        <div class="config-header-left">
+          <i :class="icon" :style="{ color: color }"></i>
+          <span class="config-title">{{ title }} ({{ count }})</span>
+        </div>
       </div>
-    </div>
+    </template>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="loading-state">
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
-      <div class="skeleton"></div>
-    </div>
+    <!-- Content -->
+    <template #content>
+      <!-- Loading State -->
+      <div v-if="loading" class="loading-state">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
 
-    <!-- Empty State -->
-    <div v-else-if="items.length === 0" class="empty-state">
-      <i :class="icon" class="empty-icon"></i>
-      <p>{{ emptyStateMessage }}</p>
-    </div>
+      <!-- Empty State -->
+      <div v-else-if="items.length === 0" class="empty-state">
+        <i :class="icon" class="empty-icon"></i>
+        <p>{{ emptyStateMessage }}</p>
+      </div>
 
-    <!-- Items List -->
-    <div v-else class="items-list">
-      <slot :items="displayedItems">
-        <!-- Default slot content - expects parent to provide custom rendering -->
-      </slot>
-    </div>
+      <!-- Items List -->
+      <div v-else class="items-list">
+        <slot :items="displayedItems">
+          <!-- Default slot content - expects parent to provide custom rendering -->
+        </slot>
+      </div>
+    </template>
 
-    <!-- Expand/Collapse Button -->
-    <Button
-      v-if="!loading && items.length > initialDisplayCount"
-      @click="handleToggle"
-      :label="buttonText"
-      text
-      class="btn-show-more"
-    />
-  </div>
+    <!-- Footer -->
+    <template #footer v-if="!loading && items.length > initialDisplayCount">
+      <Button
+        @click="handleToggle"
+        :label="buttonText"
+        text
+        class="btn-show-more"
+      />
+    </template>
+  </Card>
 </template>
 
 <script setup>
 import { computed } from 'vue';
 import Button from 'primevue/button';
+import Card from 'primevue/card';
 
 const props = defineProps({
   title: {
@@ -95,6 +102,37 @@ const emit = defineEmits({
   }
 });
 
+// Pass-through configuration for PrimeVue Card component
+const cardPt = computed(() => ({
+  root: {
+    class: 'bg-secondary border-primary',
+    style: {
+      overflow: 'hidden'
+    }
+  },
+  header: {
+    class: 'config-card-header',
+    style: {
+      padding: '0',
+      backgroundColor: 'var(--bg-tertiary)',
+      borderBottom: '1px solid var(--border-primary)'
+    }
+  },
+  body: {
+    class: 'config-card-body',
+    style: {
+      padding: '0'
+    }
+  },
+  footer: {
+    class: 'config-card-footer',
+    style: {
+      padding: '0',
+      borderTop: '1px solid var(--border-secondary)'
+    }
+  }
+}));
+
 // Computed property for card type CSS class
 const cardTypeClass = computed(() => {
   if (!props.cardType) return '';
@@ -140,7 +178,6 @@ const handleToggle = () => {
   border: 1px solid var(--border-primary);
   border-radius: 8px;
   box-shadow: var(--shadow-card);
-  overflow: hidden;
 }
 
 /* Header */
@@ -149,8 +186,6 @@ const handleToggle = () => {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.25rem;
-  background-color: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-primary);
 }
 
 .config-header-left {
@@ -172,6 +207,7 @@ const handleToggle = () => {
 /* Loading State */
 .loading-state {
   padding: 1rem 1.25rem;
+  width: 100%;
 }
 
 .skeleton {
@@ -206,6 +242,7 @@ const handleToggle = () => {
   padding: 3rem 1.25rem;
   text-align: center;
   color: var(--text-muted);
+  width: 100%;
 }
 
 .empty-icon {
@@ -224,6 +261,7 @@ const handleToggle = () => {
 /* Items List */
 .items-list {
   padding: 0;
+  width: 100%;
 }
 
 /* Expand/Collapse Button */
@@ -233,7 +271,6 @@ const handleToggle = () => {
   background-color: transparent;
   color: var(--color-primary);
   border: none;
-  border-top: 1px solid var(--border-secondary);
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
