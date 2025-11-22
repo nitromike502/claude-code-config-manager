@@ -370,23 +370,6 @@
   word-break: break-all;
 }
 
-.btn-close-sidebar {
-  background: none;
-  border: none;
-  color: var(--text-primary);
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.25rem;
-  line-height: 1;
-  transition: color 0.2s ease;
-  flex-shrink: 0;
-  margin-left: 1rem;
-}
-
-.btn-close-sidebar:hover {
-  color: var(--text-primary);
-}
-
 .sidebar-content {
   padding: 2rem 1.5rem;
   flex: 1;
@@ -446,63 +429,12 @@
   flex-shrink: 0;
 }
 
-.btn-copy,
-.btn-close {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  flex: 1;
-}
-
-.btn-copy {
-  background-color: var(--color-primary);
-  color: white;
-}
-
-.btn-copy:hover {
-  background-color: var(--color-primary-hover);
-  transform: translateY(-1px);
-}
-
-.btn-copy.copied {
-  background-color: var(--color-success);
-}
-
-.btn-copy.copied:hover {
-  background-color: var(--color-success);
-  opacity: 0.9;
-}
-
-.btn-close {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
-}
-
-.btn-close:hover {
-  background-color: var(--bg-hover);
-}
-
 .sidebar-actions {
   display: flex;
   gap: 0.75rem;
   padding: 1rem;
   border-top: 1px solid var(--border-primary);
   background-color: var(--bg-tertiary);
-}
-
-/* Show More Button */
-.show-more-btn {
-  width: 100%;
-  justify-content: center;
-  margin-top: 0.5rem;
 }
 
 /* Markdown Content */
@@ -832,11 +764,6 @@
     flex-direction: column;
     padding: 1rem;
   }
-
-  .btn-copy,
-  .btn-close {
-    width: 100%;
-  }
 }
 
 /* AgentCard Specific Styles */
@@ -931,23 +858,6 @@
   font-size: 0.875rem;
 }
 
-.btn-retry-small {
-  padding: 0.5rem 1rem;
-  background-color: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.btn-retry-small:hover {
-  background-color: var(--color-primary-hover);
-  transform: translateY(-1px);
-}
-
 /* Empty State */
 .empty-state {
   padding: 3rem 1.25rem;
@@ -1017,63 +927,12 @@
   white-space: nowrap;
 }
 
-.btn-view-details {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: transparent;
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  margin-left: 1rem;
-}
-
-.btn-view-details:hover {
-  background-color: var(--color-primary);
-  color: white;
-}
-
-.btn-view-details i {
-  font-size: 0.875rem;
-}
-
-/* Show More Button */
-.btn-show-more {
-  width: 100%;
-  padding: 0.75rem 1.25rem;
-  background-color: transparent;
-  color: var(--color-primary);
-  border: none;
-  border-top: 1px solid var(--border-secondary);
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  text-align: center;
-}
-
-.btn-show-more:hover {
-  background-color: var(--bg-hover);
-}
-
 /* Responsive */
 @media (max-width: 767px) {
   .agent-item {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
-  }
-
-  .btn-view-details {
-    margin-left: 0;
-    width: 100%;
-    justify-content: center;
   }
 }
 
@@ -1316,13 +1175,11 @@
 }
 
 /* PrimeVue Toast Styles */
-[data-pc-name="toast"],
 .p-toast {
   opacity: 1 !important;
   width: 25rem;
 }
 
-[data-pc-section="message"],
 .p-toast-message {
   margin: 0 0 1rem 0;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -1335,7 +1192,6 @@
   padding: 1rem;
 }
 
-[data-pc-section="content"],
 .p-toast-message-content {
   display: flex;
   align-items: flex-start;
@@ -1343,13 +1199,11 @@
   gap: 0.75rem;
 }
 
-[data-pc-section="icon"],
 .p-toast-message-icon {
   font-size: 1.5rem;
   flex-shrink: 0;
 }
 
-[data-pc-section="text"],
 .p-toast-message-text {
   display: flex;
   flex-direction: column;
@@ -1358,22 +1212,18 @@
   min-width: 0;
 }
 
-[data-pc-section="summary"],
 .p-toast-summary {
   font-weight: 600;
   font-size: 0.9375rem;
   line-height: 1.4;
 }
 
-[data-pc-section="detail"],
 .p-toast-detail {
   font-size: 0.875rem;
   color: var(--text-secondary);
   line-height: 1.4;
 }
 
-[data-pc-section="closebutton"],
-[data-pc-section="button"],
 .p-toast-icon-close {
   width: 2rem;
   height: 2rem;
@@ -1389,19 +1239,14 @@
   flex-shrink: 0;
 }
 
-[data-pc-section="closebutton"]:hover,
-[data-pc-section="button"]:hover,
 .p-toast-icon-close:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-[data-theme="dark"] [data-pc-section="closebutton"]:hover,
-[data-theme="dark"] [data-pc-section="button"]:hover,
 [data-theme="dark"] .p-toast-icon-close:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-pc-section="closeicon"],
 .p-toast-icon-close-icon {
   font-size: 1rem;
 }
@@ -1612,94 +1457,7 @@
   }
 }
 
-/* ========================================
-   PrimeVue Component Styles (Unstyled Mode)
-   Using data-pc-* attributes for selectors
-   ======================================== */
-
-/* PrimeVue Button Component */
-[data-pc-name="button"] {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  background: var(--color-primary);
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-[data-pc-name="button"]:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-card);
-}
-
-[data-pc-name="button"]:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-}
-
-[data-pc-name="button"]:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: var(--bg-tertiary);
-  color: var(--text-disabled);
-}
-
-[data-pc-name="button"] [data-pc-section="icon"] {
-  font-size: 1rem;
-}
-
-[data-pc-name="button"] [data-pc-section="label"] {
-  font-weight: 500;
-}
-
-/* Button Severities */
-[data-pc-name="button"][data-p-severity="secondary"] {
-  background: var(--bg-secondary);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-}
-
-[data-pc-name="button"][data-p-severity="secondary"]:hover:not(:disabled) {
-  background: var(--color-primary);
-  color: white;
-}
-
-[data-pc-name="button"][data-p-severity="success"] {
-  background: var(--color-success);
-  border-color: var(--color-success);
-}
-
-[data-pc-name="button"][data-p-severity="success"]:hover:not(:disabled) {
-  background: #059669;  /* Darker green for hover contrast */
-}
-
-[data-pc-name="button"][data-p-severity="danger"] {
-  background: var(--color-error);
-  border-color: var(--color-error);
-}
-
-[data-pc-name="button"][data-p-severity="danger"]:hover:not(:disabled) {
-  background: #dc2626;  /* Darker red for hover contrast */
-}
-
-/* Icon-only buttons */
-[data-pc-name="button"][data-p-icononly="true"] {
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0;
-}
-
-/* PrimeVue Dialog Component */
-[data-pc-name="dialog"].p-dialog-mask,
+/* PrimeVue Dialog Overrides */
 .p-dialog-mask {
   position: fixed;
   top: 0;
@@ -1715,12 +1473,10 @@
   transition: background-color 0.2s;
 }
 
-[data-pc-name="dialog"].p-dialog-mask.p-component-overlay,
 .p-dialog-mask.p-component-overlay {
   pointer-events: auto;
 }
 
-[data-pc-section="root"],
 .p-dialog {
   position: relative;
   background: var(--bg-secondary);
@@ -1732,7 +1488,6 @@
   pointer-events: auto;
 }
 
-[data-pc-section="header"],
 .p-dialog-header {
   padding: 1.5rem;
   border-bottom: 1px solid var(--border-primary);
@@ -1742,21 +1497,18 @@
   justify-content: space-between;
 }
 
-[data-pc-section="title"],
 .p-dialog-title {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-emphasis);
 }
 
-[data-pc-section="headericons"],
 .p-dialog-header-icons {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-[data-pc-section="closebutton"],
 .p-dialog-header-icon {
   width: 2rem;
   height: 2rem;
@@ -1771,26 +1523,22 @@
   transition: all 0.2s;
 }
 
-[data-pc-section="closebutton"]:hover,
 .p-dialog-header-icon:hover {
   background: var(--bg-hover);
   color: var(--text-emphasis);
 }
 
-[data-pc-section="closebutton"]:focus-visible,
 .p-dialog-header-icon:focus-visible {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
 
-[data-pc-section="content"],
 .p-dialog-content {
   padding: 1.5rem;
   overflow-y: auto;
   flex: 1;
 }
 
-[data-pc-section="footer"],
 .p-dialog-footer {
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--border-primary);
@@ -1821,14 +1569,12 @@
   transform: scale(0.95);
 }
 
-/* PrimeVue Divider Component */
-[data-pc-name="divider"],
+/* PrimeVue Divider Overrides */
 .p-divider {
   border-top: 1px solid var(--border-primary);
   margin: 1.5rem 0;
 }
 
-[data-pc-name="divider"][data-pc-section="root"],
 .p-divider-horizontal {
   display: flex;
   width: 100%;
@@ -1836,7 +1582,6 @@
   align-items: center;
 }
 
-[data-pc-name="divider"][data-pc-section="root"]:before,
 .p-divider-horizontal:before {
   position: static;
   display: block;
@@ -1846,8 +1591,7 @@
   top: 50%;
 }
 
-/* PrimeVue Tooltip */
-[data-pc-name="tooltip"],
+/* PrimeVue Tooltip Overrides */
 .p-tooltip {
   position: absolute;
   display: none;
@@ -1855,12 +1599,10 @@
   z-index: 9999;
 }
 
-[data-pc-name="tooltip"].p-tooltip-active,
 .p-tooltip.p-tooltip-active {
   display: block;
 }
 
-[data-pc-section="text"],
 .p-tooltip-text {
   background: var(--bg-tertiary);
   color: var(--text-primary);
@@ -1873,7 +1615,6 @@
   max-width: 250px;
 }
 
-[data-pc-section="arrow"],
 .p-tooltip-arrow {
   position: absolute;
   width: 0;
@@ -1882,7 +1623,6 @@
   border-style: solid;
 }
 
-.p-tooltip-top [data-pc-section="arrow"],
 .p-tooltip-top .p-tooltip-arrow {
   bottom: -5px;
   left: 50%;

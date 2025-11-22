@@ -28,10 +28,7 @@
       <div v-else-if="error" class="error-container error-state">
         <i class="pi pi-exclamation-triangle"></i>
         <p>{{ errorMessage }}</p>
-        <button @click="retryLoad" class="retry-btn">
-          <i class="pi pi-refresh"></i>
-          Retry
-        </button>
+        <Button @click="retryLoad" label="Retry" icon="pi pi-refresh" severity="danger" class="retry-btn" />
       </div>
 
       <!-- Content Area (warnings + config cards) -->
@@ -183,6 +180,7 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import * as api from '@/api/client'
+import Button from 'primevue/button'
 import ConfigCard from '@/components/cards/ConfigCard.vue'
 import ConfigItemList from '@/components/cards/ConfigItemList.vue'
 import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
@@ -193,7 +191,7 @@ import { useProjectsStore } from '@/stores/projects'
 
 export default {
   name: 'ProjectDetail',
-  components: { ConfigCard, ConfigItemList, BreadcrumbNavigation, ConfigDetailSidebar, CopyModal },
+  components: { Button, ConfigCard, ConfigItemList, BreadcrumbNavigation, ConfigDetailSidebar, CopyModal },
   props: ['id'],
   setup(props) {
     const route = useRoute()

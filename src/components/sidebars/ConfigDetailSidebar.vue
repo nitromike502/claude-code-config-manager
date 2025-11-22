@@ -11,15 +11,26 @@
           <span>{{ selectedItem?.name || selectedItem?.event || 'Item Details' }}</span>
         </div>
         <div class="sidebar-nav">
-          <button @click="handleNavigatePrev" :disabled="!hasPrev" class="nav-btn">
-            <i class="pi pi-chevron-left"></i>
-          </button>
-          <button @click="handleNavigateNext" :disabled="!hasNext" class="nav-btn">
-            <i class="pi pi-chevron-right"></i>
-          </button>
-          <button @click="emit('close')" class="close-btn">
-            <i class="pi pi-times"></i>
-          </button>
+          <Button
+            @click="handleNavigatePrev"
+            :disabled="!hasPrev"
+            icon="pi pi-chevron-left"
+            text
+            class="nav-btn"
+          />
+          <Button
+            @click="handleNavigateNext"
+            :disabled="!hasNext"
+            icon="pi pi-chevron-right"
+            text
+            class="nav-btn"
+          />
+          <Button
+            @click="emit('close')"
+            icon="pi pi-times"
+            text
+            class="close-btn"
+          />
         </div>
       </div>
 
@@ -87,14 +98,20 @@
       </div>
 
       <div class="sidebar-footer">
-        <button @click="handleCopy" class="action-btn copy-action-btn" :disabled="!selectedItem">
-          <i class="pi pi-copy"></i>
-          Copy
-        </button>
-        <button @click="emit('close')" class="action-btn close-action-btn">
-          <i class="pi pi-times"></i>
-          Close
-        </button>
+        <Button
+          @click="handleCopy"
+          :disabled="!selectedItem"
+          label="Copy"
+          icon="pi pi-copy"
+          class="action-btn copy-action-btn"
+        />
+        <Button
+          @click="emit('close')"
+          label="Close"
+          icon="pi pi-times"
+          outlined
+          class="action-btn close-action-btn"
+        />
       </div>
     </div>
   </div>
@@ -102,6 +119,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import Button from 'primevue/button'
 
 const props = defineProps({
   visible: {
