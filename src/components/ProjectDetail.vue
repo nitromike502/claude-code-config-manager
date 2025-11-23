@@ -19,10 +19,7 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="loading-container loading-state">
-        <div class="spinner"></div>
-        <p>Loading project...</p>
-      </div>
+      <LoadingState v-if="loading" message="Loading project details..." />
 
       <!-- Error State -->
       <div v-else-if="error" class="error-container error-state">
@@ -186,12 +183,13 @@ import ConfigItemList from '@/components/cards/ConfigItemList.vue'
 import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
 import ConfigDetailSidebar from '@/components/sidebars/ConfigDetailSidebar.vue'
 import CopyModal from '@/components/copy/CopyModal.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
 import { useCopyStore } from '@/stores/copy-store'
 import { useProjectsStore } from '@/stores/projects'
 
 export default {
   name: 'ProjectDetail',
-  components: { Button, ConfigCard, ConfigItemList, BreadcrumbNavigation, ConfigDetailSidebar, CopyModal },
+  components: { Button, ConfigCard, ConfigItemList, BreadcrumbNavigation, ConfigDetailSidebar, CopyModal, LoadingState },
   props: ['id'],
   setup(props) {
     const route = useRoute()
@@ -684,30 +682,7 @@ export default {
   font-weight: 500;
 }
 
-/* Loading State */
-.loading-container {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-.spinner {
-  border: 3px solid var(--border-primary);
-  border-top: 3px solid var(--color-primary);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.loading-container p {
-  color: var(--text-secondary);
-}
+/* Loading State - Replaced with LoadingState component */
 
 /* Error State */
 .error-container {

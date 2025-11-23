@@ -44,20 +44,7 @@
         </div>
 
         <!-- Loading State -->
-        <!-- PHASE 2: Replace .loading-container with Tailwind
-             Current: text-align: center; padding: 3rem 1rem
-             Tailwind: class="text-center py-12 px-4" -->
-        <div v-if="projectsStore.isLoading" class="loading-container">
-          <!-- PHASE 2: Replace .spinner with Tailwind
-               Current: Custom border animation with 40px size
-               Tailwind: class="w-10 h-10 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"
-               Note: animate-spin utility handles rotation, no need for custom @keyframes -->
-          <div class="spinner"></div>
-          <!-- PHASE 2: Replace paragraph color with Tailwind
-               Current: color: var(--text-secondary)
-               Tailwind: class="text-slate-400" -->
-          <p>Loading projects...</p>
-        </div>
+        <LoadingState v-if="projectsStore.isLoading" message="Loading projects..." />
 
         <!-- Error State -->
         <!-- PHASE 2: Replace .error-state with Tailwind
@@ -160,10 +147,11 @@ import * as api from '@/api/client'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Select from 'primevue/select'
+import LoadingState from '@/components/common/LoadingState.vue'
 
 export default {
   name: 'Dashboard',
-  components: { Button, Card, Select },
+  components: { Button, Card, Select, LoadingState },
   setup() {
     const router = useRouter()
     const projectsStore = useProjectsStore()
@@ -423,29 +411,7 @@ export default {
   to { transform: rotate(360deg); }
 }
 
-/* PHASE 2: Loading State */
-/* DELETE .loading-container (replaced with text-center py-12 px-4) */
-.loading-container {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-/* DELETE .spinner (replaced with Tailwind spin animation)
-   Tailwind: w-10 h-10 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin mx-auto mb-4 -->
-.spinner {
-  border: 3px solid var(--border-primary);
-  border-top: 3px solid var(--color-primary);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-/* DELETE .loading-container p (replaced with text-slate-400) */
-.loading-container p {
-  color: var(--text-secondary);
-}
+/* PHASE 2: Loading State - Replaced with LoadingState component */
 
 /* PHASE 2: Error State */
 /* DELETE .error-state (replaced with text-center py-12 px-4 text-red-500) */

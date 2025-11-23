@@ -21,10 +21,7 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="loading" class="loading-container">
-        <div class="spinner"></div>
-        <p>Loading user configurations...</p>
-      </div>
+      <LoadingState v-if="loading" message="Loading user configurations..." />
 
       <!-- Config Cards Container -->
       <div v-else class="config-cards-container">
@@ -162,6 +159,7 @@ import ConfigItemList from '@/components/cards/ConfigItemList.vue'
 import ConfigDetailSidebar from '@/components/sidebars/ConfigDetailSidebar.vue'
 import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
 import CopyModal from '@/components/copy/CopyModal.vue'
+import LoadingState from '@/components/common/LoadingState.vue'
 import { useCopyStore } from '@/stores/copy-store'
 import { useProjectsStore } from '@/stores/projects'
 
@@ -172,7 +170,8 @@ export default {
     ConfigItemList,
     ConfigDetailSidebar,
     BreadcrumbNavigation,
-    CopyModal
+    CopyModal,
+    LoadingState
   },
   setup() {
     // Initialize stores
@@ -597,30 +596,7 @@ export default {
   font-weight: 500;
 }
 
-/* Loading State */
-.loading-container {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-.spinner {
-  border: 3px solid var(--border-primary);
-  border-top: 3px solid var(--color-primary);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.loading-container p {
-  color: var(--text-secondary);
-}
+/* Loading State - Replaced with LoadingState component */
 
 /* Config Cards Container */
 .config-cards-container {
