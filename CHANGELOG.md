@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- ErrorState component for consistent error UI across application (TASK-5.2.4)
+- 9 Playwright tests for ErrorState component validation (TASK-5.2.4)
+- Phase 1.5 documentation in TAILWIND-INTEGRATION.md covering layout migrations (TASK-5.2.5)
+
+### Changed
+- Migrated Dashboard.vue layout to Tailwind utility classes, reducing scoped CSS by 157 lines (57% reduction) (TASK-5.2.1)
+- Migrated ProjectDetail.vue layout to Tailwind utility classes, reducing file size by 155 lines (13.4% reduction) (TASK-5.2.2)
+- Replaced custom breadcrumb component with PrimeVue Breadcrumb using Composition API (TASK-5.2.3)
+- Consolidated duplicate error/empty state patterns using new ErrorState component for DRY principle (TASK-5.2.4)
+
+### Removed
+- 38 lines of commented utility classes from global.css (TASK-5.2.5)
+- 6 lines of "TAILWIND PHASE 2" migration comments from App.vue (TASK-5.2.5)
+- Total CSS/comment reduction: ~350 lines across Dashboard, ProjectDetail, and global stylesheets
+
+### Technical
+- Preserved CSS variables for theme compatibility (light/dark mode)
+- Maintained mobile-first responsive design with Tailwind breakpoints (sm:, md:, lg:)
+- Zero functional regressions, all 511 backend tests passing
+- All changes follow PrimeVue migration strategy and Tailwind CSS v4 preparation
+
 ---
 
 ## [2.1.0] - 2025-11-13
