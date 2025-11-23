@@ -615,7 +615,7 @@ interface Props {
 ## 8. LoadingState Component
 
 ### Purpose
-Skeleton loading placeholder.
+Standardized skeleton loading placeholder used across all views to replace custom spinner implementations.
 
 ### Structure
 ```vue
@@ -637,13 +637,12 @@ interface Props {
 ### PrimeVue Components Used
 - `Skeleton`
 
-### STORY-5.1 Update (Nov 22, 2025)
-The LoadingState component is now the standardized loading state pattern across all views. It replaces custom spinner implementations with PrimeVue Skeleton for:
+### Usage Pattern
+The LoadingState component is the standardized loading pattern across all views:
 - Dashboard.vue (project grid loading)
 - ProjectDetail.vue (page-level loading)
 - UserGlobal.vue (page-level loading)
 
-**Usage Pattern:**
 ```vue
 <LoadingState v-if="loading" :count="5" height="60px" />
 <template v-else>
@@ -653,10 +652,10 @@ The LoadingState component is now the standardized loading state pattern across 
 
 ---
 
-## Dropdown Component (STORY-5.1)
+## 9. Dropdown Component
 
 ### Purpose
-PrimeVue Dropdown for project sorting and filtering (100% PrimeVue components).
+PrimeVue Dropdown for project sorting and filtering.
 
 ### Usage in Dashboard
 ```vue
@@ -690,10 +689,10 @@ const sortOptions = [
 
 ---
 
-## Theme Toggle Button (STORY-5.1)
+## 10. Theme Toggle Button
 
 ### Purpose
-PrimeVue Button with PrimeIcons for theme switching (replaces custom toggle).
+PrimeVue Button with PrimeIcons for theme switching.
 
 ### Usage in App.vue
 ```vue

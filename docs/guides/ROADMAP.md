@@ -303,9 +303,9 @@ Streamlines MCP server setup and management, with built-in validation and testin
 
 ---
 
-## Phase 9+ - Advanced Features
+## Advanced Features (Future)
 
-**Status:** Future
+**Status:** Future - Not Yet Scheduled
 **Priority:** Low
 
 ### Features
