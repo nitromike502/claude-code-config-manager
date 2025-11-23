@@ -34,19 +34,22 @@
         <!-- Loading State -->
         <LoadingState v-if="projectsStore.isLoading" message="Loading projects..." />
 
-        <!-- Error State with Tailwind utilities -->
-        <div v-else-if="projectsStore.error" class="text-center py-12 px-4" style="color: var(--color-error)">
-          <h4 class="m-0 mb-2 text-xl">Error Loading Projects</h4>
-          <p class="m-0 mb-6">{{ projectsStore.error }}</p>
-          <Button @click="loadProjects" label="Retry" severity="danger" />
-        </div>
+        <!-- Error State -->
+        <ErrorState
+          v-else-if="projectsStore.error"
+          title="Error Loading Projects"
+          :message="projectsStore.error"
+          retryText="Retry"
+          @retry="loadProjects"
+        />
 
-        <!-- Empty State with Tailwind utilities -->
-        <div v-else-if="sortedProjects.length === 0" class="text-center py-16 px-4" style="color: var(--text-secondary)">
-          <i class="pi pi-folder text-6xl opacity-30 mb-4 block"></i>
-          <h3 class="m-0 mb-2 text-2xl" style="color: var(--text-primary)">No Projects Found</h3>
-          <p class="m-0 text-base">Add projects in Claude Code and click "Rescan" to see them here.</p>
-        </div>
+        <!-- Empty State -->
+        <EmptyState
+          v-else-if="sortedProjects.length === 0"
+          icon="pi pi-folder"
+          title="No Projects Found"
+          message="Add projects in Claude Code and click 'Rescan' to see them here."
+        />
 
         <!-- Projects Grid with responsive auto-fill layout -->
         <div v-else class="grid gap-5 grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
@@ -109,10 +112,12 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Select from 'primevue/select'
 import LoadingState from '@/components/common/LoadingState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 
 export default {
   name: 'Dashboard',
-  components: { Button, Card, Select, LoadingState },
+  components: { Button, Card, Select, LoadingState, EmptyState, ErrorState },
   setup() {
     const router = useRouter()
     const projectsStore = useProjectsStore()
