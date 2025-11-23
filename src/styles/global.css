@@ -1,6 +1,6 @@
 /* Global Styles */
 
-* {
+*:not([class*='p-']):not([class*='pi-']) {
   box-sizing: border-box;
   margin: 0;
   padding: 0;

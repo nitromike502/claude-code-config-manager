@@ -51,10 +51,13 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 
 ### User Experience
 - **SPA Navigation** - Client-side routing with no page reloads
-- **Dark Mode** - Built-in dark/light theme toggle with CSS variables
+- **Dark Mode** - Built-in dark/light theme toggle with PrimeVue Button and PrimeIcons
 - **Responsive Design** - Works on desktop, tablet, and mobile devices
 - **Manual Refresh** - Rescan projects on demand
-- **Toast Notifications** - Auto-dismissing success/error messages
+- **Toast Notifications** - Auto-dismissing success/error messages with PrimeVue Toast
+- **100% PrimeVue Components** - All interactive elements use PrimeVue Aura theme components
+- **Consistent Loading States** - Standardized skeleton loading spinners across all views
+- **Accessible Dropdowns** - Project sorting with PrimeVue Dropdown (WCAG 2.1 AA compliant)
 
 ### Performance
 - **< 1 Second Dev Server** - Vite HMR for instant feedback
