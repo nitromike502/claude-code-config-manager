@@ -37,8 +37,8 @@ test.describe('04.001: Dashboard Component', () => {
     await expect(header).toBeVisible();
     await expect(header).toContainText('Projects');
 
-    // Verify sort dropdown is present
-    const sortDropdown = page.locator('.sort-dropdown');
+    // Verify sort dropdown is present (PrimeVue Select component)
+    const sortDropdown = page.locator('.p-select');
     await expect(sortDropdown).toBeVisible();
 
     // Verify rescan button is present

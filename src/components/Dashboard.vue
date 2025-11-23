@@ -19,16 +19,15 @@
                Current: display: flex; gap: 0.75rem; align-items: center
                Tailwind: class="flex gap-3 items-center" -->
           <div class="dashboard-actions">
-            <!-- PHASE 2: Replace .sort-dropdown with Tailwind form styling
-                 Current: Custom styling with border, background, color, font-size
-                 Tailwind: class="px-4 py-2 border border-slate-600 rounded bg-slate-800 text-slate-100 text-sm cursor-pointer min-w-[200px]"
-                 Hover: class="hover:border-blue-500" -->
-            <select v-model="sortBy" class="sort-dropdown">
-              <option value="name-asc">Name (A-Z)</option>
-              <option value="name-desc">Name (Z-A)</option>
-              <option value="agents">Most Agents</option>
-              <option value="commands">Most Commands</option>
-            </select>
+            <!-- PrimeVue Select for sort selection -->
+            <Select
+              v-model="sortBy"
+              :options="sortOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Sort by..."
+              class="min-w-[200px]"
+            />
             <!-- PHASE 2: PrimeVue Button component - Keep as-is (PrimeVue provides Tailwind-like theming)
                  Note: .rescan-btn styling will be removed - Button component handles styling
                  Spinning animation (keyframe spin) will be managed by Tailwind animation classes
@@ -45,20 +44,7 @@
         </div>
 
         <!-- Loading State -->
-        <!-- PHASE 2: Replace .loading-container with Tailwind
-             Current: text-align: center; padding: 3rem 1rem
-             Tailwind: class="text-center py-12 px-4" -->
-        <div v-if="projectsStore.isLoading" class="loading-container">
-          <!-- PHASE 2: Replace .spinner with Tailwind
-               Current: Custom border animation with 40px size
-               Tailwind: class="w-10 h-10 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"
-               Note: animate-spin utility handles rotation, no need for custom @keyframes -->
-          <div class="spinner"></div>
-          <!-- PHASE 2: Replace paragraph color with Tailwind
-               Current: color: var(--text-secondary)
-               Tailwind: class="text-slate-400" -->
-          <p>Loading projects...</p>
-        </div>
+        <LoadingState v-if="projectsStore.isLoading" message="Loading projects..." />
 
         <!-- Error State -->
         <!-- PHASE 2: Replace .error-state with Tailwind
@@ -160,10 +146,12 @@ import { useProjectsStore } from '@/stores/projects'
 import * as api from '@/api/client'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
+import Select from 'primevue/select'
+import LoadingState from '@/components/common/LoadingState.vue'
 
 export default {
   name: 'Dashboard',
-  components: { Button, Card },
+  components: { Button, Card, Select, LoadingState },
   setup() {
     const router = useRouter()
     const projectsStore = useProjectsStore()
@@ -171,6 +159,14 @@ export default {
     const sortBy = ref('name-asc')
     const scanning = ref(false)
     const userConfig = ref(null)
+
+    // Sort options for PrimeVue Dropdown
+    const sortOptions = [
+      { label: 'Name (A-Z)', value: 'name-asc' },
+      { label: 'Name (Z-A)', value: 'name-desc' },
+      { label: 'Most Agents', value: 'agents' },
+      { label: 'Most Commands', value: 'commands' }
+    ]
 
     // Load user config stats
     const loadUserConfig = async () => {
@@ -308,6 +304,7 @@ export default {
     return {
       projectsStore,
       sortBy,
+      sortOptions,
       scanning,
       sortedProjects,
       loadProjects,
@@ -374,24 +371,6 @@ export default {
   align-items: center;
 }
 
-/* PHASE 2: DELETE .sort-dropdown and convert to Tailwind form styling
-   New Tailwind classes: px-4 py-2 border border-slate-600 rounded bg-slate-800 text-slate-100 text-sm cursor-pointer min-w-[200px]
-   Hover: hover:border-blue-500 -->
-.sort-dropdown {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-primary);
-  border-radius: 4px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  cursor: pointer;
-  min-width: 200px;
-}
-
-.sort-dropdown:hover {
-  border-color: var(--color-primary);
-}
-
 /* PHASE 2: DELETE .rescan-btn (PrimeVue Button handles styling)
    Note: Button component in PrimeVue already applies appropriate styling
    No need for .rescan-btn custom CSS -->
@@ -432,29 +411,7 @@ export default {
   to { transform: rotate(360deg); }
 }
 
-/* PHASE 2: Loading State */
-/* DELETE .loading-container (replaced with text-center py-12 px-4) */
-.loading-container {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-/* DELETE .spinner (replaced with Tailwind spin animation)
-   Tailwind: w-10 h-10 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin mx-auto mb-4 -->
-.spinner {
-  border: 3px solid var(--border-primary);
-  border-top: 3px solid var(--color-primary);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-/* DELETE .loading-container p (replaced with text-slate-400) */
-.loading-container p {
-  color: var(--text-secondary);
-}
+/* PHASE 2: Loading State - Replaced with LoadingState component */
 
 /* PHASE 2: Error State */
 /* DELETE .error-state (replaced with text-center py-12 px-4 text-red-500) */
@@ -641,10 +598,6 @@ export default {
 
   .dashboard-actions {
     flex-direction: column;
-  }
-
-  .sort-dropdown {
-    width: 100%;
   }
 
   .project-grid {

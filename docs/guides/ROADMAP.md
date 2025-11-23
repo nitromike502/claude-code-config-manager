@@ -20,12 +20,15 @@ The Claude Code Manager follows a phased development approach, building incremen
 | Phase 2.1 - Component Refactoring | ✅ Complete | Completed (Oct 26, 2025) | - |
 | Phase 2.2 - Bug Fixes | ✅ Complete | Completed (Oct 27, 2025) | - |
 | Phase 2.3 - Production Readiness | ✅ Complete | Completed (Nov 1, 2025) | - |
-| Phase 3 - Copy Configuration | 🔄 In PR Review | Nov 2-9, 2025 | High |
-| Phase 4 - Subagent CRUD | 📅 Planned | TBD | Medium |
-| Phase 5 - Command Management | 📅 Planned | TBD | Medium |
-| Phase 6 - Hooks Configuration | 📅 Planned | TBD | Medium |
-| Phase 7 - MCP Server Management | 📅 Planned | TBD | Medium |
-| Phase 8+ - Advanced Features | 🔮 Future | TBD | Low |
+| Phase 3 - Copy Configuration | ✅ Complete | Completed (Nov 13, 2025) | High |
+| Phase 3.1 - Color Refactoring & Icons | ✅ Complete | Completed (Nov 22, 2025) | High |
+| Phase 3.2 - Tailwind CSS Prep | ✅ Complete | Completed (Nov 22, 2025) | High |
+| Phase 5 - PrimeVue Migration | 🔄 In Progress | Nov 22+, 2025 | High |
+| Phase 4 - Subagent CRUD | 📅 Planned | Q1 2026 | Medium |
+| Phase 6 - Command Management | 📅 Planned | Q1 2026 | Medium |
+| Phase 7 - Hooks Configuration | 📅 Planned | Q1 2026 | Medium |
+| Phase 8 - MCP Server Management | 📅 Planned | Q1 2026 | Medium |
+| Phase 9+ - Advanced Features | 🔮 Future | Q2+ 2026 | Low |
 
 ---
 
@@ -167,6 +170,67 @@ Enable users to copy configuration items (agents, commands, hooks, MCP servers) 
 
 ---
 
+## Phase 5 - PrimeVue Migration
+
+**Status:** 🔄 In Progress
+**Started:** November 22, 2025
+**Target Completion:** November 2025
+**Priority:** High
+
+### Objective
+
+Complete the PrimeVue component migration to achieve 100% component consistency, remove legacy custom styling (~237 lines of code), and improve maintainability and accessibility across the application.
+
+### Epic Structure
+
+**EPIC-005** contains 3 stories:
+
+**STORY-5.1: Foundation Cleanup** - ✅ COMPLETE (Nov 22, 2025)
+- Replaced Dashboard sort dropdown with PrimeVue Dropdown
+- Replaced theme toggle button with PrimeVue Button + PrimeIcons
+- Removed legacy notification system (~98 lines)
+- Standardized loading states with PrimeVue Skeleton (~60 lines)
+- **Result:** 100% PrimeVue component usage, ~237 lines of legacy code removed
+
+**STORY-5.2: Layout Migration** - 📅 Planned
+- Migrate Dashboard and ProjectDetail layouts to Tailwind CSS classes
+- Replace Grid-based layouts with Tailwind responsive grid
+- Improve spacing consistency with Tailwind's design system
+
+**STORY-5.3: Long-term Refinement** - 📅 Planned
+- Fine-tune animations and transitions
+- Optimize Skeleton loading placeholders
+- Add micro-interactions for better UX
+
+### Completed Work (STORY-5.1)
+
+1. **Component Migrations**
+   - Dropdown component for project sorting (replaced native `<select>`)
+   - PrimeVue Button with PrimeIcons for theme toggle (replaced custom button)
+   - Standardized LoadingState component across all views
+
+2. **Code Cleanup**
+   - Removed legacy notification system HTML and CSS (~98 lines)
+   - Removed custom `.spinner` CSS (~60 lines)
+   - Removed custom `.theme-toggle` button styles (~50+ lines)
+   - Removed custom dropdown styles (~20 lines)
+   - **Total:** ~237 lines of legacy code eliminated
+
+3. **Quality Improvements**
+   - 100% PrimeVue component usage for all interactive elements
+   - Consistent Aura theme styling across all components
+   - Enhanced keyboard navigation and accessibility
+   - Improved loading state patterns with Skeleton placeholders
+
+### User Value
+
+- **Consistency:** All interactive elements use the same PrimeVue Aura theme
+- **Maintainability:** Reduced custom CSS eliminates style conflicts and makes updates easier
+- **Accessibility:** PrimeVue built-in ARIA labels and keyboard support improve WCAG compliance
+- **Performance:** Consistent Skeleton animations and removal of custom spinners improve perceived performance
+
+---
+
 ## Phase 4 - Subagent CRUD
 
 **Status:** Planned
@@ -185,7 +249,7 @@ Enables users to manage their Claude Code subagents directly through the web int
 
 ---
 
-## Phase 5 - Command Management
+## Phase 6 - Command Management
 
 **Status:** Planned
 **Priority:** Medium
@@ -203,7 +267,7 @@ Simplifies slash command creation and sharing, making it easy to build and distr
 
 ---
 
-## Phase 6 - Hooks Configuration
+## Phase 7 - Hooks Configuration
 
 **Status:** Planned
 **Priority:** Medium
@@ -221,7 +285,7 @@ Provides a user-friendly interface for configuring Claude Code hooks, making wor
 
 ---
 
-## Phase 7 - MCP Server Management
+## Phase 8 - MCP Server Management
 
 **Status:** Planned
 **Priority:** Medium
@@ -239,7 +303,7 @@ Streamlines MCP server setup and management, with built-in validation and testin
 
 ---
 
-## Phase 8+ - Advanced Features
+## Phase 9+ - Advanced Features
 
 **Status:** Future
 **Priority:** Low
