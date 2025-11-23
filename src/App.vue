@@ -3,16 +3,14 @@
     <header class="app-header">
       <div class="header-content">
         <h1>Claude Code Manager</h1>
-        <!-- TAILWIND PHASE 2: Replace theme-toggle button with PrimeVue Button component -->
-        <button
+        <Button
           @click="themeStore.toggleTheme"
-          class="theme-toggle"
-          :title="`Switch to ${themeStore.currentTheme === 'light' ? 'dark' : 'light'} mode`"
+          :icon="themeStore.currentTheme === 'light' ? 'pi pi-moon' : 'pi pi-sun'"
+          :label="themeStore.currentTheme === 'light' ? 'Dark' : 'Light'"
+          severity="secondary"
+          outlined
           aria-label="Toggle theme"
-        >
-          <span class="theme-icon">{{ themeStore.currentTheme === 'light' ? '🌙' : '☀️' }}</span>
-          <span class="theme-text">{{ themeStore.currentTheme === 'light' ? 'Dark' : 'Light' }}</span>
-        </button>
+        />
       </div>
     </header>
 
@@ -52,12 +50,14 @@ import { useNotificationsStore } from './stores/notifications'
 import { useProjectsStore } from './stores/projects'
 import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
 import Toast from 'primevue/toast'
+import Button from 'primevue/button'
 
 export default {
   name: 'App',
   components: {
     ErrorBoundary,
-    Toast
+    Toast,
+    Button
   },
   setup() {
     const themeStore = useThemeStore()
@@ -99,37 +99,6 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.5rem;
-}
-
-/* TAILWIND PHASE 2: bg-*, border, px-*, py-*, rounded,
-   flex, items-center, gap, hover:bg-*, transition
-   Current: button styling with CSS custom properties */
-.theme-toggle {
-  background: none;
-  border: 1px solid var(--border-primary);
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background-color 0.2s;
-}
-
-.theme-toggle:hover {
-  background: var(--bg-hover);
-}
-
-.theme-icon {
-  font-size: 1.2rem;
-  display: inline-block;
-  line-height: 1;
-}
-
-.theme-text {
-  font-weight: 500;
-  color: var(--text-primary);
 }
 
 /* TAILWIND PHASE 2: flex-1 */
