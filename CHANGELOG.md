@@ -9,6 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **STORY-5.1 (Phase 5 - Foundation Cleanup):**
+  - PrimeVue Dropdown component for project sorting (replaced native `<select>`)
+  - Improved loading states with standardized PrimeVue Skeleton component across all views
+  - Consistent focus and hover states aligned with PrimeVue Aura theme
+
+### Changed
+- **STORY-5.1 (Phase 5 - Foundation Cleanup):**
+  - Dashboard sort dropdown now uses PrimeVue Dropdown for better accessibility and consistency
+  - Theme toggle button now uses PrimeVue Button with PrimeIcons (moon/sun icons)
+  - All loading states standardized with PrimeVue Skeleton (LoadingState.vue component)
+  - Loading spinners now display consistently across Dashboard, ProjectDetail, and UserGlobal views
+
+### Removed
+- **STORY-5.1 (Phase 5 - Foundation Cleanup):**
+  - Legacy notification system (~98 lines of HTML and CSS) - replaced by PrimeVue Toast
+  - Custom `.spinner` CSS styles (~60 lines) - replaced with PrimeVue Skeleton
+  - Custom theme toggle button styling (~50+ lines) - replaced with PrimeVue Button
+  - Custom sort dropdown styling (~20 lines) - replaced with PrimeVue Dropdown
+  - **Total cleanup:** ~237 lines of legacy code removed
+
+### Technical Details
+- Achieved 100% PrimeVue component usage for interactive elements
+- Removed all remaining native HTML form elements from UI
+- Consolidated loading state patterns across all views
+- Improved CSS maintainability by removing custom component styles
+- Enhanced accessibility with PrimeVue's built-in ARIA labels and keyboard navigation
+
 ---
 
 ## [2.1.0] - 2025-11-13
