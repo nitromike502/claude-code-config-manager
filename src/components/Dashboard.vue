@@ -1,24 +1,16 @@
 <template>
-  <!-- PHASE 2: Replace .dashboard/.main-content/.dashboard-container with Tailwind utility classes
-       Current: Custom CSS with flex, padding, max-width
-       Tailwind: class="w-full" / class="px-8 py-8" / class="max-w-7xl mx-auto" -->
-  <div class="dashboard">
-    <!-- PHASE 2: Replace .main-content with px-8 py-8 (padding: 2rem) -->
-    <div class="main-content">
-      <!-- PHASE 2: Replace .dashboard-container with max-w-7xl mx-auto (max-width: 1400px; margin: auto) -->
-      <div class="dashboard-container">
-        <!-- PHASE 2: Replace .dashboard-header flex layout with Tailwind
-             Current: display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem
-             Tailwind: class="flex justify-between items-center flex-wrap gap-4" -->
-        <div class="dashboard-header">
-          <!-- PHASE 2: Replace h2 styling with Tailwind
-               Current: font-size: 1.75rem; color: var(--text-primary)
-               Tailwind: class="text-2xl text-slate-100 dark:text-slate-100" -->
-          <h2>Projects</h2>
-          <!-- PHASE 2: Replace .dashboard-actions flex layout with Tailwind
-               Current: display: flex; gap: 0.75rem; align-items: center
-               Tailwind: class="flex gap-3 items-center" -->
-          <div class="dashboard-actions">
+  <!-- Layout migrated to Tailwind utility classes -->
+  <div class="w-full">
+    <!-- Mobile-first padding: p-4 on mobile, p-8 on desktop -->
+    <div class="p-4 md:p-8">
+      <!-- Max width container (1400px = 87.5rem, closest is 7xl at 80rem) -->
+      <div class="max-w-7xl mx-auto">
+        <!-- Dashboard header: flex layout with responsive behavior -->
+        <div class="flex justify-between items-center mb-6 flex-wrap gap-4 md:flex-row flex-col md:items-center items-stretch">
+          <!-- Title with CSS variable for color consistency -->
+          <h2 class="m-0 text-[1.75rem]" style="color: var(--text-primary)">Projects</h2>
+          <!-- Actions: responsive flex layout -->
+          <div class="flex gap-3 items-center md:flex-row flex-col">
             <!-- PrimeVue Select for sort selection -->
             <Select
               v-model="sortBy"
@@ -28,17 +20,13 @@
               placeholder="Sort by..."
               class="min-w-[200px]"
             />
-            <!-- PHASE 2: PrimeVue Button component - Keep as-is (PrimeVue provides Tailwind-like theming)
-                 Note: .rescan-btn styling will be removed - Button component handles styling
-                 Spinning animation (keyframe spin) will be managed by Tailwind animation classes
-                 Alternative: animate-spin utility class, or custom animation via Tailwind config -->
+            <!-- PrimeVue Button with animate-spin for icon -->
             <Button
               @click="handleRescan"
               :disabled="scanning"
               :label="scanning ? 'Scanning...' : 'Rescan'"
               icon="pi pi-refresh"
-              :iconClass="{ spinning: scanning }"
-              class="rescan-btn"
+              :class="{ 'animate-spin-icon': scanning }"
             />
           </div>
         </div>
@@ -47,48 +35,24 @@
         <LoadingState v-if="projectsStore.isLoading" message="Loading projects..." />
 
         <!-- Error State -->
-        <!-- PHASE 2: Replace .error-state with Tailwind
-             Current: text-align: center; padding: 3rem 1rem; color: var(--color-error)
-             Tailwind: class="text-center py-12 px-4 text-red-500" -->
-        <div v-else-if="projectsStore.error" class="error-state">
-          <!-- PHASE 2: Replace h4 styling with Tailwind
-               Current: font-size: 1.25rem; margin: 0 0 0.5rem 0
-               Tailwind: class="text-xl mb-2" -->
-          <h4>Error Loading Projects</h4>
-          <!-- PHASE 2: Replace paragraph with Tailwind
-               Current: margin: 0 0 1.5rem 0
-               Tailwind: class="mb-6" -->
-          <p>{{ projectsStore.error }}</p>
-          <!-- PHASE 2: PrimeVue Button - Keep severity="danger" (PrimeVue theming)
-               Note: .retry-btn styling will be removed, Button component handles styling -->
-          <Button @click="loadProjects" label="Retry" severity="danger" class="retry-btn" />
-        </div>
+        <ErrorState
+          v-else-if="projectsStore.error"
+          title="Error Loading Projects"
+          :message="projectsStore.error"
+          retryText="Retry"
+          @retry="loadProjects"
+        />
 
         <!-- Empty State -->
-        <!-- PHASE 2: Replace .empty-state with Tailwind
-             Current: text-align: center; padding: 4rem 1rem; color: var(--text-secondary)
-             Tailwind: class="text-center py-16 px-4 text-slate-400" -->
-        <div v-else-if="sortedProjects.length === 0" class="empty-state">
-          <!-- PHASE 2: Replace .empty-state i with Tailwind
-               Current: font-size: 4rem; opacity: 0.3; margin-bottom: 1rem
-               Tailwind: class="text-6xl opacity-30 mb-4" -->
-          <i class="pi pi-folder"></i>
-          <!-- PHASE 2: Replace h3 with Tailwind
-               Current: font-size: 1.5rem; margin: 0 0 0.5rem 0; color: var(--text-primary)
-               Tailwind: class="text-2xl mb-2 text-slate-100" -->
-          <h3>No Projects Found</h3>
-          <!-- PHASE 2: Replace p with Tailwind
-               Current: margin: 0; font-size: 1rem
-               Tailwind: class="text-base" -->
-          <p>Add projects in Claude Code and click "Rescan" to see them here.</p>
-        </div>
+        <EmptyState
+          v-else-if="sortedProjects.length === 0"
+          icon="pi pi-folder"
+          title="No Projects Found"
+          message="Add projects in Claude Code and click 'Rescan' to see them here."
+        />
 
-        <!-- Projects Grid -->
-        <!-- PHASE 2: Replace .project-grid with Tailwind
-             Current: display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem
-             Tailwind: class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 auto-fit"
-             Note: Tailwind auto-fit not directly available, use grid-cols-[repeat(auto-fit,minmax(320px,1fr))] or responsive cols -->
-        <div v-else class="project-grid">
+        <!-- Projects Grid with responsive auto-fill layout -->
+        <div v-else class="grid gap-5 grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
           <!-- Using PrimeVue Card component with passthrough props -->
           <Card
             v-for="project in sortedProjects"
@@ -148,10 +112,12 @@ import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Select from 'primevue/select'
 import LoadingState from '@/components/common/LoadingState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 
 export default {
   name: 'Dashboard',
-  components: { Button, Card, Select, LoadingState },
+  components: { Button, Card, Select, LoadingState, EmptyState, ErrorState },
   setup() {
     const router = useRouter()
     const projectsStore = useProjectsStore()
@@ -316,170 +282,17 @@ export default {
 }
 </script>
 
-<!-- PHASE 2: Complete stylesheet migration from custom CSS to Tailwind
-     This entire <style> block will be removed and replaced with Tailwind utility classes
-     applied directly to template elements. See template comments for Tailwind equivalents.
-
-     Migration Strategy:
-     1. Layout utilities (flex, grid, gap) - Tailwind layout classes
-     2. Spacing (padding, margin) - Tailwind p-*, m-*, px-*, py-* classes
-     3. Colors (CSS variables) - Tailwind color classes (slate-*, blue-*, etc.)
-     4. Typography (font-size, font-weight) - Tailwind text-*, font-* classes
-     5. Shadows & transitions - Tailwind shadow-*, transition-* classes
-     6. Responsive (media queries) - Tailwind responsive modifiers (md:, lg:, xl:)
-     7. Animations (@keyframes) - Tailwind animate-* utilities (e.g., animate-spin)
--->
-
 <style scoped>
-/* PHASE 2: DELETE .dashboard (replaced with w-full) */
-.dashboard {
-  width: 100%;
-}
+/* Layout utilities migrated to Tailwind classes in template */
 
-/* PHASE 2: DELETE .main-content (replaced with px-8 py-8) */
-.main-content {
-  padding: 2rem;
-}
-
-/* PHASE 2: DELETE .dashboard-container (replaced with max-w-7xl mx-auto) */
-.dashboard-container {
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* PHASE 2: DELETE .dashboard-header (replaced with flex justify-between items-center flex-wrap gap-4) */
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-/* PHASE 2: DELETE .dashboard-header h2 (replaced with text-2xl text-slate-100) */
-.dashboard-header h2 {
-  margin: 0;
-  font-size: 1.75rem;
-  color: var(--text-primary);
-}
-
-/* PHASE 2: DELETE .dashboard-actions (replaced with flex gap-3 items-center) */
-.dashboard-actions {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-/* PHASE 2: DELETE .rescan-btn (PrimeVue Button handles styling)
-   Note: Button component in PrimeVue already applies appropriate styling
-   No need for .rescan-btn custom CSS -->
-.rescan-btn {
-  padding: 0.5rem 1.25rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background 0.2s;
-}
-
-.rescan-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-
-.rescan-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* PHASE 2: DELETE .rescan-btn i.spinning
-   Replace with Tailwind: animate-spin (uses built-in rotate animation)
-   No custom @keyframes needed -->
-.rescan-btn i.spinning {
+/* Custom animation for spinning icon (Tailwind animate-spin targets the element itself) */
+.animate-spin-icon :deep(.pi-refresh) {
   animation: spin 1s linear infinite;
 }
 
-/* PHASE 2: DELETE @keyframes spin
-   Tailwind provides animate-spin utility that handles rotation 360deg -->
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-
-/* PHASE 2: Loading State - Replaced with LoadingState component */
-
-/* PHASE 2: Error State */
-/* DELETE .error-state (replaced with text-center py-12 px-4 text-red-500) */
-.error-state {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: var(--color-error);
-}
-
-/* DELETE .error-state h4 (replaced with text-xl mb-2) */
-.error-state h4 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.25rem;
-}
-
-/* DELETE .error-state p (replaced with mb-6) */
-.error-state p {
-  margin: 0 0 1.5rem 0;
-}
-
-/* DELETE .retry-btn (PrimeVue Button handles styling) */
-.retry-btn {
-  padding: 0.5rem 1.5rem;
-  background: var(--color-error);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-
-.retry-btn:hover {
-  background: var(--color-error);
-}
-
-/* PHASE 2: Empty State */
-/* DELETE .empty-state (replaced with text-center py-16 px-4 text-slate-400) */
-.empty-state {
-  text-align: center;
-  padding: 4rem 1rem;
-  color: var(--text-secondary);
-}
-
-/* DELETE .empty-state i (replaced with text-6xl opacity-30 mb-4) */
-.empty-state i {
-  font-size: 4rem;
-  opacity: 0.3;
-  margin-bottom: 1rem;
-}
-
-/* DELETE .empty-state h3 (replaced with text-2xl mb-2 text-slate-100) */
-.empty-state h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
-  color: var(--text-primary);
-}
-
-/* DELETE .empty-state p (replaced with text-base) */
-.empty-state p {
-  margin: 0;
-  font-size: 1rem;
-}
-
-/* Projects Grid */
-.project-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.25rem;
 }
 
 /* Project Card - PrimeVue Card customization */
@@ -584,24 +397,5 @@ export default {
   width: 100%;
 }
 
-/* PHASE 2: Responsive Breakpoints
-   Current: Single @media query at 768px
-   Tailwind: Responsive modifiers built into utility classes
-   - sm: (640px) - md:, lg:, xl:, 2xl: modifiers in template classes
-   - Example: grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
-   - No need for separate @media blocks */
-@media (max-width: 768px) {
-  .dashboard-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .dashboard-actions {
-    flex-direction: column;
-  }
-
-  .project-grid {
-    grid-template-columns: 1fr;
-  }
-}
+/* Responsive breakpoints handled by Tailwind responsive modifiers in template */
 </style>

@@ -62,16 +62,12 @@ export default {
   flex-direction: column;
 }
 
-/* TAILWIND PHASE 2: bg-*, py-*, px-*, border-b
-   Current: var(--bg-header), padding, border-bottom */
 .app-header {
   background: var(--bg-header);
   padding: 1rem 2rem;
   border-bottom: 1px solid var(--border-primary);
 }
 
-/* TAILWIND PHASE 2: flex, justify-between, items-center, mb-*
-   Current: display: flex, justify-content, align-items, margin */
 .header-content {
   display: flex;
   justify-content: space-between;
@@ -79,7 +75,6 @@ export default {
   margin-bottom: 0.5rem;
 }
 
-/* TAILWIND PHASE 2: flex-1 */
 .app-main {
   flex: 1;
 }

@@ -1,6 +1,6 @@
 <template>
-  <div class="project-detail">
-    <div class="main-content">
+  <div class="flex min-h-screen">
+    <div class="flex-1 p-4 md:p-8 max-w-[1400px] mx-auto w-full">
       <!-- Breadcrumbs -->
       <BreadcrumbNavigation
         :items="[
@@ -10,34 +10,34 @@
       />
 
       <!-- Project Info Bar -->
-      <div class="project-info-bar">
-        <div class="project-info-title">
-          <i class="pi pi-folder"></i>
+      <div class="mb-8">
+        <div class="flex items-center gap-3 text-2xl font-semibold mb-2" style="color: var(--text-primary)">
+          <i class="pi pi-folder text-[1.75rem]" style="color: var(--color-primary)"></i>
           <span>{{ projectName }}</span>
         </div>
-        <div class="project-info-subtitle">{{ projectPath }}</div>
+        <div class="text-sm ml-10" style="color: var(--text-secondary)">{{ projectPath }}</div>
       </div>
 
       <!-- Loading State -->
       <LoadingState v-if="loading" message="Loading project details..." />
 
       <!-- Error State -->
-      <div v-else-if="error" class="error-container error-state">
-        <i class="pi pi-exclamation-triangle"></i>
-        <p>{{ errorMessage }}</p>
-        <Button @click="retryLoad" label="Retry" icon="pi pi-refresh" severity="danger" class="retry-btn" />
+      <div v-else-if="error" class="text-center py-12 px-4 rounded-lg mt-8" style="background: var(--bg-secondary); border: 1px solid var(--border-primary)">
+        <i class="pi pi-exclamation-triangle text-5xl mb-4" style="color: var(--color-error)"></i>
+        <p class="text-base mb-6" style="color: var(--text-primary)">{{ errorMessage }}</p>
+        <Button @click="retryLoad" label="Retry" icon="pi pi-refresh" severity="danger" />
       </div>
 
       <!-- Content Area (warnings + config cards) -->
       <div v-else>
         <!-- Warning Banner -->
-        <div v-if="warnings.length > 0" class="warning-banner">
-          <div class="warning-header">
-            <i class="pi pi-exclamation-circle"></i>
+        <div v-if="warnings.length > 0" class="rounded-lg p-4 md:p-6 mb-6" style="background: var(--color-warning-bg); border: 1px solid var(--color-warning)">
+          <div class="flex items-center gap-3 font-semibold mb-2" style="color: var(--color-warning)">
+            <i class="pi pi-exclamation-circle text-xl"></i>
             <span>{{ warnings.length }} Warning{{ warnings.length > 1 ? 's' : '' }}</span>
           </div>
-          <ul class="warning-list">
-            <li v-for="(warning, index) in warnings" :key="index">
+          <ul class="list-disc ml-8" style="color: var(--color-warning)">
+            <li v-for="(warning, index) in warnings" :key="index" class="my-1 text-sm">
               <template v-if="typeof warning === 'string'">{{ warning }}</template>
               <template v-else>{{ warning.message || warning }}</template>
             </li>
@@ -45,7 +45,7 @@
         </div>
 
         <!-- Config Cards Container -->
-        <div class="config-cards-container">
+        <div class="grid gap-6 xl:grid-cols-2">
         <!-- Agents Card -->
         <ConfigCard
           card-type="agents"
@@ -146,7 +146,7 @@
     </div>
 
     <!-- Sidebar Overlay -->
-    <div v-if="sidebarVisible" class="sidebar-overlay" @click="sidebarVisible = false"></div>
+    <div v-if="sidebarVisible" class="fixed inset-0 z-[999] animate-fade-in" style="background: rgba(0, 0, 0, 0.5)" @click="sidebarVisible = false"></div>
 
     <!-- Detail Sidebar Component -->
     <ConfigDetailSidebar
@@ -603,46 +603,7 @@ export default {
 </script>
 
 <style scoped>
-.project-detail {
-  display: flex;
-  min-height: 100vh;
-}
-
-.main-content {
-  flex: 1;
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-/* Project Info Bar */
-.project-info-bar {
-  margin-bottom: 2rem;
-}
-
-.project-info-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-}
-
-.project-info-title i {
-  font-size: 1.75rem;
-  color: var(--color-primary);
-}
-
-.project-info-subtitle {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin-left: 2.5rem;
-}
-
-/* Breadcrumbs */
+/* Breadcrumbs - Will be replaced in TASK-5.2.3 */
 .breadcrumbs {
   display: flex;
   align-items: center;
@@ -682,107 +643,7 @@ export default {
   font-weight: 500;
 }
 
-/* Loading State - Replaced with LoadingState component */
-
-/* Error State */
-.error-container {
-  text-align: center;
-  padding: 3rem 1rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  margin-top: 2rem;
-}
-
-.error-container i {
-  font-size: 3rem;
-  color: var(--color-error);
-  margin-bottom: 1rem;
-}
-
-.error-container p {
-  color: var(--text-primary);
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.retry-btn {
-  padding: 0.75rem 1.5rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background 0.2s;
-}
-
-.retry-btn:hover {
-  background: var(--color-primary-hover);
-}
-
-.retry-btn i {
-  font-size: 1rem;
-  color: white;
-  margin: 0;
-}
-
-/* Warning Banner */
-.warning-banner {
-  background: var(--color-warning-bg);
-  border: 1px solid var(--color-warning);
-  border-radius: 8px;
-  padding: 1rem 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-[data-theme="dark"] .warning-banner {
-  background: var(--color-warning-bg);
-  border-color: var(--color-warning);
-}
-
-.warning-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 600;
-  color: var(--color-warning);
-  margin-bottom: 0.5rem;
-}
-
-[data-theme="dark"] .warning-header {
-  color: var(--color-warning);
-}
-
-.warning-header i {
-  font-size: 1.25rem;
-}
-
-.warning-list {
-  margin: 0;
-  padding-left: 2rem;
-  color: var(--color-warning);
-}
-
-[data-theme="dark"] .warning-list {
-  color: var(--color-warning);
-}
-
-.warning-list li {
-  margin: 0.25rem 0;
-  font-size: 0.9rem;
-}
-
-/* Config Cards Container */
-.config-cards-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-  gap: 1.5rem;
-}
-
+/* Domain-Specific Card Styles - Preserve for component-specific behavior */
 .config-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
@@ -944,18 +805,9 @@ export default {
   color: white;
 }
 
-/* Sidebar Overlay */
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  animation: fadeIn 0.3s ease;
-}
+/* Sidebar Overlay - Migrated to Tailwind classes in template */
 
+/* Sidebar animation for fade-in */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -963,6 +815,10 @@ export default {
   to {
     opacity: 1;
   }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease;
 }
 
 /* Sidebar */
@@ -1133,20 +989,10 @@ export default {
   background: var(--color-primary-hover);
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
-  .config-cards-container {
-    grid-template-columns: 1fr;
-  }
-}
-
+/* Responsive - Sidebar mobile behavior preserved */
 @media (max-width: 768px) {
   .sidebar {
     width: 100%;
-  }
-
-  .main-content {
-    padding: 1rem;
   }
 }
 </style>
