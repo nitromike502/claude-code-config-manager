@@ -1,14 +1,14 @@
 <template>
-  <div class="empty-state">
-    <i :class="icon"></i>
-    <h3>{{ title }}</h3>
-    <p>{{ message }}</p>
+  <div class="text-center px-6 py-12 md:px-6 md:py-12 max-md:px-4 max-md:py-8 flex flex-col items-center gap-3 empty-state">
+    <i :class="icon" class="text-6xl opacity-30 md:text-6xl max-md:text-5xl empty-state-icon"></i>
+    <h3 class="m-0 text-xl font-semibold md:text-xl max-md:text-lg empty-state-title">{{ title }}</h3>
+    <p class="m-0 text-sm max-w-sm md:text-sm max-md:text-sm empty-state-text">{{ message }}</p>
     <Button
       v-if="actionText"
       @click="emit('action')"
       :label="actionText"
       :icon="actionIcon"
-      class="action-btn"
+      class="mt-2 px-5 py-2.5 rounded cursor-pointer text-sm font-medium inline-flex items-center gap-2 transition-colors duration-200 text-white action-btn"
     />
   </div>
 </template>
@@ -48,49 +48,24 @@ const emit = defineEmits({
 
 <style scoped>
 .empty-state {
-  text-align: center;
-  padding: 3rem 1.5rem;
-  color: var(--text-secondary);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.empty-state i:first-child {
-  font-size: 3.5rem;
-  opacity: 0.3;
   color: var(--text-secondary);
 }
 
-.empty-state h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+.empty-state-icon {
+  color: var(--text-secondary);
+}
+
+.empty-state-title {
   color: var(--text-primary);
 }
 
-.empty-state p {
-  margin: 0;
-  font-size: 0.95rem;
+.empty-state-text {
   color: var(--text-secondary);
-  max-width: 400px;
 }
 
 .action-btn {
-  margin-top: 0.5rem;
-  padding: 0.625rem 1.25rem;
   background: var(--color-primary);
-  color: white;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background 0.2s ease;
 }
 
 .action-btn:hover {
@@ -101,24 +76,5 @@ const emit = defineEmits({
   font-size: 0.9rem;
   opacity: 1;
   color: white;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .empty-state {
-    padding: 2rem 1rem;
-  }
-
-  .empty-state i:first-child {
-    font-size: 2.5rem;
-  }
-
-  .empty-state h3 {
-    font-size: 1.1rem;
-  }
-
-  .empty-state p {
-    font-size: 0.9rem;
-  }
 }
 </style>

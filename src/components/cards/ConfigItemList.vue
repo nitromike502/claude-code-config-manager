@@ -3,7 +3,7 @@
     <div
       v-for="(item, index) in items"
       :key="index"
-      class="config-item"
+      class="config-item flex items-center justify-between gap-4 p-4 rounded-lg cursor-pointer transition-all duration-200 md:flex-col md:items-start md:gap-3"
       @click="$emit('item-selected', item, itemType)"
     >
       <div class="flex-1 min-w-0 flex flex-col gap-1">
@@ -131,18 +131,10 @@ const getItemDescription = (item, type) => {
 </script>
 
 <style scoped>
-/* Config Item - Core styling with Tailwind-managed layout */
+/* Config Item - Background, border, and shadow styling (layout in Tailwind) */
 .config-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem;
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .config-item:hover {
@@ -159,14 +151,8 @@ const getItemDescription = (item, type) => {
   box-shadow: var(--shadow-card);
 }
 
-/* Responsive Design - Mobile layout */
+/* Responsive Design - Mobile button layout */
 @media (max-width: 768px) {
-  .config-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
   .view-details-btn {
     flex: 1;
     justify-content: center;
