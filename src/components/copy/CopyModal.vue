@@ -15,22 +15,22 @@
     @hide="handleDialogHide"
   >
     <template #header>
-      <div class="modal-header">
+      <div class="flex items-center gap-3 text-xl font-semibold text-text-emphasis">
         <i class="pi pi-copy" style="color: var(--color-primary)"></i>
         <span>Copy Configuration</span>
       </div>
     </template>
 
     <!-- 2-Column Layout Container -->
-    <div class="modal-body">
+    <div class="flex gap-6 min-h-96 max-h-screen w-full">
       <!-- Left Column: Source Configuration -->
-      <div class="source-column">
-        <h3 class="section-title">Source</h3>
+      <div class="flex-none w-2/5 flex flex-col min-w-0">
+        <h3 class="text-base font-semibold text-text-emphasis m-0 mb-4 uppercase tracking-wider">Source</h3>
 
         <!-- Type -->
-        <div class="source-field">
-          <div class="field-row">
-            <span class="field-label">Type</span>
+        <div class="mb-6">
+          <div class="flex justify-between items-center">
+            <span class="font-semibold text-text-primary text-sm">Type</span>
             <span class="config-type" :class="`type-${sourceConfig.type}`">
               <i :class="getTypeIcon(sourceConfig.type)"></i>
               {{ formatType(sourceConfig.type) }}
@@ -39,22 +39,22 @@
         </div>
 
         <!-- Name -->
-        <div class="source-field">
-          <div class="field-value">{{ sourceConfig.name || sourceConfig.event }}</div>
-          <div class="field-sublabel">Name</div>
+        <div class="mb-6">
+          <div class="text-base font-medium text-text-emphasis mb-1 break-words">{{ sourceConfig.name || sourceConfig.event }}</div>
+          <div class="text-xs text-text-muted uppercase tracking-wider font-medium">Name</div>
         </div>
 
         <!-- Project -->
-        <div class="source-field">
-          <div class="field-value">{{ sourceConfig.projectId || 'User Global' }}</div>
-          <div class="field-sublabel">Project</div>
+        <div class="mb-6">
+          <div class="text-base font-medium text-text-emphasis mb-1 break-words">{{ sourceConfig.projectId || 'User Global' }}</div>
+          <div class="text-xs text-text-muted uppercase tracking-wider font-medium">Project</div>
         </div>
       </div>
 
       <!-- Right Column: Destination Selection -->
-      <div class="destination-column">
-        <h3 class="section-title">Target</h3>
-        <div class="destinations-container">
+      <div class="flex-1 w-3/5 flex flex-col">
+        <h3 class="text-base font-semibold text-text-emphasis m-0 mb-4 uppercase tracking-wider">Target</h3>
+        <div class="flex-1 overflow-y-auto flex flex-col gap-3 pr-2 destinations-container">
           <!-- User Global Card -->
           <Card
             :class="{ 'selected': selectedDestination?.id === 'user-global' }"
@@ -71,22 +71,22 @@
             @keydown="handleKeyDown($event, { id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
           >
             <template #header>
-              <div class="card-header">
-                <div class="card-title">
-                  <i class="pi pi-user card-icon"></i>
-                  <h4 class="card-name">User Global</h4>
+              <div class="flex items-center justify-between gap-4 mb-2">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                  <i class="pi pi-user text-2xl text-color-primary flex-shrink-0"></i>
+                  <h4 class="m-0 text-base font-semibold text-text-emphasis overflow-hidden text-ellipsis whitespace-nowrap">User Global</h4>
                 </div>
                 <Button
                   label="Copy Here"
                   icon="pi pi-copy"
                   iconPos="left"
-                  class="card-button"
+                  class="flex-shrink-0"
                   @click.stop="handleButtonCopy({ id: 'user-global', name: 'User Global', path: '~/.claude/', icon: 'pi pi-user' })"
                 />
               </div>
             </template>
             <template #content>
-              <div class="card-path">~/.claude/</div>
+              <div class="text-sm text-text-muted mb-4 font-mono">~/.claude/</div>
             </template>
           </Card>
 
@@ -108,22 +108,22 @@
             @keydown="handleKeyDown($event, project)"
           >
             <template #header>
-              <div class="card-header">
-                <div class="card-title">
-                  <i :class="project.icon + ' card-icon'"></i>
-                  <h4 class="card-name">{{ project.name }}</h4>
+              <div class="flex items-center justify-between gap-4 mb-2">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                  <i :class="project.icon + ' text-2xl text-color-primary flex-shrink-0'"></i>
+                  <h4 class="m-0 text-base font-semibold text-text-emphasis overflow-hidden text-ellipsis whitespace-nowrap">{{ project.name }}</h4>
                 </div>
                 <Button
                   label="Copy Here"
                   icon="pi pi-copy"
                   iconPos="left"
-                  class="card-button"
+                  class="flex-shrink-0"
                   @click.stop="handleButtonCopy(project)"
                 />
               </div>
             </template>
             <template #content>
-              <div class="card-path">{{ project.path }}</div>
+              <div class="text-sm text-text-muted mb-4 font-mono">{{ project.path }}</div>
             </template>
           </Card>
         </div>
@@ -329,93 +329,7 @@ const handleButtonCopy = async (destination) => {
 </script>
 
 <style scoped>
-/* Modal Header */
-.modal-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-}
-
-.modal-header i {
-  font-size: 1.5rem;
-}
-
-/* 2-Column Layout */
-.modal-body {
-  display: flex;
-  gap: 1.5rem;
-  min-height: 400px;
-  max-height: 600px;
-  width: 100%;
-}
-
-/* Left Column - Source */
-.source-column {
-  flex: 0 0 40%;
-  display: flex;
-  flex-direction: column;
-  min-width: 0; /* Allows content to wrap/truncate if needed */
-}
-
-/* Right Column - Destination */
-.destination-column {
-  flex: 1 1 60%;
-  display: flex;
-  flex-direction: column;
-  min-width: 0; /* Allows flex item to shrink below content size */
-}
-
-.section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-  margin: 0 0 1rem 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Source Fields */
-.source-field {
-  margin-bottom: 1.5rem;
-}
-
-.source-field:last-child {
-  margin-bottom: 0;
-}
-
-/* Type field - 50/50 layout */
-.field-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.field-label {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 0.875rem;
-}
-
-/* Name and Project fields - value on top, label below */
-.field-value {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-emphasis);
-  margin-bottom: 0.25rem;
-  word-break: break-word;
-}
-
-.field-sublabel {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-}
-
+/* Config Type Badges - Keep for styling */
 .config-type {
   display: inline-flex;
   align-items: center;
@@ -445,14 +359,23 @@ const handleButtonCopy = async (destination) => {
   color: var(--color-mcp);
 }
 
-/* Destinations Container (Scrollable) */
-.destinations-container {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding-right: 0.5rem;
+/* Custom scrollbar for destinations container */
+.destinations-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.destinations-container::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+.destinations-container::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+}
+
+.destinations-container::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
 }
 
 /* Destination Card - PrimeVue Card Overrides */
@@ -497,68 +420,6 @@ const handleButtonCopy = async (destination) => {
   padding: 0 1rem 1rem 1rem;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.card-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-  min-width: 0; /* Allow text to truncate if needed */
-}
-
-.card-icon {
-  font-size: 1.5rem;
-  color: var(--color-primary);
-  flex-shrink: 0;
-}
-
-.card-name {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.card-path {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  margin-bottom: 1rem;
-  font-family: 'Courier New', monospace;
-}
-
-.card-button {
-  flex-shrink: 0;
-}
-
-/* Custom scrollbar for destinations container */
-.destinations-container::-webkit-scrollbar {
-  width: 8px;
-}
-
-.destinations-container::-webkit-scrollbar-track {
-  background: var(--bg-tertiary);
-  border-radius: 4px;
-}
-
-.destinations-container::-webkit-scrollbar-thumb {
-  background: var(--border-primary);
-  border-radius: 4px;
-}
-
-.destinations-container::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
-}
-
 /* Modal Overlay/Mask */
 :deep(.p-dialog-mask) {
   background-color: var(--overlay-modal-mask);
@@ -584,41 +445,4 @@ const handleButtonCopy = async (destination) => {
   outline-offset: 2px;
 }
 
-/* Modal Width - Responsive */
-.copy-modal :deep(.p-dialog) {
-  width: 70vw !important; /* Laptop - larger modal */
-  max-width: 1200px !important;
-}
-
-/* Tablet and smaller - full width */
-@media (max-width: 1024px) {
-  .copy-modal :deep(.p-dialog) {
-    width: 95vw !important;
-    max-width: none !important;
-  }
-}
-
-/* Tablet - adjust layout */
-@media (max-width: 768px) {
-  .card-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-}
-
-/* Mobile - smaller text */
-@media (max-width: 480px) {
-  .modal-header {
-    font-size: 1rem;
-  }
-
-  .modal-header i {
-    font-size: 1.25rem;
-  }
-
-  .section-title {
-    font-size: 0.9rem;
-  }
-}
 </style>

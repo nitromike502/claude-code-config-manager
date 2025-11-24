@@ -7,7 +7,7 @@
     :aria-label="ariaLabel"
     v-tooltip.top="tooltipText"
     @click="handleClick"
-    class="copy-button"
+    class="transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus disabled:opacity-60 disabled:cursor-not-allowed disabled:text-text-disabled hover:bg-bg-hover max-md:px-3 max-md:py-2 max-md:text-sm"
   />
 </template>
 
@@ -74,37 +74,3 @@ const handleClick = () => {
   }
 };
 </script>
-
-<style scoped>
-/* Copy Button Styling */
-.copy-button {
-  /* Use PrimeVue's default button styles with CSS variables */
-  transition: all 0.2s ease;
-}
-
-/* Focus indicator for accessibility (WCAG 2.1 AA) */
-.copy-button:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-}
-
-/* Disabled state styling */
-.copy-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  color: var(--text-disabled);
-}
-
-/* Hover state for non-disabled buttons */
-.copy-button:not(:disabled):hover {
-  background-color: var(--bg-hover);
-}
-
-/* Responsive adjustments */
-@media (max-width: 767px) {
-  .copy-button {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-  }
-}
-</style>

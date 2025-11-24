@@ -1,7 +1,7 @@
 <template>
-  <div id="app" class="app-container" :data-theme="themeStore.currentTheme">
-    <header class="app-header">
-      <div class="header-content">
+  <div id="app" class="min-h-screen flex flex-col" :data-theme="themeStore.currentTheme">
+    <header class="px-8 py-4" style="background: var(--bg-header); border-bottom: 1px solid var(--border-primary)">
+      <div class="flex justify-between items-center mb-2">
         <h1>Claude Code Manager</h1>
         <Button
           @click="themeStore.toggleTheme"
@@ -14,7 +14,7 @@
       </div>
     </header>
 
-    <main class="app-main">
+    <main class="flex-1">
       <ErrorBoundary>
         <router-view />
       </ErrorBoundary>
@@ -53,39 +53,13 @@ export default {
 
 <style scoped>
 /* ============================================
-   App Layout - Core Flex Structure
-   Candidates for Tailwind: flex, min-h, flex-col, flex-1
-   ============================================ */
-.app-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.app-header {
-  background: var(--bg-header);
-  padding: 1rem 2rem;
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.app-main {
-  flex: 1;
-}
-
-/* ============================================
    Theme System
    Status: Complete - CSS custom properties (--bg-*, --text-*, --color-*, --shadow-*)
    are properly defined in variables.css
 
-   Phase 2 Note: Tailwind CSS + tailwindcss-primeui will replace the need for
-   these custom property utilities. Both themes (light/dark) are already
-   properly segregated in variables.css with data-theme attribute selector.
+   Phase 3.1 Note: Tailwind CSS migration complete. Layout uses Tailwind utilities
+   (min-h-screen, flex, flex-col, px-8, py-4, flex-1, justify-between, items-center).
+   Theme variables remain in variables.css and are applied via style attribute.
+   Both themes (light/dark) are properly segregated with data-theme selector.
    ============================================ */
 </style>

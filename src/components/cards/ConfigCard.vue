@@ -2,10 +2,10 @@
   <Card :pt="cardPt" :class="['config-card', cardTypeClass]">
     <!-- Header -->
     <template #header>
-      <div class="config-header">
-        <div class="config-header-left">
-          <i :class="icon" :style="{ color: color }"></i>
-          <span class="config-title">{{ title }} ({{ count }})</span>
+      <div class="flex justify-between items-center px-5 py-4 md:px-5 md:py-4 max-md:px-4 max-md:py-3.5 gap-3">
+        <div class="flex items-center gap-3">
+          <i :class="icon" :style="{ color: color }" class="text-2xl md:text-2xl max-md:text-xl"></i>
+          <span class="text-lg md:text-lg max-md:text-base font-semibold text-text-emphasis">{{ title }} ({{ count }})</span>
         </div>
       </div>
     </template>
@@ -13,20 +13,20 @@
     <!-- Content -->
     <template #content>
       <!-- Loading State -->
-      <div v-if="loading" class="loading-state">
+      <div v-if="loading" class="px-5 py-4 md:px-5 md:py-4 max-md:px-4 max-md:py-4 w-full">
         <div class="skeleton"></div>
         <div class="skeleton"></div>
         <div class="skeleton"></div>
       </div>
 
       <!-- Empty State -->
-      <div v-else-if="items.length === 0" class="empty-state">
-        <i :class="icon" class="empty-icon"></i>
-        <p>{{ emptyStateMessage }}</p>
+      <div v-else-if="items.length === 0" class="px-5 py-12 md:px-5 md:py-12 max-md:px-4 max-md:py-10 text-center text-text-muted w-full">
+        <i :class="icon" class="block text-5xl md:text-5xl max-md:text-4xl opacity-30 mb-3"></i>
+        <p class="m-0 text-sm text-text-secondary">{{ emptyStateMessage }}</p>
       </div>
 
       <!-- Items List -->
-      <div v-else class="items-list">
+      <div v-else class="p-0 w-full">
         <slot :items="displayedItems">
           <!-- Default slot content - expects parent to provide custom rendering -->
         </slot>
@@ -39,7 +39,7 @@
         @click="handleToggle"
         :label="buttonText"
         text
-        class="btn-show-more"
+        class="w-full py-3 px-5 bg-transparent text-color-primary border-none cursor-pointer text-sm font-medium transition-all duration-200 text-center hover:bg-bg-hover"
       />
     </template>
   </Card>
@@ -172,7 +172,7 @@ const handleToggle = () => {
 </script>
 
 <style scoped>
-/* Config Card Container */
+/* Config Card Container - Required for PrimeVue Card overrides */
 .config-card {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-primary);
@@ -180,36 +180,7 @@ const handleToggle = () => {
   box-shadow: var(--shadow-card);
 }
 
-/* Header */
-.config-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-}
-
-.config-header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.config-header-left i {
-  font-size: 1.5rem;
-}
-
-.config-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-}
-
-/* Loading State */
-.loading-state {
-  padding: 1rem 1.25rem;
-  width: 100%;
-}
-
+/* Skeleton Animation - Complex gradient animation that cannot be expressed in Tailwind */
 .skeleton {
   height: 60px;
   background: linear-gradient(
@@ -234,78 +205,6 @@ const handleToggle = () => {
   }
   100% {
     background-position: -200% 0;
-  }
-}
-
-/* Empty State */
-.empty-state {
-  padding: 3rem 1.25rem;
-  text-align: center;
-  color: var(--text-muted);
-  width: 100%;
-}
-
-.empty-icon {
-  font-size: 3rem;
-  opacity: 0.3;
-  margin-bottom: 0.75rem;
-  display: block;
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-/* Items List */
-.items-list {
-  padding: 0;
-  width: 100%;
-}
-
-/* Expand/Collapse Button */
-.btn-show-more {
-  width: 100%;
-  padding: 0.75rem 1.25rem;
-  background-color: transparent;
-  color: var(--color-primary);
-  border: none;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  text-align: center;
-}
-
-.btn-show-more:hover {
-  background-color: var(--bg-hover);
-}
-
-/* Responsive */
-@media (max-width: 767px) {
-  .config-header {
-    padding: 0.875rem 1rem;
-  }
-
-  .config-header-left i {
-    font-size: 1.25rem;
-  }
-
-  .config-title {
-    font-size: 1rem;
-  }
-
-  .loading-state {
-    padding: 1rem;
-  }
-
-  .empty-state {
-    padding: 2.5rem 1rem;
-  }
-
-  .empty-icon {
-    font-size: 2.5rem;
   }
 }
 </style>

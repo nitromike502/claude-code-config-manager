@@ -1,30 +1,30 @@
 <template>
   <div class="user-global">
-    <div class="main-content">
+    <div class="flex-1 p-8 max-w-7xl mx-auto w-full">
       <!-- Breadcrumbs -->
-      <div class="breadcrumbs">
-        <router-link to="/" class="breadcrumb-link">
+      <div class="flex items-center gap-2 py-3 text-sm max-w-screen-lg mx-auto my-8 -mt-8">
+        <router-link to="/" class="flex items-center gap-2 text-color-primary no-underline font-medium transition-colors duration-200 hover:underline hover:text-color-primary-hover">
           <i class="pi pi-home"></i>
           Dashboard
         </router-link>
-        <i class="pi pi-chevron-right breadcrumb-separator"></i>
-        <span class="breadcrumb-current">User Configurations</span>
+        <i class="pi pi-chevron-right text-text-muted"></i>
+        <span class="text-text-primary font-medium">User Configurations</span>
       </div>
 
       <!-- User Info Bar -->
-      <div class="user-info-bar">
-        <div class="user-info-title">
+      <div class="mb-8">
+        <div class="flex items-center gap-3 text-2xl font-semibold mb-2">
           <i class="pi pi-user"></i>
           <span>User Configurations</span>
         </div>
-        <div class="user-info-subtitle">~/.claude</div>
+        <div class="text-sm text-text-secondary">~/.claude</div>
       </div>
 
       <!-- Loading State -->
       <LoadingState v-if="loading" message="Loading user configurations..." />
 
       <!-- Config Cards Container -->
-      <div v-else class="config-cards-container">
+      <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(500px,1fr))] gap-6 md:grid-cols-1 lg:grid-cols-[repeat(auto-fill,minmax(500px,1fr))]">
         <!-- Agents Card -->
         <ConfigCard
           card-type="agents"
@@ -124,7 +124,7 @@
     </div>
 
     <!-- Sidebar Overlay -->
-    <div v-if="sidebarVisible" class="sidebar-overlay" @click="sidebarVisible = false"></div>
+    <div v-if="sidebarVisible" class="fixed inset-0 bg-black/50 z-[999] fadeIn" @click="sidebarVisible = false"></div>
 
     <!-- Detail Sidebar Component -->
     <ConfigDetailSidebar
@@ -522,110 +522,6 @@ export default {
   min-height: 100vh;
 }
 
-.main-content {
-  flex: 1;
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-/* User Info Bar */
-.user-info-bar {
-  margin-bottom: 2rem;
-}
-
-.user-info-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-}
-
-.user-info-title i {
-  font-size: 1.75rem;
-  color: var(--color-user);
-}
-
-.user-info-subtitle {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin-left: 2.5rem;
-}
-
-/* Breadcrumbs */
-.breadcrumbs {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 0;
-  font-size: 0.9rem;
-  max-width: 960px;
-  margin: -2rem auto 2rem auto;
-}
-
-.breadcrumb-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--color-primary);
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
-}
-
-.breadcrumb-link:hover {
-  color: var(--color-primary-hover);
-  text-decoration: underline;
-}
-
-.breadcrumb-link i {
-  font-size: 0.85rem;
-}
-
-.breadcrumb-separator {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.breadcrumb-current {
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-/* Loading State - Replaced with LoadingState component */
-
-/* Config Cards Container */
-.config-cards-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-  gap: 1.5rem;
-}
-
-/* Sidebar Overlay */
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 /* Sidebar */
 .sidebar {
   position: fixed;
@@ -651,6 +547,19 @@ export default {
   to {
     transform: translateX(0);
   }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.fadeIn {
+  animation: fadeIn 0.3s ease;
 }
 
 .sidebar-header {
@@ -697,6 +606,7 @@ export default {
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  color: var(--text-primary);
 }
 
 .nav-btn:hover:not(:disabled),
@@ -780,19 +690,9 @@ export default {
 }
 
 /* Responsive */
-@media (max-width: 1200px) {
-  .config-cards-container {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 768px) {
   .sidebar {
     width: 100%;
-  }
-
-  .main-content {
-    padding: 1rem;
   }
 }
 </style>
