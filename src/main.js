@@ -7,8 +7,9 @@ import router from '@/router'
 import { useThemeStore } from '@/stores/theme'
 
 // Import global styles
+// Order matters: Tailwind first (lowest priority), then our overrides
+import '@/styles/tailwind.css' // Tailwind base, components, utilities (loads first = lowest priority)
 import '@/styles/variables.css'
-import '@/styles/tailwind.css' // Tailwind base, components, utilities
 import '@/styles/global.css'
 import '@/styles/components.css'
 

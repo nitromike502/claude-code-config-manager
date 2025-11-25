@@ -703,12 +703,31 @@
 }
 
 .p-select-label {
-  padding: 0.75rem 1rem !important;
-  color: var(--text-primary) !important;
+  color: var(--text-primary);
 }
 
 .p-select-dropdown {
-  color: var(--text-primary) !important;
+  color: var(--text-primary);
+}
+
+/* Select Panel (dropdown overlay) - dark mode fix */
+[data-theme="dark"] .p-select-overlay {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+}
+
+[data-theme="dark"] .p-select-option {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .p-select-option:hover,
+[data-theme="dark"] .p-select-option[data-p-focused="true"] {
+  background: var(--bg-hover);
+}
+
+[data-theme="dark"] .p-select-option[data-p-selected="true"] {
+  background: var(--color-primary);
+  color: white;
 }
 .p-dialog-mask {
   position: fixed;
