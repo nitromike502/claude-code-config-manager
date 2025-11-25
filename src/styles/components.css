@@ -937,3 +937,17 @@
     max-width: 95vw;
   }
 }
+
+/* PrimeVue Drawer Overrides */
+/* Match PrimeVue's selector specificity: .p-drawer-right .p-drawer */
+.p-drawer-right .p-drawer {
+  width: 100vw;
+}
+
+@media (min-width: 768px) {
+  .p-drawer-right .p-drawer {
+    width: 75vw;
+    min-width: 500px;
+    max-width: 75vw;
+  }
+}

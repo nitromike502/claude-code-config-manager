@@ -78,6 +78,9 @@
   /* Focus ring */
   --p-focus-ring-color: var(--border-focus);  /* #007ad9 */
 
+  /* Component-specific overrides */
+  --p-drawer-background: var(--bg-secondary);  /* Override drawer background */
+
   /* ========== Backgrounds ========== */
   /* Primary: Page background
      Secondary: Card/panel backgrounds
@@ -239,6 +242,9 @@
 
   /* Focus ring */
   --p-focus-ring-color: var(--border-focus);  /* #1976d2 */
+
+  /* Component-specific overrides */
+  --p-drawer-background: var(--bg-secondary);  /* Override drawer background */
 
   /* ========== Backgrounds ========== */
   --bg-primary: #f5f5f5;
