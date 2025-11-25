@@ -62,10 +62,10 @@ const ariaLabel = computed(() => {
 const tooltipText = computed(() => {
   // Check if disabled due to plugin
   if (isPluginItem.value) {
-    return 'This configuration is provided by a plugin and cannot be copied';
+    return 'Plugin config cannot be copied';
   }
   // Default tooltip
-  return 'Copy this configuration to another project or user-level';
+  return 'Copy to another project';
 });
 
 // Handle button click

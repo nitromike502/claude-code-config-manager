@@ -161,7 +161,6 @@ const getItemDescription = (item, type) => {
 }
 
 .config-item-card:hover {
-  border-color: var(--color-primary);
   box-shadow: var(--shadow-card);
 }
 
@@ -176,6 +175,11 @@ const getItemDescription = (item, type) => {
 .config-item-card:hover :deep(.config-item-card-root) {
   background: var(--bg-hover);
   border-color: var(--color-primary);
+}
+
+/* Dark mode - Use primary-hover color for card border on hover */
+:global(.dark) .config-item-card:hover :deep(.config-item-card-root) {
+  border-color: var(--color-primary-hover);
 }
 
 /* Card Header - Bottom border separator */
