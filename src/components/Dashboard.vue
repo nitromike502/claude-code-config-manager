@@ -331,7 +331,6 @@ export default {
 
 .project-header i {
   font-size: 1.5rem;
-  color: var(--color-primary);
 }
 
 .user-card .project-header i {
