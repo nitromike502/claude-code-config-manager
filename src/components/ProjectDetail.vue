@@ -44,10 +44,10 @@
           </ul>
         </div>
 
-        <!-- Config Cards Container -->
+        <!-- Config Panels Container -->
         <div class="grid gap-6 xl:grid-cols-2">
-        <!-- Agents Card -->
-        <ConfigCard
+        <!-- Agents Panel -->
+        <ConfigPanel
           card-type="agents"
           title="Subagents"
           :count="agents.length"
@@ -68,10 +68,10 @@
               @copy-clicked="handleCopyClick"
             />
           </template>
-        </ConfigCard>
+        </ConfigPanel>
 
-        <!-- Commands Card -->
-        <ConfigCard
+        <!-- Commands Panel -->
+        <ConfigPanel
           card-type="commands"
           title="Slash Commands"
           :count="commands.length"
@@ -92,10 +92,10 @@
               @copy-clicked="handleCopyClick"
             />
           </template>
-        </ConfigCard>
+        </ConfigPanel>
 
-        <!-- Hooks Card -->
-        <ConfigCard
+        <!-- Hooks Panel -->
+        <ConfigPanel
           card-type="hooks"
           title="Hooks"
           :count="hooks.length"
@@ -116,10 +116,10 @@
               @copy-clicked="handleCopyClick"
             />
           </template>
-        </ConfigCard>
+        </ConfigPanel>
 
-        <!-- MCP Servers Card -->
-        <ConfigCard
+        <!-- MCP Servers Panel -->
+        <ConfigPanel
           card-type="mcp"
           title="MCP Servers"
           :count="mcpServers.length"
@@ -140,7 +140,7 @@
               @copy-clicked="handleCopyClick"
             />
           </template>
-        </ConfigCard>
+        </ConfigPanel>
         </div>
       </div>
     </div>
@@ -178,7 +178,7 @@ import { useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import * as api from '@/api/client'
 import Button from 'primevue/button'
-import ConfigCard from '@/components/cards/ConfigCard.vue'
+import ConfigPanel from '@/components/cards/ConfigPanel.vue'
 import ConfigItemList from '@/components/cards/ConfigItemList.vue'
 import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
 import ConfigDetailSidebar from '@/components/sidebars/ConfigDetailSidebar.vue'
@@ -189,7 +189,7 @@ import { useProjectsStore } from '@/stores/projects'
 
 export default {
   name: 'ProjectDetail',
-  components: { Button, ConfigCard, ConfigItemList, BreadcrumbNavigation, ConfigDetailSidebar, CopyModal, LoadingState },
+  components: { Button, ConfigPanel, ConfigItemList, BreadcrumbNavigation, ConfigDetailSidebar, CopyModal, LoadingState },
   props: ['id'],
   setup(props) {
     const route = useRoute()
