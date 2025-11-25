@@ -168,7 +168,7 @@ const panelPt = computed(() => ({
     }
   },
   content: {
-    class: 'config-panel-content',
+    class: 'p-panel-content',
     style: {
       paddingTop: '1.25rem'
     }
@@ -237,7 +237,6 @@ const handleToggleShowAll = () => {
 }
 
 .config-panel :deep(.p-panel-content) {
-  padding: 0;
   background-color: var(--bg-secondary);
 }
 
