@@ -684,6 +684,32 @@
 /* ============================================
    16. PRIMEVUE COMPONENT OVERRIDES
    ============================================ */
+
+/* PrimeVue Select (Dropdown) */
+.p-select {
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.p-select:hover {
+  border-color: var(--border-focus) !important;
+}
+
+.p-select:focus {
+  outline: 2px solid var(--border-focus) !important;
+  outline-offset: 2px !important;
+  border-color: var(--border-focus) !important;
+}
+
+.p-select-label {
+  padding: 0.75rem 1rem !important;
+  color: var(--text-primary) !important;
+}
+
+.p-select-dropdown {
+  color: var(--text-primary) !important;
+}
 .p-dialog-mask {
   position: fixed;
   top: 0;
