@@ -191,3 +191,4 @@ docs/sessions/tracking/*.md
 # Implementation task notes (ephemeral, task-specific)
 docs/implementation/*.md
 !docs/implementation/README.md
+.deleted/

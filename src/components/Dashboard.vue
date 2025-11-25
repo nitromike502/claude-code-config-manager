@@ -1,5 +1,4 @@
 <template>
-  <!-- Layout migrated to Tailwind utility classes -->
   <div class="w-full">
     <!-- Mobile-first padding: p-4 on mobile, p-8 on desktop -->
     <div class="p-4 md:p-8">
@@ -226,7 +225,7 @@ export default {
       projectsStore.setSearchQuery(e.detail)
     }
 
-    // Listen for search from header (backwards compat with Phase 1)
+    // Listen for search from header
     onMounted(async () => {
       if (!projectsStore.projects.length) {
         await loadProjects()
@@ -283,8 +282,6 @@ export default {
 </script>
 
 <style scoped>
-/* Layout utilities migrated to Tailwind classes in template */
-
 /* Custom animation for spinning icon (Tailwind animate-spin targets the element itself) */
 .animate-spin-icon :deep(.pi-refresh) {
   animation: spin 1s linear infinite;
