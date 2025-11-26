@@ -340,7 +340,7 @@ test.describe('300.002: Visual Regression - Dashboard Dark/Light Mode', () => {
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Ensure dark mode is active
-    const appContainer = page.locator('#app');
+    const appContainer = page.locator('#app[data-theme]');
     const theme = await appContainer.getAttribute('data-theme');
     if (theme !== 'dark') {
       await page.click('button[aria-label="Toggle theme"]');
@@ -407,7 +407,7 @@ test.describe('300.002: Visual Regression - Dashboard Dark/Light Mode', () => {
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Switch to light mode
-    const appContainer = page.locator('#app');
+    const appContainer = page.locator('#app[data-theme]');
     const theme = await appContainer.getAttribute('data-theme');
     if (theme !== 'light') {
       await page.click('button[aria-label="Toggle theme"]');
@@ -483,7 +483,7 @@ test.describe('300.003: Visual Regression - Project Detail View', () => {
 
     // Navigate to project detail using Vue Router path
     await page.goto(`/project/${projectId}`);
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Capture full project detail page
     await expect(page).toHaveScreenshot('project-detail-view.png', {
@@ -553,7 +553,7 @@ test.describe('300.003: Visual Regression - Project Detail View', () => {
     await page.goto(`/project/${projectId}`);
 
     // Wait for warnings to be displayed (if warning banner exists)
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Capture project detail with warnings
     await expect(page).toHaveScreenshot('project-detail-with-warnings.png', {
@@ -692,13 +692,13 @@ test.describe('300.003: Visual Regression - Project Detail View', () => {
     // Navigate to non-existent project using Vue Router
     await page.goto('/project/nonexistent');
 
-    // Wait for page to finish loading (will show warnings and config cards)
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    // Wait for error state to appear (project not found shows error, not config panels)
+    await page.waitForSelector('.pi-exclamation-triangle', { timeout: 10000 });
 
     // Wait a bit for all async content to render
     await page.waitForTimeout(500);
 
-    // Capture error state (page will show empty config cards with warnings)
+    // Capture error state (page will show error state for project not found)
     await expect(page).toHaveScreenshot('project-detail-error.png', {
       fullPage: true,
       maxDiffPixels: 100
@@ -1070,7 +1070,7 @@ test.describe('300.005: Visual Regression - Responsive Design', () => {
 
     // Navigate using Vue Router
     await page.goto(`/project/${projectId}`);
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Capture mobile detail view
     await expect(page).toHaveScreenshot('project-detail-mobile.png', {
