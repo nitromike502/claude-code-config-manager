@@ -111,8 +111,8 @@ test.describe('104.001: Command Metadata Display in Sidebar', () => {
     // Navigate to project detail page
     await page.goto('http://localhost:5173/project/homeclaudesample');
 
-    // Wait for page to load - wait for commands section to be visible
-    await page.waitForSelector('.config-card', { timeout: 10000 });
+    // Wait for page to load - wait for config panels to be visible
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
   });
 
   // Test 104.001.001: command with all metadata properties displays correctly in sidebar
@@ -122,27 +122,29 @@ test.describe('104.001: Command Metadata Display in Sidebar', () => {
     await analyzeCard.click();
 
     // Wait for sidebar to appear
-    await page.waitForSelector('.sidebar');
+    await page.waitForSelector('.p-drawer');
 
-    // Verify command name is displayed
-    await expect(page.locator('.sidebar-header-title')).toContainText('analyze');
+    // Verify command name is displayed in header
+    const drawerHeader = page.locator('.p-drawer-header');
+    await expect(drawerHeader).toContainText('analyze');
 
     // Verify description is displayed
-    await expect(page.locator('.sidebar-content')).toContainText('Analyze code quality and suggest improvements');
+    const drawerContent = page.locator('.p-drawer-content');
+    await expect(drawerContent).toContainText('Analyze code quality and suggest improvements');
 
     // Verify allowed-tools field is displayed
-    const allowedToolsSection = page.locator('.sidebar-content').getByText('Allowed Tools');
+    const allowedToolsSection = drawerContent.getByText('Allowed Tools');
     await expect(allowedToolsSection).toBeVisible();
 
     // Verify tools are displayed as comma-separated list
-    await expect(page.locator('.sidebar-content')).toContainText('Read');
-    await expect(page.locator('.sidebar-content')).toContainText('Write');
-    await expect(page.locator('.sidebar-content')).toContainText('Edit');
+    await expect(drawerContent).toContainText('Read');
+    await expect(drawerContent).toContainText('Write');
+    await expect(drawerContent).toContainText('Edit');
 
     // Verify argument hint is displayed
-    const argumentHintSection = page.locator('.sidebar-content').getByText('Argument Hint');
+    const argumentHintSection = drawerContent.getByText('Argument Hint');
     await expect(argumentHintSection).toBeVisible();
-    await expect(page.locator('.sidebar-content')).toContainText('This is the argument hint');
+    await expect(drawerContent).toContainText('This is the argument hint');
   });
 
   // Test 104.001.002: command without allowed-tools displays None specified
@@ -152,15 +154,17 @@ test.describe('104.001: Command Metadata Display in Sidebar', () => {
     await deployCard.click();
 
     // Wait for sidebar to appear
-    await page.waitForSelector('.sidebar');
+    await page.waitForSelector('.p-drawer');
 
-    // Verify command name is displayed
-    await expect(page.locator('.sidebar-header-title')).toContainText('deploy');
+    // Verify command name is displayed in header
+    const drawerHeader = page.locator('.p-drawer-header');
+    await expect(drawerHeader).toContainText('deploy');
 
     // Verify Allowed Tools shows None specified (since tools array is empty)
-    const allowedToolsSection = page.locator('.sidebar-content').getByText('Allowed Tools');
+    const drawerContent = page.locator('.p-drawer-content');
+    const allowedToolsSection = drawerContent.getByText('Allowed Tools');
     await expect(allowedToolsSection).toBeVisible();
-    await expect(page.locator('.sidebar-content')).toContainText('None specified');
+    await expect(drawerContent).toContainText('None specified');
   });
 
   // Test 104.001.003: command without argument-hint does not display the field
@@ -170,10 +174,11 @@ test.describe('104.001: Command Metadata Display in Sidebar', () => {
     await deployCard.click();
 
     // Wait for sidebar to appear
-    await page.waitForSelector('.sidebar');
+    await page.waitForSelector('.p-drawer');
 
     // Verify Argument Hint is NOT displayed (field is optional)
-    const argumentHintText = page.locator('.sidebar-content').getByText('Argument Hint');
+    const drawerContent = page.locator('.p-drawer-content');
+    const argumentHintText = drawerContent.getByText('Argument Hint');
     await expect(argumentHintText).not.toBeVisible();
   });
 
@@ -184,22 +189,22 @@ test.describe('104.001: Command Metadata Display in Sidebar', () => {
     await analyzeCard.click();
 
     // Wait for sidebar to appear
-    await page.waitForSelector('.sidebar');
+    await page.waitForSelector('.p-drawer');
 
     // Get the Allowed Tools section
-    const sidebarContent = page.locator('.sidebar-content');
+    const drawerContent = page.locator('.p-drawer-content');
 
     // Verify each tool appears (not as raw string with commas)
-    const readTool = sidebarContent.getByText('Read');
-    const writeTool = sidebarContent.getByText('Write');
-    const editTool = sidebarContent.getByText('Edit');
+    const readTool = drawerContent.getByText('Read');
+    const writeTool = drawerContent.getByText('Write');
+    const editTool = drawerContent.getByText('Edit');
 
     await expect(readTool).toBeVisible();
     await expect(writeTool).toBeVisible();
     await expect(editTool).toBeVisible();
 
     // Verify they appear in the correct format (comma-separated in the display)
-    const toolsLine = sidebarContent.getByText(/Read.*Write.*Edit|Edit.*Write.*Read/);
+    const toolsLine = drawerContent.getByText(/Read.*Write.*Edit|Edit.*Write.*Read/);
     await expect(toolsLine).toBeVisible();
   });
 
@@ -208,27 +213,31 @@ test.describe('104.001: Command Metadata Display in Sidebar', () => {
     // Click first command
     const analyzeCard = page.locator('text=analyze').first();
     await analyzeCard.click();
-    await page.waitForSelector('.sidebar');
+    await page.waitForSelector('.p-drawer');
 
     // Verify analyze metadata
-    await expect(page.locator('.sidebar-header-title')).toContainText('analyze');
-    await expect(page.locator('.sidebar-content')).toContainText('Read, Write, Edit');
+    const drawerHeader = page.locator('.p-drawer-header');
+    const drawerContent = page.locator('.p-drawer-content');
+    await expect(drawerHeader).toContainText('analyze');
+    await expect(drawerContent).toContainText('Read, Write, Edit');
 
-    // Close sidebar by clicking close button
-    await page.locator('.close-btn').first().click();
+    // Close sidebar by clicking close button (icon button with pi-times)
+    await page.locator('.p-drawer-header button[aria-label="Close sidebar"]').click();
     await page.waitForTimeout(300);
 
     // Click second command
     const deployCard = page.locator('text=deploy').first();
     await deployCard.click();
-    await page.waitForSelector('.sidebar');
+    await page.waitForSelector('.p-drawer');
 
     // Verify deploy metadata (different from analyze)
-    await expect(page.locator('.sidebar-header-title')).toContainText('deploy');
-    await expect(page.locator('.sidebar-content')).toContainText('None specified');
+    const drawerHeader2 = page.locator('.p-drawer-header');
+    const drawerContent2 = page.locator('.p-drawer-content');
+    await expect(drawerHeader2).toContainText('deploy');
+    await expect(drawerContent2).toContainText('None specified');
 
     // Argument hint should not be visible for deploy
-    const argumentHintText = page.locator('.sidebar-content').getByText('Argument Hint');
+    const argumentHintText = drawerContent2.getByText('Argument Hint');
     await expect(argumentHintText).not.toBeVisible();
   });
 
@@ -240,14 +249,15 @@ test.describe('104.001: Command Metadata Display in Sidebar', () => {
 
     const analyzeCard = page.locator('text=analyze').first();
     await analyzeCard.click();
-    await page.waitForSelector('.sidebar');
+    await page.waitForSelector('.p-drawer');
 
     // Verify the sidebar uses the extracted tools (from allowed-tools)
-    const toolsDisplay = page.locator('.sidebar-content').getByText('Read, Write, Edit');
+    const drawerContent = page.locator('.p-drawer-content');
+    const toolsDisplay = drawerContent.getByText('Read, Write, Edit');
     await expect(toolsDisplay).toBeVisible();
 
     // Verify the sidebar uses the extracted argumentHint (from argument-hint)
-    const hintDisplay = page.locator('.sidebar-content').getByText('This is the argument hint');
+    const hintDisplay = drawerContent.getByText('This is the argument hint');
     await expect(hintDisplay).toBeVisible();
   });
 });
