@@ -26,18 +26,20 @@
       <!-- Content Area (warnings + config panels) -->
       <div v-else>
         <!-- Warning Banner -->
-        <div v-if="warnings.length > 0" class="rounded-lg p-4 md:p-6 mb-6 bg-warning-bg border border-warning">
-          <div class="flex items-center gap-3 font-semibold mb-2 text-warning">
-            <i class="pi pi-exclamation-circle text-xl"></i>
-            <span>{{ warnings.length }} Warning{{ warnings.length > 1 ? 's' : '' }}</span>
+        <Message v-if="warnings.length > 0" severity="warn" :closable="false" class="mb-6">
+          <template #messageicon>
+            <i class="pi pi-exclamation-circle text-xl mr-3"></i>
+          </template>
+          <div>
+            <div class="font-semibold mb-2">{{ warnings.length }} Warning{{ warnings.length > 1 ? 's' : '' }}</div>
+            <ul class="list-disc ml-4">
+              <li v-for="(warning, index) in warnings" :key="index" class="text-sm">
+                <template v-if="typeof warning === 'string'">{{ warning }}</template>
+                <template v-else>{{ warning.message || warning }}</template>
+              </li>
+            </ul>
           </div>
-          <ul class="list-disc ml-8 text-warning">
-            <li v-for="(warning, index) in warnings" :key="index" class="my-1 text-sm">
-              <template v-if="typeof warning === 'string'">{{ warning }}</template>
-              <template v-else>{{ warning.message || warning }}</template>
-            </li>
-          </ul>
-        </div>
+        </Message>
 
         <!-- Config Panels Container -->
         <div class="grid gap-6 xl:grid-cols-2">
@@ -163,6 +165,7 @@
 
 <script setup>
 import Button from 'primevue/button'
+import Message from 'primevue/message'
 import ConfigPanel from '@/components/cards/ConfigPanel.vue'
 import ConfigItemList from '@/components/cards/ConfigItemList.vue'
 import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'

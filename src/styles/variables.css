@@ -86,6 +86,7 @@
   --p-select-color: var(--p-surface-900);  /* Select label text */
   --p-overlay-select-background: var(--p-surface-50);  /* Select dropdown background */
   --p-button-primary-color: var(--p-text-color);  /* Primary button text */
+  --p-message-warn-background: color-mix(in srgb, var(--p-orange-500) 65%, transparent);  /* Warning message background */
 
   /* ========== Backgrounds ========== */
   /* Primary: Page background
