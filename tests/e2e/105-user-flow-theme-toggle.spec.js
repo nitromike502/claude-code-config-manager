@@ -14,8 +14,8 @@ const { test, expect } = require('@playwright/test');
  * 5. Theme preference saved in localStorage
  */
 
-test.describe('E2E Flow: Theme Toggle & Persistence', () => {
-  test('theme toggle persists across navigation and page reload', async ({ page }) => {
+test.describe('[Test 105] E2E Flow: Theme Toggle & Persistence', () => {
+  test('105.1: theme toggle persists across navigation and page reload', async ({ page }) => {
     // Setup API mocks
     await page.route('**/api/projects', (route) => {
       route.fulfill({
@@ -127,6 +127,7 @@ test.describe('E2E Flow: Theme Toggle & Persistence', () => {
     await page.waitForSelector('.project-card', { timeout: 10000 });
     await page.locator('.project-card').nth(1).click();
     await page.waitForURL(/\/project\/[^/]+$/);
+    await page.waitForLoadState('networkidle');
 
     // Verify theme persisted across navigation
     const detailPageTheme = await appContainer.getAttribute('data-theme');
@@ -137,7 +138,8 @@ test.describe('E2E Flow: Theme Toggle & Persistence', () => {
 
     // STEP 4: Reload page
     await page.reload();
-    await page.waitForSelector('.config-card', { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify theme persisted after reload
     const reloadedTheme = await appContainer.getAttribute('data-theme');
@@ -159,7 +161,7 @@ test.describe('E2E Flow: Theme Toggle & Persistence', () => {
     expect(dashboardTheme).toBe('dark');
   });
 
-  test('theme toggle works independently on dashboard and detail pages', async ({ page }) => {
+  test('105.2: theme toggle works independently on dashboard and detail pages', async ({ page }) => {
     await page.route('**/api/projects', (route) => {
       route.fulfill({
         status: 200,
@@ -257,7 +259,8 @@ test.describe('E2E Flow: Theme Toggle & Persistence', () => {
     // Navigate to detail page (nth(1) skips User card)
     await page.locator('.project-card').nth(1).click();
     await page.waitForURL(/\/project\/[^/]+$/);
-    await page.waitForSelector('.config-card', { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify light mode persisted
     expect(await appContainer.getAttribute('data-theme')).toBe('light');
@@ -275,7 +278,7 @@ test.describe('E2E Flow: Theme Toggle & Persistence', () => {
     expect(await appContainer.getAttribute('data-theme')).toBe('dark');
   });
 
-  test('theme preference loads from localStorage on first visit', async ({ page }) => {
+  test('105.3: theme preference loads from localStorage on first visit', async ({ page }) => {
     await page.route('**/api/projects', (route) => {
       route.fulfill({
         status: 200,
@@ -337,7 +340,7 @@ test.describe('E2E Flow: Theme Toggle & Persistence', () => {
     await expect(themeToggle).toBeVisible();
   });
 
-  test('multiple theme toggles work correctly', async ({ page }) => {
+  test('105.4: multiple theme toggles work correctly', async ({ page }) => {
     await page.route('**/api/projects', (route) => {
       route.fulfill({
         status: 200,
@@ -404,7 +407,7 @@ test.describe('E2E Flow: Theme Toggle & Persistence', () => {
     expect(storedTheme).toBe('light');
   });
 
-  test('theme toggle has smooth visual transition', async ({ page }) => {
+  test('105.5: theme toggle has smooth visual transition', async ({ page }) => {
     await page.route('**/api/projects', (route) => {
       route.fulfill({
         status: 200,
@@ -474,7 +477,7 @@ test.describe('E2E Flow: Theme Toggle & Persistence', () => {
     expect(newTheme).toBe('light');
   });
 
-  test('theme toggle button has accessible title attribute', async ({ page }) => {
+  test('105.6: theme toggle button has accessible title attribute', async ({ page }) => {
     await page.route('**/api/projects', (route) => {
       route.fulfill({
         status: 200,
@@ -539,7 +542,7 @@ test.describe('E2E Flow: Theme Toggle & Persistence', () => {
     await expect(themeButton).toHaveAttribute('aria-label', 'Toggle theme');
   });
 
-  test('theme works correctly in different viewports', async ({ page }) => {
+  test('105.7: theme works correctly in different viewports', async ({ page }) => {
     await page.route('**/api/projects', (route) => {
       route.fulfill({
         status: 200,
@@ -610,7 +613,7 @@ test.describe('E2E Flow: Theme Toggle & Persistence', () => {
     expect(storedTheme).toBe('light');
   });
 
-  test('theme toggle animation completes without errors', async ({ page }) => {
+  test('105.8: theme toggle animation completes without errors', async ({ page }) => {
     const consoleErrors = [];
 
     page.on('console', (msg) => {
