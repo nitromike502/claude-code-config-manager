@@ -86,8 +86,8 @@ test.describe('01.001: Basic App Initialization', () => {
   test('01.001.006: Vue app mounts successfully', async ({ page }) => {
     await page.goto('/');
 
-    // Verify Vue app container is present (id="app")
-    const appDiv = page.locator('#app');
+    // Verify Vue app container is present (id="app" with data-theme attribute)
+    const appDiv = page.locator('#app[data-theme]');
     await expect(appDiv).toBeVisible();
 
     // Verify content is rendered (not just empty div) - main element with router-view
@@ -101,11 +101,11 @@ test.describe('01.002: Theme Toggle Functionality', () => {
   test('01.002.001: theme toggle changes between dark and light modes', async ({ page }) => {
     await page.goto('/');
 
-    // Wait for Vue app to mount
-    await page.waitForSelector('#app');
+    // Wait for Vue app to mount - use selector with data-theme attribute
+    await page.waitForSelector('#app[data-theme]');
 
-    // Get initial theme from #app data-theme attribute
-    const appContainer = page.locator('#app');
+    // Get initial theme from #app[data-theme] attribute
+    const appContainer = page.locator('#app[data-theme]');
     const initialTheme = await appContainer.getAttribute('data-theme');
 
     // Click theme toggle (PrimeVue Button with aria-label)
