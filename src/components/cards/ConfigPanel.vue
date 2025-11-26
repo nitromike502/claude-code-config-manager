@@ -229,35 +229,6 @@ const handleToggleShowAll = () => {
   box-shadow: var(--shadow-card);
 }
 
-/* Override PrimeVue Panel default styles */
-.config-panel :deep(.p-panel-header) {
-  background-color: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-primary);
-  border-radius: 8px 8px 0 0;
-}
-
-.config-panel :deep(.p-panel-content) {
-  background-color: var(--bg-secondary);
-}
-
-.config-panel :deep(.p-panel-footer) {
-  padding: 0;
-  border-top: 1px solid var(--border-secondary);
-  background-color: var(--bg-secondary);
-}
-
-/* Toggle button styling */
-.config-panel :deep(.p-panel-toggler) {
-  color: var(--text-secondary);
-  width: 2rem;
-  height: 2rem;
-}
-
-.config-panel :deep(.p-panel-toggler:hover) {
-  color: var(--text-primary);
-  background-color: var(--bg-hover);
-}
-
 /* Skeleton Animation - Complex gradient animation that cannot be expressed in Tailwind */
 .skeleton {
   height: 60px;
