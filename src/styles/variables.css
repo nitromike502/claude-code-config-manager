@@ -80,6 +80,7 @@
 
   /* Component-specific overrides */
   --p-drawer-background: var(--bg-secondary);  /* Override drawer background */
+  --p-dialog-background: var(--p-surface-50);  /* Dialog background */
   --p-button-primary-background: var(--p-blue-700);  /* Primary button background */
 
   /* ========== Backgrounds ========== */
