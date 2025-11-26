@@ -121,13 +121,13 @@ test.describe('04.001: Dashboard Component', () => {
       // Wait for navigation to user view
       await page.waitForURL(/\/user/, { timeout: 10000 });
 
-      // Verify user global page loaded - look for page title
-      const pageTitle = page.locator('span:has-text("User Configurations")');
-      await expect(pageTitle).toBeVisible();
-
       // Verify breadcrumb is present
       const breadcrumb = page.locator('.p-breadcrumb');
       await expect(breadcrumb).toBeVisible();
+
+      // Verify user global page loaded - look for page title in breadcrumb
+      const pageTitle = page.locator('.p-breadcrumb .breadcrumb-label:has-text("User Configurations")');
+      await expect(pageTitle.first()).toBeVisible();
     }
   });
 });
