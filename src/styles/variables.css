@@ -123,7 +123,7 @@
 
   /* ========== Semantic Colors ========== */
   /* Primary brand color and its states */
-  --color-primary: #002d50;
+  --color-primary: #137cce;
   --color-primary-hover: #005fa3;
   --color-primary-active: #004d82;
   --color-primary-disabled: #003d66;
@@ -272,7 +272,7 @@
   --text-disabled: #bdbdbd;
 
   /* ========== Semantic Colors ========== */
-  --color-primary: #1976d2;
+  --color-primary: #137cce;
   --color-primary-hover: #1565c0;
   --color-primary-active: #0d47a1;
   --color-primary-disabled: #bbdefb;

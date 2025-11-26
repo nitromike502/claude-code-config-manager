@@ -2,14 +2,12 @@
   <div class="user-global">
     <div class="flex-1 p-8 max-w-7xl mx-auto w-full">
       <!-- Breadcrumbs -->
-      <div class="flex items-center gap-2 py-3 text-sm max-w-screen-lg mx-auto my-8 -mt-8">
-        <router-link to="/" class="flex items-center gap-2 text-color-primary no-underline font-medium transition-colors duration-200 hover:underline hover:text-color-primary-hover">
-          <i class="pi pi-home"></i>
-          Dashboard
-        </router-link>
-        <i class="pi pi-chevron-right text-text-muted"></i>
-        <span class="text-text-primary font-medium">User Configurations</span>
-      </div>
+      <BreadcrumbNavigation
+        :items="[
+          { label: 'Dashboard', route: '/', icon: 'pi pi-home' },
+          { label: 'User Configurations', route: null, icon: null }
+        ]"
+      />
 
       <!-- User Info Bar -->
       <div class="mb-8">
