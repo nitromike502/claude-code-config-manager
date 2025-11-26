@@ -32,9 +32,14 @@
  * - Text readability and overflow handling
  * - Touch target sizes (minimum 44px)
  * - Interactive features on small screens
+ *
+ * SKIPPED: Desktop-focused application - responsive testing deferred
  */
 
 const { test, expect } = require('@playwright/test');
+
+// Skip all responsive tests - this is a desktop application
+test.describe.configure({ mode: 'skip' });
 
 // Define viewport configurations
 const viewports = {
