@@ -1,45 +1,69 @@
 <template>
   <div class="flex flex-col gap-3">
-    <div
+    <Card
       v-for="(item, index) in items"
       :key="index"
-      class="config-item flex items-center justify-between gap-4 p-4 rounded-lg cursor-pointer transition-all duration-200 md:flex-col md:items-start md:gap-3"
+      :pt="cardPt"
+      class="config-item-card cursor-pointer"
       @click="$emit('item-selected', item, itemType)"
     >
-      <div class="flex-1 min-w-0 flex flex-col gap-1">
-        <div class="font-semibold text-[0.95rem] text-text-primary">{{ getItemName(item) }}</div>
+      <!-- Header: Name (left) + Buttons (right) -->
+      <template #header>
+        <div class="flex items-center justify-between gap-3 px-4 py-3">
+          <span class="font-semibold text-[0.95rem] text-text-primary truncate">{{ getItemName(item) }}</span>
+          <div class="flex items-center gap-2 shrink-0" @click.stop>
+            <CopyButton
+              :configItem="item"
+              :disabled="item.location === 'plugin'"
+              :showLabel="false"
+              @copy-clicked="handleCopyClick"
+            />
+            <Button
+              label="View"
+              icon="pi pi-eye"
+              outlined
+              size="small"
+              @click.stop="$emit('item-selected', item, itemType)"
+              class="view-btn"
+            />
+          </div>
+        </div>
+      </template>
+
+      <!-- Content: Description only -->
+      <template #content>
         <div
           class="text-[0.85rem] text-text-secondary leading-[1.4]"
-          :class="{ 'truncate': truncateDescription }"
+          :class="{ 'line-clamp-2': truncateDescription }"
         >
           {{ getItemDescription(item, itemType) }}
         </div>
-      </div>
-      <div class="flex items-center gap-2 shrink-0">
-        <div @click.stop>
-          <CopyButton
-            :configItem="item"
-            :disabled="item.location === 'plugin'"
-            :showLabel="false"
-            @copy-clicked="handleCopyClick"
-          />
-        </div>
-        <Button
-          label="View Details"
-          icon="pi pi-eye"
-          outlined
-          @click.stop="$emit('item-selected', item, itemType)"
-          class="view-details-btn"
-        />
-      </div>
-    </div>
+      </template>
+    </Card>
   </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, computed } from 'vue';
 import Button from 'primevue/button';
+import Card from 'primevue/card';
 import CopyButton from '@/components/copy/CopyButton.vue';
+
+// Pass-through configuration for PrimeVue Card component
+const cardPt = computed(() => ({
+  root: {
+    class: 'config-item-card-root'
+  },
+  header: {
+    class: 'config-item-card-header'
+  },
+  body: {
+    class: 'config-item-card-body'
+  },
+  content: {
+    class: 'config-item-card-content'
+  }
+}));
 
 const props = defineProps({
   items: {
@@ -131,33 +155,75 @@ const getItemDescription = (item, type) => {
 </script>
 
 <style scoped>
-/* Config Item - Background, border, and shadow styling (layout in Tailwind) */
-.config-item {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
+/* Config Item Card - PrimeVue Card styling */
+.config-item-card {
+  transition: all 0.2s ease;
 }
 
-.config-item:hover {
-  background: var(--bg-hover);
-  border-color: var(--color-primary);
+.config-item-card:hover {
   box-shadow: var(--shadow-card);
 }
 
-/* View Details Button - Preserve PrimeVue Button hover effects */
-.view-details-btn:hover {
+/* Card Root - Background and border */
+:deep(.config-item-card-root) {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.config-item-card:hover :deep(.config-item-card-root) {
+  background: var(--bg-hover);
+  border-color: var(--color-primary);
+}
+
+/* Dark mode - Use primary-hover color for card border on hover */
+:global(.dark) .config-item-card:hover :deep(.config-item-card-root) {
+  border-color: var(--color-primary-hover);
+}
+
+/* Card Header - Bottom border separator */
+:deep(.config-item-card-header) {
+  padding: 0;
+  background: transparent;
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+/* Card Body - No extra padding (handled by content) */
+:deep(.config-item-card-body) {
+  padding: 0;
+}
+
+/* Card Content - Padding for description */
+:deep(.config-item-card-content) {
+  padding: 0.75rem 1rem;
+}
+
+/* View Button - Smaller styling */
+.view-btn {
+  font-size: 0.8rem;
+}
+
+.view-btn:hover {
   background: var(--color-primary);
-  color: var(--text-emphasis);
+  color: #ffffff;
   transform: translateY(-1px);
   box-shadow: var(--shadow-card);
 }
 
-/* Responsive Design - Mobile button layout */
+/* Line clamp for description truncation */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Responsive Design - Mobile adjustments */
 @media (max-width: 768px) {
-  .view-details-btn {
+  .view-btn {
     flex: 1;
     justify-content: center;
   }
 }
-
-/* Dark/Light Mode Support - Handled by CSS Variables */
 </style>

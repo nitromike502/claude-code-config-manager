@@ -16,6 +16,12 @@ export default {
         error: 'var(--color-error)',
         info: 'var(--color-info)',
 
+        // Status color backgrounds
+        'success-bg': 'var(--color-success-bg)',
+        'warning-bg': 'var(--color-warning-bg)',
+        'error-bg': 'var(--color-error-bg)',
+        'info-bg': 'var(--color-info-bg)',
+
         // Background colors
         'bg-primary': 'var(--bg-primary)',
         'bg-secondary': 'var(--bg-secondary)',

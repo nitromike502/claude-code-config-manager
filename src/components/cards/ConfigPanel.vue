@@ -1,17 +1,26 @@
 <template>
-  <Card :pt="cardPt" :class="['config-card', cardTypeClass]">
-    <!-- Header -->
+  <Panel
+    :header="title"
+    :toggleable="toggleable"
+    v-model:collapsed="isCollapsed"
+    :pt="panelPt"
+    :class="['config-panel', cardTypeClass]"
+  >
+    <!-- Custom Header -->
     <template #header>
-      <div class="flex justify-between items-center px-5 py-4 md:px-5 md:py-4 max-md:px-4 max-md:py-3.5 gap-3">
-        <div class="flex items-center gap-3">
-          <i :class="icon" :style="{ color: color }" class="text-2xl md:text-2xl max-md:text-xl"></i>
-          <span class="text-lg md:text-lg max-md:text-base font-semibold text-text-emphasis">{{ title }} ({{ count }})</span>
-        </div>
+      <div class="flex items-center gap-3">
+        <i :class="icon" :style="{ color: color }" class="text-2xl md:text-2xl max-md:text-xl"></i>
+        <span class="text-lg md:text-lg max-md:text-base font-semibold text-text-emphasis">{{ title }} ({{ count }})</span>
       </div>
     </template>
 
+    <!-- Icons slot for additional header actions -->
+    <template #icons>
+      <slot name="header-actions"></slot>
+    </template>
+
     <!-- Content -->
-    <template #content>
+    <div class="panel-content">
       <!-- Loading State -->
       <div v-if="loading" class="px-5 py-4 md:px-5 md:py-4 max-md:px-4 max-md:py-4 w-full">
         <div class="skeleton"></div>
@@ -26,29 +35,29 @@
       </div>
 
       <!-- Items List -->
-      <div v-else class="p-0 w-full">
+      <div v-else class="w-full">
         <slot :items="displayedItems">
           <!-- Default slot content - expects parent to provide custom rendering -->
         </slot>
       </div>
-    </template>
+    </div>
 
     <!-- Footer -->
     <template #footer v-if="!loading && items.length > initialDisplayCount">
       <Button
-        @click="handleToggle"
+        @click="handleToggleShowAll"
         :label="buttonText"
         text
         class="w-full py-3 px-5 bg-transparent text-color-primary border-none cursor-pointer text-sm font-medium transition-all duration-200 text-center hover:bg-bg-hover"
       />
     </template>
-  </Card>
+  </Panel>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import Button from 'primevue/button';
-import Card from 'primevue/card';
+import Panel from 'primevue/panel';
 
 const props = defineProps({
   title: {
@@ -92,18 +101,40 @@ const props = defineProps({
     type: String,
     default: '',
     validator: (value) => ['', 'agents', 'commands', 'hooks', 'mcp'].includes(value)
+  },
+  toggleable: {
+    type: Boolean,
+    default: false
+  },
+  collapsed: {
+    type: Boolean,
+    default: false
   }
 });
 
 const emit = defineEmits({
   'toggle-show-all': null,
+  'update:collapsed': (value) => typeof value === 'boolean',
   'item-selected': (item, itemType) => {
     return item !== null && typeof itemType === 'string'
   }
 });
 
-// Pass-through configuration for PrimeVue Card component
-const cardPt = computed(() => ({
+// Local collapsed state with v-model support
+const isCollapsed = ref(props.collapsed);
+
+// Sync with parent when collapsed prop changes
+watch(() => props.collapsed, (newVal) => {
+  isCollapsed.value = newVal;
+});
+
+// Emit when local state changes
+watch(isCollapsed, (newVal) => {
+  emit('update:collapsed', newVal);
+});
+
+// Pass-through configuration for PrimeVue Panel component
+const panelPt = computed(() => ({
   root: {
     class: 'bg-secondary border-primary',
     style: {
@@ -111,21 +142,39 @@ const cardPt = computed(() => ({
     }
   },
   header: {
-    class: 'config-card-header',
+    class: 'config-panel-header',
     style: {
-      padding: '0',
+      padding: '1rem 1.25rem',
       backgroundColor: 'var(--bg-tertiary)',
       borderBottom: '1px solid var(--border-primary)'
     }
   },
-  body: {
-    class: 'config-card-body',
+  title: {
+    class: 'config-panel-title'
+  },
+  icons: {
+    class: 'config-panel-icons',
     style: {
-      padding: '0'
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem'
+    }
+  },
+  toggleButton: {
+    class: 'config-panel-toggle',
+    style: {
+      width: '2rem',
+      height: '2rem'
+    }
+  },
+  content: {
+    class: 'p-panel-content',
+    style: {
+      paddingTop: '1.25rem'
     }
   },
   footer: {
-    class: 'config-card-footer',
+    class: 'config-panel-footer',
     style: {
       padding: '0',
       borderTop: '1px solid var(--border-secondary)'
@@ -136,7 +185,7 @@ const cardPt = computed(() => ({
 // Computed property for card type CSS class
 const cardTypeClass = computed(() => {
   if (!props.cardType) return '';
-  return `${props.cardType}-card`;
+  return `${props.cardType}-panel`;
 });
 
 // Computed property for displayed items
@@ -165,15 +214,15 @@ const buttonText = computed(() => {
   return `Show ${remainingCount} more`;
 });
 
-// Handle toggle event
-const handleToggle = () => {
+// Handle toggle event for show all
+const handleToggleShowAll = () => {
   emit('toggle-show-all');
 };
 </script>
 
 <style scoped>
-/* Config Card Container - Required for PrimeVue Card overrides */
-.config-card {
+/* Config Panel Container - Required for PrimeVue Panel overrides */
+.config-panel {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 8px;

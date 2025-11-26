@@ -6,8 +6,8 @@
       <div class="max-w-7xl mx-auto">
         <!-- Dashboard header: flex layout with responsive behavior -->
         <div class="flex justify-between items-center mb-6 flex-wrap gap-4 md:flex-row flex-col md:items-center items-stretch">
-          <!-- Title with CSS variable for color consistency -->
-          <h2 class="m-0 text-[1.75rem]" style="color: var(--text-primary)">Projects</h2>
+          <!-- Title with Tailwind text color -->
+          <h2 class="m-0 text-[1.75rem] text-text-primary">Projects</h2>
           <!-- Actions: responsive flex layout -->
           <div class="flex gap-3 items-center md:flex-row flex-col">
             <!-- PrimeVue Select for sort selection -->
@@ -328,7 +328,6 @@ export default {
 
 .project-header i {
   font-size: 1.5rem;
-  color: var(--color-primary);
 }
 
 .user-card .project-header i {

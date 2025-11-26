@@ -514,165 +514,6 @@
 
 /* NOTE: Hook list/item styles removed - ConfigItemList now uses Tailwind classes */
 
-/* ============================================
-   15. TOAST NOTIFICATIONS
-   ============================================ */
-.p-toast {
-  opacity: 1 !important;
-  width: 25rem;
-}
-
-.p-toast-message {
-  margin: 0 0 1rem 0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border-radius: 6px;
-  border-width: 0;
-  border-left-width: 6px;
-  border-style: solid;
-  display: flex;
-  align-items: flex-start;
-  padding: 1rem;
-}
-
-.p-toast-message-content {
-  display: flex;
-  align-items: flex-start;
-  flex: 1;
-  gap: 0.75rem;
-}
-
-.p-toast-message-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.p-toast-message-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.p-toast-summary {
-  font-weight: 600;
-  font-size: 0.9375rem;
-  line-height: 1.4;
-}
-
-.p-toast-detail {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.p-toast-icon-close {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-  margin-left: 0.5rem;
-  flex-shrink: 0;
-}
-
-.p-toast-icon-close:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="dark"] .p-toast-icon-close:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.p-toast-icon-close-icon {
-  font-size: 1rem;
-}
-
-/* Toast severity variants */
-.p-toast-message-success {
-  background-color: var(--color-success-bg);
-  border-left-color: var(--color-success);
-}
-
-[data-theme="dark"] .p-toast-message-success {
-  background-color: var(--color-success-bg);
-  border-left-color: var(--color-success);
-}
-
-.p-toast-message-success .p-toast-message-icon,
-.p-toast-message-success .p-toast-summary {
-  color: var(--color-success);
-}
-
-[data-theme="dark"] .p-toast-message-success .p-toast-message-icon,
-[data-theme="dark"] .p-toast-message-success .p-toast-summary {
-  color: var(--color-success);
-}
-
-.p-toast-message-info {
-  background-color: var(--color-info-bg);
-  border-left-color: var(--color-info);
-}
-
-[data-theme="dark"] .p-toast-message-info {
-  background-color: var(--color-info-bg);
-  border-left-color: var(--color-info);
-}
-
-.p-toast-message-info .p-toast-message-icon,
-.p-toast-message-info .p-toast-summary {
-  color: var(--color-info);
-}
-
-[data-theme="dark"] .p-toast-message-info .p-toast-message-icon,
-[data-theme="dark"] .p-toast-message-info .p-toast-summary {
-  color: var(--color-info);
-}
-
-.p-toast-message-warn {
-  background-color: var(--color-warning-bg);
-  border-left-color: var(--color-warning);
-}
-
-[data-theme="dark"] .p-toast-message-warn {
-  background-color: var(--color-warning-bg);
-  border-left-color: var(--color-warning);
-}
-
-.p-toast-message-warn .p-toast-message-icon,
-.p-toast-message-warn .p-toast-summary {
-  color: var(--color-warning);
-}
-
-[data-theme="dark"] .p-toast-message-warn .p-toast-message-icon,
-[data-theme="dark"] .p-toast-message-warn .p-toast-summary {
-  color: var(--color-warning);
-}
-
-.p-toast-message-error {
-  background-color: var(--color-error-bg);
-  border-left-color: var(--color-error);
-}
-
-[data-theme="dark"] .p-toast-message-error {
-  background-color: var(--color-error-bg);
-  border-left-color: var(--color-error);
-}
-
-.p-toast-message-error .p-toast-message-icon,
-.p-toast-message-error .p-toast-summary {
-  color: var(--color-error);
-}
-
-[data-theme="dark"] .p-toast-message-error .p-toast-message-icon,
-[data-theme="dark"] .p-toast-message-error .p-toast-summary {
-  color: var(--color-error);
-}
 
 /* ============================================
    11. DOMAIN-SPECIFIC: MCP SERVERS
@@ -684,115 +525,16 @@
 /* ============================================
    16. PRIMEVUE COMPONENT OVERRIDES
    ============================================ */
-.p-dialog-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  pointer-events: none;
-  background-color: rgba(0, 0, 0, 0.4);
-  z-index: 1100;
-  transition: background-color 0.2s;
-}
 
-.p-dialog-mask.p-component-overlay {
-  pointer-events: auto;
-}
-
-.p-dialog {
-  position: relative;
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  pointer-events: auto;
-}
-
-.p-dialog-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-primary);
-  border-radius: 8px 8px 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.p-dialog-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-}
-
-.p-dialog-header-icons {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.p-dialog-header-icon {
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
+/* PrimeVue Button - Secondary Outlined variant theme fixes */
+.p-button-secondary.p-button-outlined {
   color: var(--text-primary);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
+  border-color: var(--border-primary);
 }
 
-.p-dialog-header-icon:hover {
+.p-button-secondary.p-button-outlined:hover {
   background: var(--bg-hover);
-  color: var(--text-emphasis);
-}
-
-.p-dialog-header-icon:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-}
-
-.p-dialog-content {
-  padding: 1.5rem;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.p-dialog-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-primary);
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
-/* Dialog animations */
-.p-dialog-mask-enter-active,
-.p-dialog-mask-leave-active {
-  transition: opacity 0.2s;
-}
-
-.p-dialog-mask-enter-from,
-.p-dialog-mask-leave-to {
-  opacity: 0;
-}
-
-.p-dialog-enter-active,
-.p-dialog-leave-active {
-  transition: all 0.2s;
-}
-
-.p-dialog-enter-from,
-.p-dialog-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
+  border-color: var(--border-focus);
 }
 
 /* PrimeVue Divider Overrides */
@@ -874,5 +616,19 @@
 
   .p-dialog {
     max-width: 95vw;
+  }
+}
+
+/* PrimeVue Drawer Overrides */
+/* Match PrimeVue's selector specificity: .p-drawer-right .p-drawer */
+.p-drawer-right .p-drawer {
+  width: 100vw;
+}
+
+@media (min-width: 768px) {
+  .p-drawer-right .p-drawer {
+    width: 75vw;
+    min-width: 500px;
+    max-width: 75vw;
   }
 }

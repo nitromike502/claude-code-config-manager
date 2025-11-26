@@ -1,177 +1,69 @@
 <template>
-  <div class="user-global">
-    <div class="flex-1 p-8 max-w-7xl mx-auto w-full">
-      <!-- Breadcrumbs -->
-      <div class="flex items-center gap-2 py-3 text-sm max-w-screen-lg mx-auto my-8 -mt-8">
-        <router-link to="/" class="flex items-center gap-2 text-color-primary no-underline font-medium transition-colors duration-200 hover:underline hover:text-color-primary-hover">
-          <i class="pi pi-home"></i>
-          Dashboard
-        </router-link>
-        <i class="pi pi-chevron-right text-text-muted"></i>
-        <span class="text-text-primary font-medium">User Configurations</span>
-      </div>
-
-      <!-- User Info Bar -->
-      <div class="mb-8">
-        <div class="flex items-center gap-3 text-2xl font-semibold mb-2">
-          <i class="pi pi-user"></i>
-          <span>User Configurations</span>
-        </div>
-        <div class="text-sm text-text-secondary">~/.claude</div>
-      </div>
-
-      <!-- Loading State -->
-      <LoadingState v-if="loading" message="Loading user configurations..." />
-
-      <!-- Config Cards Container -->
-      <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(500px,1fr))] gap-6 md:grid-cols-1 lg:grid-cols-[repeat(auto-fill,minmax(500px,1fr))]">
-        <!-- Agents Card -->
-        <ConfigCard
-          card-type="agents"
-          title="Subagents"
-          :count="agents.length"
-          icon="pi pi-users"
-          color="var(--color-agents)"
-          :loading="loadingAgents"
-          :items="agents"
-          :showing-all="showingAllAgents"
-          :initial-display-count="initialDisplayCount"
-          @toggle-show-all="showingAllAgents = !showingAllAgents"
-          @copy-clicked="handleCopyClick"
-        >
-          <template #default="{ items }">
-            <ConfigItemList
-              :items="items"
-              item-type="agents"
-              @item-selected="(item) => showDetail(item, 'agents', agents)"
-              @copy-clicked="handleCopyClick"
-            />
-          </template>
-        </ConfigCard>
-
-        <!-- Commands Card -->
-        <ConfigCard
-          card-type="commands"
-          title="Slash Commands"
-          :count="commands.length"
-          icon="pi pi-bolt"
-          color="var(--color-commands)"
-          :loading="loadingCommands"
-          :items="commands"
-          :showing-all="showingAllCommands"
-          :initial-display-count="initialDisplayCount"
-          @toggle-show-all="showingAllCommands = !showingAllCommands"
-          @copy-clicked="handleCopyClick"
-        >
-          <template #default="{ items }">
-            <ConfigItemList
-              :items="items"
-              item-type="commands"
-              @item-selected="(item) => showDetail(item, 'commands', commands)"
-              @copy-clicked="handleCopyClick"
-            />
-          </template>
-        </ConfigCard>
-
-        <!-- Hooks Card -->
-        <ConfigCard
-          card-type="hooks"
-          title="Hooks"
-          :count="hooks.length"
-          icon="pi pi-link"
-          color="var(--color-hooks)"
-          :loading="loadingHooks"
-          :items="hooks"
-          :showing-all="showingAllHooks"
-          :initial-display-count="initialDisplayCount"
-          @toggle-show-all="showingAllHooks = !showingAllHooks"
-          @copy-clicked="handleCopyClick"
-        >
-          <template #default="{ items }">
-            <ConfigItemList
-              :items="items"
-              item-type="hooks"
-              @item-selected="(item) => showDetail(item, 'hooks', hooks)"
-              @copy-clicked="handleCopyClick"
-            />
-          </template>
-        </ConfigCard>
-
-        <!-- MCP Servers Card -->
-        <ConfigCard
-          card-type="mcp"
-          title="MCP Servers"
-          :count="mcpServers.length"
-          icon="pi pi-server"
-          color="var(--color-mcp)"
-          :loading="loadingMCP"
-          :items="mcpServers"
-          :showing-all="showingAllMcp"
-          :initial-display-count="initialDisplayCount"
-          @toggle-show-all="showingAllMcp = !showingAllMcp"
-          @copy-clicked="handleCopyClick"
-        >
-          <template #default="{ items }">
-            <ConfigItemList
-              :items="items"
-              item-type="mcp"
-              @item-selected="(item) => showDetail(item, 'mcp', mcpServers)"
-              @copy-clicked="handleCopyClick"
-            />
-          </template>
-        </ConfigCard>
-      </div>
-    </div>
-
-    <!-- Sidebar Overlay -->
-    <div v-if="sidebarVisible" class="fixed inset-0 bg-black/50 z-[999] fadeIn" @click="sidebarVisible = false"></div>
-
-    <!-- Detail Sidebar Component -->
-    <ConfigDetailSidebar
-      :visible="sidebarVisible"
-      :selected-item="selectedItem"
-      :selected-type="selectedType"
-      :current-items="currentItems"
-      :selected-index="currentIndex"
-      @close="sidebarVisible = false"
-      @navigate="onNavigate"
-      @copy-clicked="handleCopyClick"
-    />
-
-    <!-- Copy Modal -->
-    <CopyModal
-      v-if="selectedConfig"
-      v-model:visible="showCopyModal"
-      :sourceConfig="selectedConfig"
-      @copy-success="handleCopySuccess"
-      @copy-error="handleCopyError"
-      @copy-cancelled="handleCopyCancelled"
-    />
-  </div>
+  <ConfigPageLayout
+    page-title="User Configurations"
+    page-subtitle="~/.claude"
+    page-icon="pi pi-user"
+    page-icon-color="var(--text-primary)"
+    :breadcrumb-items="breadcrumbItems"
+    :loading="loading"
+    loading-message="Loading user configurations..."
+    :loading-agents="loadingAgents"
+    :loading-commands="loadingCommands"
+    :loading-hooks="loadingHooks"
+    :loading-mcp="loadingMCP"
+    :error="false"
+    error-message=""
+    :warnings="[]"
+    :agents="agents"
+    :commands="commands"
+    :hooks="hooks"
+    :mcp-servers="mcpServers"
+    :showing-all-agents="showingAllAgents"
+    :showing-all-commands="showingAllCommands"
+    :showing-all-hooks="showingAllHooks"
+    :showing-all-mcp="showingAllMcp"
+    :initial-display-count="initialDisplayCount"
+    :sidebar-visible="sidebarVisible"
+    :selected-item="selectedItem"
+    :selected-type="selectedType"
+    :current-items="currentItems"
+    :selected-index="currentIndex"
+    @toggle-agents="showingAllAgents = !showingAllAgents"
+    @toggle-commands="showingAllCommands = !showingAllCommands"
+    @toggle-hooks="showingAllHooks = !showingAllHooks"
+    @toggle-mcp="showingAllMcp = !showingAllMcp"
+    @show-detail="showDetail"
+    @close-sidebar="sidebarVisible = false"
+    @navigate="onNavigate"
+    @copy-clicked="handleCopyClick"
+  >
+    <template #copy-modal>
+      <CopyModal
+        v-if="selectedConfig"
+        v-model:visible="showCopyModal"
+        :sourceConfig="selectedConfig"
+        @copy-success="handleCopySuccess"
+        @copy-error="handleCopyError"
+        @copy-cancelled="handleCopyCancelled"
+      />
+    </template>
+  </ConfigPageLayout>
 </template>
 
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import * as api from '@/api/client'
-import ConfigCard from '@/components/cards/ConfigCard.vue'
-import ConfigItemList from '@/components/cards/ConfigItemList.vue'
-import ConfigDetailSidebar from '@/components/sidebars/ConfigDetailSidebar.vue'
-import BreadcrumbNavigation from '@/components/common/BreadcrumbNavigation.vue'
+import ConfigPageLayout from '@/components/layouts/ConfigPageLayout.vue'
 import CopyModal from '@/components/copy/CopyModal.vue'
-import LoadingState from '@/components/common/LoadingState.vue'
 import { useCopyStore } from '@/stores/copy-store'
 import { useProjectsStore } from '@/stores/projects'
 
 export default {
   name: 'UserGlobal',
   components: {
-    ConfigCard,
-    ConfigItemList,
-    ConfigDetailSidebar,
-    BreadcrumbNavigation,
-    CopyModal,
-    LoadingState
+    ConfigPageLayout,
+    CopyModal
   },
   setup() {
     // Initialize stores
@@ -179,6 +71,10 @@ export default {
     const copyStore = useCopyStore()
     const projectsStore = useProjectsStore()
 
+    const breadcrumbItems = [
+      { label: 'Dashboard', route: '/', icon: 'pi pi-home' },
+      { label: 'User Configurations', route: null, icon: null }
+    ]
 
     const agents = ref([])
     const commands = ref([])
@@ -206,53 +102,6 @@ export default {
     // Copy modal state
     const showCopyModal = ref(false)
     const selectedConfig = ref(null)
-
-    // Computed: displayed items with show more/less
-    const displayedAgents = computed(() => {
-      return showingAllAgents.value ? agents.value : agents.value.slice(0, initialDisplayCount)
-    })
-
-    const displayedCommands = computed(() => {
-      return showingAllCommands.value ? commands.value : commands.value.slice(0, initialDisplayCount)
-    })
-
-    const displayedHooks = computed(() => {
-      return showingAllHooks.value ? hooks.value : hooks.value.slice(0, initialDisplayCount)
-    })
-
-    const displayedMcp = computed(() => {
-      return showingAllMcp.value ? mcpServers.value : mcpServers.value.slice(0, initialDisplayCount)
-    })
-
-    // Computed: sidebar navigation
-    const hasPrev = computed(() => currentIndex.value > 0)
-    const hasNext = computed(() => currentIndex.value < currentItems.value.length - 1)
-
-    const typeIcon = computed(() => {
-      const icons = {
-        agents: 'pi pi-users',
-        commands: 'pi pi-bolt',
-        hooks: 'pi pi-link',
-        mcp: 'pi pi-server'
-      }
-      return icons[selectedType.value] || 'pi pi-file'
-    })
-
-    const typeColor = computed(() => {
-      // For agents, use the defined color if available
-      if (selectedType.value === 'agents' && selectedItem.value?.color) {
-        return selectedItem.value.color
-      }
-
-      // Otherwise use default type colors
-      const colors = {
-        agents: 'var(--color-agents)',
-        commands: 'var(--color-commands)',
-        hooks: 'var(--color-hooks)',
-        mcp: 'var(--color-mcp)'
-      }
-      return colors[selectedType.value] || 'var(--text-primary)'
-    })
 
     // Load user data
     const loadUserData = async () => {
@@ -356,14 +205,14 @@ export default {
     }
 
     const navigatePrev = () => {
-      if (hasPrev.value) {
+      if (currentIndex.value > 0) {
         currentIndex.value--
         selectedItem.value = currentItems.value[currentIndex.value]
       }
     }
 
     const navigateNext = () => {
-      if (hasNext.value) {
+      if (currentIndex.value < currentItems.value.length - 1) {
         currentIndex.value++
         selectedItem.value = currentItems.value[currentIndex.value]
       }
@@ -474,6 +323,7 @@ export default {
     })
 
     return {
+      breadcrumbItems,
       agents,
       commands,
       hooks,
@@ -488,22 +338,12 @@ export default {
       showingAllCommands,
       showingAllHooks,
       showingAllMcp,
-      displayedAgents,
-      displayedCommands,
-      displayedHooks,
-      displayedMcp,
       sidebarVisible,
       selectedItem,
       selectedType,
       currentItems,
       currentIndex,
-      hasPrev,
-      hasNext,
-      typeIcon,
-      typeColor,
       showDetail,
-      navigatePrev,
-      navigateNext,
       onNavigate,
       showCopyModal,
       selectedConfig,
@@ -515,184 +355,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.user-global {
-  display: flex;
-  min-height: 100vh;
-}
-
-/* Sidebar */
-.sidebar {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 75vw;
-  min-width: 500px;
-  max-width: 75vw;
-  height: 100vh;
-  background: var(--bg-secondary);
-  border-left: 1px solid var(--border-primary);
-  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  z-index: 1000;
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.fadeIn {
-  animation: fadeIn 0.3s ease;
-}
-
-.sidebar-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.sidebar-header-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  flex: 1;
-  min-width: 0;
-}
-
-.sidebar-header-title span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sidebar-nav {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.nav-btn,
-.close-btn {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  background: transparent;
-  border: 1px solid var(--border-primary);
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  color: var(--text-primary);
-}
-
-.nav-btn:hover:not(:disabled),
-.close-btn:hover {
-  background: var(--bg-primary);
-  border-color: var(--color-primary);
-}
-
-.nav-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.sidebar-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-}
-
-.sidebar-section {
-  margin-bottom: 1.5rem;
-}
-
-.sidebar-section h4 {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.sidebar-section p {
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.sidebar-section strong {
-  color: var(--text-primary);
-}
-
-.content-preview {
-  background: var(--bg-primary);
-  padding: 1rem;
-  border-radius: 4px;
-  border: 1px solid var(--border-primary);
-  font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  overflow-x: auto;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.sidebar-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-primary);
-}
-
-.action-btn {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: background 0.2s;
-}
-
-.action-btn:hover {
-  background: var(--color-primary-hover);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-  }
-}
-</style>

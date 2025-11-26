@@ -2,12 +2,13 @@
   <Button
     :label="showLabel ? 'Copy to...' : ''"
     icon="pi pi-copy"
-    severity="secondary"
+    outlined
+    size="small"
     :disabled="isDisabled"
     :aria-label="ariaLabel"
     v-tooltip.top="tooltipText"
     @click="handleClick"
-    class="transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-focus disabled:opacity-60 disabled:cursor-not-allowed disabled:text-text-disabled hover:bg-bg-hover max-md:px-3 max-md:py-2 max-md:text-sm"
+    class="copy-btn"
   />
 </template>
 
@@ -61,10 +62,10 @@ const ariaLabel = computed(() => {
 const tooltipText = computed(() => {
   // Check if disabled due to plugin
   if (isPluginItem.value) {
-    return 'This configuration is provided by a plugin and cannot be copied';
+    return 'Plugin config cannot be copied';
   }
   // Default tooltip
-  return 'Copy this configuration to another project or user-level';
+  return 'Copy to another project';
 });
 
 // Handle button click
@@ -74,3 +75,13 @@ const handleClick = () => {
   }
 };
 </script>
+
+<style scoped>
+/* Copy Button - Match View button hover styles */
+.copy-btn:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+</style>
