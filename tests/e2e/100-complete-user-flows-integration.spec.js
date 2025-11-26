@@ -118,14 +118,15 @@ test.describe('100.001: E2E Integration: Complete User Flows', () => {
 
     // STEP 1: Load dashboard
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    // Wait for project cards to appear (Dashboard uses grid layout, not .project-grid class)
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // Verify dashboard loaded (User card + project card)
     const projectCards = page.locator('.project-card');
     expect(await projectCards.count()).toBeGreaterThanOrEqual(1); // FIX 7: flexible card count
 
-    // Find project card (skip User card if present)
-    const projectCard = projectCards.nth(1);
+    // Find project card by text content (more reliable than nth selector)
+    const projectCard = page.locator('.project-card:has-text("E2E Test App")');
     await expect(projectCard).toBeVisible();
     await expect(projectCard).toContainText('E2E Test App');
 
@@ -135,44 +136,44 @@ test.describe('100.001: E2E Integration: Complete User Flows', () => {
     await page.waitForURL(/\/project\/homeuserprojectse2eapp/, { timeout: 10000 });
 
     // STEP 3: Verify project detail page loads
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    // ConfigPageLayout uses ConfigPanel with .agents-panel class
+    await page.waitForSelector('.agents-panel', { timeout: 10000 });
 
-    // FIX 4: Update navigation from breadcrumbs to .breadcrumbs
-    const breadcrumbs = page.locator('.breadcrumbs');
+    // PrimeVue uses .p-breadcrumb for breadcrumbs
+    const breadcrumbs = page.locator('.p-breadcrumb');
     await expect(breadcrumbs).toBeVisible();
 
-    // Verify all configuration cards are visible
-    const cards = page.locator('.config-card');
-    expect(await cards.count()).toBeGreaterThanOrEqual(4); // FIX 7: flexible count
+    // Verify all configuration panels are visible
+    const panels = page.locator('.config-panel');
+    expect(await panels.count()).toBeGreaterThanOrEqual(4); // FIX 7: flexible count
 
     // STEP 4: Click "View Details" on agent card to open sidebar
-    const agentCard = page.locator('.config-card.agents-card');
-    await expect(agentCard).toBeVisible();
+    const agentPanel = page.locator('.agents-panel');
+    await expect(agentPanel).toBeVisible();
 
     // Wait for agent data to load
     await page.waitForTimeout(500);
 
     // Find the first agent item and click its view-details-btn
-    const firstAgentItem = agentCard.locator('.config-item').first();
-    const viewDetailsButton = firstAgentItem.locator('.view-details-btn');
+    const firstAgentItem = agentPanel.locator('.config-item-card').first();
+    const viewDetailsButton = firstAgentItem.locator('button:has-text("View")');
     await expect(viewDetailsButton).toBeVisible();
     await viewDetailsButton.click();
 
     // STEP 5: Verify sidebar opens with agent content
-    // ProjectDetail component uses .sidebar class for the sidebar container
-    const sidebar = page.locator('.sidebar');
+    // PrimeVue uses .p-drawer for the sidebar container
+    const sidebar = page.locator('.p-drawer');
     await expect(sidebar).toBeVisible({ timeout: 5000 });
 
-    const sidebarTitle = page.locator('.sidebar-header-title');
-    await expect(sidebarTitle).toContainText('backend-architect');
+    // The title is in the drawer header (PrimeVue Drawer structure)
+    await expect(sidebar).toContainText('backend-architect');
 
-    // Verify content is rendered
-    const sidebarContent = page.locator('.sidebar-content');
-    await expect(sidebarContent).toBeVisible();
+    // Verify metadata section is visible
+    await expect(sidebar).toContainText('Metadata');
 
     // STEP 6: Close sidebar
-    // ProjectDetail component uses .close-btn for the close button
-    const closeButton = page.locator('.close-btn');
+    // PrimeVue Drawer uses button with aria-label for close
+    const closeButton = page.locator('button[aria-label="Close sidebar"]');
     await expect(closeButton).toBeVisible();
     await closeButton.click();
 
@@ -180,12 +181,12 @@ test.describe('100.001: E2E Integration: Complete User Flows', () => {
     await expect(sidebar).not.toBeVisible();
 
     // STEP 7: Navigate back to dashboard via breadcrumb link
-    const dashboardLink = page.locator('.breadcrumb-link');
+    const dashboardLink = page.locator('.p-breadcrumb .breadcrumb-link');
     await dashboardLink.click();
     await page.waitForURL('/');
 
     // Verify we're back on dashboard
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
     const projectCardsAfterReturn = page.locator('.project-card');
     expect(await projectCardsAfterReturn.count()).toBeGreaterThanOrEqual(1);
   });
@@ -253,7 +254,7 @@ test.describe('100.001: E2E Integration: Complete User Flows', () => {
 
     // STEP 1: Load dashboard
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // STEP 2: Click User Configuration card (first card on dashboard)
     const userCard = page.locator('.user-card');
@@ -262,44 +263,44 @@ test.describe('100.001: E2E Integration: Complete User Flows', () => {
 
     // STEP 3: Verify user view loads (FIX 2: /user route instead of user-view.html)
     await page.waitForURL(/\/user/, { timeout: 10000 });
-    // UserGlobal component uses .user-global container (not .project-detail)
-    await page.waitForSelector('.user-global', { timeout: 10000 });
+    // UserGlobal also uses ConfigPageLayout with ConfigPanel
+    await page.waitForSelector('.agents-panel', { timeout: 10000 });
 
-    // FIX 4: Update navigation from breadcrumbs to .breadcrumbs
-    const breadcrumbs = page.locator('.breadcrumbs');
+    // PrimeVue uses .p-breadcrumb for breadcrumbs
+    const breadcrumbs = page.locator('.p-breadcrumb');
     await expect(breadcrumbs).toBeVisible();
 
-    // Verify all configuration cards are present
-    const cards = page.locator('.config-card');
-    expect(await cards.count()).toBeGreaterThanOrEqual(4); // FIX 7: flexible count
+    // Verify all configuration panels are present
+    const panels = page.locator('.config-panel');
+    expect(await panels.count()).toBeGreaterThanOrEqual(4); // FIX 7: flexible count
 
     // STEP 4: Click "View Details" on user agent
     await page.waitForTimeout(1000); // Wait for agents to load
 
-    const agentCard = page.locator('.config-card.agents-card');
-    const agentItem = agentCard.locator('.config-item').first();
+    const agentPanel = page.locator('.agents-panel');
+    const agentItem = agentPanel.locator('.config-item-card').first();
     await expect(agentItem).toBeVisible();
 
-    // Click the view-details-btn within the agent item
-    const viewDetailsBtn = agentItem.locator('.view-details-btn');
+    // Click the view button within the agent item
+    const viewDetailsBtn = agentItem.locator('button:has-text("View")');
     await viewDetailsBtn.click();
 
     // STEP 5: Verify sidebar opens with user config
-    // UserGlobal component uses .sidebar class for the sidebar container
-    const sidebar = page.locator('.sidebar');
+    // PrimeVue uses .p-drawer for the sidebar container
+    const sidebar = page.locator('.p-drawer');
     await expect(sidebar).toBeVisible({ timeout: 10000 });
 
-    const sidebarTitle = page.locator('.sidebar-header-title');
-    await expect(sidebarTitle).toContainText('global-qa-specialist');
+    // The title is in the drawer header (PrimeVue Drawer structure)
+    await expect(sidebar).toContainText('global-qa-specialist');
 
     // STEP 6: Close sidebar and navigate back
-    const closeButton = page.locator('.close-btn');
+    const closeButton = page.locator('button[aria-label="Close sidebar"]');
     await closeButton.click();
     await page.waitForTimeout(300);
     await expect(sidebar).not.toBeVisible();
 
     // Navigate back to dashboard via breadcrumb link
-    const dashboardLink = page.locator('.breadcrumb-link');
+    const dashboardLink = page.locator('.p-breadcrumb .breadcrumb-link');
     await dashboardLink.click();
     await page.waitForURL('/');
   });
@@ -405,23 +406,23 @@ test.describe('100.002: E2E Integration: Interactive Features', () => {
 
     // Navigate to project (FIX 2: /project/:id instead of /project-detail.html?id=X)
     await page.goto('/project/copyproject');
-    await page.waitForSelector('.config-card.agents-card', { timeout: 10000 });
+    await page.waitForSelector('.agents-panel', { timeout: 10000 });
 
     // Wait for agents to load
     await page.waitForTimeout(500);
 
     // Open sidebar (FIX 3: update selector to use correct class names)
-    const agentCard = page.locator('.config-card.agents-card');
-    const firstAgentItem = agentCard.locator('.config-item').first();
-    const viewDetailsButton = firstAgentItem.locator('.view-details-btn');
+    const agentPanel = page.locator('.agents-panel');
+    const firstAgentItem = agentPanel.locator('.config-item-card').first();
+    const viewDetailsButton = firstAgentItem.locator('button:has-text("View")');
     await viewDetailsButton.click();
 
-    // ProjectDetail component uses .sidebar class for the sidebar container
-    const sidebar = page.locator('.sidebar');
+    // PrimeVue uses .p-drawer for the sidebar container
+    const sidebar = page.locator('.p-drawer');
     await expect(sidebar).toBeVisible({ timeout: 5000 });
 
     // Click copy button (use specific selector since there are multiple .action-btn elements)
-    const copyButton = page.locator('.copy-action-btn');
+    const copyButton = page.locator('.p-drawer .copy-action-btn');
     await expect(copyButton).toBeVisible();
     await copyButton.click();
 
@@ -527,22 +528,22 @@ test.describe('100.002: E2E Integration: Interactive Features', () => {
 
     // Navigate to project
     await page.goto('/project/keyboardproject');
-    await page.waitForSelector('.config-card.agents-card', { timeout: 10000 });
+    await page.waitForSelector('.agents-panel', { timeout: 10000 });
     await page.waitForTimeout(500);
 
     // Open sidebar
-    const agentCard = page.locator('.config-card.agents-card');
-    const firstAgentItem = agentCard.locator('.config-item').first();
-    const viewDetailsButton = firstAgentItem.locator('.view-details-btn');
+    const agentPanel = page.locator('.agents-panel');
+    const firstAgentItem = agentPanel.locator('.config-item-card').first();
+    const viewDetailsButton = firstAgentItem.locator('button:has-text("View")');
     await viewDetailsButton.click();
 
-    // ProjectDetail component uses .sidebar class for the sidebar container
-    const sidebar = page.locator('.sidebar');
+    // PrimeVue uses .p-drawer for the sidebar container
+    const sidebar = page.locator('.p-drawer');
     await expect(sidebar).toBeVisible({ timeout: 5000 });
 
     // Note: Phase 2 component doesn't implement Escape key handler yet
     // Use close button instead as the primary closing mechanism
-    const closeButton = page.locator('.close-btn');
+    const closeButton = page.locator('button[aria-label="Close sidebar"]');
     await closeButton.click();
 
     // Verify sidebar closes - wait for animation to complete
@@ -653,28 +654,26 @@ test.describe('100.003: E2E Integration: API Integration Points', () => {
 
     // Navigate to project
     await page.goto('/project/warningproject');
-    // Wait for the main project view to load first
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    // Wait for the main project view to load - wait for config panels
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Wait for loading to complete
     await page.waitForTimeout(1000);
 
-    // Verify warning banner appears
-    // Note: In Phase 2, warning banner shows in v-else-if block (line 30 of ProjectDetail.vue)
-    // When warnings exist, config cards are hidden (they're in the v-else block)
-    const warningBanner = page.locator('.warning-banner');
+    // Verify warning banner appears (PrimeVue Message component with severity="warn")
+    const warningBanner = page.locator('.p-message');
     await expect(warningBanner).toBeVisible({ timeout: 5000 });
 
-    // Verify warning count (warnings from agents endpoint)
-    const warningHeader = page.locator('.warning-header');
-    await expect(warningHeader).toContainText('Warning');
+    // Verify warning count and text
+    await expect(warningBanner).toContainText('Warning');
 
-    // Verify warning messages are displayed
-    const warningList = page.locator('.warning-list li');
-    expect(await warningList.count()).toBeGreaterThanOrEqual(1);
+    // Verify warning messages are displayed in the list
+    const warningItems = page.locator('.p-message li');
+    expect(await warningItems.count()).toBeGreaterThanOrEqual(1);
 
-    // Note: Config cards are NOT visible when warnings are present (v-else structure)
-    // This is expected behavior in Phase 2 component structure
+    // Config panels should still be visible with warnings (not hidden in PrimeVue structure)
+    const configPanels = page.locator('.config-panel');
+    expect(await configPanels.count()).toBeGreaterThanOrEqual(4);
   });
 
   /**
@@ -746,27 +745,27 @@ test.describe('100.003: E2E Integration: API Integration Points', () => {
 
     // Navigate to project
     await page.goto('/project/emptyproject');
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Wait for all cards to load
     await page.waitForTimeout(1000);
 
-    // Verify all cards show empty states
-    const agentEmptyState = page.locator('.config-card.agents-card .empty-state');
-    await expect(agentEmptyState).toBeVisible();
-    await expect(agentEmptyState).toContainText('No subagents configured');
+    // Verify all panels show empty states (ConfigPanel shows empty state text in panel content)
+    const agentsPanel = page.locator('.config-panel.agents-panel');
+    await expect(agentsPanel).toBeVisible();
+    await expect(agentsPanel).toContainText('No subagents configured');
 
-    const commandEmptyState = page.locator('.config-card.commands-card .empty-state');
-    await expect(commandEmptyState).toBeVisible();
-    await expect(commandEmptyState).toContainText('No slash commands configured');
+    const commandsPanel = page.locator('.config-panel.commands-panel');
+    await expect(commandsPanel).toBeVisible();
+    await expect(commandsPanel).toContainText('No slash commands configured');
 
-    const hookEmptyState = page.locator('.config-card.hooks-card .empty-state');
-    await expect(hookEmptyState).toBeVisible();
-    await expect(hookEmptyState).toContainText('No hooks configured');
+    const hooksPanel = page.locator('.config-panel.hooks-panel');
+    await expect(hooksPanel).toBeVisible();
+    await expect(hooksPanel).toContainText('No hooks configured');
 
-    const mcpEmptyState = page.locator('.config-card.mcp-card .empty-state');
-    await expect(mcpEmptyState).toBeVisible();
-    await expect(mcpEmptyState).toContainText('No MCP servers configured');
+    const mcpPanel = page.locator('.config-panel.mcp-panel');
+    await expect(mcpPanel).toBeVisible();
+    await expect(mcpPanel).toContainText('No MCP servers configured');
   });
 });
 
@@ -843,15 +842,15 @@ test.describe('100.004: E2E Integration: Error Handling & Recovery', () => {
     // Dashboard shows "Error Loading Projects" header with dynamic error message
     await expect(errorState).toContainText('Error Loading Projects');
 
-    // Click retry button (FIX 3: .retry-btn selector)
+    // Click retry button
     const retryButton = page.locator('.retry-btn');
     await expect(retryButton).toBeVisible();
     await retryButton.click();
 
-    // Verify projects load successfully after retry
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
-    // Use filter to find project by name instead of nth(1) which may be unreliable
-    const projectCard = page.locator('.project-card', { has: page.locator(':text("Recovery Project")') });
+    // Verify projects load successfully after retry - wait for project cards to appear
+    await page.waitForSelector('.project-card', { timeout: 10000 });
+    // Find the specific project card by name
+    const projectCard = page.locator('.project-card:has-text("Recovery Project")');
     await expect(projectCard).toBeVisible();
     await expect(projectCard).toContainText('Recovery Project');
   });
@@ -923,25 +922,24 @@ test.describe('100.004: E2E Integration: Error Handling & Recovery', () => {
       });
     });
 
-    // Navigate with invalid project ID (FIX 2: /project/:id route)
+    // Navigate with invalid project ID
     await page.goto('/project/nonexistentproject');
 
-    // Wait for page to load
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    // Wait for page to load - check for either config panels OR error state
+    // ProjectDetail component may show error state directly in the layout
+    await page.waitForTimeout(2000);
 
     // NOTE: ProjectDetail uses Promise.allSettled() for resilient loading
     // When ALL config endpoints return 404, the component shows an error state
-    // (not warnings) because the project doesn't exist. This is better UX.
-    // Verify error state appears (not warning banner)
-    const errorState = page.locator('.error-state');
-    await expect(errorState).toBeVisible({ timeout: 10000 });
+    // ConfigPageLayout's error state is shown when error prop is true
+    const errorSection = page.locator('.error-state, [class*="error"]');
+    await expect(errorSection.first()).toBeVisible({ timeout: 10000 });
 
     // Verify error message shows "Project not found"
-    await expect(errorState).toContainText('Project not found');
+    await expect(page.locator('text=Project not found')).toBeVisible();
 
-    // Verify user can navigate back to dashboard (FIX 4: .breadcrumb-link selector)
-    // Use .breadcrumb-link to target the dashboard link in breadcrumbs
-    const dashboardBreadcrumb = page.locator('.breadcrumb-link');
+    // Verify user can navigate back to dashboard via breadcrumb
+    const dashboardBreadcrumb = page.locator('.p-breadcrumb a').first();
     await dashboardBreadcrumb.click();
     await page.waitForURL('/');
 

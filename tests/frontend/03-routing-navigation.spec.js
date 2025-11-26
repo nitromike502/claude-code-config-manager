@@ -29,9 +29,10 @@ test.describe('03.001: Router Navigation and SPA Functionality', () => {
     let pageLoadCount = 0;
     page.on('load', () => pageLoadCount++);
 
-    // Click User Config link first - Phase 2: Uses span "User Configurations"
+    // Click User Config link first - Uses PrimeVue Card with user-card class
     await page.click('.user-card');
-    await page.waitForSelector('.user-info-title:has-text("User Configurations")');
+    // Wait for User Configurations page title to appear (rendered in ConfigPageLayout)
+    await page.waitForSelector('span:has-text("User Configurations")');
 
     // Click back to Dashboard via breadcrumb - should NOT cause page reload
     const initialPageLoads = pageLoadCount;
@@ -44,18 +45,20 @@ test.describe('03.001: Router Navigation and SPA Functionality', () => {
 
   test('03.001.003: should navigate to UserGlobal view', async ({ page }) => {
     await page.click('.user-card');
-    // Phase 2: User page uses span "User Configurations", not h1
-    await page.waitForSelector('.user-info-title:has-text("User Configurations")');
+    // Wait for User Configurations page title to appear (rendered in ConfigPageLayout)
+    await page.waitForSelector('span:has-text("User Configurations")');
     await expect(page).toHaveURL(/\/user/);
   });
 
   test('03.001.004: should navigate to ProjectDetail with route params', async ({ page }) => {
     // Navigate directly to project detail
     await page.goto('http://localhost:5173/project/test-project-123');
-    // Phase 2: Project detail uses .project-info-bar, not h1
-    await page.waitForSelector('.project-info-bar');
-    // Project name is derived from ID, so we expect to see "test-project-123" in the title
-    await expect(page.locator('.project-info-title')).toContainText('test-project-123');
+    // Wait for page to load - ConfigPageLayout renders page title
+    await page.waitForLoadState('networkidle');
+    // Project name is derived from ID, so we expect to see "test-project-123" in the page title
+    // ConfigPageLayout renders title in a div with font-semibold and flex items-center
+    // Look for the page title section specifically (not breadcrumb)
+    await expect(page.locator('.flex.items-center.gap-3 span:has-text("test-project-123")')).toBeVisible();
   });
 
   test('03.001.005: should update URL when navigating via router-link', async ({ page }) => {
@@ -64,12 +67,12 @@ test.describe('03.001: Router Navigation and SPA Functionality', () => {
 
     // Click User Config link
     await page.click('.user-card');
-    // Phase 2: User page uses span "User Configurations"
-    await page.waitForSelector('.user-info-title:has-text("User Configurations")');
+    // Wait for User Configurations page title to appear
+    await page.waitForSelector('span:has-text("User Configurations")');
     expect(page.url()).toContain('/user');
 
-    // Click back to Dashboard
-    await page.click('a[href="/"]');
+    // Click back to Dashboard via breadcrumb link
+    await page.click('.breadcrumb-link');
     // Phase 2: Dashboard uses h2 "Projects"
     await page.waitForSelector('h2:has-text("Projects")');
     expect(page.url()).not.toContain('/user');
@@ -78,8 +81,8 @@ test.describe('03.001: Router Navigation and SPA Functionality', () => {
   test('03.001.006: should support browser back button', async ({ page }) => {
     // Navigate through multiple routes
     await page.click('.user-card');
-    // Phase 2: User page uses span "User Configurations"
-    await page.waitForSelector('.user-info-title:has-text("User Configurations")');
+    // Wait for User Configurations page title to appear
+    await page.waitForSelector('span:has-text("User Configurations")');
 
     // Use browser back button
     await page.goBack();
@@ -100,10 +103,10 @@ test.describe('03.001: Router Navigation and SPA Functionality', () => {
 
     // Navigate multiple times
     await page.click('.user-card');
-    // Phase 2: User page uses span "User Configurations"
-    await page.waitForSelector('.user-info-title:has-text("User Configurations")');
+    // Wait for User Configurations page title to appear
+    await page.waitForSelector('span:has-text("User Configurations")');
 
-    await page.click('a[href="/"]');
+    await page.click('.breadcrumb-link');
     // Phase 2: Dashboard uses h2 "Projects"
     await page.waitForSelector('h2:has-text("Projects")');
 

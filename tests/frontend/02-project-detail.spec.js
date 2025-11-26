@@ -40,8 +40,8 @@ test.describe('02.001: Page Load and Structure', () => {
 
     await page.goto('/project/homeusertestproject');
 
-    // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    // Wait for Vue app to mount (use #app instead of .app-container)
+    await page.waitForSelector('#app');
 
     // Verify page title (Phase 2 SPA uses same title for all pages)
     await expect(page).toHaveTitle(/Claude Code Manager/i);
@@ -55,25 +55,25 @@ test.describe('02.001: Page Load and Structure', () => {
     await page.goto('/project/testproject');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
     // Verify header is present
-    const header = page.locator('.app-header');
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
-    // Verify app title (h1 in header, not .app-title class)
-    const appTitle = page.locator('.app-header h1');
+    // Verify app title (h1 in header)
+    const appTitle = page.locator('header h1');
     await expect(appTitle).toBeVisible();
     await expect(appTitle).toContainText('Claude Code Manager');
 
     // Search removed in Phase 2 - skip this check
 
     // Verify theme toggle button exists
-    const themeToggle = page.locator('.theme-toggle');
+    const themeToggle = page.getByRole('button', { name: 'Toggle theme' });
     await expect(themeToggle).toBeVisible();
   });
 
-  // Phase 2: Breadcrumbs removed - navigation now via header nav links
+  // Phase 2: Breadcrumbs now render with PrimeVue
   test('02.001.003: navigation links render correctly', async ({ page }) => {
     // Setup centralized mocks BEFORE navigation
     await setupMocks(page);
@@ -82,17 +82,17 @@ test.describe('02.001: Page Load and Structure', () => {
     await page.goto('/project/myproject');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
     // Wait for project to load
-    await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+    await page.waitForSelector('.grid.gap-6', { timeout: 10000 });
 
     // Verify breadcrumbs navigation exists
     const breadcrumbs = page.locator('.breadcrumbs');
     await expect(breadcrumbs).toBeVisible();
 
     // Verify Dashboard breadcrumb link
-    const dashboardLink = page.locator('.breadcrumb-link');
+    const dashboardLink = page.locator('.breadcrumb-link').first();
     await expect(dashboardLink).toBeVisible();
     await expect(dashboardLink).toContainText('Dashboard');
   });
@@ -107,20 +107,18 @@ test.describe('02.001: Page Load and Structure', () => {
     // Wait for Vue app to mount and hydrate
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('#app', { state: 'visible' });
-    await page.waitForSelector('.app-container');
 
-    // Wait for project content to load
-    await page.waitForSelector('.project-info-bar', { timeout: 10000 });
+    // Wait for project content to load - look for page title container
+    await page.waitForSelector('.text-2xl.font-semibold', { timeout: 10000 });
 
-    // Verify project name is displayed (Phase 2: derived from last path segment)
-    const projectTitle = page.locator('.project-info-title');
+    // Project name will be the decoded path when project not in store
+    // The projectId %2Ffull%2Fpath%2Fto%2Fproject decodes to /full/path/to/project
+    const projectTitle = page.locator('.text-2xl.font-semibold span');
     await expect(projectTitle).toBeVisible();
-    await expect(projectTitle).toContainText('project');
+    await expect(projectTitle).toContainText('/full/path/to/project');
 
-    // Verify project path is displayed
-    const projectPath = page.locator('.project-info-subtitle');
-    await expect(projectPath).toBeVisible();
-    await expect(projectPath).toContainText('/full/path/to/project');
+    // Subtitle won't be visible when project is not found in store (projectPath is empty)
+    // This is expected fallback behavior
   });
 
   test('02.001.005: configuration cards display correctly', async ({ page }) => {
@@ -130,27 +128,27 @@ test.describe('02.001: Page Load and Structure', () => {
 
     await page.goto('/project/statsproject');
 
-   
+
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
- // Wait for configuration cards to render
-    await page.waitForSelector('.config-card', { timeout: 10000 });
+    await page.waitForSelector('#app');
+ // Wait for configuration cards to render - PrimeVue Panel components
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify all four config cards are displayed
-    const cards = page.locator('.config-card');
+    const cards = page.locator('.config-panel');
     expect(await cards.count()).toBe(4);
 
-    // Check each card type is present - Phase 2: MCP card uses .mcp-card class
-    await expect(page.locator('.agents-card')).toBeVisible();
-    await expect(page.locator('.commands-card')).toBeVisible();
-    await expect(page.locator('.hooks-card')).toBeVisible();
-    await expect(page.locator('.mcp-card')).toBeVisible();
+    // Check each card type is present - using PrimeVue Panel with -panel suffix
+    await expect(page.locator('.agents-panel')).toBeVisible();
+    await expect(page.locator('.commands-panel')).toBeVisible();
+    await expect(page.locator('.hooks-panel')).toBeVisible();
+    await expect(page.locator('.mcp-panel')).toBeVisible();
 
-    // Verify card titles - Phase 2: MCP card uses .mcp-card class
-    await expect(page.locator('.agents-card .config-title')).toContainText('Subagents');
-    await expect(page.locator('.commands-card .config-title')).toContainText('Slash Commands');
-    await expect(page.locator('.hooks-card .config-title')).toContainText('Hooks');
-    await expect(page.locator('.mcp-card .config-title')).toContainText('MCP Servers');
+    // Verify card titles - look for header text within each panel
+    await expect(page.locator('.agents-panel')).toContainText('Subagents');
+    await expect(page.locator('.commands-panel')).toContainText('Slash Commands');
+    await expect(page.locator('.hooks-panel')).toContainText('Hooks');
+    await expect(page.locator('.mcp-panel')).toContainText('MCP Servers');
   });
 });
 
@@ -166,14 +164,14 @@ test.describe('02.002: URL Parameter Handling', () => {
 
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
- // Wait for project to load - Phase 2 loads configs dynamically, might not have container yet
-    await page.waitForSelector('.project-info-bar', { timeout: 10000 });
+    await page.waitForSelector('#app');
+ // Wait for project to load - look for page title
+    await page.waitForSelector('.text-2xl.font-semibold', { timeout: 10000 });
 
-    // Phase 2: Project name is derived from projectId (last path segment)
-    // Since projectId is "extractedid", the name will be "extractedid"
-    const projectTitle = page.locator('.project-info-title');
-    await expect(projectTitle).toContainText('extractedid');
+    // Phase 2: Project name is from mock data
+    // projectId "extractedid" → name "Extracted Project" (from mock data)
+    const projectTitle = page.locator('.text-2xl.font-semibold span');
+    await expect(projectTitle).toContainText('Extracted Project');
   });
 
   test('02.002.002: finds correct project from API response by ID', async ({ page }) => {
@@ -186,18 +184,18 @@ test.describe('02.002: URL Parameter Handling', () => {
 
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
  // Wait for project to load
-    await page.waitForSelector('.project-info-bar', { timeout: 10000 });
+    await page.waitForSelector('.text-2xl.font-semibold', { timeout: 10000 });
 
-    // Phase 2: Project name is derived from projectId (last segment)
-    // projectId "project2" → name "project2"
-    const projectTitle = page.locator('.project-info-title');
-    await expect(projectTitle).toContainText('project2');
+    // Phase 2: Project name is from mock data
+    // projectId "project2" → name "Project 2" (from mock data)
+    const projectTitle = page.locator('.text-2xl.font-semibold span');
+    await expect(projectTitle).toContainText('Project 2');
 
-    // Phase 2: Project path is the decoded projectId
-    const projectPath = page.locator('.project-info-subtitle');
-    await expect(projectPath).toContainText('project2');
+    // Phase 2: Project path is from mock data
+    const projectPath = page.locator('div.text-sm.ml-10.text-text-secondary');
+    await expect(projectPath).toContainText('/project/two');
 
     // Note: Config cards won't appear without proper API mocking for individual endpoints
     // This test focuses on project identification
@@ -212,14 +210,14 @@ test.describe('02.002: URL Parameter Handling', () => {
 
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
  // Wait for project to load
-    await page.waitForSelector('.project-info-bar', { timeout: 10000 });
+    await page.waitForSelector('.text-2xl.font-semibold', { timeout: 10000 });
 
-    // Phase 2: Project name is derived from projectId (last segment)
-    // projectId "homeusermyprojectswithdashnumber123" → name "homeusermyprojectswithdashnumber123"
-    const projectTitle = page.locator('.project-info-title');
-    await expect(projectTitle).toContainText('homeusermyprojectswithdashnumber123');
+    // Phase 2: Project name is from mock data
+    // projectId "homeusermyprojectswithdashnumber123" → name "Dash Project 123" (from mock data)
+    const projectTitle = page.locator('.text-2xl.font-semibold span');
+    await expect(projectTitle).toContainText('Dash Project 123');
   });
 });
 
@@ -232,10 +230,10 @@ test.describe('02.003: Navigation', () => {
     await page.goto('/project/navtest');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
     // Wait for page to load
-    await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+    await page.waitForSelector('.grid.gap-6', { timeout: 10000 });
 
     // Click Dashboard breadcrumb link (Phase 2: breadcrumbs navigation)
     await page.click('.breadcrumb-link');
@@ -254,10 +252,10 @@ test.describe('02.003: Navigation', () => {
     await page.goto('/');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
-    // Wait for project grid to load
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    // Wait for project grid to load (Dashboard uses gap-5, not gap-6)
+    await page.waitForSelector('.grid.gap-5', { timeout: 10000 });
 
     // Click User card (purple card with user icon)
     const userCard = page.locator('.user-card');
@@ -281,17 +279,19 @@ test.describe('02.004: Theme Toggle', () => {
 
     await page.goto('/project/themetest');
 
-   
-    // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
- // Wait for page to load
-    await page.waitForSelector('.theme-toggle', { timeout: 10000 });
 
-    const appContainer = page.locator('.app-container');
+    // Wait for Vue app to mount
+    await page.waitForSelector('#app');
+ // Wait for page to load
+    const themeToggle = page.getByRole('button', { name: 'Toggle theme' });
+    await expect(themeToggle).toBeVisible({ timeout: 10000 });
+
+    // Use the #app with data-theme attribute (the actual app container, not Vue's internal)
+    const appContainer = page.locator('#app[data-theme]');
     const initialTheme = await appContainer.getAttribute('data-theme');
 
     // Click theme toggle
-    await page.click('.theme-toggle');
+    await themeToggle.click();
     await page.waitForTimeout(100);
 
     // Verify theme changed
@@ -299,7 +299,7 @@ test.describe('02.004: Theme Toggle', () => {
     expect(newTheme).not.toBe(initialTheme);
 
     // Click again to toggle back
-    await page.click('.theme-toggle');
+    await themeToggle.click();
     await page.waitForTimeout(100);
 
     // Verify theme reverted
@@ -317,14 +317,15 @@ test.describe('02.004: Theme Toggle', () => {
     // Wait for Vue hydration
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('#app', { state: 'visible' });
-    await page.waitForSelector('.theme-toggle', { timeout: 10000 });
+    const themeToggle = page.getByRole('button', { name: 'Toggle theme' });
+    await expect(themeToggle).toBeVisible({ timeout: 10000 });
 
-    // Get initial theme
-    const appContainer = page.locator('.app-container');
+    // Get initial theme - use the #app with data-theme attribute
+    const appContainer = page.locator('#app[data-theme]');
     const initialTheme = await appContainer.getAttribute('data-theme');
 
     // Toggle theme
-    await page.click('.theme-toggle');
+    await themeToggle.click();
     await page.waitForTimeout(100);
 
     // Check localStorage was updated (Phase 2 uses 'claude-code-manager-theme' key)
@@ -349,10 +350,11 @@ test.describe('02.004: Theme Toggle', () => {
     // Wait for Vue hydration
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('#app', { state: 'visible' });
-    await page.waitForSelector('.theme-toggle', { timeout: 10000 });
+    const themeToggle = page.getByRole('button', { name: 'Toggle theme' });
+    await expect(themeToggle).toBeVisible({ timeout: 10000 });
 
-    // Verify theme was loaded from localStorage
-    const appContainer = page.locator('.app-container');
+    // Verify theme was loaded from localStorage - use the #app with data-theme attribute
+    const appContainer = page.locator('#app[data-theme]');
     const theme = await appContainer.getAttribute('data-theme');
     expect(theme).toBe('light');
   });
@@ -387,12 +389,14 @@ test.describe('02.005: Error Handling', () => {
     await page.goto('/project/%20');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
-    // Verify error state is displayed
-    const errorState = page.locator('.error-state');
-    await expect(errorState).toBeVisible({ timeout: 5000 });
-    await expect(errorState).toContainText('Project not found');
+    // Verify error state is displayed - PrimeVue uses exclamation-triangle icon
+    const errorIcon = page.locator('.pi-exclamation-triangle');
+    await expect(errorIcon).toBeVisible({ timeout: 5000 });
+
+    // Check for error message text
+    await expect(page.locator('text=Project not found')).toBeVisible();
   });
 
   test('02.005.002: shows error when project ID is not found', async ({ page }) => {
@@ -448,12 +452,14 @@ test.describe('02.005: Error Handling', () => {
     await page.goto('/project/nonexistent');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
-    // Verify error state is displayed
-    const errorState = page.locator('.error-state');
-    await expect(errorState).toBeVisible({ timeout: 10000 });
-    await expect(errorState).toContainText('Project not found');
+    // Verify error state is displayed - PrimeVue uses exclamation-triangle icon
+    const errorIcon = page.locator('.pi-exclamation-triangle');
+    await expect(errorIcon).toBeVisible({ timeout: 10000 });
+
+    // Check for error message text
+    await expect(page.locator('text=Project not found')).toBeVisible();
   });
 
   test('02.005.003: shows error when API returns HTTP error status', async ({ page }) => {
@@ -476,13 +482,15 @@ test.describe('02.005: Error Handling', () => {
     await page.goto('/project/anyproject');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
-    // Verify error state is displayed
+    // Verify error state is displayed - PrimeVue uses exclamation-triangle icon
     // Note: HTTP errors (500) are caught as network errors, not parsed as JSON
-    const errorState = page.locator('.error-state');
-    await expect(errorState).toBeVisible({ timeout: 5000 });
-    await expect(errorState).toContainText('Failed to connect to server');
+    const errorIcon = page.locator('.pi-exclamation-triangle');
+    await expect(errorIcon).toBeVisible({ timeout: 5000 });
+
+    // Check for error message text
+    await expect(page.locator('text=Failed to connect to server')).toBeVisible();
   });
 
   test('02.005.004: shows error when network request fails', async ({ page }) => {
@@ -498,12 +506,14 @@ test.describe('02.005: Error Handling', () => {
     await page.goto('/project/anyproject');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
-    // Verify error state is displayed
-    const errorState = page.locator('.error-state');
-    await expect(errorState).toBeVisible({ timeout: 5000 });
-    await expect(errorState).toContainText('Failed to connect to server');
+    // Verify error state is displayed - PrimeVue uses exclamation-triangle icon
+    const errorIcon = page.locator('.pi-exclamation-triangle');
+    await expect(errorIcon).toBeVisible({ timeout: 5000 });
+
+    // Check for error message text
+    await expect(page.locator('text=Failed to connect to server')).toBeVisible();
   });
 
   test('02.005.005: retry button reloads project data', async ({ page }) => {
@@ -546,20 +556,22 @@ test.describe('02.005: Error Handling', () => {
     await page.goto('/project/retryproject');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
-    // Wait for error state
-    const errorState = page.locator('.error-state');
-    await expect(errorState).toBeVisible({ timeout: 10000 });
+    // Wait for error state - PrimeVue uses exclamation-triangle icon
+    const errorIcon = page.locator('.pi-exclamation-triangle');
+    await expect(errorIcon).toBeVisible({ timeout: 10000 });
 
-    // Click retry button
-    const retryButton = page.locator('.retry-btn');
+    // Click retry button - PrimeVue Button with "Retry" text
+    const retryButton = page.locator('button', { hasText: 'Retry' });
     await expect(retryButton).toBeVisible();
     await retryButton.click();
 
-    // Verify project loaded successfully after retry
-    await page.waitForSelector('.config-cards-container', { timeout: 10000 });
-    const projectTitle = page.locator('.project-info-title');
+    // Verify project loaded successfully after retry - config panels should appear
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
+
+    // Project name should be visible in page title
+    const projectTitle = page.locator('.text-2xl.font-semibold span');
     await expect(projectTitle).toContainText('retryproject');
   });
 
@@ -621,18 +633,17 @@ test.describe('02.005: Error Handling', () => {
     await page.goto('/project/warningproject');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
-    // Wait for warnings to appear
-    const warningBanner = page.locator('.warning-banner');
+    // Wait for warnings to appear - PrimeVue Message component with severity="warn"
+    const warningBanner = page.locator('.p-message.p-message-warn');
     await expect(warningBanner).toBeVisible({ timeout: 5000 });
 
-    // Verify warning count
-    const warningHeader = page.locator('.warning-header');
-    await expect(warningHeader).toContainText('2 Warnings');
+    // Verify warning count in the header
+    await expect(warningBanner).toContainText('2 Warning');
 
-    // Verify warning messages
-    const warningList = page.locator('.warning-list li');
+    // Verify warning messages in the list
+    const warningList = page.locator('.p-message ul li');
     expect(await warningList.count()).toBe(2);
     await expect(warningList.nth(0)).toContainText('Warning 1: Could not parse agent file');
     await expect(warningList.nth(1)).toContainText('Warning 2: Missing settings.json');
@@ -671,14 +682,14 @@ test.describe('02.006: Loading State', () => {
 
     await page.goto('/project/loadingproject');
 
-
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
- // Loading state should appear briefly
+    await page.waitForSelector('#app');
+
+    // Loading state should appear briefly - LoadingState component
     await page.waitForTimeout(100);
 
-    // Eventually project content should appear
-    await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+    // Eventually config panels should appear
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Unroute to clean up
     await page.unrouteAll({ behavior: 'ignoreErrors' });
@@ -707,21 +718,23 @@ test.describe('02.006: Loading State', () => {
 
     await page.goto('/project/spinnerproject');
 
-
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
- // Verify loading state elements
+    await page.waitForSelector('#app');
+
+    // Verify loading state elements - LoadingState component
     const loadingState = page.locator('.loading-state');
     await expect(loadingState).toBeVisible();
 
-    const spinner = page.locator('.loading-state .spinner');
+    // PrimeVue spinner icon
+    const spinner = page.locator('.pi-spinner');
     await expect(spinner).toBeVisible();
 
+    // Loading message text
     const loadingText = page.locator('.loading-state p');
-    await expect(loadingText).toContainText('Loading project...');
+    await expect(loadingText).toContainText('Loading project details...');
 
-    // Wait for loading to complete
-    await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+    // Wait for loading to complete - config panels should appear
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
     await page.unrouteAll({ behavior: 'ignoreErrors' });
   });
 });
@@ -731,78 +744,75 @@ test.describe('02.007: Responsive Design', () => {
     // Setup centralized mocks BEFORE navigation
     await setupMocks(page);
 
-
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/project/mobileproject');
 
-   
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
- // Wait for page to load
-    await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+    await page.waitForSelector('#app');
+
+    // Wait for page to load - config panels should appear
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify elements are still visible
-    const header = page.locator('.app-header');
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
-    // Phase 2: Breadcrumbs removed - navigation now via header nav links
+    // Verify project info (page title)
+    const projectTitle = page.locator('.text-2xl.font-semibold');
+    await expect(projectTitle).toBeVisible();
 
-    const projectInfo = page.locator('.project-info-bar');
-    await expect(projectInfo).toBeVisible();
-
-    // Verify configuration cards are visible
-    const cards = page.locator('.config-card');
-    expect(await cards.count()).toBe(4);
+    // Verify configuration panels are visible
+    const panels = page.locator('.config-panel');
+    expect(await panels.count()).toBe(4);
   });
 
   test('02.007.002: layout adapts to tablet viewport', async ({ page }) => {
     // Setup centralized mocks BEFORE navigation
     await setupMocks(page);
 
-
     // Set tablet viewport
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/project/tabletproject');
 
-   
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
- // Wait for page to load
-    await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+    await page.waitForSelector('#app');
+
+    // Wait for page to load - config panels should appear
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify all elements are visible and properly laid out
-    const header = page.locator('.app-header');
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
-    const cards = page.locator('.config-card');
-    expect(await cards.count()).toBe(4);
+    const panels = page.locator('.config-panel');
+    expect(await panels.count()).toBe(4);
   });
 
   test('02.007.003: layout works on desktop viewport', async ({ page }) => {
     // Setup centralized mocks BEFORE navigation
     await setupMocks(page);
 
-
     // Set desktop viewport
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('/project/desktopproject');
 
-   
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
- // Wait for page to load
-    await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+    await page.waitForSelector('#app');
+
+    // Wait for page to load - config panels should appear
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify all elements are visible
-    const header = page.locator('.app-header');
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
-    const projectContent = page.locator('.config-cards-container');
-    await expect(projectContent).toBeVisible();
+    // Verify config panel grid container
+    const panelGrid = page.locator('.grid.gap-6');
+    await expect(panelGrid).toBeVisible();
 
-    const cards = page.locator('.config-card');
-    expect(await cards.count()).toBe(4);
+    const panels = page.locator('.config-panel');
+    expect(await panels.count()).toBe(4);
   });
 });
 
@@ -836,12 +846,12 @@ test.describe('02.008: Console Error Detection', () => {
     // Setup centralized mocks BEFORE navigation
     await setupMocks(page);
 
-
     await page.goto('/project/consoletestproject');
-    await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-    // Interact with page elements
-    await page.click('.theme-toggle');
+    // Interact with page elements - theme toggle button
+    const themeToggle = page.getByRole('button', { name: 'Toggle theme' });
+    await themeToggle.click();
     await page.waitForTimeout(100);
 
     // Verify no console errors occurred

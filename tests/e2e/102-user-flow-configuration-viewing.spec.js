@@ -111,7 +111,7 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
 
     // STEP 1: User selects a project from dashboard
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // nth(1) skips User card at index 0
     const projectCard = page.locator('.project-card').nth(1);
@@ -128,32 +128,32 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
 
     // Navigate to detail page (Phase 2: /project/:id instead of /project-detail.html?id=X)
     await page.waitForURL(/\/project\//, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // STEP 2-5: Verify all configuration cards are visible
-    // Note: Project name shows as ID (configproject) not friendly name due to Phase 2 route param limitation
-    const projectTitle = page.locator('.project-info-title');
-    await expect(projectTitle).toContainText('configproject');
+    // Note: Project name now resolves correctly from the store (fixed in later phases)
+    const projectTitle = page.locator('.text-2xl.font-semibold span').first();
+    await expect(projectTitle).toContainText('Configuration Project');
 
-    const cards = page.locator('.config-card');
+    const cards = page.locator('.config-panel');
     expect(await cards.count()).toBeGreaterThanOrEqual(4);
 
     // Verify each configuration type is represented
-    const agentCard = page.locator('.config-card.agents-card');
+    const agentCard = page.locator('.config-panel.agents-panel');
     await expect(agentCard).toBeVisible();
-    await expect(agentCard.locator('.config-title')).toContainText('Subagents');
+    await expect(agentCard).toContainText('Subagents');
 
-    const commandCard = page.locator('.config-card.commands-card');
+    const commandCard = page.locator('.config-panel.commands-panel');
     await expect(commandCard).toBeVisible();
-    await expect(commandCard.locator('.config-title')).toContainText('Slash Commands');
+    await expect(commandCard).toContainText('Slash Commands');
 
-    const hookCard = page.locator('.config-card.hooks-card');
+    const hookCard = page.locator('.config-panel.hooks-panel');
     await expect(hookCard).toBeVisible();
-    await expect(hookCard.locator('.config-title')).toContainText('Hooks');
+    await expect(hookCard).toContainText('Hooks');
 
-    const mcpCard = page.locator('.config-card.mcp-card');
+    const mcpCard = page.locator('.config-panel.mcp-panel');
     await expect(mcpCard).toBeVisible();
-    await expect(mcpCard.locator('.config-title')).toContainText('MCP Servers');
+    await expect(mcpCard).toContainText('MCP Servers');
 
     // STEP 6: Verify breadcrumbs navigation exists
     const breadcrumbs = page.locator('.breadcrumbs');
@@ -164,8 +164,8 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     await page.goBack();
     await page.waitForURL('/');
 
-    // Verify we're back on dashboard by checking project grid is visible
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    // Verify we're back on dashboard by checking project cards are visible
+    await page.waitForSelector('.project-card', { timeout: 10000 });
     // Verify project card exists (use filter since User card may not be present)
     const projectCardAfterReturn = page.locator('.project-card').filter({ hasText: 'Configuration Project' });
     await expect(projectCardAfterReturn).toBeVisible();
@@ -261,29 +261,29 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     }
 
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // View first project (nth(1) skips User card at index 0)
     const firstProject = page.locator('.project-card').nth(1);
     await firstProject.click();
     await page.waitForURL(/\/project\/project1/, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify first project has configuration cards displayed
-    let cards = page.locator('.config-card');
+    let cards = page.locator('.config-panel');
     expect(await cards.count()).toBeGreaterThanOrEqual(4);
 
     // Verify all card types are present
-    await expect(page.locator('.config-card.agents-card')).toBeVisible();
-    await expect(page.locator('.config-card.commands-card')).toBeVisible();
-    await expect(page.locator('.config-card.hooks-card')).toBeVisible();
-    await expect(page.locator('.config-card.mcp-card')).toBeVisible();
+    await expect(page.locator('.config-panel.agents-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.commands-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.hooks-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.mcp-panel')).toBeVisible();
 
     // Return to dashboard
     // Navigate back to dashboard using browser back button
     await page.goBack();
     await page.waitForURL('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // View second project
     // After goBack, User card may not be present (if user APIs failed/empty)
@@ -292,17 +292,17 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     const secondProject = page.locator('.project-card').filter({ hasText: 'Project Beta' });
     await secondProject.click();
     await page.waitForURL(/\/project\/project2/, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify second project has configuration cards displayed
-    cards = page.locator('.config-card');
+    cards = page.locator('.config-panel');
     expect(await cards.count()).toBeGreaterThanOrEqual(4);
 
     // Verify all card types are present
-    await expect(page.locator('.config-card.agents-card')).toBeVisible();
-    await expect(page.locator('.config-card.commands-card')).toBeVisible();
-    await expect(page.locator('.config-card.hooks-card')).toBeVisible();
-    await expect(page.locator('.config-card.mcp-card')).toBeVisible();
+    await expect(page.locator('.config-panel.agents-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.commands-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.hooks-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.mcp-panel')).toBeVisible();
   });
 
   // Test 102.001.003: project with zero configurations displays correctly
@@ -386,27 +386,27 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // Navigate to project with no configurations (nth(1) skips User card)
     await page.locator('.project-card').nth(1).click();
     await page.waitForURL(/\/project\//, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify all configuration cards are displayed (even with empty state)
-    const cards = page.locator('.config-card');
+    const cards = page.locator('.config-panel');
     expect(await cards.count()).toBeGreaterThanOrEqual(4);
 
     // Verify all card types are present
-    await expect(page.locator('.config-card.agents-card')).toBeVisible();
-    await expect(page.locator('.config-card.commands-card')).toBeVisible();
-    await expect(page.locator('.config-card.hooks-card')).toBeVisible();
-    await expect(page.locator('.config-card.mcp-card')).toBeVisible();
+    await expect(page.locator('.config-panel.agents-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.commands-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.hooks-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.mcp-panel')).toBeVisible();
 
     // Project info should still be visible
-    // Note: Project name shows as ID (emptyproject) not friendly name due to Phase 2 route param limitation
-    const projectTitle = page.locator('.project-info-title');
-    await expect(projectTitle).toContainText('emptyproject');
+    // Note: Project name now resolves correctly from the store (fixed in later phases)
+    const projectTitle = page.locator('.text-2xl.font-semibold span').first();
+    await expect(projectTitle).toContainText('Empty Project');
   });
 
   // Test 102.001.004: search functionality exists on detail page for future config filtering
@@ -490,7 +490,7 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // Click actual project (nth(1) skips User card)
     await page.locator('.project-card').nth(1).click();
@@ -500,9 +500,9 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     const breadcrumbs = page.locator('.breadcrumbs');
     await expect(breadcrumbs).toBeVisible();
 
-    // Verify project content is accessible
-    const projectContent = page.locator('.main-content');
-    await expect(projectContent).toBeVisible();
+    // Verify project config panels are accessible
+    const configPanels = page.locator('.config-panel');
+    expect(await configPanels.count()).toBeGreaterThanOrEqual(4);
   });
 
   // Test 102.001.005: project detail view maintains data integrity across navigation
@@ -586,34 +586,34 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // Navigate to detail page (nth(1) skips User card)
     await page.locator('.project-card').nth(1).click();
     await page.waitForURL(/\/project\//, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Capture initial data
-    const projectName = await page.locator('.project-info-title').textContent();
-    const projectPath = await page.locator('.project-info-subtitle').textContent();
-    const cardsCount = await page.locator('.config-card').count();
+    const projectName = await page.locator('.text-2xl.font-semibold span').first().textContent();
+    const projectPath = await page.locator('.text-sm.ml-10').first().textContent();
+    const cardsCount = await page.locator('.config-panel').count();
 
     // Navigate back
     // Navigate back to dashboard using browser back button
     await page.goBack();
     await page.waitForURL('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // Navigate to detail page again
     // After goBack, User card may not be present, so use text filter
     await page.locator('.project-card').filter({ hasText: 'Data Integrity Project' }).click();
     await page.waitForURL(/\/project\//, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify data is identical
-    const projectName2 = await page.locator('.project-info-title').textContent();
-    const projectPath2 = await page.locator('.project-info-subtitle').textContent();
-    const cardsCount2 = await page.locator('.config-card').count();
+    const projectName2 = await page.locator('.text-2xl.font-semibold span').first().textContent();
+    const projectPath2 = await page.locator('.text-sm.ml-10').first().textContent();
+    const cardsCount2 = await page.locator('.config-panel').count();
 
     expect(projectName2).toBe(projectName);
     expect(projectPath2).toBe(projectPath);
@@ -701,25 +701,25 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // Click actual project (nth(1) skips User card)
     await page.locator('.project-card').nth(1).click();
     await page.waitForURL(/\/project\//, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify each configuration card has appropriate icon (using PrimeIcons)
-    // Agents icon (in header, not empty state)
-    await expect(page.locator('.config-card.agents-card .config-header .pi-users')).toBeVisible();
+    // Agents icon (in header, not empty state) - use first() to get header icon only
+    await expect(page.locator('.config-panel.agents-panel .pi-users').first()).toBeVisible();
 
     // Commands icon
-    await expect(page.locator('.config-card.commands-card .config-header .pi-bolt')).toBeVisible();
+    await expect(page.locator('.config-panel.commands-panel .pi-bolt').first()).toBeVisible();
 
     // Hooks icon
-    await expect(page.locator('.config-card.hooks-card .config-header .pi-link')).toBeVisible();
+    await expect(page.locator('.config-panel.hooks-panel .pi-link').first()).toBeVisible();
 
     // MCP icon
-    await expect(page.locator('.config-card.mcp-card .config-header .pi-server')).toBeVisible();
+    await expect(page.locator('.config-panel.mcp-panel .pi-server').first()).toBeVisible();
   });
 
   // Test 102.001.007: project detail view handles large configuration counts
@@ -803,26 +803,26 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // Click actual project (nth(1) skips User card)
     await page.locator('.project-card').nth(1).click();
     await page.waitForURL(/\/project\//, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify all configuration cards are displayed
-    const cards = page.locator('.config-card');
+    const cards = page.locator('.config-panel');
     expect(await cards.count()).toBeGreaterThanOrEqual(4);
 
     // Verify all card types are present (even with large counts)
-    await expect(page.locator('.config-card.agents-card')).toBeVisible();
-    await expect(page.locator('.config-card.commands-card')).toBeVisible();
-    await expect(page.locator('.config-card.hooks-card')).toBeVisible();
-    await expect(page.locator('.config-card.mcp-card')).toBeVisible();
+    await expect(page.locator('.config-panel.agents-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.commands-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.hooks-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.mcp-panel')).toBeVisible();
 
-    // Verify layout isn't broken by large numbers
-    const projectContent = page.locator('.main-content');
-    await expect(projectContent).toBeVisible();
+    // Verify layout isn't broken by large numbers - check that panels are in a grid
+    const configPanels = page.locator('.config-panel');
+    expect(await configPanels.count()).toBeGreaterThanOrEqual(4);
   });
 
   // Test 102.001.008: detail view works correctly on different viewport sizes
@@ -908,12 +908,12 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     // Test mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
     await page.locator('.project-card').nth(1).click(); // Skip User card
     await page.waitForURL(/\/project\//, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-    let cards = page.locator('.config-card');
+    let cards = page.locator('.config-panel');
     expect(await cards.count()).toBeGreaterThanOrEqual(4);
     await expect(cards.first()).toBeVisible();
 
@@ -921,16 +921,16 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     // Navigate back to dashboard using browser back button
     await page.goBack();
     await page.waitForURL('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // Test tablet viewport
     await page.setViewportSize({ width: 768, height: 1024 });
     // After goBack, User card may not be present, so use text filter
     await page.locator('.project-card').filter({ hasText: 'Responsive Project' }).click();
     await page.waitForURL(/\/project\//, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-    cards = page.locator('.config-card');
+    cards = page.locator('.config-panel');
     expect(await cards.count()).toBeGreaterThanOrEqual(4);
     await expect(cards.first()).toBeVisible();
 
@@ -938,16 +938,16 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
     // Navigate back to dashboard using browser back button
     await page.goBack();
     await page.waitForURL('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // Test desktop viewport
     await page.setViewportSize({ width: 1920, height: 1080 });
     // After goBack, User card may not be present, so use text filter
     await page.locator('.project-card').filter({ hasText: 'Responsive Project' }).click();
     await page.waitForURL(/\/project\//, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-    cards = page.locator('.config-card');
+    cards = page.locator('.config-panel');
     expect(await cards.count()).toBeGreaterThanOrEqual(4);
     await expect(cards.first()).toBeVisible();
   });
@@ -1053,17 +1053,18 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
 
     // Navigate through full flow
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
     await page.locator('.project-card').nth(1).click(); // Skip User card
     await page.waitForURL(/\/project\//, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-    // Interact with page elements
-    await page.click('.theme-toggle');
+    // Interact with page elements - find theme toggle button
+    const themeToggle = page.locator('button:has-text("Dark"), button:has-text("Light")');
+    await themeToggle.click();
     await page.waitForTimeout(100);
 
     // Verify configuration cards exist
-    const cards = page.locator('.config-card');
+    const cards = page.locator('.config-panel');
     expect(await cards.count()).toBeGreaterThanOrEqual(1);
 
     // Navigate back

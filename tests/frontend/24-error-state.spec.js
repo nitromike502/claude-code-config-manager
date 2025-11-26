@@ -42,7 +42,8 @@ test.describe('ErrorState Component', () => {
 
     const message = errorState.locator('p')
     await expect(message).toBeVisible()
-    await expect(message).toContainText('error')
+    // API client formats error as "HTTP 500: Internal Server Error"
+    await expect(message).toContainText('Error')
   })
 
   test('displays error icon correctly', async ({ page }) => {
@@ -85,9 +86,9 @@ test.describe('ErrorState Component', () => {
     const title = errorState.locator('h3')
     await expect(title).toHaveText('Error Loading Projects')
 
-    // Verify message
+    // Verify message - API client formats errors as "HTTP 500: Internal Server Error"
     const message = errorState.locator('p')
-    await expect(message).toContainText('Failed to load projects')
+    await expect(message).toContainText('HTTP 500: Internal Server Error')
   })
 
   test('shows retry button when retryText is provided', async ({ page }) => {
@@ -170,8 +171,9 @@ test.describe('ErrorState Component', () => {
     const errorState = page.locator('.error-state')
     const retryButton = errorState.locator('button', { hasText: 'Retry' })
 
-    // Check for retry icon (pi-refresh)
-    const buttonIcon = retryButton.locator('i.pi-refresh')
+    // Check for retry icon (pi-refresh) - PrimeVue Button may render as span or i
+    // Just check that the button has an element with pi-refresh class
+    const buttonIcon = retryButton.locator('.pi-refresh')
     await expect(buttonIcon).toBeVisible()
   })
 

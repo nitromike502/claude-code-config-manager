@@ -97,8 +97,8 @@ test.describe('300.001: Visual Regression - Dashboard', () => {
 
     await page.goto('/');
 
-    // Wait for projects to load (including User card and project cards)
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    // Wait for projects to load (Dashboard h2 heading)
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Take full page screenshot
     await expect(page).toHaveScreenshot('dashboard-with-projects.png', {
@@ -274,8 +274,8 @@ test.describe('300.001: Visual Regression - Dashboard', () => {
 
     await page.goto('/');
 
-    // Wait for page to load (project grid will be empty or show only User card)
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    // Wait for page to load (Dashboard h2 heading)
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Capture empty state screenshot
     await expect(page).toHaveScreenshot('dashboard-empty-state.png', {
@@ -337,13 +337,13 @@ test.describe('300.002: Visual Regression - Dashboard Dark/Light Mode', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Ensure dark mode is active
-    const html = page.locator('html');
-    const theme = await html.getAttribute('data-theme');
+    const appContainer = page.locator('#app[data-theme]');
+    const theme = await appContainer.getAttribute('data-theme');
     if (theme !== 'dark') {
-      await page.click('.theme-toggle');
+      await page.click('button[aria-label="Toggle theme"]');
       await page.waitForTimeout(200);
     }
 
@@ -404,13 +404,13 @@ test.describe('300.002: Visual Regression - Dashboard Dark/Light Mode', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Switch to light mode
-    const html = page.locator('html');
-    const theme = await html.getAttribute('data-theme');
+    const appContainer = page.locator('#app[data-theme]');
+    const theme = await appContainer.getAttribute('data-theme');
     if (theme !== 'light') {
-      await page.click('.theme-toggle');
+      await page.click('button[aria-label="Toggle theme"]');
       await page.waitForTimeout(200);
     }
 
@@ -483,7 +483,7 @@ test.describe('300.003: Visual Regression - Project Detail View', () => {
 
     // Navigate to project detail using Vue Router path
     await page.goto(`/project/${projectId}`);
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Capture full project detail page
     await expect(page).toHaveScreenshot('project-detail-view.png', {
@@ -553,7 +553,7 @@ test.describe('300.003: Visual Regression - Project Detail View', () => {
     await page.goto(`/project/${projectId}`);
 
     // Wait for warnings to be displayed (if warning banner exists)
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Capture project detail with warnings
     await expect(page).toHaveScreenshot('project-detail-with-warnings.png', {
@@ -692,13 +692,13 @@ test.describe('300.003: Visual Regression - Project Detail View', () => {
     // Navigate to non-existent project using Vue Router
     await page.goto('/project/nonexistent');
 
-    // Wait for page to finish loading (will show warnings and config cards)
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    // Wait for error state to appear (project not found shows error, not config panels)
+    await page.waitForSelector('.pi-exclamation-triangle', { timeout: 10000 });
 
     // Wait a bit for all async content to render
     await page.waitForTimeout(500);
 
-    // Capture error state (page will show empty config cards with warnings)
+    // Capture error state (page will show error state for project not found)
     await expect(page).toHaveScreenshot('project-detail-error.png', {
       fullPage: true,
       maxDiffPixels: 100
@@ -763,7 +763,7 @@ test.describe('300.004: Visual Regression - Dashboard Components', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Capture a project card (skip User card at index 0, get first project card)
     const projectCards = page.locator('.project-card');
@@ -816,10 +816,10 @@ test.describe('300.004: Visual Regression - Dashboard Components', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.app-header', { timeout: 10000 });
+    await page.waitForSelector('header', { timeout: 10000 });
 
     // Capture header component
-    const header = page.locator('.app-header');
+    const header = page.locator('header');
     await expect(header).toHaveScreenshot('header-component.png', {
       maxDiffPixels: 50
     });
@@ -879,10 +879,10 @@ test.describe('300.004: Visual Regression - Dashboard Components', () => {
 
     // Navigate to detail page using Vue Router
     await page.goto(`/project/${projectId}`);
-    await page.waitForSelector('.breadcrumbs', { timeout: 10000 });
+    await page.waitForSelector('.p-breadcrumb', { timeout: 10000 });
 
-    // Capture breadcrumbs component (Phase 2 navigation)
-    const breadcrumbs = page.locator('.breadcrumbs');
+    // Capture breadcrumbs component (Phase 2 navigation - PrimeVue component)
+    const breadcrumbs = page.locator('.p-breadcrumb');
     await expect(breadcrumbs).toHaveScreenshot('breadcrumbs-component.png', {
       maxDiffPixels: 50
     });
@@ -943,7 +943,7 @@ test.describe('300.005: Visual Regression - Responsive Design', () => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Capture mobile view
     await expect(page).toHaveScreenshot('dashboard-mobile.png', {
@@ -1004,7 +1004,7 @@ test.describe('300.005: Visual Regression - Responsive Design', () => {
     // Set tablet viewport
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Capture tablet view
     await expect(page).toHaveScreenshot('dashboard-tablet.png', {
@@ -1070,7 +1070,7 @@ test.describe('300.005: Visual Regression - Responsive Design', () => {
 
     // Navigate using Vue Router
     await page.goto(`/project/${projectId}`);
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Capture mobile detail view
     await expect(page).toHaveScreenshot('project-detail-mobile.png', {
@@ -1132,7 +1132,7 @@ test.describe('300.006: Visual Regression - Interactive States', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Hover over a project card (skip User card at index 0)
     const projectCards = page.locator('.project-card');
@@ -1189,10 +1189,10 @@ test.describe('300.006: Visual Regression - Interactive States', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.theme-toggle', { timeout: 10000 });
+    await page.waitForSelector('button[aria-label="Toggle theme"]', { timeout: 10000 });
 
     // Hover over theme toggle
-    const themeToggle = page.locator('.theme-toggle');
+    const themeToggle = page.locator('button[aria-label="Toggle theme"]');
     await themeToggle.hover();
     await page.waitForTimeout(200);
 
@@ -1256,10 +1256,10 @@ test.describe('300.006: Visual Regression - Interactive States', () => {
 
     // Navigate to detail page using Vue Router
     await page.goto(`/project/${projectId}`);
-    await page.waitForSelector('.breadcrumbs', { timeout: 10000 });
+    await page.waitForSelector('.p-breadcrumb', { timeout: 10000 });
 
-    // Hover over Dashboard breadcrumb link
-    const breadcrumbLink = page.locator('.breadcrumb-link');
+    // Hover over Dashboard breadcrumb link (PrimeVue breadcrumb uses anchor tags)
+    const breadcrumbLink = page.locator('.p-breadcrumb a');
     await breadcrumbLink.hover();
     await page.waitForTimeout(200);
 

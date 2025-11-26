@@ -20,8 +20,8 @@ test.describe('07.001: CopyButton Rendering', () => {
   test('07.001.001: renders with default props (label visible)', async ({ page }) => {
     await page.goto('/');
 
-    // Wait for dashboard to load
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    // Wait for app to load
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
     // Wait for loading to complete
     await page.waitForFunction(() => {
@@ -38,25 +38,33 @@ test.describe('07.001: CopyButton Rendering', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      // Look for copy button in config card header
-      const copyButton = page.locator('.copy-button').first();
+      // Look for copy button in config card
+      const copyButton = page.locator('.p-button.copy-btn').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
+        // Verify button is visible
         await expect(copyButton).toBeVisible();
 
-        // Copy button in ConfigCard header has showLabel=false (icon-only mode)
-        // so we just verify the button exists and has aria-label
+        // Verify button is a PrimeVue Button with copy-btn class
+        await expect(copyButton).toHaveClass(/p-button/);
+        await expect(copyButton).toHaveClass(/copy-btn/);
+
+        // Verify button has aria-label (required for accessibility)
         const ariaLabel = await copyButton.getAttribute('aria-label');
         expect(ariaLabel).toBeTruthy();
         expect(ariaLabel).toContain('Copy');
+
+        // Verify icon is present
+        const icon = copyButton.locator('.pi.pi-copy');
+        await expect(icon).toBeVisible();
       }
     }
   });
 
   test('07.001.002: renders icon (pi pi-copy)', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -72,7 +80,7 @@ test.describe('07.001: CopyButton Rendering', () => {
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
       // Look for copy button icon
-      const copyIcon = page.locator('.copy-button .pi-copy').first();
+      const copyIcon = page.locator('.p-button.copy-btn .pi-copy').first();
       const hasIcon = await copyIcon.count() > 0;
 
       if (hasIcon) {
@@ -88,7 +96,7 @@ test.describe('07.001: CopyButton Rendering', () => {
 
   test('07.001.003: renders icon-only mode when showLabel=false', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -105,7 +113,7 @@ test.describe('07.001: CopyButton Rendering', () => {
 
       // Some copy buttons may be icon-only in specific contexts
       // Check that icon is visible regardless
-      const copyButton = page.locator('.copy-button').first();
+      const copyButton = page.locator('.p-button.copy-btn').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -120,7 +128,7 @@ test.describe('07.001: CopyButton Rendering', () => {
 test.describe('07.002: CopyButton Props and Variants', () => {
   test('07.002.001: disabled state applies correctly', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -136,7 +144,7 @@ test.describe('07.002: CopyButton Props and Variants', () => {
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
       // Look for disabled copy button (plugin configurations)
-      const disabledButton = page.locator('.copy-button:disabled').first();
+      const disabledButton = page.locator('.p-button.copy-btn:disabled').first();
       const hasDisabled = await disabledButton.count() > 0;
 
       if (hasDisabled) {
@@ -157,7 +165,7 @@ test.describe('07.002: CopyButton Props and Variants', () => {
 
   test('07.002.002: configItem prop validation', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -173,7 +181,7 @@ test.describe('07.002: CopyButton Props and Variants', () => {
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
       // Find copy button
-      const copyButton = page.locator('.copy-button').first();
+      const copyButton = page.locator('.p-button.copy-btn').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -196,7 +204,7 @@ test.describe('07.002: CopyButton Props and Variants', () => {
 test.describe('07.003: CopyButton Event Handling', () => {
   test('07.003.001: emits copy-clicked event on button click', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -212,7 +220,7 @@ test.describe('07.003: CopyButton Event Handling', () => {
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
       // Find enabled copy button
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -236,7 +244,7 @@ test.describe('07.003: CopyButton Event Handling', () => {
 
   test('07.003.002: disabled button does NOT emit event', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -270,7 +278,7 @@ test.describe('07.003: CopyButton Event Handling', () => {
 
   test('07.003.003: passes configItem in event payload', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -286,7 +294,7 @@ test.describe('07.003: CopyButton Event Handling', () => {
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
       // Find enabled copy button
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -319,7 +327,7 @@ test.describe('07.003: CopyButton Event Handling', () => {
 test.describe('07.004: CopyButton Tooltips', () => {
   test('07.004.001: shows default tooltip for regular configs', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -335,7 +343,7 @@ test.describe('07.004: CopyButton Tooltips', () => {
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
       // Find enabled copy button
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -349,7 +357,7 @@ test.describe('07.004: CopyButton Tooltips', () => {
 
         if (tooltipVisible) {
           const tooltipText = await tooltip.textContent();
-          expect(tooltipText).toContain('Copy this configuration');
+          expect(tooltipText).toContain('Copy to another project');
         }
       }
     }
@@ -357,7 +365,7 @@ test.describe('07.004: CopyButton Tooltips', () => {
 
   test('07.004.002: shows plugin tooltip when disabled + location=plugin', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -373,7 +381,7 @@ test.describe('07.004: CopyButton Tooltips', () => {
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
       // Look for disabled copy button (plugin configs)
-      const disabledButton = page.locator('.copy-button:disabled').first();
+      const disabledButton = page.locator('.p-button.copy-btn:disabled').first();
       const hasDisabled = await disabledButton.count() > 0;
 
       if (hasDisabled) {
@@ -387,8 +395,7 @@ test.describe('07.004: CopyButton Tooltips', () => {
 
         if (tooltipVisible) {
           const tooltipText = await tooltip.textContent();
-          expect(tooltipText).toContain('plugin');
-          expect(tooltipText).toContain('cannot be copied');
+          expect(tooltipText).toContain('Plugin config cannot be copied');
         }
       }
     }
@@ -399,7 +406,7 @@ test.describe('07.004: CopyButton Tooltips', () => {
 test.describe('07.005: CopyButton Accessibility', () => {
   test('07.005.001: ARIA label present with config name', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -415,7 +422,7 @@ test.describe('07.005: CopyButton Accessibility', () => {
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
       // Find copy button
-      const copyButton = page.locator('.copy-button').first();
+      const copyButton = page.locator('.p-button.copy-btn').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -429,7 +436,7 @@ test.describe('07.005: CopyButton Accessibility', () => {
 
   test('07.005.002: focus indicator visible when focused', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -445,7 +452,7 @@ test.describe('07.005: CopyButton Accessibility', () => {
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
       // Find copy button
-      const copyButton = page.locator('.copy-button').first();
+      const copyButton = page.locator('.p-button.copy-btn').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -473,7 +480,7 @@ test.describe('07.005: CopyButton Accessibility', () => {
 
   test('07.005.003: keyboard accessible (Enter/Space triggers click)', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
 
     await page.waitForFunction(() => {
       const loading = document.querySelector('.loading-container');
@@ -489,7 +496,7 @@ test.describe('07.005: CopyButton Accessibility', () => {
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
       // Find enabled copy button
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {

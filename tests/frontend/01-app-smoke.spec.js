@@ -32,14 +32,14 @@ test.describe('01.001: Basic App Initialization', () => {
     await page.goto('/');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
     // Verify header is present
-    const header = page.locator('.app-header');
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
     // Verify app title is visible (h1 in header, not .app-title class)
-    const appTitle = page.locator('.app-header h1');
+    const appTitle = page.locator('header h1');
     await expect(appTitle).toBeVisible();
     await expect(appTitle).toContainText('Claude Code Manager');
   });
@@ -64,10 +64,10 @@ test.describe('01.001: Basic App Initialization', () => {
     await page.goto('/');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
-    // Verify theme toggle button exists
-    const themeToggle = page.locator('.theme-toggle');
+    // Verify theme toggle button exists (PrimeVue Button with aria-label)
+    const themeToggle = page.locator('button[aria-label="Toggle theme"]');
     await expect(themeToggle).toBeVisible();
   });
 
@@ -75,10 +75,10 @@ test.describe('01.001: Basic App Initialization', () => {
     await page.goto('/');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
-    // Verify rescan button exists (renamed from refresh in Phase 2)
-    const refreshButton = page.locator('.rescan-btn');
+    // Verify rescan button exists (PrimeVue Button with "Rescan" text)
+    const refreshButton = page.locator('button.p-button:has-text("Rescan")');
     await expect(refreshButton).toBeVisible();
     await expect(refreshButton).toContainText('Rescan');
   });
@@ -86,12 +86,12 @@ test.describe('01.001: Basic App Initialization', () => {
   test('01.001.006: Vue app mounts successfully', async ({ page }) => {
     await page.goto('/');
 
-    // Verify Vue app container is present (use .app-container to avoid duplicate #app)
-    const appDiv = page.locator('.app-container');
+    // Verify Vue app container is present (id="app" with data-theme attribute)
+    const appDiv = page.locator('#app[data-theme]');
     await expect(appDiv).toBeVisible();
 
-    // Verify content is rendered (not just empty div)
-    const content = page.locator('.main-content');
+    // Verify content is rendered (not just empty div) - main element with router-view
+    const content = page.locator('main');
     await expect(content).toBeVisible();
   });
 });
@@ -101,15 +101,15 @@ test.describe('01.002: Theme Toggle Functionality', () => {
   test('01.002.001: theme toggle changes between dark and light modes', async ({ page }) => {
     await page.goto('/');
 
-    // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    // Wait for Vue app to mount - use selector with data-theme attribute
+    await page.waitForSelector('#app[data-theme]');
 
-    // Get initial theme from app-container data-theme attribute (Phase 2 uses div not html)
-    const appContainer = page.locator('.app-container');
+    // Get initial theme from #app[data-theme] attribute
+    const appContainer = page.locator('#app[data-theme]');
     const initialTheme = await appContainer.getAttribute('data-theme');
 
-    // Click theme toggle
-    await page.click('.theme-toggle');
+    // Click theme toggle (PrimeVue Button with aria-label)
+    await page.click('button[aria-label="Toggle theme"]');
 
     // Wait for theme to change
     await page.waitForTimeout(100);
@@ -119,7 +119,7 @@ test.describe('01.002: Theme Toggle Functionality', () => {
     expect(newTheme).not.toBe(initialTheme);
 
     // Click again to toggle back
-    await page.click('.theme-toggle');
+    await page.click('button[aria-label="Toggle theme"]');
     await page.waitForTimeout(100);
 
     // Verify theme reverted
@@ -195,13 +195,13 @@ test.describe('01.004: API Integration and Error Handling', () => {
     await page.goto('/');
 
     // Wait for Vue app to mount first
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
-    // Wait for error state to appear
-    const errorState = page.locator('.error-state');
+    // Wait for error state to appear (ErrorState component uses semantic heading)
+    const errorState = page.locator('text=Error Loading Projects');
     await expect(errorState).toBeVisible({ timeout: 10000 });
 
     // Verify error message is displayed
-    await expect(errorState).toContainText('Error Loading Projects');
+    await expect(errorState).toBeVisible();
   });
 });

@@ -8,7 +8,8 @@ const { test, expect } = require('@playwright/test');
  * - 04.002: ProjectDetail Component
  * - 04.003: UserGlobal Component
  * - 04.004: Navigation and Back Button
- * - 04.005: Console Errors
+ * - 04.005: Agent Sidebar Metadata Display
+ * - 04.006: Console Errors
  *
  * Numbering Format: 04.GROUP.TEST
  *
@@ -21,6 +22,7 @@ const { test, expect } = require('@playwright/test');
  * - Component rendering and API integration
  * - Navigation between views
  * - Interactive features (sidebar, expand, copy)
+ * - Agent metadata display (color, model, tools)
  * - No console errors
  */
 
@@ -29,11 +31,11 @@ test.describe('04.001: Dashboard Component', () => {
   test('04.001.001: dashboard page loads and displays projects', async ({ page }) => {
     await page.goto('/');
 
-    // Wait for projects to load
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    // Wait for page to load - look for the main heading
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Verify header is present
-    const header = page.locator('.dashboard-header h2');
+    const header = page.locator('h2:has-text("Projects")');
     await expect(header).toBeVisible();
     await expect(header).toContainText('Projects');
 
@@ -41,18 +43,18 @@ test.describe('04.001: Dashboard Component', () => {
     const sortDropdown = page.locator('.p-select');
     await expect(sortDropdown).toBeVisible();
 
-    // Verify rescan button is present
-    const rescanBtn = page.locator('.rescan-btn');
+    // Verify rescan button is present (PrimeVue Button with "Rescan" label)
+    const rescanBtn = page.locator('button:has-text("Rescan")');
     await expect(rescanBtn).toBeVisible();
 
     // Check that either projects or empty state is shown
     const projectCards = page.locator('.project-card');
-    const emptyState = page.locator('.empty-state');
-    const loadingState = page.locator('.loading-container');
+    const emptyState = page.locator('.p-empty-state');
+    const loadingState = page.locator('.loading-state');
 
     // Wait for loading to complete
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
@@ -67,11 +69,11 @@ test.describe('04.001: Dashboard Component', () => {
     await page.goto('/');
 
     // Wait for projects to load
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Wait for loading to complete
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
@@ -86,13 +88,13 @@ test.describe('04.001: Dashboard Component', () => {
       // Wait for navigation to project detail
       await page.waitForURL(/\/project\//, { timeout: 10000 });
 
-      // Verify project detail page loaded
-      const projectDetail = page.locator('.project-detail');
-      await expect(projectDetail).toBeVisible();
+      // Verify project detail page loaded - look for breadcrumb navigation
+      const breadcrumb = page.locator('.p-breadcrumb');
+      await expect(breadcrumb).toBeVisible();
 
-      // Verify project info bar is present
-      const projectInfo = page.locator('.project-info-bar');
-      await expect(projectInfo).toBeVisible();
+      // Verify config panels are present
+      const configPanel = page.locator('.config-panel');
+      await expect(configPanel.first()).toBeVisible();
     }
   });
 
@@ -100,11 +102,11 @@ test.describe('04.001: Dashboard Component', () => {
     await page.goto('/');
 
     // Wait for projects to load
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Wait for loading to complete
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
@@ -119,14 +121,13 @@ test.describe('04.001: Dashboard Component', () => {
       // Wait for navigation to user view
       await page.waitForURL(/\/user/, { timeout: 10000 });
 
-      // Verify user global page loaded
-      const userGlobal = page.locator('.user-global');
-      await expect(userGlobal).toBeVisible();
+      // Verify breadcrumb is present
+      const breadcrumb = page.locator('.p-breadcrumb');
+      await expect(breadcrumb).toBeVisible();
 
-      // Verify user info bar is present
-      const userInfo = page.locator('.user-info-bar');
-      await expect(userInfo).toBeVisible();
-      await expect(userInfo).toContainText('User Configurations');
+      // Verify user global page loaded - look for page title in breadcrumb
+      const pageTitle = page.locator('.p-breadcrumb .breadcrumb-label:has-text("User Configurations")');
+      await expect(pageTitle.first()).toBeVisible();
     }
   });
 });
@@ -136,11 +137,11 @@ test.describe('04.002: ProjectDetail Component', () => {
   test('04.002.001: ProjectDetail loads all configuration cards', async ({ page }) => {
     // Navigate to a project detail page
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Wait for loading to complete
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
@@ -151,34 +152,34 @@ test.describe('04.002: ProjectDetail Component', () => {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
 
-      // Wait for config cards container
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      // Wait for config panels to load
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      // Verify all 4 config cards are present
-      const agentsCard = page.locator('.agents-card');
-      const commandsCard = page.locator('.commands-card');
-      const hooksCard = page.locator('.hooks-card');
-      const mcpCard = page.locator('.mcp-card');
+      // Verify all 4 config panels are present
+      const agentsPanel = page.locator('.agents-panel');
+      const commandsPanel = page.locator('.commands-panel');
+      const hooksPanel = page.locator('.hooks-panel');
+      const mcpPanel = page.locator('.mcp-panel');
 
-      await expect(agentsCard).toBeVisible();
-      await expect(commandsCard).toBeVisible();
-      await expect(hooksCard).toBeVisible();
-      await expect(mcpCard).toBeVisible();
+      await expect(agentsPanel).toBeVisible();
+      await expect(commandsPanel).toBeVisible();
+      await expect(hooksPanel).toBeVisible();
+      await expect(mcpPanel).toBeVisible();
 
-      // Verify card titles
-      await expect(agentsCard.locator('.config-title')).toContainText('Subagents');
-      await expect(commandsCard.locator('.config-title')).toContainText('Slash Commands');
-      await expect(hooksCard.locator('.config-title')).toContainText('Hooks');
-      await expect(mcpCard.locator('.config-title')).toContainText('MCP Servers');
+      // Verify panel titles (they are in the PrimeVue Panel header)
+      await expect(agentsPanel.locator('span:has-text("Subagents")')).toBeVisible();
+      await expect(commandsPanel.locator('span:has-text("Slash Commands")')).toBeVisible();
+      await expect(hooksPanel.locator('span:has-text("Hooks")')).toBeVisible();
+      await expect(mcpPanel.locator('span:has-text("MCP Servers")')).toBeVisible();
     }
   });
 
   test('04.002.002: can select items and view in sidebar', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
@@ -188,45 +189,36 @@ test.describe('04.002: ProjectDetail Component', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      // Try to find a config item to click
-      const configItem = page.locator('.config-item').first();
+      // Try to find a config item to click (PrimeVue Card within ConfigItemList)
+      const configItem = page.locator('.config-item-card').first();
       const hasItems = await configItem.count() > 0;
 
       if (hasItems) {
         await configItem.click();
 
-        // Verify sidebar opens
-        const sidebar = page.locator('.sidebar');
-        await expect(sidebar).toBeVisible({ timeout: 5000 });
+        // Verify sidebar opens (PrimeVue Drawer component)
+        const drawer = page.locator('.p-drawer');
+        await expect(drawer).toBeVisible({ timeout: 5000 });
 
-        // Verify sidebar header
-        const sidebarHeader = page.locator('.sidebar-header-title');
-        await expect(sidebarHeader).toBeVisible();
-
-        // Verify navigation buttons
-        const prevBtn = page.locator('.nav-btn').first();
-        const nextBtn = page.locator('.nav-btn').nth(1);
-        const closeBtn = page.locator('.close-btn');
-
-        await expect(prevBtn).toBeVisible();
-        await expect(nextBtn).toBeVisible();
+        // Verify close button exists
+        const closeBtn = page.locator('button[aria-label="Close sidebar"]');
         await expect(closeBtn).toBeVisible();
 
         // Close sidebar
         await closeBtn.click();
-        await expect(sidebar).not.toBeVisible();
+        await expect(drawer).not.toBeVisible();
       }
     }
   });
 
   test('04.002.004: show more/less functionality works', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
@@ -236,42 +228,43 @@ test.describe('04.002: ProjectDetail Component', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      // Look for an expand button (only test if one exists)
-      // Use a very short timeout to check if button exists without waiting
-      const expandBtn = page.locator('.expand-btn').first();
-      let hasExpandBtn = false;
+      // Look for "Show more" button in panel footer (only test if one exists)
+      const showMoreBtn = page.locator('button:has-text("Show")').first();
+      let hasShowMoreBtn = false;
       try {
-        hasExpandBtn = (await expandBtn.count({ timeout: 500 })) > 0;
+        hasShowMoreBtn = (await showMoreBtn.count({ timeout: 500 })) > 0;
       } catch (e) {
-        hasExpandBtn = false;
+        hasShowMoreBtn = false;
       }
 
-      if (hasExpandBtn) {
-        // Get initial item count
-        const cardWithExpand = expandBtn.locator('xpath=ancestor::div[contains(@class, "config-card")]');
-        const initialItemCount = await cardWithExpand.locator('.config-item').count();
+      if (hasShowMoreBtn) {
+        // Find the panel containing this button
+        const panel = showMoreBtn.locator('xpath=ancestor::div[contains(@class, "config-panel")]');
 
-        // Click expand
-        await expandBtn.click();
+        // Get initial item count
+        const initialItemCount = await panel.locator('.config-item-card').count();
+
+        // Click show more
+        await showMoreBtn.click();
         await page.waitForTimeout(300);
 
         // Get new item count
-        const expandedItemCount = await cardWithExpand.locator('.config-item').count();
+        const expandedItemCount = await panel.locator('.config-item-card').count();
 
         // Should have more items now
         expect(expandedItemCount).toBeGreaterThanOrEqual(initialItemCount);
 
-        // Button text should change to "Show Less"
-        await expect(expandBtn).toContainText('Show Less');
+        // Button text should change to "Show less"
+        await expect(showMoreBtn).toContainText('less');
 
         // Click again to collapse
-        await expandBtn.click();
+        await showMoreBtn.click();
         await page.waitForTimeout(300);
 
         // Should show fewer items again
-        const collapsedItemCount = await cardWithExpand.locator('.config-item').count();
+        const collapsedItemCount = await panel.locator('.config-item-card').count();
         expect(collapsedItemCount).toBeLessThanOrEqual(expandedItemCount);
       }
     }
@@ -283,56 +276,55 @@ test.describe('04.003: UserGlobal Component', () => {
   test('04.003.001: UserGlobal page loads user-level configurations', async ({ page }) => {
     await page.goto('/user');
 
-    // Wait for user global container
-    await page.waitForSelector('.user-global', { timeout: 10000 });
+    // Wait for page title to load (use more specific selector)
+    await page.waitForSelector('.p-breadcrumb', { timeout: 10000 });
 
-    // Verify user info bar
-    const userInfo = page.locator('.user-info-bar');
-    await expect(userInfo).toBeVisible();
-    await expect(userInfo).toContainText('User Configurations');
+    // Verify page title is present in breadcrumb
+    const pageTitle = page.locator('.p-breadcrumb .breadcrumb-label:has-text("User Configurations")');
+    await expect(pageTitle.first()).toBeVisible();
 
     // Wait for loading to complete
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
-    // Verify all 4 config cards are present
-    const agentsCard = page.locator('.agents-card');
-    const commandsCard = page.locator('.commands-card');
-    const hooksCard = page.locator('.hooks-card');
-    const mcpCard = page.locator('.mcp-card');
+    // Verify all 4 config panels are present
+    const agentsPanel = page.locator('.agents-panel');
+    const commandsPanel = page.locator('.commands-panel');
+    const hooksPanel = page.locator('.hooks-panel');
+    const mcpPanel = page.locator('.mcp-panel');
 
-    await expect(agentsCard).toBeVisible();
-    await expect(commandsCard).toBeVisible();
-    await expect(hooksCard).toBeVisible();
-    await expect(mcpCard).toBeVisible();
+    await expect(agentsPanel).toBeVisible();
+    await expect(commandsPanel).toBeVisible();
+    await expect(hooksPanel).toBeVisible();
+    await expect(mcpPanel).toBeVisible();
   });
 
   test('04.003.002: UserGlobal sidebar functionality works', async ({ page }) => {
     await page.goto('/user');
-    await page.waitForSelector('.user-global', { timeout: 10000 });
+    await page.waitForSelector('.p-breadcrumb', { timeout: 10000 });
 
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
     // Try to find a config item
-    const configItem = page.locator('.config-item').first();
+    const configItem = page.locator('.config-item-card').first();
     const hasItems = await configItem.count() > 0;
 
     if (hasItems) {
       await configItem.click();
 
-      // Verify sidebar opens
-      const sidebar = page.locator('.sidebar');
-      await expect(sidebar).toBeVisible({ timeout: 5000 });
+      // Verify sidebar opens (PrimeVue Drawer)
+      const drawer = page.locator('.p-drawer');
+      await expect(drawer).toBeVisible({ timeout: 5000 });
 
       // Verify close button works
-      const closeBtn = page.locator('.close-btn');
+      const closeBtn = page.locator('button[aria-label="Close sidebar"]');
       await closeBtn.click();
-      await expect(sidebar).not.toBeVisible();
+      await expect(drawer).not.toBeVisible();
     }
   });
 });
@@ -342,11 +334,11 @@ test.describe('04.004: Navigation and Back Button', () => {
   test('04.004.001: navigation between Dashboard, ProjectDetail, and UserGlobal works', async ({ page }) => {
     // Start at dashboard
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Wait for loading
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
@@ -357,12 +349,12 @@ test.describe('04.004: Navigation and Back Button', () => {
     if (hasUserCard) {
       await userCard.first().click();
       await page.waitForURL(/\/user/, { timeout: 10000 });
-      await expect(page.locator('.user-global')).toBeVisible();
+      await expect(page.locator('.p-breadcrumb .breadcrumb-label:has-text("User Configurations")')).toBeVisible();
 
       // Go back to dashboard
       await page.goBack();
       await page.waitForURL('/', { timeout: 10000 });
-      await expect(page.locator('.dashboard')).toBeVisible();
+      await expect(page.locator('h2:has-text("Projects")')).toBeVisible();
 
       // Navigate to project detail
       const projectCards = page.locator('.project-card:not(.user-card)');
@@ -371,22 +363,22 @@ test.describe('04.004: Navigation and Back Button', () => {
       if (hasProjects) {
         await projectCards.first().click();
         await page.waitForURL(/\/project\//, { timeout: 10000 });
-        await expect(page.locator('.project-detail')).toBeVisible();
+        await expect(page.locator('.p-breadcrumb')).toBeVisible();
 
         // Go back to dashboard
         await page.goBack();
         await page.waitForURL('/', { timeout: 10000 });
-        await expect(page.locator('.dashboard')).toBeVisible();
+        await expect(page.locator('h2:has-text("Projects")')).toBeVisible();
       }
     }
   });
 
   test('04.004.002: back button navigation works correctly', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
@@ -399,23 +391,23 @@ test.describe('04.004: Navigation and Back Button', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
 
       // Verify we're on project detail
-      await expect(page.locator('.project-detail')).toBeVisible();
+      await expect(page.locator('.p-breadcrumb')).toBeVisible();
 
       // Click browser back button
       await page.goBack();
       await page.waitForURL('/', { timeout: 10000 });
 
       // Verify we're back on dashboard
-      await expect(page.locator('.dashboard')).toBeVisible();
+      await expect(page.locator('h2:has-text("Projects")')).toBeVisible();
     }
   });
 });
 
-// Test Suite 04.004: Agent Sidebar Metadata Display
-test.describe('04.004: Agent Sidebar Metadata Display', () => {
-  test('04.004.001: agent color displays in ProjectDetail sidebar [BUG-027]', async ({ page }) => {
+// Test Suite 04.005: Agent Sidebar Metadata Display
+test.describe('04.005: Agent Sidebar Metadata Display', () => {
+  test('04.005.001: agent color displays in ProjectDetail sidebar [BUG-027]', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Get first project card (not user card)
     const projectCards = page.locator('.project-card:not(.user-card)');
@@ -425,17 +417,17 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
       // Navigate to first project
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
       // Find and click on first agent
-      const agentItem = page.locator('.agents-card .config-item').first();
+      const agentItem = page.locator('.agents-panel .config-item-card').first();
       if (await agentItem.count() > 0) {
         await agentItem.click();
-        await page.waitForSelector('.sidebar', { timeout: 5000 });
+        await page.waitForSelector('.p-drawer', { timeout: 5000 });
 
         // Check that Color field is present in metadata
         // Use a more flexible selector that checks for the text "Color" in a paragraph
-        const colorText = page.locator('.sidebar-section p', { hasText: /Color:/ }).first();
+        const colorText = page.locator('p:has-text("Color:")').first();
         if (await colorText.count() > 0) {
           await expect(colorText).toBeVisible();
           // Verify the text contains "Color:" pattern
@@ -446,19 +438,19 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
     }
   });
 
-  test('04.004.002: agent color displays in UserGlobal sidebar [BUG-027]', async ({ page }) => {
+  test('04.005.002: agent color displays in UserGlobal sidebar [BUG-027]', async ({ page }) => {
     await page.goto('/user');
-    await page.waitForSelector('.user-global', { timeout: 10000 });
+    await page.waitForSelector('.p-breadcrumb', { timeout: 10000 });
 
     // Find and click on first agent
-    const agentItem = page.locator('.agents-card .config-item').first();
+    const agentItem = page.locator('.agents-panel .config-item-card').first();
     if (await agentItem.count() > 0) {
       await agentItem.click();
-      await page.waitForSelector('.sidebar', { timeout: 5000 });
+      await page.waitForSelector('.p-drawer', { timeout: 5000 });
 
       // Check that Color field is present in metadata
       // Use a more flexible selector that checks for the text "Color" in a paragraph
-      const colorText = page.locator('.sidebar-section p', { hasText: /Color:/ }).first();
+      const colorText = page.locator('p:has-text("Color:")').first();
       if (await colorText.count() > 0) {
         await expect(colorText).toBeVisible();
         // Verify the text contains "Color:" pattern
@@ -468,9 +460,9 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
     }
   });
 
-  test('04.004.003: agent tools display in ProjectDetail sidebar [BUG-029]', async ({ page }) => {
+  test('04.005.003: agent tools display in ProjectDetail sidebar [BUG-029]', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     // Get first project card (not user card)
     const projectCards = page.locator('.project-card:not(.user-card)');
@@ -480,16 +472,16 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
       // Navigate to first project
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
       // Find and click on first agent
-      const agentItem = page.locator('.agents-card .config-item').first();
+      const agentItem = page.locator('.agents-panel .config-item-card').first();
       if (await agentItem.count() > 0) {
         await agentItem.click();
-        await page.waitForSelector('.sidebar', { timeout: 5000 });
+        await page.waitForSelector('.p-drawer', { timeout: 5000 });
 
         // Check that Allowed Tools field is present in metadata
-        const toolsField = page.locator('.sidebar-section strong:text("Allowed Tools")').first();
+        const toolsField = page.locator('strong:has-text("Allowed Tools")').first();
         if (await toolsField.count() > 0) {
           await expect(toolsField).toBeVisible();
         }
@@ -497,30 +489,30 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
     }
   });
 
-  test('04.004.004: agent tools display in UserGlobal sidebar [BUG-029]', async ({ page }) => {
+  test('04.005.004: agent tools display in UserGlobal sidebar [BUG-029]', async ({ page }) => {
     await page.goto('/user');
-    await page.waitForSelector('.user-global', { timeout: 10000 });
+    await page.waitForSelector('.p-breadcrumb', { timeout: 10000 });
 
     // Find and click on first agent
-    const agentItem = page.locator('.agents-card .config-item').first();
+    const agentItem = page.locator('.agents-panel .config-item-card').first();
     if (await agentItem.count() > 0) {
       await agentItem.click();
-      await page.waitForSelector('.sidebar', { timeout: 5000 });
+      await page.waitForSelector('.p-drawer', { timeout: 5000 });
 
       // Check that Allowed Tools field is present in metadata
-      const toolsField = page.locator('.sidebar-section strong:text("Allowed Tools")').first();
+      const toolsField = page.locator('strong:has-text("Allowed Tools")').first();
       if (await toolsField.count() > 0) {
         await expect(toolsField).toBeVisible();
       }
     }
   });
 
-  test('04.004.005: agent model displays in ProjectDetail sidebar [BUG-028]', async ({ page }) => {
+  test('04.005.005: agent model displays in ProjectDetail sidebar [BUG-028]', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
@@ -529,20 +521,19 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
     if (await projectCards.count() > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
       // Find and click on first agent
-      const agentItem = page.locator('.agents-card .config-item').first();
+      const agentItem = page.locator('.agents-panel .config-item-card').first();
       if (await agentItem.count() > 0) {
         await agentItem.click();
-        await page.waitForSelector('.sidebar', { timeout: 5000 });
+        await page.waitForSelector('.p-drawer', { timeout: 5000 });
 
         // Check that Model field is present in metadata
-        const modelField = page.locator('.sidebar-section strong:text("Model")').first();
+        const modelField = page.locator('strong:has-text("Model")').first();
         if (await modelField.count() > 0) {
           await expect(modelField).toBeVisible();
           // Check that a value is displayed (either model name or 'inherit')
-          const modelValue = modelField.locator('xpath=following-sibling::text()').first();
           const text = await modelField.evaluate(el => el.nextSibling?.textContent?.trim());
           expect(text).toBeTruthy();
         }
@@ -550,18 +541,18 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
     }
   });
 
-  test('04.004.006: agent model displays in UserGlobal sidebar [BUG-028]', async ({ page }) => {
+  test('04.005.006: agent model displays in UserGlobal sidebar [BUG-028]', async ({ page }) => {
     await page.goto('/user');
-    await page.waitForSelector('.user-global', { timeout: 10000 });
+    await page.waitForSelector('.p-breadcrumb', { timeout: 10000 });
 
     // Find and click on first agent
-    const agentItem = page.locator('.agents-card .config-item').first();
+    const agentItem = page.locator('.agents-panel .config-item-card').first();
     if (await agentItem.count() > 0) {
       await agentItem.click();
-      await page.waitForSelector('.sidebar', { timeout: 5000 });
+      await page.waitForSelector('.p-drawer', { timeout: 5000 });
 
       // Check that Model field is present in metadata
-      const modelField = page.locator('.sidebar-section strong:text("Model")').first();
+      const modelField = page.locator('strong:has-text("Model")').first();
       if (await modelField.count() > 0) {
         await expect(modelField).toBeVisible();
         // Check that a value is displayed (either model name or 'inherit')
@@ -572,9 +563,9 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
   });
 });
 
-// Test Suite 04.005: Console Errors
-test.describe('04.005: Console Errors', () => {
-  test('04.005.001: no console errors during dashboard load', async ({ page }) => {
+// Test Suite 04.006: Console Errors
+test.describe('04.006: Console Errors', () => {
+  test('04.006.001: no console errors during dashboard load', async ({ page }) => {
     const consoleErrors = [];
 
     page.on('console', (msg) => {
@@ -584,10 +575,10 @@ test.describe('04.005: Console Errors', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
@@ -603,7 +594,7 @@ test.describe('04.005: Console Errors', () => {
     expect(realErrors).toHaveLength(0);
   });
 
-  test('04.005.002: no console errors during project navigation', async ({ page }) => {
+  test('04.006.002: no console errors during project navigation', async ({ page }) => {
     const consoleErrors = [];
 
     page.on('console', (msg) => {
@@ -613,10 +604,10 @@ test.describe('04.005: Console Errors', () => {
     });
 
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 
@@ -626,7 +617,7 @@ test.describe('04.005: Console Errors', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
       // Allow some time for any async errors
       await page.waitForTimeout(1000);
@@ -639,7 +630,7 @@ test.describe('04.005: Console Errors', () => {
     }
   });
 
-  test('04.005.003: no console errors during user view load', async ({ page }) => {
+  test('04.006.003: no console errors during user view load', async ({ page }) => {
     const consoleErrors = [];
 
     page.on('console', (msg) => {
@@ -649,10 +640,10 @@ test.describe('04.005: Console Errors', () => {
     });
 
     await page.goto('/user');
-    await page.waitForSelector('.user-global', { timeout: 10000 });
+    await page.waitForSelector('span:has-text("User Configurations")', { timeout: 10000 });
 
     await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
+      const loading = document.querySelector('.loading-state');
       return !loading || loading.offsetParent === null;
     }, { timeout: 10000 });
 

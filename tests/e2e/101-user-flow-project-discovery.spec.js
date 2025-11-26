@@ -125,12 +125,12 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
 
     // Verify page loaded successfully
     await expect(page).toHaveTitle(/Claude Code Manager/i);
-    const header = page.locator('.app-header');
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
     // STEP 2: Verify projects loaded from API
-    // Wait for loading state to complete
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    // Wait for loading state to complete (grid uses Tailwind classes)
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // STEP 3: User sees project cards with statistics
     // Note: Dashboard shows User card (index 0) + project cards (index 1+)
@@ -165,31 +165,27 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
     // Verify we're on the detail page
     await expect(page).toHaveTitle(/Claude Code Manager/i);
 
-    // Verify project information loaded
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    // Verify project information loaded (ConfigPageLayout renders config-panel elements)
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-    // Project details info bar is visible
-    const projectInfoBar = page.locator('.project-info-bar');
-    await expect(projectInfoBar).toBeVisible();
-    // Note: Project name derivation from route param is a known issue in Phase 2
-    // The component receives 'homeuserprojectsmyapp' as the route param
-    // and cannot look up the original project name without accessing the projects store
-    await expect(projectInfoBar).toContainText('homeuserprojectsmyapp');
+    // Verify project name is displayed in the page title
+    const pageTitle = page.locator('span:has-text("My App")').first();
+    await expect(pageTitle).toBeVisible();
 
     // Verify breadcrumbs navigation is present
     const breadcrumbs = page.locator('.breadcrumbs');
     await expect(breadcrumbs).toBeVisible();
     await expect(breadcrumbs.locator('.breadcrumb-link')).toContainText('Dashboard');
 
-    // Verify configuration cards are visible
-    const cards = page.locator('.config-card');
-    expect(await cards.count()).toBeGreaterThanOrEqual(4);
+    // Verify configuration panels are visible (ConfigPanel uses .config-panel class)
+    const panels = page.locator('.config-panel');
+    expect(await panels.count()).toBeGreaterThanOrEqual(4);
 
-    // Verify all card types are present
-    await expect(page.locator('.config-card.agents-card')).toBeVisible();
-    await expect(page.locator('.config-card.commands-card')).toBeVisible();
-    await expect(page.locator('.config-card.hooks-card')).toBeVisible();
-    await expect(page.locator('.config-card.mcp-card')).toBeVisible();
+    // Verify all panel types are present
+    await expect(page.locator('.config-panel.agents-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.commands-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.hooks-panel')).toBeVisible();
+    await expect(page.locator('.config-panel.mcp-panel')).toBeVisible();
 
     // STEP 6: User navigates back to dashboard via breadcrumb link
     const dashboardLink = page.locator('.breadcrumb-link');
@@ -200,7 +196,7 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
     await expect(page).toHaveTitle(/Claude Code Manager/i);
 
     // Verify project cards are still visible (User card + project cards)
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
     const projectCardsAfterReturn = page.locator('.project-card');
     // May have 2 cards (if user config load failed/timed out) or 3 cards (if user config loaded)
     const cardCount = await projectCardsAfterReturn.count();
@@ -259,7 +255,8 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
     const emptyState = page.locator('.empty-state');
     await expect(emptyState).toBeVisible({ timeout: 10000 });
     await expect(emptyState).toContainText('No Projects Found');
-    await expect(emptyState).toContainText('Add projects in Claude Code and click "Rescan" to see them here.');
+    // Note: EmptyState component uses straight quotes in the message prop
+    await expect(emptyState).toContainText("Add projects in Claude Code and click 'Rescan' to see them here.");
   });
 
   // Test 101.001.003: project discovery with API errors shows helpful message
@@ -345,13 +342,13 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
 
     await page.goto('/');
 
-    // Loading state should appear briefly - use .loading-container as per Dashboard.vue
-    const loadingState = page.locator('.loading-container');
+    // Loading state should appear briefly - LoadingState component uses .loading-state class
+    const loadingState = page.locator('.loading-state');
     await expect(loadingState).toBeVisible({ timeout: 500 });
     await expect(loadingState).toContainText('Loading projects...');
 
     // Eventually projects should load
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // Loading state should be hidden
     await expect(loadingState).not.toBeVisible();
@@ -411,8 +408,8 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
     const startTime = Date.now();
     await page.goto('/');
 
-    // Wait for content to be fully loaded
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    // Wait for content to be fully loaded (project cards use Tailwind grid)
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     const loadTime = Date.now() - startTime;
 
@@ -532,7 +529,7 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
 
     // Execute full flow
     await page.goto('/');
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    await page.waitForSelector('.project-card', { timeout: 10000 });
 
     // Click actual project card (not User card at index 0)
     const projectCard = page.locator('.project-card').nth(1);
@@ -540,7 +537,7 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
 
     // Phase 2: Wait for Vue Router navigation
     await page.waitForURL(/\/project\/cleanproject/, { timeout: 10000 });
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Navigate back via breadcrumb link
     const dashboardLink = page.locator('.breadcrumb-link');
