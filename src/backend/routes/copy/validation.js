@@ -5,6 +5,76 @@
  * This approach is cleaner than Express middleware pattern for direct function calls.
  */
 
+const { pathToProjectId } = require('../../utils/pathUtils');
+
+/**
+ * Extract project ID from a source file path
+ * Source paths look like: /home/user/project/.claude/agents/foo.md
+ * User paths look like: /home/user/.claude/agents/foo.md
+ *
+ * @param {string} sourcePath - Path to source file
+ * @returns {string|null} - Project ID or null for user-scope sources
+ */
+function extractProjectIdFromPath(sourcePath) {
+  if (!sourcePath || typeof sourcePath !== 'string') {
+    return null;
+  }
+
+  // Find .claude/ in the path - everything before it is the project path
+  const claudeIndex = sourcePath.indexOf('/.claude/');
+  if (claudeIndex === -1) {
+    return null;
+  }
+
+  const projectPath = sourcePath.substring(0, claudeIndex);
+
+  // Check if this looks like a user-level path (ends with home dir)
+  // User paths are typically ~/.claude/ which expands to /home/user/.claude/
+  // Project paths have something after the home dir like /home/user/project/.claude/
+  const homeDir = process.env.HOME || require('os').homedir();
+  if (projectPath === homeDir) {
+    // This is a user-scope source, not a project
+    return null;
+  }
+
+  return pathToProjectId(projectPath);
+}
+
+/**
+ * Validate that source and target are not the same location
+ * Prevents copying a config to itself
+ *
+ * @param {Object} body - Request body
+ * @param {string} body.sourcePath - Source file path
+ * @param {string} body.targetScope - Target scope ('user' or 'project')
+ * @param {string} body.targetProjectId - Target project ID
+ * @returns {object|null} - Returns error object if same-project copy, null if valid
+ */
+function validateNotSameProject(body) {
+  const { sourcePath, targetScope, targetProjectId } = body;
+
+  // If sourcePath doesn't contain .claude/, we can't determine the source location
+  // This shouldn't happen in real usage, but allow it for backwards compatibility
+  if (!sourcePath || !sourcePath.includes('/.claude/')) {
+    return null;
+  }
+
+  // Extract source project ID from path
+  const sourceProjectId = extractProjectIdFromPath(sourcePath);
+
+  // Case 1: Source is user-scope (path is ~/.claude/...), target is user-scope → same location
+  if (sourceProjectId === null && targetScope === 'user') {
+    return { error: 'Cannot copy configuration to the same location (User Global to User Global)' };
+  }
+
+  // Case 2: Source is project-scope, target is same project
+  if (sourceProjectId !== null && targetScope === 'project' && sourceProjectId === targetProjectId) {
+    return { error: 'Cannot copy configuration to the same project' };
+  }
+
+  return null; // Different locations - valid
+}
+
 /**
  * Validate copy request parameters for file-based copies (agent, command)
  * @param {object} body - Request body
@@ -129,5 +199,7 @@ function validateMcpParams(body) {
 module.exports = {
   validateCopyParams,
   validateHookParams,
-  validateMcpParams
+  validateMcpParams,
+  validateNotSameProject,
+  extractProjectIdFromPath
 };

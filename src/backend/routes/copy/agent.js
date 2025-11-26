@@ -1,5 +1,5 @@
 const copyService = require('../../services/copy-service');
-const { validateCopyParams } = require('./validation');
+const { validateCopyParams, validateNotSameProject } = require('./validation');
 
 /**
  * POST /api/copy/agent
@@ -23,6 +23,15 @@ async function copyAgent(req, res) {
     return res.status(400).json({
       success: false,
       ...validationError
+    });
+  }
+
+  // 1b. Validate source and target are different (prevent same-project copy)
+  const sameProjectError = validateNotSameProject(req.body);
+  if (sameProjectError) {
+    return res.status(400).json({
+      success: false,
+      ...sameProjectError
     });
   }
 

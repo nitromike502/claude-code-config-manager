@@ -9,7 +9,8 @@
     appendTo="body"
     class="copy-modal"
     :pt="{
-      root: { style: `width: ${modalWidth}; max-width: ${modalMaxWidth}` },
+      root: { style: `width: ${modalWidth}; max-width: ${modalMaxWidth}; max-height: 90vh; display: flex; flex-direction: column;` },
+      content: { style: 'flex: 1; overflow: hidden; display: flex; flex-direction: column;' },
       mask: { style: 'background-color: var(--overlay-modal-mask)' }
     }"
     @hide="handleDialogHide"
@@ -22,7 +23,7 @@
     </template>
 
     <!-- 2-Column Layout Container -->
-    <div class="flex gap-6 min-h-96 max-h-screen w-full">
+    <div class="copy-modal-content flex gap-6 w-full">
       <!-- Left Column: Source Configuration -->
       <div class="flex-none w-2/5 flex flex-col min-w-0">
         <h3 class="text-base font-semibold text-text-emphasis m-0 mb-4 uppercase tracking-wider">Source</h3>
@@ -55,8 +56,9 @@
       <div class="flex-1 w-3/5 flex flex-col">
         <h3 class="text-base font-semibold text-text-emphasis m-0 mb-4 uppercase tracking-wider">Target</h3>
         <div class="flex-1 overflow-y-auto flex flex-col gap-3 pr-2 destinations-container">
-          <!-- User Global Card -->
+          <!-- User Global Card (hidden when source is from User Global) -->
           <Card
+            v-if="!isSourceUserGlobal"
             :class="{ 'selected': selectedDestination?.id === 'user-global' }"
             :pt="{
               root: { class: 'destination-card' },
@@ -212,8 +214,22 @@ const isVisible = computed({
   }
 });
 
-// Use projects from store instead of mock data
-const mockProjects = computed(() => projectsStore.projects);
+// Check if source is from User Global (no projectId means user-global)
+const isSourceUserGlobal = computed(() => !props.sourceConfig?.projectId);
+
+// Use projects from store, filtering out the source project (can't copy to self)
+const availableProjects = computed(() => {
+  const sourceProjectId = props.sourceConfig?.projectId;
+  if (!sourceProjectId) {
+    // Source is user-global, show all projects
+    return projectsStore.projects;
+  }
+  // Filter out the source project from target list
+  return projectsStore.projects.filter(project => project.id !== sourceProjectId);
+});
+
+// Backwards-compatible alias (used in template)
+const mockProjects = availableProjects;
 
 // Get icon for configuration type
 const getTypeIcon = (type) => {
@@ -329,6 +345,13 @@ const handleButtonCopy = async (destination) => {
 </script>
 
 <style scoped>
+/* Modal Content Layout - Fill container height with internal scrolling */
+.copy-modal-content {
+  flex: 1;
+  min-height: 0; /* Allow flex item to shrink below content size */
+  overflow: hidden;
+}
+
 /* Config Type Badges - Keep for styling */
 .config-type {
   display: inline-flex;
@@ -424,6 +447,7 @@ const handleButtonCopy = async (destination) => {
 :deep(.p-dialog-mask) {
   background-color: var(--overlay-modal-mask);
 }
+
 
 /* Close Button Styling */
 :deep(.p-dialog-header-close) {
