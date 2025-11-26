@@ -6,32 +6,32 @@
 
       <!-- Page Info Bar -->
       <div class="mb-8">
-        <div class="flex items-center gap-3 text-2xl font-semibold mb-2" style="color: var(--text-primary)">
+        <div class="flex items-center gap-3 text-2xl font-semibold mb-2 text-text-primary">
           <i :class="pageIcon" class="text-[1.75rem]" :style="{ color: pageIconColor }"></i>
           <span>{{ pageTitle }}</span>
         </div>
-        <div v-if="pageSubtitle" class="text-sm ml-10" style="color: var(--text-secondary)">{{ pageSubtitle }}</div>
+        <div v-if="pageSubtitle" class="text-sm ml-10 text-text-secondary">{{ pageSubtitle }}</div>
       </div>
 
       <!-- Loading State -->
       <LoadingState v-if="loading" :message="loadingMessage" />
 
       <!-- Error State -->
-      <div v-else-if="error" class="text-center py-12 px-4 rounded-lg mt-8" style="background: var(--bg-secondary); border: 1px solid var(--border-primary)">
-        <i class="pi pi-exclamation-triangle text-5xl mb-4" style="color: var(--color-error)"></i>
-        <p class="text-base mb-6" style="color: var(--text-primary)">{{ errorMessage }}</p>
+      <div v-else-if="error" class="text-center py-12 px-4 rounded-lg mt-8 bg-bg-secondary border border-border-primary">
+        <i class="pi pi-exclamation-triangle text-5xl mb-4 text-error"></i>
+        <p class="text-base mb-6 text-text-primary">{{ errorMessage }}</p>
         <Button @click="$emit('retry')" label="Retry" icon="pi pi-refresh" severity="danger" />
       </div>
 
       <!-- Content Area (warnings + config panels) -->
       <div v-else>
         <!-- Warning Banner -->
-        <div v-if="warnings.length > 0" class="rounded-lg p-4 md:p-6 mb-6" style="background: var(--color-warning-bg); border: 1px solid var(--color-warning)">
-          <div class="flex items-center gap-3 font-semibold mb-2" style="color: var(--color-warning)">
+        <div v-if="warnings.length > 0" class="rounded-lg p-4 md:p-6 mb-6 bg-warning-bg border border-warning">
+          <div class="flex items-center gap-3 font-semibold mb-2 text-warning">
             <i class="pi pi-exclamation-circle text-xl"></i>
             <span>{{ warnings.length }} Warning{{ warnings.length > 1 ? 's' : '' }}</span>
           </div>
-          <ul class="list-disc ml-8" style="color: var(--color-warning)">
+          <ul class="list-disc ml-8 text-warning">
             <li v-for="(warning, index) in warnings" :key="index" class="my-1 text-sm">
               <template v-if="typeof warning === 'string'">{{ warning }}</template>
               <template v-else>{{ warning.message || warning }}</template>

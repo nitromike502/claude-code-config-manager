@@ -9,7 +9,7 @@
   >
     <template #header>
       <div class="flex items-center gap-2 text-xl font-semibold">
-        <i class="pi pi-exclamation-triangle text-2xl" style="color: var(--color-warning)"></i>
+        <i class="pi pi-exclamation-triangle text-2xl text-warning"></i>
         <span>File Already Exists</span>
       </div>
     </template>
@@ -83,7 +83,6 @@
           'bg-hover border-primary shadow-primary-focus': selectedStrategy === option.value,
           'border-border-primary hover:bg-hover hover:border-primary': selectedStrategy !== option.value
         }"
-        :style="{ borderColor: selectedStrategy === option.value ? 'var(--color-primary)' : 'var(--border-primary)' }"
       >
         <RadioButton
           :id="option.value"
@@ -93,19 +92,18 @@
         />
         <div class="flex-1 flex flex-col gap-2">
           <label :for="option.value" class="flex items-center gap-2 cursor-pointer font-semibold text-base">
-            <i :class="option.icon" :style="option.color ? { color: option.color } : {}"></i>
+            <i :class="[option.icon, option.value === 'overwrite' ? 'text-warning' : '']"></i>
             <span>{{ option.label }}</span>
           </label>
           <p
             class="m-0 text-sm leading-6"
-            :class="option.value === 'overwrite' ? 'text-warning' : 'text-secondary'"
-            :style="option.value === 'overwrite' ? { color: 'var(--color-warning)' } : { color: 'var(--text-secondary)' }"
+            :class="option.value === 'overwrite' ? 'text-warning' : 'text-text-secondary'"
           >
             {{ option.description }}
           </p>
-          <p v-if="option.value === 'rename' && selectedStrategy === 'rename'" class="mt-2 mb-0 p-2 rounded flex items-center gap-2 text-sm" style="background: var(--bg-primary); border-left: 3px solid var(--color-primary)">
-            <i class="pi pi-arrow-right" style="color: var(--color-primary)"></i>
-            Will copy as: <strong style="color: var(--color-primary)">{{ renamedFilename }}</strong>
+          <p v-if="option.value === 'rename' && selectedStrategy === 'rename'" class="mt-2 mb-0 p-2 rounded flex items-center gap-2 text-sm bg-bg-primary border-l-[3px] border-primary">
+            <i class="pi pi-arrow-right text-primary"></i>
+            Will copy as: <strong class="text-primary">{{ renamedFilename }}</strong>
           </p>
         </div>
       </div>
@@ -170,22 +168,19 @@ const options = [
     value: 'skip',
     label: "Skip - Don't copy this file",
     description: 'The file will not be copied. Target file remains unchanged.',
-    icon: 'pi pi-times-circle',
-    color: null
+    icon: 'pi pi-times-circle'
   },
   {
     value: 'overwrite',
     label: 'Overwrite - Replace target file',
     description: '⚠️ Warning: This will permanently delete the target file and replace it with the source file.',
-    icon: 'pi pi-exclamation-triangle',
-    color: 'var(--color-warning)'
+    icon: 'pi pi-exclamation-triangle'
   },
   {
     value: 'rename',
     label: 'Rename - Copy with new name',
     description: 'The file will be copied with a new name to avoid conflict.',
-    icon: 'pi pi-file',
-    color: null
+    icon: 'pi pi-file'
   }
 ]
 

@@ -17,7 +17,7 @@
   >
     <template #header>
       <div class="flex items-center gap-3 text-xl font-semibold text-text-emphasis">
-        <i class="pi pi-copy" style="color: var(--color-primary)"></i>
+        <i class="pi pi-copy text-primary"></i>
         <span>Copy Configuration</span>
       </div>
     </template>
