@@ -21,7 +21,7 @@ test.describe('07.001: CopyButton Rendering', () => {
     await page.goto('/');
 
     // Wait for app to load
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
     // Wait for loading to complete
     await page.waitForFunction(() => {
@@ -38,18 +38,26 @@ test.describe('07.001: CopyButton Rendering', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      // Look for copy button in config card header
+      // Look for copy button in config card
       const copyButton = page.locator('.p-button.copy-btn').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
+        // Verify button is visible
         await expect(copyButton).toBeVisible();
 
-        // Copy button in ConfigCard header has showLabel=false (icon-only mode)
-        // so we just verify the button exists and has aria-label
+        // Verify button is a PrimeVue Button with copy-btn class
+        await expect(copyButton).toHaveClass(/p-button/);
+        await expect(copyButton).toHaveClass(/copy-btn/);
+
+        // Verify button has aria-label (required for accessibility)
         const ariaLabel = await copyButton.getAttribute('aria-label');
         expect(ariaLabel).toBeTruthy();
         expect(ariaLabel).toContain('Copy');
+
+        // Verify icon is present
+        const icon = copyButton.locator('.pi.pi-copy');
+        await expect(icon).toBeVisible();
       }
     }
   });
