@@ -24,17 +24,19 @@ test.describe('UI Performance Tests', () => {
     // Wait for projects to load (exclude user card)
     await page.waitForSelector('.project-card:not(.user-card)', { timeout: 5000 });
 
-    // Click first actual project View button
-    await page.click('.project-card:not(.user-card) .view-btn');
+    // Click first actual project card to navigate
+    await page.locator('.project-card:not(.user-card)').first().click();
 
     // Wait for project detail page to load
     await page.waitForURL(/\/project\/.+/);
-    await page.waitForSelector('.config-card', { timeout: 5000 });
+
+    // Wait for config panels to load (use ConfigPanel component class)
+    await page.waitForSelector('.config-panel', { timeout: 5000 });
   });
 
   test('[Test 11.001.001] Modal animation performance - open and close (target: <300ms each)', async ({ page }) => {
     // Find a copy button (prefer agent for consistency)
-    const copyButton = page.locator('.copy-button').first();
+    const copyButton = page.locator('.copy-btn').first();
 
     // Ensure button is visible and ready
     await expect(copyButton).toBeVisible();
@@ -97,7 +99,7 @@ test.describe('UI Performance Tests', () => {
     });
 
     // Trigger copy operation
-    const copyButton = page.locator('.copy-button').first();
+    const copyButton = page.locator('.copy-btn').first();
     await copyButton.click();
 
     // Wait for modal
@@ -198,7 +200,7 @@ test.describe('UI Performance Tests', () => {
     console.log(`   Initial agent count: ${initialAgentCards}`);
 
     // Trigger copy operation
-    const copyButton = page.locator('.copy-button').first();
+    const copyButton = page.locator('.copy-btn').first();
     await copyButton.click();
 
     // Wait for modal
@@ -239,7 +241,7 @@ test.describe('UI Performance Tests', () => {
   });
 
   test('[Test 11.001.004] Copy button click response time (target: <100ms)', async ({ page }) => {
-    const copyButton = page.locator('.copy-button').first();
+    const copyButton = page.locator('.copy-btn').first();
     await expect(copyButton).toBeVisible();
 
     // Measure time from click to modal visible
@@ -284,7 +286,7 @@ test.describe('UI Performance Tests', () => {
     });
 
     // Trigger copy operation
-    const copyButton = page.locator('.copy-button').first();
+    const copyButton = page.locator('.copy-btn').first();
     await copyButton.click();
 
     // Wait for modal
