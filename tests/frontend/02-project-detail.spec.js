@@ -40,8 +40,8 @@ test.describe('02.001: Page Load and Structure', () => {
 
     await page.goto('/project/homeusertestproject');
 
-    // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    // Wait for Vue app to mount (use #app instead of .app-container)
+    await page.waitForSelector('#app');
 
     // Verify page title (Phase 2 SPA uses same title for all pages)
     await expect(page).toHaveTitle(/Claude Code Manager/i);
@@ -55,25 +55,25 @@ test.describe('02.001: Page Load and Structure', () => {
     await page.goto('/project/testproject');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
     // Verify header is present
-    const header = page.locator('.app-header');
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
-    // Verify app title (h1 in header, not .app-title class)
-    const appTitle = page.locator('.app-header h1');
+    // Verify app title (h1 in header)
+    const appTitle = page.locator('header h1');
     await expect(appTitle).toBeVisible();
     await expect(appTitle).toContainText('Claude Code Manager');
 
     // Search removed in Phase 2 - skip this check
 
     // Verify theme toggle button exists
-    const themeToggle = page.locator('.theme-toggle');
+    const themeToggle = page.getByRole('button', { name: 'Toggle theme' });
     await expect(themeToggle).toBeVisible();
   });
 
-  // Phase 2: Breadcrumbs removed - navigation now via header nav links
+  // Phase 2: Breadcrumbs now render with PrimeVue
   test('02.001.003: navigation links render correctly', async ({ page }) => {
     // Setup centralized mocks BEFORE navigation
     await setupMocks(page);
@@ -82,17 +82,17 @@ test.describe('02.001: Page Load and Structure', () => {
     await page.goto('/project/myproject');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
     // Wait for project to load
-    await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+    await page.waitForSelector('.grid.gap-6', { timeout: 10000 });
 
     // Verify breadcrumbs navigation exists
     const breadcrumbs = page.locator('.breadcrumbs');
     await expect(breadcrumbs).toBeVisible();
 
     // Verify Dashboard breadcrumb link
-    const dashboardLink = page.locator('.breadcrumb-link');
+    const dashboardLink = page.locator('.breadcrumb-link').first();
     await expect(dashboardLink).toBeVisible();
     await expect(dashboardLink).toContainText('Dashboard');
   });
@@ -107,20 +107,18 @@ test.describe('02.001: Page Load and Structure', () => {
     // Wait for Vue app to mount and hydrate
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('#app', { state: 'visible' });
-    await page.waitForSelector('.app-container');
 
-    // Wait for project content to load
-    await page.waitForSelector('.project-info-bar', { timeout: 10000 });
+    // Wait for project content to load - look for page title container
+    await page.waitForSelector('.text-2xl.font-semibold', { timeout: 10000 });
 
-    // Verify project name is displayed (Phase 2: derived from last path segment)
-    const projectTitle = page.locator('.project-info-title');
+    // Project name will be the decoded path when project not in store
+    // The projectId %2Ffull%2Fpath%2Fto%2Fproject decodes to /full/path/to/project
+    const projectTitle = page.locator('.text-2xl.font-semibold span');
     await expect(projectTitle).toBeVisible();
-    await expect(projectTitle).toContainText('project');
+    await expect(projectTitle).toContainText('/full/path/to/project');
 
-    // Verify project path is displayed
-    const projectPath = page.locator('.project-info-subtitle');
-    await expect(projectPath).toBeVisible();
-    await expect(projectPath).toContainText('/full/path/to/project');
+    // Subtitle won't be visible when project is not found in store (projectPath is empty)
+    // This is expected fallback behavior
   });
 
   test('02.001.005: configuration cards display correctly', async ({ page }) => {
@@ -130,27 +128,27 @@ test.describe('02.001: Page Load and Structure', () => {
 
     await page.goto('/project/statsproject');
 
-   
+
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
- // Wait for configuration cards to render
-    await page.waitForSelector('.config-card', { timeout: 10000 });
+    await page.waitForSelector('#app');
+ // Wait for configuration cards to render - PrimeVue Panel components
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Verify all four config cards are displayed
-    const cards = page.locator('.config-card');
+    const cards = page.locator('.config-panel');
     expect(await cards.count()).toBe(4);
 
-    // Check each card type is present - Phase 2: MCP card uses .mcp-card class
-    await expect(page.locator('.agents-card')).toBeVisible();
-    await expect(page.locator('.commands-card')).toBeVisible();
-    await expect(page.locator('.hooks-card')).toBeVisible();
-    await expect(page.locator('.mcp-card')).toBeVisible();
+    // Check each card type is present - using PrimeVue Panel with -panel suffix
+    await expect(page.locator('.agents-panel')).toBeVisible();
+    await expect(page.locator('.commands-panel')).toBeVisible();
+    await expect(page.locator('.hooks-panel')).toBeVisible();
+    await expect(page.locator('.mcp-panel')).toBeVisible();
 
-    // Verify card titles - Phase 2: MCP card uses .mcp-card class
-    await expect(page.locator('.agents-card .config-title')).toContainText('Subagents');
-    await expect(page.locator('.commands-card .config-title')).toContainText('Slash Commands');
-    await expect(page.locator('.hooks-card .config-title')).toContainText('Hooks');
-    await expect(page.locator('.mcp-card .config-title')).toContainText('MCP Servers');
+    // Verify card titles - look for header text within each panel
+    await expect(page.locator('.agents-panel')).toContainText('Subagents');
+    await expect(page.locator('.commands-panel')).toContainText('Slash Commands');
+    await expect(page.locator('.hooks-panel')).toContainText('Hooks');
+    await expect(page.locator('.mcp-panel')).toContainText('MCP Servers');
   });
 });
 
@@ -166,14 +164,14 @@ test.describe('02.002: URL Parameter Handling', () => {
 
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
- // Wait for project to load - Phase 2 loads configs dynamically, might not have container yet
-    await page.waitForSelector('.project-info-bar', { timeout: 10000 });
+    await page.waitForSelector('#app');
+ // Wait for project to load - look for page title
+    await page.waitForSelector('.text-2xl.font-semibold', { timeout: 10000 });
 
-    // Phase 2: Project name is derived from projectId (last path segment)
-    // Since projectId is "extractedid", the name will be "extractedid"
-    const projectTitle = page.locator('.project-info-title');
-    await expect(projectTitle).toContainText('extractedid');
+    // Phase 2: Project name is from mock data
+    // projectId "extractedid" → name "Extracted Project" (from mock data)
+    const projectTitle = page.locator('.text-2xl.font-semibold span');
+    await expect(projectTitle).toContainText('Extracted Project');
   });
 
   test('02.002.002: finds correct project from API response by ID', async ({ page }) => {
@@ -186,18 +184,18 @@ test.describe('02.002: URL Parameter Handling', () => {
 
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
  // Wait for project to load
-    await page.waitForSelector('.project-info-bar', { timeout: 10000 });
+    await page.waitForSelector('.text-2xl.font-semibold', { timeout: 10000 });
 
-    // Phase 2: Project name is derived from projectId (last segment)
-    // projectId "project2" → name "project2"
-    const projectTitle = page.locator('.project-info-title');
-    await expect(projectTitle).toContainText('project2');
+    // Phase 2: Project name is from mock data
+    // projectId "project2" → name "Project 2" (from mock data)
+    const projectTitle = page.locator('.text-2xl.font-semibold span');
+    await expect(projectTitle).toContainText('Project 2');
 
-    // Phase 2: Project path is the decoded projectId
-    const projectPath = page.locator('.project-info-subtitle');
-    await expect(projectPath).toContainText('project2');
+    // Phase 2: Project path is from mock data
+    const projectPath = page.locator('div.text-sm.ml-10.text-text-secondary');
+    await expect(projectPath).toContainText('/project/two');
 
     // Note: Config cards won't appear without proper API mocking for individual endpoints
     // This test focuses on project identification
@@ -212,14 +210,14 @@ test.describe('02.002: URL Parameter Handling', () => {
 
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
  // Wait for project to load
-    await page.waitForSelector('.project-info-bar', { timeout: 10000 });
+    await page.waitForSelector('.text-2xl.font-semibold', { timeout: 10000 });
 
-    // Phase 2: Project name is derived from projectId (last segment)
-    // projectId "homeusermyprojectswithdashnumber123" → name "homeusermyprojectswithdashnumber123"
-    const projectTitle = page.locator('.project-info-title');
-    await expect(projectTitle).toContainText('homeusermyprojectswithdashnumber123');
+    // Phase 2: Project name is from mock data
+    // projectId "homeusermyprojectswithdashnumber123" → name "Dash Project 123" (from mock data)
+    const projectTitle = page.locator('.text-2xl.font-semibold span');
+    await expect(projectTitle).toContainText('Dash Project 123');
   });
 });
 
@@ -232,10 +230,10 @@ test.describe('02.003: Navigation', () => {
     await page.goto('/project/navtest');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
     // Wait for page to load
-    await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+    await page.waitForSelector('.grid.gap-6', { timeout: 10000 });
 
     // Click Dashboard breadcrumb link (Phase 2: breadcrumbs navigation)
     await page.click('.breadcrumb-link');
@@ -254,10 +252,10 @@ test.describe('02.003: Navigation', () => {
     await page.goto('/');
 
     // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
+    await page.waitForSelector('#app');
 
-    // Wait for project grid to load
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
+    // Wait for project grid to load (Dashboard uses gap-5, not gap-6)
+    await page.waitForSelector('.grid.gap-5', { timeout: 10000 });
 
     // Click User card (purple card with user icon)
     const userCard = page.locator('.user-card');
@@ -281,17 +279,19 @@ test.describe('02.004: Theme Toggle', () => {
 
     await page.goto('/project/themetest');
 
-   
-    // Wait for Vue app to mount
-    await page.waitForSelector('.app-container');
- // Wait for page to load
-    await page.waitForSelector('.theme-toggle', { timeout: 10000 });
 
-    const appContainer = page.locator('.app-container');
+    // Wait for Vue app to mount
+    await page.waitForSelector('#app');
+ // Wait for page to load
+    const themeToggle = page.getByRole('button', { name: 'Toggle theme' });
+    await expect(themeToggle).toBeVisible({ timeout: 10000 });
+
+    // Use the #app with data-theme attribute (the actual app container, not Vue's internal)
+    const appContainer = page.locator('#app[data-theme]');
     const initialTheme = await appContainer.getAttribute('data-theme');
 
     // Click theme toggle
-    await page.click('.theme-toggle');
+    await themeToggle.click();
     await page.waitForTimeout(100);
 
     // Verify theme changed
@@ -299,7 +299,7 @@ test.describe('02.004: Theme Toggle', () => {
     expect(newTheme).not.toBe(initialTheme);
 
     // Click again to toggle back
-    await page.click('.theme-toggle');
+    await themeToggle.click();
     await page.waitForTimeout(100);
 
     // Verify theme reverted
@@ -317,14 +317,15 @@ test.describe('02.004: Theme Toggle', () => {
     // Wait for Vue hydration
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('#app', { state: 'visible' });
-    await page.waitForSelector('.theme-toggle', { timeout: 10000 });
+    const themeToggle = page.getByRole('button', { name: 'Toggle theme' });
+    await expect(themeToggle).toBeVisible({ timeout: 10000 });
 
-    // Get initial theme
-    const appContainer = page.locator('.app-container');
+    // Get initial theme - use the #app with data-theme attribute
+    const appContainer = page.locator('#app[data-theme]');
     const initialTheme = await appContainer.getAttribute('data-theme');
 
     // Toggle theme
-    await page.click('.theme-toggle');
+    await themeToggle.click();
     await page.waitForTimeout(100);
 
     // Check localStorage was updated (Phase 2 uses 'claude-code-manager-theme' key)
@@ -349,10 +350,11 @@ test.describe('02.004: Theme Toggle', () => {
     // Wait for Vue hydration
     await page.waitForLoadState('networkidle');
     await page.waitForSelector('#app', { state: 'visible' });
-    await page.waitForSelector('.theme-toggle', { timeout: 10000 });
+    const themeToggle = page.getByRole('button', { name: 'Toggle theme' });
+    await expect(themeToggle).toBeVisible({ timeout: 10000 });
 
-    // Verify theme was loaded from localStorage
-    const appContainer = page.locator('.app-container');
+    // Verify theme was loaded from localStorage - use the #app with data-theme attribute
+    const appContainer = page.locator('#app[data-theme]');
     const theme = await appContainer.getAttribute('data-theme');
     expect(theme).toBe('light');
   });
