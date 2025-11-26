@@ -18,8 +18,8 @@ test.describe('23.001: Pinia Store Integration', () => {
 
   test('23.001.001: should have all stores registered', async ({ page }) => {
     // At minimum, the app should load without errors
-    // Use #app which is the Vue app container
-    const appElement = page.locator('#app')
+    // Use #app[data-theme] to target the correct Vue app container (not the mount point)
+    const appElement = page.locator('#app[data-theme]')
     await expect(appElement).toBeVisible()
   })
 
@@ -28,8 +28,8 @@ test.describe('23.001: Pinia Store Integration', () => {
     const themeToggle = page.locator('button[aria-label="Toggle theme"]')
     await expect(themeToggle).toBeVisible()
 
-    // Get initial theme from #app data-theme attribute
-    const appContainer = page.locator('#app')
+    // Get initial theme from #app[data-theme] attribute (Vue creates two #app elements)
+    const appContainer = page.locator('#app[data-theme]')
     const initialTheme = await appContainer.getAttribute('data-theme')
 
     // Click toggle
@@ -64,8 +64,8 @@ test.describe('23.001: Pinia Store Integration', () => {
     await page.reload()
     await page.waitForLoadState('networkidle')
 
-    // Verify theme persisted on #app data-theme attribute
-    const appContainer = page.locator('#app')
+    // Verify theme persisted on #app[data-theme] attribute (Vue creates two #app elements)
+    const appContainer = page.locator('#app[data-theme]')
     const persistedTheme = await appContainer.getAttribute('data-theme')
 
     expect(persistedTheme).toBe(currentTheme)
