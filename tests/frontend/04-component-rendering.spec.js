@@ -8,7 +8,8 @@ const { test, expect } = require('@playwright/test');
  * - 04.002: ProjectDetail Component
  * - 04.003: UserGlobal Component
  * - 04.004: Navigation and Back Button
- * - 04.005: Console Errors
+ * - 04.005: Agent Sidebar Metadata Display
+ * - 04.006: Console Errors
  *
  * Numbering Format: 04.GROUP.TEST
  *
@@ -21,6 +22,7 @@ const { test, expect } = require('@playwright/test');
  * - Component rendering and API integration
  * - Navigation between views
  * - Interactive features (sidebar, expand, copy)
+ * - Agent metadata display (color, model, tools)
  * - No console errors
  */
 
@@ -347,7 +349,7 @@ test.describe('04.004: Navigation and Back Button', () => {
     if (hasUserCard) {
       await userCard.first().click();
       await page.waitForURL(/\/user/, { timeout: 10000 });
-      await expect(page.locator('span:has-text("User Configurations")')).toBeVisible();
+      await expect(page.locator('.p-breadcrumb .breadcrumb-label:has-text("User Configurations")')).toBeVisible();
 
       // Go back to dashboard
       await page.goBack();
@@ -401,9 +403,9 @@ test.describe('04.004: Navigation and Back Button', () => {
   });
 });
 
-// Test Suite 04.004: Agent Sidebar Metadata Display
-test.describe('04.004: Agent Sidebar Metadata Display', () => {
-  test('04.004.001: agent color displays in ProjectDetail sidebar [BUG-027]', async ({ page }) => {
+// Test Suite 04.005: Agent Sidebar Metadata Display
+test.describe('04.005: Agent Sidebar Metadata Display', () => {
+  test('04.005.001: agent color displays in ProjectDetail sidebar [BUG-027]', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
@@ -436,7 +438,7 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
     }
   });
 
-  test('04.004.002: agent color displays in UserGlobal sidebar [BUG-027]', async ({ page }) => {
+  test('04.005.002: agent color displays in UserGlobal sidebar [BUG-027]', async ({ page }) => {
     await page.goto('/user');
     await page.waitForSelector('.p-breadcrumb', { timeout: 10000 });
 
@@ -458,7 +460,7 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
     }
   });
 
-  test('04.004.003: agent tools display in ProjectDetail sidebar [BUG-029]', async ({ page }) => {
+  test('04.005.003: agent tools display in ProjectDetail sidebar [BUG-029]', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
@@ -487,7 +489,7 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
     }
   });
 
-  test('04.004.004: agent tools display in UserGlobal sidebar [BUG-029]', async ({ page }) => {
+  test('04.005.004: agent tools display in UserGlobal sidebar [BUG-029]', async ({ page }) => {
     await page.goto('/user');
     await page.waitForSelector('.p-breadcrumb', { timeout: 10000 });
 
@@ -505,7 +507,7 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
     }
   });
 
-  test('04.004.005: agent model displays in ProjectDetail sidebar [BUG-028]', async ({ page }) => {
+  test('04.005.005: agent model displays in ProjectDetail sidebar [BUG-028]', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
@@ -539,7 +541,7 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
     }
   });
 
-  test('04.004.006: agent model displays in UserGlobal sidebar [BUG-028]', async ({ page }) => {
+  test('04.005.006: agent model displays in UserGlobal sidebar [BUG-028]', async ({ page }) => {
     await page.goto('/user');
     await page.waitForSelector('.p-breadcrumb', { timeout: 10000 });
 
@@ -561,9 +563,9 @@ test.describe('04.004: Agent Sidebar Metadata Display', () => {
   });
 });
 
-// Test Suite 04.005: Console Errors
-test.describe('04.005: Console Errors', () => {
-  test('04.005.001: no console errors during dashboard load', async ({ page }) => {
+// Test Suite 04.006: Console Errors
+test.describe('04.006: Console Errors', () => {
+  test('04.006.001: no console errors during dashboard load', async ({ page }) => {
     const consoleErrors = [];
 
     page.on('console', (msg) => {
@@ -592,7 +594,7 @@ test.describe('04.005: Console Errors', () => {
     expect(realErrors).toHaveLength(0);
   });
 
-  test('04.005.002: no console errors during project navigation', async ({ page }) => {
+  test('04.006.002: no console errors during project navigation', async ({ page }) => {
     const consoleErrors = [];
 
     page.on('console', (msg) => {
@@ -628,7 +630,7 @@ test.describe('04.005: Console Errors', () => {
     }
   });
 
-  test('04.005.003: no console errors during user view load', async ({ page }) => {
+  test('04.006.003: no console errors during user view load', async ({ page }) => {
     const consoleErrors = [];
 
     page.on('console', (msg) => {
