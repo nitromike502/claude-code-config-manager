@@ -654,28 +654,26 @@ test.describe('100.003: E2E Integration: API Integration Points', () => {
 
     // Navigate to project
     await page.goto('/project/warningproject');
-    // Wait for the main project view to load first
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    // Wait for the main project view to load - wait for config panels
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Wait for loading to complete
     await page.waitForTimeout(1000);
 
-    // Verify warning banner appears
-    // Note: In Phase 2, warning banner shows in v-else-if block (line 30 of ProjectDetail.vue)
-    // When warnings exist, config cards are hidden (they're in the v-else block)
-    const warningBanner = page.locator('.warning-banner');
+    // Verify warning banner appears (PrimeVue Message component with severity="warn")
+    const warningBanner = page.locator('.p-message');
     await expect(warningBanner).toBeVisible({ timeout: 5000 });
 
-    // Verify warning count (warnings from agents endpoint)
-    const warningHeader = page.locator('.warning-header');
-    await expect(warningHeader).toContainText('Warning');
+    // Verify warning count and text
+    await expect(warningBanner).toContainText('Warning');
 
-    // Verify warning messages are displayed
-    const warningList = page.locator('.warning-list li');
-    expect(await warningList.count()).toBeGreaterThanOrEqual(1);
+    // Verify warning messages are displayed in the list
+    const warningItems = page.locator('.p-message li');
+    expect(await warningItems.count()).toBeGreaterThanOrEqual(1);
 
-    // Note: Config cards are NOT visible when warnings are present (v-else structure)
-    // This is expected behavior in Phase 2 component structure
+    // Config panels should still be visible with warnings (not hidden in PrimeVue structure)
+    const configPanels = page.locator('.config-panel');
+    expect(await configPanels.count()).toBeGreaterThanOrEqual(4);
   });
 
   /**
@@ -747,27 +745,27 @@ test.describe('100.003: E2E Integration: API Integration Points', () => {
 
     // Navigate to project
     await page.goto('/project/emptyproject');
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
 
     // Wait for all cards to load
     await page.waitForTimeout(1000);
 
-    // Verify all cards show empty states
-    const agentEmptyState = page.locator('.config-card.agents-card .empty-state');
-    await expect(agentEmptyState).toBeVisible();
-    await expect(agentEmptyState).toContainText('No subagents configured');
+    // Verify all panels show empty states (ConfigPanel shows empty state text in panel content)
+    const agentsPanel = page.locator('.config-panel.agents-panel');
+    await expect(agentsPanel).toBeVisible();
+    await expect(agentsPanel).toContainText('No subagents configured');
 
-    const commandEmptyState = page.locator('.config-card.commands-card .empty-state');
-    await expect(commandEmptyState).toBeVisible();
-    await expect(commandEmptyState).toContainText('No slash commands configured');
+    const commandsPanel = page.locator('.config-panel.commands-panel');
+    await expect(commandsPanel).toBeVisible();
+    await expect(commandsPanel).toContainText('No slash commands configured');
 
-    const hookEmptyState = page.locator('.config-card.hooks-card .empty-state');
-    await expect(hookEmptyState).toBeVisible();
-    await expect(hookEmptyState).toContainText('No hooks configured');
+    const hooksPanel = page.locator('.config-panel.hooks-panel');
+    await expect(hooksPanel).toBeVisible();
+    await expect(hooksPanel).toContainText('No hooks configured');
 
-    const mcpEmptyState = page.locator('.config-card.mcp-card .empty-state');
-    await expect(mcpEmptyState).toBeVisible();
-    await expect(mcpEmptyState).toContainText('No MCP servers configured');
+    const mcpPanel = page.locator('.config-panel.mcp-panel');
+    await expect(mcpPanel).toBeVisible();
+    await expect(mcpPanel).toContainText('No MCP servers configured');
   });
 });
 
@@ -844,15 +842,15 @@ test.describe('100.004: E2E Integration: Error Handling & Recovery', () => {
     // Dashboard shows "Error Loading Projects" header with dynamic error message
     await expect(errorState).toContainText('Error Loading Projects');
 
-    // Click retry button (FIX 3: .retry-btn selector)
+    // Click retry button
     const retryButton = page.locator('.retry-btn');
     await expect(retryButton).toBeVisible();
     await retryButton.click();
 
-    // Verify projects load successfully after retry
-    await page.waitForSelector('.project-grid', { timeout: 10000 });
-    // Use filter to find project by name instead of nth(1) which may be unreliable
-    const projectCard = page.locator('.project-card', { has: page.locator(':text("Recovery Project")') });
+    // Verify projects load successfully after retry - wait for project cards to appear
+    await page.waitForSelector('.project-card', { timeout: 10000 });
+    // Find the specific project card by name
+    const projectCard = page.locator('.project-card:has-text("Recovery Project")');
     await expect(projectCard).toBeVisible();
     await expect(projectCard).toContainText('Recovery Project');
   });
@@ -924,25 +922,24 @@ test.describe('100.004: E2E Integration: Error Handling & Recovery', () => {
       });
     });
 
-    // Navigate with invalid project ID (FIX 2: /project/:id route)
+    // Navigate with invalid project ID
     await page.goto('/project/nonexistentproject');
 
-    // Wait for page to load
-    await page.waitForSelector('.project-detail', { timeout: 10000 });
+    // Wait for page to load - check for either config panels OR error state
+    // ProjectDetail component may show error state directly in the layout
+    await page.waitForTimeout(2000);
 
     // NOTE: ProjectDetail uses Promise.allSettled() for resilient loading
     // When ALL config endpoints return 404, the component shows an error state
-    // (not warnings) because the project doesn't exist. This is better UX.
-    // Verify error state appears (not warning banner)
-    const errorState = page.locator('.error-state');
-    await expect(errorState).toBeVisible({ timeout: 10000 });
+    // ConfigPageLayout's error state is shown when error prop is true
+    const errorSection = page.locator('.error-state, [class*="error"]');
+    await expect(errorSection.first()).toBeVisible({ timeout: 10000 });
 
     // Verify error message shows "Project not found"
-    await expect(errorState).toContainText('Project not found');
+    await expect(page.locator('text=Project not found')).toBeVisible();
 
-    // Verify user can navigate back to dashboard (FIX 4: .breadcrumb-link selector)
-    // Use .breadcrumb-link to target the dashboard link in breadcrumbs
-    const dashboardBreadcrumb = page.locator('.breadcrumb-link');
+    // Verify user can navigate back to dashboard via breadcrumb
+    const dashboardBreadcrumb = page.locator('.p-breadcrumb a').first();
     await dashboardBreadcrumb.click();
     await page.waitForURL('/');
 
