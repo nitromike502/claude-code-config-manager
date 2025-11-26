@@ -82,6 +82,11 @@
   --p-drawer-background: var(--bg-secondary);  /* Override drawer background */
   --p-dialog-background: var(--p-surface-50);  /* Dialog background */
   --p-button-primary-background: var(--p-blue-700);  /* Primary button background */
+  --p-toast-success-detail-color: var(--p-surface-900);  /* Toast detail text */
+  --p-toast-error-detail-color: var(--p-surface-900);  /* Toast error detail text */
+  --p-select-color: var(--p-surface-900);  /* Select label text */
+  --p-overlay-select-background: var(--p-surface-50);  /* Select dropdown background */
+  --p-button-primary-color: var(--p-text-color);  /* Primary button text */
 
   /* ========== Backgrounds ========== */
   /* Primary: Page background
