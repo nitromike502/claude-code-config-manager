@@ -13,7 +13,8 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 - **Vue 3.5.22** - Progressive JavaScript framework for reactive UIs
 - **Vue Router 4.6.3** - Official router for Vue.js with client-side routing
 - **Pinia 3.0.3** - Official state management library for Vue 3
-- **PrimeVue 4.4.1** - UI component library for modern, accessible components
+- **PrimeVue 4.4.1** - UI component library with Aura theme
+- **Tailwind CSS 4.1.17** - Utility-first CSS framework with tailwindcss-primeui plugin
 
 ### Backend
 - **Node.js 18+** - JavaScript runtime
@@ -42,7 +43,7 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 - **Search & Filter** - Quickly find specific configurations
 - **Detail Sidebar** - View full content with markdown rendering and syntax highlighting
 
-**Configuration Management (NEW in v2.1.0):**
+**Configuration Management:**
 - **Copy Configuration** - Copy agents, commands, hooks, and MCP servers between projects
 - **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
 - **Single-Click Copy** - Streamlined UX for quick configuration duplication
@@ -51,13 +52,13 @@ Claude Code Manager provides a centralized dashboard to browse all your Claude C
 
 ### User Experience
 - **SPA Navigation** - Client-side routing with no page reloads
-- **Dark Mode** - Built-in dark/light theme toggle with PrimeVue Button and PrimeIcons
-- **Responsive Design** - Works on desktop, tablet, and mobile devices
+- **Dark/Light Mode** - Theme toggle with PrimeVue Button and PrimeIcons
+- **Responsive Design** - Tailwind CSS responsive utilities for all screen sizes
 - **Manual Refresh** - Rescan projects on demand
-- **Toast Notifications** - Auto-dismissing success/error messages with PrimeVue Toast
-- **100% PrimeVue Components** - All interactive elements use PrimeVue Aura theme components
-- **Consistent Loading States** - Standardized skeleton loading spinners across all views
-- **Accessible Dropdowns** - Project sorting with PrimeVue Dropdown (WCAG 2.1 AA compliant)
+- **Toast Notifications** - Auto-dismissing success/error messages
+- **PrimeVue Components** - All interactive elements use PrimeVue Aura theme
+- **Consistent Loading States** - Skeleton loading indicators across all views
+- **Accessible UI** - WCAG 2.1 AA compliant components with keyboard navigation
 
 ### Performance
 - **< 1 Second Dev Server** - Vite HMR for instant feedback
@@ -233,10 +234,11 @@ Claude Code Manager works on:
 
 ## Roadmap
 
-**Current Release: v2.1.0** - Copy Configuration Feature ✅
-- Copy agents, commands, hooks, and MCP servers between projects
-- Smart conflict resolution with skip/overwrite/rename
-- WCAG 2.1 AA accessibility compliance
+**Current Release: v2.2.0** - UI Modernization Complete ✅
+- PrimeVue Aura theme components throughout application
+- Tailwind CSS v4 integration with responsive utilities
+- 63% reduction in custom CSS code
+- Enhanced accessibility and performance
 - See `CHANGELOG.md` for complete release notes
 
 **Future Enhancements** (Planned)

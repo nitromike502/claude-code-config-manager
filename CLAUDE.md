@@ -8,18 +8,20 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Deployment:** Local web server accessible at `http://localhost:5173`
 
-**Current Release:** v2.1.0 - Released November 13, 2025
+**Current Release:** v2.2.0 - Released November 26, 2025
 
-**Latest Features:**
-- Copy configuration feature for agents, commands, hooks, and MCP servers
+**Key Features:**
+- Copy configuration between projects (agents, commands, hooks, MCP servers)
 - Smart conflict resolution with skip/overwrite/rename strategies
+- Modern PrimeVue UI components with Aura theme
+- Tailwind CSS v4 integration for responsive design
 - WCAG 2.1 AA accessibility compliance
-- Modern PrimeVue UI components
 
 ## Tech Stack
 
 - **Backend:** Node.js + Express (port 8420)
-- **Frontend:** Vite + Vue 3 + Vue Router + Pinia + PrimeVue (SPA on port 5173 in dev)
+- **Frontend:** Vite + Vue 3 + Vue Router + Pinia + PrimeVue + Tailwind CSS (SPA on port 5173 in dev)
+- **Styling:** Tailwind CSS v4 with tailwindcss-primeui plugin
 - **Data Source:** Live file system reads (no database)
 
 ## Project Structure
@@ -327,6 +329,7 @@ This section contains detailed development workflow information for contributors
 - **Phase 2.2 (Bug Fixes):** Fixed agent display and memory leak issues (October 27, 2025)
 - **Phase 2.3 (Production Readiness):** Added LICENSE, favicon, security updates (November 1, 2025)
 - **Phase 3 (Copy Configuration):** Complete copy feature with conflict resolution (November 2-13, 2025)
+- **Phase 3.1 (UI Modernization):** PrimeVue migration and Tailwind CSS integration (November 13-26, 2025)
 
 **Phase Documentation:**
 - `docs/guides/archives/PHASE1-SUCCESS-CRITERIA.md` - Phase 1 complete requirements

@@ -1,7 +1,7 @@
 # PermissionRequest Hook
 
 **Last Updated:** 2025-11-19
-**Claude Code Version:** 2025+ (Recently Added)
+**Claude Code Version:** 2025+
 
 ---
 
