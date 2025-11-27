@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+---
+
+## [2.2.0] - 2025-11-26
+
+### Added
+- Tailwind CSS v4 integration with tailwindcss-primeui plugin for responsive design
+- PrimeVue Aura theme components throughout the application (Button, Dropdown, Skeleton)
+- Comprehensive CSS variable system for theme customization
+
+### Changed
+- Migrated all interactive UI components to PrimeVue Aura theme
+- Reduced custom CSS from 1,734 lines to 634 lines (63% reduction)
+- Consolidated layout components (ConfigPageLayout, ConfigPanel) for consistency
+- Optimized component styling with Tailwind utility classes
+
+### Fixed
+- Playwright test compatibility with PrimeVue components
+- UI performance test reliability and execution
+
+---
+
 ## [2.1.0] - 2025-11-13
 
 ### Added
@@ -38,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎯 Major Release: Complete Vue.js Migration
 
-**Phase 2 Complete** - The Claude Code Manager has been fully migrated to a modern Vue.js 3 + Vite architecture while maintaining 100% feature parity with the Phase 1 MVP.
+**Phase 2 Complete** - The Claude Code Config Manager has been fully migrated to a modern Vue.js 3 + Vite architecture while maintaining 100% feature parity with the Phase 1 MVP.
 
 ### Added
 

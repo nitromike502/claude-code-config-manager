@@ -1,134 +1,54 @@
-/* Component-Specific Styles */
+/* ============================================
+   TABLE OF CONTENTS
+   ============================================
+   1. Domain-Specific Styling (Configuration Type Colors)
+   2. App Header & Navigation
+   3. Layout Containers
+   4. Project Cards & Grid
+   5. Configuration Cards
+   6. Info Bars (Project & User)
+   7. Detail Sidebar (Overlay & Content)
+   8. Domain-Specific: Agents
+   9. Domain-Specific: Commands
+   10. Domain-Specific: Hooks
+   11. Domain-Specific: MCP Servers
+   12. Markdown & Content Rendering
+   13. Structured Content (Metadata, Environment Variables)
+   14. State Components (Loading, Empty, Error)
+   15. Toast Notifications
+   16. PrimeVue Component Overrides
+   17. Responsive Breakpoints & Utilities
+   ============================================ */
 
-/* App Header */
-.app-header {
-  background-color: var(--bg-header) !important;
-  border-bottom: 1px solid var(--border-primary);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  padding: 0.5rem 1rem !important;
-}
+/* ============================================
+   1. DOMAIN-SPECIFIC STYLES (Configuration Types)
+   ============================================
 
-.app-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-}
+   These styles must remain custom and cannot be replaced by Tailwind utilities
+   or generic CSS because they implement domain logic for Claude Code configuration types.
 
-.app-title i {
-  color: var(--color-primary);
-  font-size: 1.5rem;
-}
+   Category Color System:
+   - --color-agents: #4CAF50 (green) - Used for subagent indicators
+   - --color-commands: #2196F3 (blue) - Used for slash command indicators
+   - --color-hooks: #FF9800 (orange) - Used for hook indicators
+   - --color-mcp: #9C27B0 (purple) - Used for MCP server indicators
 
-.header-search {
-  min-width: 300px;
-}
+   These colors are applied to:
+   1. Card type indicators (icon colors, badge backgrounds)
+   2. Count badges on card headers
+   3. Scope badges for hooks (user/project level)
+   4. Transport badges for MCP servers
 
-/* Main Content */
-.main-content {
-  flex: 1;
-  padding: 2rem;
-}
+   Justification for custom rules:
+   - Each configuration type has specific visual identity in UI (green/blue/orange/purple)
+   - Count badges use type-specific colors to create visual scanning pattern
+   - Scope badges distinguish user-level vs project-level configurations
+   - These patterns are core to the application's information architecture
+   - Cannot be replaced by Tailwind without losing semantic meaning
+   ============================================ */
 
-@media (max-width: 767px) {
-  .main-content {
-    padding: 1rem;
-  }
-
-  .header-search {
-    min-width: 200px;
-  }
-}
-
-/* Project Grid */
-.project-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-@media (min-width: 1920px) {
-  .project-grid {
-    grid-template-columns: repeat(4, 1fr);
-    max-width: 1600px;
-    gap: 2rem;
-  }
-}
-
-@media (max-width: 767px) {
-  .project-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-}
-
-/* Project Card */
-.project-card {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  box-shadow: var(--shadow-card);
-  transition: all 200ms ease;
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.project-card:hover {
-  background-color: var(--bg-hover);
-  box-shadow: var(--shadow-card-hover);
-  transform: translateY(-2px);
-}
-
-.project-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-secondary);
-}
-
-.project-header i {
-  font-size: 1.5rem;
-  color: var(--color-primary);
-}
-
-.project-name {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-  margin: 0;
-}
-
-.project-path {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  padding: 0.5rem 1rem;
-  word-break: break-all;
-}
-
-.project-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  padding: 1rem;
-}
-
-.stat {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-}
-
-.stat i {
-  font-size: 1.25rem;
-}
+/* Configuration Type Icon Colors */
+/* Used in card headers and list items to identify configuration type at a glance */
 
 .stat-agents i {
   color: var(--color-agents);
@@ -146,93 +66,165 @@
   color: var(--color-mcp);
 }
 
-/* Config Cards Container */
-.config-cards-container {
-  max-width: 960px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-/* Config Card */
-.config-card {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 8px;
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-}
-
-.config-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  background-color: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.config-header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.config-header-left i {
+/* Agent Card Type Styling */
+.agent-card .card-icon {
   font-size: 1.5rem;
+  color: var(--color-agents);
 }
 
-.config-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-}
-
-/* Config Item */
-.config-item {
-  display: flex;
-  justify-content: space-between;
+.agent-card .count-badge {
+  display: inline-flex;
   align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border-secondary);
-  transition: background-color 150ms ease;
-  cursor: pointer;
-}
-
-.config-item:last-child {
-  border-bottom: none;
-}
-
-.config-item:hover {
-  background-color: var(--bg-hover);
-}
-
-.item-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.item-name {
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.5rem;
+  background-color: var(--color-agents);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: var(--text-emphasis);
-  margin-bottom: 0.25rem;
 }
 
-.item-description {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* Command Card Type Styling */
+.command-card .card-icon {
+  font-size: 1.5rem;
+  color: var(--color-commands);
 }
 
-.item-actions {
-  flex-shrink: 0;
-  margin-left: 1rem;
+.command-card .count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.5rem;
+  background-color: var(--color-commands);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
-/* Project Info Bar */
+/* Hook Card Type Styling */
+.hook-card .card-icon {
+  font-size: 1.5rem;
+  color: var(--color-hooks);
+}
+
+.hook-card .count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.5rem;
+  background-color: var(--color-hooks);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Scope Badges - Distinguish user-level vs project-level hooks */
+.scope-badge.scope-user {
+  background-color: var(--color-mcp-bg);
+  color: var(--color-mcp);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.scope-badge.scope-project {
+  background-color: var(--color-hooks-bg);
+  color: var(--color-hooks);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+/* MCP Card Type Styling */
+.mcp-card .card-icon {
+  font-size: 1.5rem;
+  color: var(--color-mcp);
+}
+
+.mcp-card .count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.5rem;
+  background-color: var(--color-mcp);
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Transport Badges - MCP server transport type indicators */
+.transport-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  background-color: var(--color-mcp-bg);
+  color: var(--color-mcp);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+/* User Info Bar - Accent with MCP color for user-level configurations */
+.user-info-bar {
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--color-mcp);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.user-info-bar .project-info-title i {
+  color: var(--color-mcp);
+}
+
+/* ============================================
+   END DOMAIN-SPECIFIC STYLES
+   ============================================ */
+
+/* App Header */
+.app-header {
+  background-color: var(--bg-header) !important;
+  border-bottom: 1px solid var(--border-primary);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 0.5rem 1rem !important;
+}
+
+/* NOTE: .app-title and .header-search removed - not in use */
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  padding: 2rem;
+}
+
+@media (max-width: 767px) {
+  .main-content {
+    padding: 1rem;
+  }
+}
+
+/* ============================================
+   3-5. LAYOUT CONTAINERS & CARDS
+   ============================================ */
+/* NOTE: Project/config card styles removed - components have scoped styles */
+
+/* Project Info Bar - Used in ProjectDetail.vue */
 .project-info-bar {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-primary);
@@ -263,248 +255,15 @@
   font-size: 0.875rem;
 }
 
-/* User Info Bar (Purple accent) */
-.user-info-bar {
-  background-color: var(--bg-secondary);
-  border: 2px solid var(--color-mcp);
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  max-width: 960px;
-  margin-left: auto;
-  margin-right: auto;
-}
+/* ============================================
+   6. INFO BARS (PROJECT & USER)
+   ============================================ */
 
-.user-info-bar .project-info-title i {
-  color: var(--color-mcp);
-}
+/* NOTE: Detail Sidebar removed - now using PrimeVue Sidebar component */
 
-/* Detail Sidebar Overlay */
-.detail-sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(2px);
-  z-index: 9999;
-  display: flex;
-  justify-content: flex-end;
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.detail-sidebar {
-  background-color: var(--bg-secondary);
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
-  height: 100%;
-  width: 75%;
-  max-width: 1200px;
-  display: flex;
-  flex-direction: column;
-  animation: slideIn 0.3s ease;
-  overflow: hidden;
-}
-
-/* Tablet portrait and below - full width */
-@media (max-width: 767px) {
-  .detail-sidebar {
-    width: 100%;
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-/* Sidebar Header */
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 1.5rem;
-  background-color: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-primary);
-  flex-shrink: 0;
-}
-
-.sidebar-header-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.sidebar-header-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-  margin-bottom: 0.5rem;
-}
-
-.sidebar-header-metadata {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-.file-path {
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  word-break: break-all;
-}
-
-.btn-close-sidebar {
-  background: none;
-  border: none;
-  color: var(--text-primary);
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0.25rem;
-  line-height: 1;
-  transition: color 0.2s ease;
-  flex-shrink: 0;
-  margin-left: 1rem;
-}
-
-.btn-close-sidebar:hover {
-  color: var(--text-primary);
-}
-
-.sidebar-content {
-  padding: 2rem 1.5rem;
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-}
-
-/* Placeholder content styles */
-.placeholder-content {
-  color: var(--text-primary);
-}
-
-.placeholder-content strong {
-  color: var(--text-emphasis);
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-.content-preview {
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  padding: 1rem;
-  font-family: 'Courier New', monospace;
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  white-space: pre-wrap;
-  word-break: break-word;
-  max-height: 400px;
-  overflow-y: auto;
-  margin-bottom: 1rem;
-}
-
-.placeholder-note {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  background-color: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 6px;
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-}
-
-.placeholder-note i {
-  color: var(--color-primary);
-}
-
-/* Sidebar Footer */
-.sidebar-footer {
-  display: flex;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-primary);
-  background-color: var(--bg-tertiary);
-  flex-shrink: 0;
-}
-
-.btn-copy,
-.btn-close {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  flex: 1;
-}
-
-.btn-copy {
-  background-color: var(--color-primary);
-  color: white;
-}
-
-.btn-copy:hover {
-  background-color: var(--color-primary-hover);
-  transform: translateY(-1px);
-}
-
-.btn-copy.copied {
-  background-color: #10b981;
-}
-
-.btn-copy.copied:hover {
-  background-color: #059669;
-}
-
-.btn-close {
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-primary);
-}
-
-.btn-close:hover {
-  background-color: var(--bg-hover);
-}
-
-.sidebar-actions {
-  display: flex;
-  gap: 0.75rem;
-  padding: 1rem;
-  border-top: 1px solid var(--border-primary);
-  background-color: var(--bg-tertiary);
-}
-
-/* Show More Button */
-.show-more-btn {
-  width: 100%;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-
-/* Markdown Content */
+/* ============================================
+   12. MARKDOWN & CONTENT RENDERING
+   ============================================ */
 .markdown-content {
   color: var(--text-primary);
   line-height: 1.7;
@@ -634,13 +393,13 @@
   padding: 2rem;
 }
 
-/* Structured Content (Hooks & MCP) */
+/* ============================================
+   13. STRUCTURED CONTENT (METADATA & ENV VARS)
+   ============================================ */
+/* NOTE: Metadata grids, argument lists, and env grids removed - not in use */
+
 .structured-content {
   color: var(--text-primary);
-}
-
-.metadata-section {
-  margin-bottom: 1.5rem;
 }
 
 .section-title {
@@ -650,97 +409,6 @@
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 2px solid var(--border-primary);
-}
-
-.metadata-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
-.metadata-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.metadata-item.full-width {
-  grid-column: 1 / -1;
-}
-
-.metadata-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-secondary);
-}
-
-.metadata-value {
-  font-size: 0.9375rem;
-  color: var(--text-primary);
-  word-break: break-word;
-}
-
-.metadata-value.code-value {
-  background-color: var(--bg-code);
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 0.875rem;
-  border: 1px solid var(--border-primary);
-}
-
-/* Argument List */
-.argument-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.argument-list li {
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--border-secondary);
-  font-family: 'Courier New', monospace;
-  font-size: 0.875rem;
-}
-
-.argument-list li:last-child {
-  border-bottom: none;
-}
-
-/* Environment Variables Grid */
-.env-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-  border-radius: 4px;
-  padding: 0.5rem;
-}
-
-.env-item {
-  display: flex;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-}
-
-.env-key {
-  font-family: 'Courier New', monospace;
-  color: var(--text-emphasis);
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
-.env-value {
-  font-family: 'Courier New', monospace;
-  color: var(--text-primary);
-  word-break: break-all;
 }
 
 /* Status Badge */
@@ -755,28 +423,16 @@
 }
 
 .status-badge.status-disabled {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-/* Responsive for structured content */
-@media (max-width: 767px) {
-  .metadata-grid {
-    grid-template-columns: 1fr;
-  }
+/* NOTE: Responsive metadata styles removed - metadata grids not in use */
 
-  .metadata-item {
-    grid-column: 1;
-  }
-
-  .env-item {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-}
-
-/* Breadcrumb Styling */
+/* ============================================
+   17. RESPONSIVE BREAKPOINTS & UTILITIES
+   ============================================ */
 .p-breadcrumb {
   background-color: transparent !important;
   border: none !important;
@@ -789,128 +445,21 @@
   color: white !important;
 }
 
-/* Responsive Adjustments */
+/* NOTE: Responsive config-item styles removed - components have scoped styles */
+
 @media (max-width: 767px) {
-  .config-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .item-actions {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .item-actions .p-button {
-    width: 100%;
-  }
-
-  .sidebar-actions {
-    flex-direction: column;
-  }
-
-  .sidebar-actions .p-button {
-    width: 100%;
-  }
-
-  /* Sidebar responsive styles - already handled above */
-  .sidebar-header {
-    padding: 1rem;
-  }
-
-  .sidebar-header-title {
-    font-size: 1.125rem;
-  }
-
-  .sidebar-content {
-    padding: 1.5rem 1rem;
-  }
-
-  .sidebar-footer {
-    flex-direction: column;
-    padding: 1rem;
-  }
-
-  .btn-copy,
-  .btn-close {
-    width: 100%;
-  }
+  /* NOTE: Sidebar responsive styles removed - now using PrimeVue Sidebar */
 }
 
-/* AgentCard Specific Styles */
-.agent-card .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  background-color: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-primary);
-}
+/* ============================================
+   8. DOMAIN-SPECIFIC: AGENTS
+   ============================================ */
+/* NOTE: .agent-card .card-header/title/content removed - now using PrimeVue Card with its own classes */
 
-.agent-card .card-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-}
-
-.agent-card .card-icon {
-  font-size: 1.5rem;
-  color: var(--color-agents);
-}
-
-.agent-card .count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 0.5rem;
-  background-color: var(--color-agents);
-  color: white;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.agent-card .card-content {
-  padding: 0;
-}
-
-/* Loading Skeleton */
-.loading-skeleton {
-  padding: 1rem 1.25rem;
-}
-
-.skeleton-item {
-  height: 60px;
-  background: linear-gradient(
-    90deg,
-    var(--bg-tertiary) 25%,
-    var(--bg-hover) 50%,
-    var(--bg-tertiary) 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-  border-radius: 4px;
-  margin-bottom: 0.75rem;
-}
-
-.skeleton-item:last-child {
-  margin-bottom: 0;
-}
-
-@keyframes skeleton-loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
+/* ============================================
+   14. STATE COMPONENTS (LOADING, EMPTY, ERROR)
+   ============================================ */
+/* NOTE: Loading skeleton removed - now using PrimeVue Skeleton component */
 
 /* Error Message */
 .error-message {
@@ -921,30 +470,13 @@
 
 .error-message i {
   font-size: 2rem;
-  color: #ef4444;
+  color: var(--color-error);
   margin-bottom: 0.75rem;
 }
 
 .error-message p {
   margin: 0 0 1rem 0;
   font-size: 0.875rem;
-}
-
-.btn-retry-small {
-  padding: 0.5rem 1rem;
-  background-color: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.btn-retry-small:hover {
-  background-color: var(--color-primary-hover);
-  transform: translateY(-1px);
 }
 
 /* Empty State */
@@ -966,868 +498,51 @@
   color: var(--text-secondary);
 }
 
-/* Agent List */
-.agent-list {
-  padding: 0;
-}
+/* NOTE: Agent list/item styles removed - ConfigItemList now uses Tailwind classes */
 
-.agent-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border-secondary);
-  transition: background-color 150ms ease;
-  cursor: pointer;
-}
+/* ============================================
+   9. DOMAIN-SPECIFIC: COMMANDS
+   ============================================ */
+/* NOTE: .command-card .card-header/title/content removed - now using PrimeVue Card */
 
-.agent-item:last-child {
-  border-bottom: none;
-}
+/* NOTE: Command list/item styles removed - ConfigItemList now uses Tailwind classes */
 
-.agent-item:hover {
-  background-color: var(--bg-hover);
-}
+/* ============================================
+   10. DOMAIN-SPECIFIC: HOOKS
+   ============================================ */
+/* NOTE: .hook-card .card-header/title/content removed - now using PrimeVue Card */
 
-.agent-info {
-  flex: 1;
-  min-width: 0;
-}
+/* NOTE: Hook list/item styles removed - ConfigItemList now uses Tailwind classes */
 
-.agent-name {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-  margin-bottom: 0.25rem;
-}
 
-.agent-name .error-icon {
-  font-size: 0.875rem;
-  color: #f59e0b;
-}
+/* ============================================
+   11. DOMAIN-SPECIFIC: MCP SERVERS
+   ============================================ */
+/* NOTE: .mcp-card .card-header/title/content removed - now using PrimeVue Card */
 
-.agent-description {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* NOTE: MCP list/item styles removed - ConfigItemList now uses Tailwind classes */
 
-.btn-view-details {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: transparent;
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  margin-left: 1rem;
-}
+/* ============================================
+   16. PRIMEVUE COMPONENT OVERRIDES
+   ============================================ */
 
-.btn-view-details:hover {
-  background-color: var(--color-primary);
-  color: white;
-}
-
-.btn-view-details i {
-  font-size: 0.875rem;
-}
-
-/* Show More Button */
-.btn-show-more {
-  width: 100%;
-  padding: 0.75rem 1.25rem;
-  background-color: transparent;
-  color: var(--color-primary);
-  border: none;
-  border-top: 1px solid var(--border-secondary);
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  text-align: center;
-}
-
-.btn-show-more:hover {
-  background-color: var(--bg-hover);
-}
-
-/* Responsive */
-@media (max-width: 767px) {
-  .agent-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .btn-view-details {
-    margin-left: 0;
-    width: 100%;
-    justify-content: center;
-  }
-}
-
-/* CommandCard Specific Styles */
-.command-card .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  background-color: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.command-card .card-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-}
-
-.command-card .card-icon {
-  font-size: 1.5rem;
-  color: var(--color-commands);
-}
-
-.command-card .count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 0.5rem;
-  background-color: var(--color-commands);
-  color: white;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.command-card .card-content {
-  padding: 0;
-}
-
-/* Command List */
-.command-list {
-  padding: 0;
-}
-
-.command-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border-secondary);
-  transition: background-color 150ms ease;
-  cursor: pointer;
-}
-
-.command-item:last-child {
-  border-bottom: none;
-}
-
-.command-item:hover {
-  background-color: var(--bg-hover);
-}
-
-.command-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.command-name {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-  margin-bottom: 0.25rem;
-  font-family: 'Courier New', monospace;
-}
-
-.command-name .error-icon {
-  font-size: 0.875rem;
-  color: #f59e0b;
-}
-
-.command-description {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Responsive for CommandCard */
-@media (max-width: 767px) {
-  .command-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-}
-
-/* HookCard Specific Styles */
-.hook-card .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  background-color: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.hook-card .card-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-}
-
-.hook-card .card-icon {
-  font-size: 1.5rem;
-  color: var(--color-hooks);
-}
-
-.hook-card .count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 0.5rem;
-  background-color: var(--color-hooks);
-  color: white;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.hook-card .card-content {
-  padding: 0;
-}
-
-/* Hook List */
-.hook-list {
-  padding: 0;
-}
-
-.hook-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border-secondary);
-  transition: background-color 150ms ease;
-  cursor: pointer;
-}
-
-.hook-item:last-child {
-  border-bottom: none;
-}
-
-.hook-item:hover {
-  background-color: var(--bg-hover);
-}
-
-.hook-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.hook-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.375rem;
-}
-
-.hook-event {
-  font-weight: 600;
-  color: var(--text-emphasis);
-  font-size: 0.9375rem;
-}
-
-.scope-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-.scope-badge.scope-user {
-  background-color: rgba(168, 85, 247, 0.15);
-  color: var(--color-mcp);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.scope-badge.scope-project {
-  background-color: rgba(249, 115, 22, 0.15);
-  color: var(--color-hooks);
-  border: 1px solid rgba(249, 115, 22, 0.3);
-}
-
-.hook-command {
+/* PrimeVue Button - Secondary Outlined variant theme fixes */
+.p-button-secondary.p-button-outlined {
   color: var(--text-primary);
-  font-size: 0.875rem;
-  font-family: 'Courier New', monospace;
-  margin-bottom: 0.25rem;
-  word-break: break-word;
+  border-color: var(--border-primary);
 }
 
-.hook-description {
-  color: var(--text-secondary);
-  font-size: 0.8125rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Responsive for HookCard */
-@media (max-width: 767px) {
-  .hook-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .hook-header {
-    flex-wrap: wrap;
-  }
-}
-
-/* PrimeVue Toast Styles */
-[data-pc-name="toast"],
-.p-toast {
-  opacity: 1 !important;
-  width: 25rem;
-}
-
-[data-pc-section="message"],
-.p-toast-message {
-  margin: 0 0 1rem 0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border-radius: 6px;
-  border-width: 0;
-  border-left-width: 6px;
-  border-style: solid;
-  display: flex;
-  align-items: flex-start;
-  padding: 1rem;
-}
-
-[data-pc-section="content"],
-.p-toast-message-content {
-  display: flex;
-  align-items: flex-start;
-  flex: 1;
-  gap: 0.75rem;
-}
-
-[data-pc-section="icon"],
-.p-toast-message-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-[data-pc-section="text"],
-.p-toast-message-text {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-  min-width: 0;
-}
-
-[data-pc-section="summary"],
-.p-toast-summary {
-  font-weight: 600;
-  font-size: 0.9375rem;
-  line-height: 1.4;
-}
-
-[data-pc-section="detail"],
-.p-toast-detail {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-[data-pc-section="closebutton"],
-[data-pc-section="button"],
-.p-toast-icon-close {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-  margin-left: 0.5rem;
-  flex-shrink: 0;
-}
-
-[data-pc-section="closebutton"]:hover,
-[data-pc-section="button"]:hover,
-.p-toast-icon-close:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="dark"] [data-pc-section="closebutton"]:hover,
-[data-theme="dark"] [data-pc-section="button"]:hover,
-[data-theme="dark"] .p-toast-icon-close:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-[data-pc-section="closeicon"],
-.p-toast-icon-close-icon {
-  font-size: 1rem;
-}
-
-/* Toast severity variants */
-.p-toast-message-success {
-  background-color: #f0fdf4;
-  border-left-color: #10b981;
-}
-
-[data-theme="dark"] .p-toast-message-success {
-  background-color: #064e3b;
-  border-left-color: #34d399;
-}
-
-.p-toast-message-success .p-toast-message-icon,
-.p-toast-message-success .p-toast-summary {
-  color: #059669;
-}
-
-[data-theme="dark"] .p-toast-message-success .p-toast-message-icon,
-[data-theme="dark"] .p-toast-message-success .p-toast-summary {
-  color: #34d399;
-}
-
-.p-toast-message-info {
-  background-color: #eff6ff;
-  border-left-color: #3b82f6;
-}
-
-[data-theme="dark"] .p-toast-message-info {
-  background-color: #1e3a8a;
-  border-left-color: #60a5fa;
-}
-
-.p-toast-message-info .p-toast-message-icon,
-.p-toast-message-info .p-toast-summary {
-  color: #2563eb;
-}
-
-[data-theme="dark"] .p-toast-message-info .p-toast-message-icon,
-[data-theme="dark"] .p-toast-message-info .p-toast-summary {
-  color: #60a5fa;
-}
-
-.p-toast-message-warn {
-  background-color: #fffbeb;
-  border-left-color: #f59e0b;
-}
-
-[data-theme="dark"] .p-toast-message-warn {
-  background-color: #78350f;
-  border-left-color: #fbbf24;
-}
-
-.p-toast-message-warn .p-toast-message-icon,
-.p-toast-message-warn .p-toast-summary {
-  color: #d97706;
-}
-
-[data-theme="dark"] .p-toast-message-warn .p-toast-message-icon,
-[data-theme="dark"] .p-toast-message-warn .p-toast-summary {
-  color: #fbbf24;
-}
-
-.p-toast-message-error {
-  background-color: #fef2f2;
-  border-left-color: #ef4444;
-}
-
-[data-theme="dark"] .p-toast-message-error {
-  background-color: #7f1d1d;
-  border-left-color: #f87171;
-}
-
-.p-toast-message-error .p-toast-message-icon,
-.p-toast-message-error .p-toast-summary {
-  color: #dc2626;
-}
-
-[data-theme="dark"] .p-toast-message-error .p-toast-message-icon,
-[data-theme="dark"] .p-toast-message-error .p-toast-summary {
-  color: #f87171;
-}
-
-/* MCPCard Specific Styles */
-.mcp-card .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  background-color: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.mcp-card .card-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-}
-
-.mcp-card .card-icon {
-  font-size: 1.5rem;
-  color: var(--color-mcp);
-}
-
-.mcp-card .count-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 0.5rem;
-  background-color: var(--color-mcp);
-  color: white;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.mcp-card .card-content {
-  padding: 0;
-}
-
-/* MCP Server List */
-.mcp-list {
-  padding: 0;
-}
-
-.mcp-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border-secondary);
-  transition: background-color 150ms ease;
-  cursor: pointer;
-}
-
-.mcp-item:last-child {
-  border-bottom: none;
-}
-
-.mcp-item:hover {
-  background-color: var(--bg-hover);
-}
-
-.mcp-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.mcp-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.375rem;
-  flex-wrap: wrap;
-}
-
-.mcp-name {
-  font-weight: 600;
-  color: var(--text-emphasis);
-  font-size: 0.9375rem;
-}
-
-.mcp-badges {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.transport-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-  background-color: rgba(168, 85, 247, 0.15);
-  color: var(--color-mcp);
-  border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.mcp-command {
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  font-family: 'Courier New', monospace;
-  word-break: break-word;
-}
-
-/* Responsive for MCPCard */
-@media (max-width: 767px) {
-  .mcp-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-  }
-
-  .mcp-header {
-    flex-wrap: wrap;
-  }
-}
-
-/* ========================================
-   PrimeVue Component Styles (Unstyled Mode)
-   Using data-pc-* attributes for selectors
-   ======================================== */
-
-/* PrimeVue Button Component */
-[data-pc-name="button"] {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-primary);
-  border-radius: 6px;
-  background: var(--color-primary);
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-[data-pc-name="button"]:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-card);
-}
-
-[data-pc-name="button"]:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-}
-
-[data-pc-name="button"]:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: var(--bg-tertiary);
-  color: var(--text-disabled);
-}
-
-[data-pc-name="button"] [data-pc-section="icon"] {
-  font-size: 1rem;
-}
-
-[data-pc-name="button"] [data-pc-section="label"] {
-  font-weight: 500;
-}
-
-/* Button Severities */
-[data-pc-name="button"][data-p-severity="secondary"] {
-  background: var(--bg-secondary);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-}
-
-[data-pc-name="button"][data-p-severity="secondary"]:hover:not(:disabled) {
-  background: var(--color-primary);
-  color: white;
-}
-
-[data-pc-name="button"][data-p-severity="success"] {
-  background: var(--color-success);
-  border-color: var(--color-success);
-}
-
-[data-pc-name="button"][data-p-severity="success"]:hover:not(:disabled) {
-  background: #059669;
-}
-
-[data-pc-name="button"][data-p-severity="danger"] {
-  background: var(--color-error);
-  border-color: var(--color-error);
-}
-
-[data-pc-name="button"][data-p-severity="danger"]:hover:not(:disabled) {
-  background: #dc2626;
-}
-
-/* Icon-only buttons */
-[data-pc-name="button"][data-p-icononly="true"] {
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0;
-}
-
-/* PrimeVue Dialog Component */
-[data-pc-name="dialog"].p-dialog-mask,
-.p-dialog-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  pointer-events: none;
-  background-color: rgba(0, 0, 0, 0.4);
-  z-index: 1100;
-  transition: background-color 0.2s;
-}
-
-[data-pc-name="dialog"].p-dialog-mask.p-component-overlay,
-.p-dialog-mask.p-component-overlay {
-  pointer-events: auto;
-}
-
-[data-pc-section="root"],
-.p-dialog {
-  position: relative;
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  pointer-events: auto;
-}
-
-[data-pc-section="header"],
-.p-dialog-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--border-primary);
-  border-radius: 8px 8px 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-[data-pc-section="title"],
-.p-dialog-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-emphasis);
-}
-
-[data-pc-section="headericons"],
-.p-dialog-header-icons {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-[data-pc-section="closebutton"],
-.p-dialog-header-icon {
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  color: var(--text-primary);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-[data-pc-section="closebutton"]:hover,
-.p-dialog-header-icon:hover {
+.p-button-secondary.p-button-outlined:hover {
   background: var(--bg-hover);
-  color: var(--text-emphasis);
+  border-color: var(--border-focus);
 }
 
-[data-pc-section="closebutton"]:focus-visible,
-.p-dialog-header-icon:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-}
-
-[data-pc-section="content"],
-.p-dialog-content {
-  padding: 1.5rem;
-  overflow-y: auto;
-  flex: 1;
-}
-
-[data-pc-section="footer"],
-.p-dialog-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-primary);
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
-/* Dialog animations */
-.p-dialog-mask-enter-active,
-.p-dialog-mask-leave-active {
-  transition: opacity 0.2s;
-}
-
-.p-dialog-mask-enter-from,
-.p-dialog-mask-leave-to {
-  opacity: 0;
-}
-
-.p-dialog-enter-active,
-.p-dialog-leave-active {
-  transition: all 0.2s;
-}
-
-.p-dialog-enter-from,
-.p-dialog-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
-/* PrimeVue Divider Component */
-[data-pc-name="divider"],
+/* PrimeVue Divider Overrides */
 .p-divider {
   border-top: 1px solid var(--border-primary);
   margin: 1.5rem 0;
 }
 
-[data-pc-name="divider"][data-pc-section="root"],
 .p-divider-horizontal {
   display: flex;
   width: 100%;
@@ -1835,7 +550,6 @@
   align-items: center;
 }
 
-[data-pc-name="divider"][data-pc-section="root"]:before,
 .p-divider-horizontal:before {
   position: static;
   display: block;
@@ -1845,8 +559,7 @@
   top: 50%;
 }
 
-/* PrimeVue Tooltip */
-[data-pc-name="tooltip"],
+/* PrimeVue Tooltip Overrides */
 .p-tooltip {
   position: absolute;
   display: none;
@@ -1854,12 +567,10 @@
   z-index: 9999;
 }
 
-[data-pc-name="tooltip"].p-tooltip-active,
 .p-tooltip.p-tooltip-active {
   display: block;
 }
 
-[data-pc-section="text"],
 .p-tooltip-text {
   background: var(--bg-tertiary);
   color: var(--text-primary);
@@ -1872,7 +583,6 @@
   max-width: 250px;
 }
 
-[data-pc-section="arrow"],
 .p-tooltip-arrow {
   position: absolute;
   width: 0;
@@ -1881,7 +591,6 @@
   border-style: solid;
 }
 
-.p-tooltip-top [data-pc-section="arrow"],
 .p-tooltip-top .p-tooltip-arrow {
   bottom: -5px;
   left: 50%;
@@ -1907,5 +616,19 @@
 
   .p-dialog {
     max-width: 95vw;
+  }
+}
+
+/* PrimeVue Drawer Overrides */
+/* Match PrimeVue's selector specificity: .p-drawer-right .p-drawer */
+.p-drawer-right .p-drawer {
+  width: 100vw;
+}
+
+@media (min-width: 768px) {
+  .p-drawer-right .p-drawer {
+    width: 75vw;
+    min-width: 500px;
+    max-width: 75vw;
   }
 }

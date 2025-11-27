@@ -1,0 +1,13 @@
+/* CSS Layer order declaration - must match PrimeVue cssLayer.order in main.js */
+@layer tailwind-base, primevue, tailwind-utilities;
+
+/* Wrap Tailwind base (including preflight reset) in its own layer */
+@layer tailwind-base {
+  @import "tailwindcss/preflight" layer(tailwind-base);
+  @import "tailwindcss/theme" layer(tailwind-base);
+}
+
+/* Wrap Tailwind utilities in a higher-priority layer */
+@layer tailwind-utilities {
+  @import "tailwindcss/utilities" layer(tailwind-utilities);
+}

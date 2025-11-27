@@ -9,7 +9,7 @@ describe('API Smoke Tests', () => {
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
       expect(response.body.status).toBe('ok');
-      expect(response.body.service).toBe('claude-code-manager');
+      expect(response.body.service).toBe('claude-code-config-manager');
     });
   });
 

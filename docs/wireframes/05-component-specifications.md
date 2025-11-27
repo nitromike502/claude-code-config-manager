@@ -615,7 +615,7 @@ interface Props {
 ## 8. LoadingState Component
 
 ### Purpose
-Skeleton loading placeholder.
+Standardized skeleton loading placeholder used across all views to replace custom spinner implementations.
 
 ### Structure
 ```vue
@@ -636,6 +636,83 @@ interface Props {
 
 ### PrimeVue Components Used
 - `Skeleton`
+
+### Usage Pattern
+The LoadingState component is the standardized loading pattern across all views:
+- Dashboard.vue (project grid loading)
+- ProjectDetail.vue (page-level loading)
+- UserGlobal.vue (page-level loading)
+
+```vue
+<LoadingState v-if="loading" :count="5" height="60px" />
+<template v-else>
+  <!-- content -->
+</template>
+```
+
+---
+
+## 9. Dropdown Component
+
+### Purpose
+PrimeVue Dropdown for project sorting and filtering.
+
+### Usage in Dashboard
+```vue
+<Dropdown
+  v-model="sortBy"
+  :options="sortOptions"
+  optionLabel="label"
+  optionValue="value"
+  placeholder="Sort by..."
+  class="min-w-[200px]"
+/>
+```
+
+### Sort Options Structure
+```typescript
+const sortOptions = [
+  { label: 'Name (A-Z)', value: 'name-asc' },
+  { label: 'Name (Z-A)', value: 'name-desc' },
+  { label: 'Most Agents', value: 'agents-desc' },
+  { label: 'Most Commands', value: 'commands-desc' }
+];
+```
+
+### PrimeVue Components Used
+- `Dropdown`
+
+### Accessibility
+- Keyboard navigation: Tab, Enter, Arrow keys
+- Screen reader support built-in
+- WCAG 2.1 AA compliant
+
+---
+
+## 10. Theme Toggle Button
+
+### Purpose
+PrimeVue Button with PrimeIcons for theme switching.
+
+### Usage in App.vue
+```vue
+<Button
+  @click="themeStore.toggleTheme"
+  :icon="themeStore.currentTheme === 'light' ? 'pi pi-moon' : 'pi pi-sun'"
+  :label="themeStore.currentTheme === 'light' ? 'Dark' : 'Light'"
+  severity="secondary"
+  outlined
+/>
+```
+
+### PrimeVue Components Used
+- `Button`
+- `PrimeIcons` (pi-moon, pi-sun)
+
+### Styling
+- severity: "secondary"
+- outlined: true (transparent background)
+- Consistent with PrimeVue Aura theme
 
 ---
 

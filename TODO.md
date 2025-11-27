@@ -56,6 +56,7 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 
 ### UI/UX Enhancements
 - [ ] **Migrate existing components to PrimeVue** - Installed PrimeVue in Phase 3 for copy feature components (CopyButton, CopyModal, ConflictResolver). Consider migrating existing custom HTML/CSS components (ConfigCard, ConfigDetailSidebar, etc.) to PrimeVue components for consistency and reduced maintenance. Low priority - focus on feature completion first.
+- [ ] **Rename app title to "Claude Code Config Manager"** - The package name is `claude-code-config-manager` but the UI displays "Claude Code Manager". Update App.vue header, index.html title/meta, and corresponding test assertions to use the correct name. Will require updating visual regression snapshots.
 
 ### Performance Optimization Ideas
 - ✅ **RESOLVED: Jest test performance issue** - Copy service tests were split from one monolithic file (653 lines) into 5 focused test files. Now runs in ~0.3s with all 67 tests passing. Resolved in TASK-3.1.6 (November 2, 2025).

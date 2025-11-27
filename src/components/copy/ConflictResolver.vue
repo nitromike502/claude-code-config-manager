@@ -8,56 +8,81 @@
     :draggable="false"
   >
     <template #header>
-      <div class="dialog-header">
-        <i class="pi pi-exclamation-triangle warning-icon"></i>
+      <div class="flex items-center gap-2 text-xl font-semibold">
+        <i class="pi pi-exclamation-triangle text-2xl text-warning"></i>
         <span>File Already Exists</span>
       </div>
     </template>
 
     <!-- File Info Cards -->
-    <div class="file-info-cards">
-      <div class="file-card source-card">
-        <div class="card-header">
-          <i class="pi pi-file-import"></i>
-          <strong>Source file: {{ conflict.source.name }}</strong>
-        </div>
-        <div class="card-body">
-          <div class="info-row">
-            <span class="label">Path:</span>
-            <span class="value">{{ conflict.source.path }}</span>
+    <div class="flex flex-col gap-4 mb-6">
+      <Card
+        :pt="{
+          root: { class: 'file-card source-card' },
+          header: { class: 'file-card-header' },
+          body: { class: 'file-card-body' },
+          content: { class: 'file-card-content' }
+        }"
+      >
+        <template #header>
+          <div class="card-header">
+            <i class="pi pi-file-import"></i>
+            <strong>Source file: {{ conflict.source.name }}</strong>
           </div>
-          <div class="info-row">
-            <span class="label">Modified:</span>
-            <span class="value">{{ conflict.source.modifiedAt }}</span>
+        </template>
+        <template #content>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">Path:</span>
+              <span class="value">{{ conflict.source.path }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Modified:</span>
+              <span class="value">{{ conflict.source.modifiedAt }}</span>
+            </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </Card>
 
-      <div class="file-card target-card">
-        <div class="card-header">
-          <i class="pi pi-file"></i>
-          <strong>Target file: {{ conflict.target.name }}</strong>
-        </div>
-        <div class="card-body">
-          <div class="info-row">
-            <span class="label">Path:</span>
-            <span class="value">{{ conflict.target.path }}</span>
+      <Card
+        :pt="{
+          root: { class: 'file-card target-card' },
+          header: { class: 'file-card-header' },
+          body: { class: 'file-card-body' },
+          content: { class: 'file-card-content' }
+        }"
+      >
+        <template #header>
+          <div class="card-header">
+            <i class="pi pi-file"></i>
+            <strong>Target file: {{ conflict.target.name }}</strong>
           </div>
-          <div class="info-row">
-            <span class="label">Modified:</span>
-            <span class="value">{{ conflict.target.modifiedAt }}</span>
+        </template>
+        <template #content>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="label">Path:</span>
+              <span class="value">{{ conflict.target.path }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Modified:</span>
+              <span class="value">{{ conflict.target.modifiedAt }}</span>
+            </div>
           </div>
-        </div>
-      </div>
+        </template>
+      </Card>
     </div>
 
     <!-- Resolution Options -->
-    <div class="resolution-options" role="radiogroup" aria-label="Conflict resolution options">
+    <div class="flex flex-col gap-4" role="radiogroup" aria-label="Conflict resolution options">
       <div
         v-for="option in options"
         :key="option.value"
-        class="option"
-        :class="{ selected: selectedStrategy === option.value }"
+        class="flex gap-3 p-4 rounded-lg cursor-pointer transition-all duration-200 border-2"
+        :class="{
+          'bg-hover border-primary shadow-primary-focus': selectedStrategy === option.value,
+          'border-border-primary hover:bg-hover hover:border-primary': selectedStrategy !== option.value
+        }"
       >
         <RadioButton
           :id="option.value"
@@ -65,24 +90,27 @@
           :value="option.value"
           :name="'conflict-strategy'"
         />
-        <div class="option-content">
-          <label :for="option.value">
-            <i :class="option.icon" :style="option.color ? { color: option.color } : {}"></i>
-            <span class="option-label">{{ option.label }}</span>
+        <div class="flex-1 flex flex-col gap-2">
+          <label :for="option.value" class="flex items-center gap-2 cursor-pointer font-semibold text-base">
+            <i :class="[option.icon, option.value === 'overwrite' ? 'text-warning' : '']"></i>
+            <span>{{ option.label }}</span>
           </label>
-          <p class="option-description" :class="{ warning: option.value === 'overwrite' }">
+          <p
+            class="m-0 text-sm leading-6"
+            :class="option.value === 'overwrite' ? 'text-warning' : 'text-text-secondary'"
+          >
             {{ option.description }}
           </p>
-          <p v-if="option.value === 'rename' && selectedStrategy === 'rename'" class="rename-preview">
-            <i class="pi pi-arrow-right"></i>
-            Will copy as: <strong>{{ renamedFilename }}</strong>
+          <p v-if="option.value === 'rename' && selectedStrategy === 'rename'" class="mt-2 mb-0 p-2 rounded flex items-center gap-2 text-sm bg-bg-primary border-l-[3px] border-primary">
+            <i class="pi pi-arrow-right text-primary"></i>
+            Will copy as: <strong class="text-primary">{{ renamedFilename }}</strong>
           </p>
         </div>
       </div>
     </div>
 
     <template #footer>
-      <div class="dialog-footer">
+      <div class="flex justify-end gap-3">
         <Button
           label="Cancel"
           severity="secondary"
@@ -105,6 +133,7 @@ import { ref, computed } from 'vue'
 import Dialog from 'primevue/dialog'
 import RadioButton from 'primevue/radiobutton'
 import Button from 'primevue/button'
+import Card from 'primevue/card'
 
 const props = defineProps({
   visible: {
@@ -139,22 +168,19 @@ const options = [
     value: 'skip',
     label: "Skip - Don't copy this file",
     description: 'The file will not be copied. Target file remains unchanged.',
-    icon: 'pi pi-times-circle',
-    color: null
+    icon: 'pi pi-times-circle'
   },
   {
     value: 'overwrite',
     label: 'Overwrite - Replace target file',
     description: '⚠️ Warning: This will permanently delete the target file and replace it with the source file.',
-    icon: 'pi pi-exclamation-triangle',
-    color: 'var(--color-warning)'
+    icon: 'pi pi-exclamation-triangle'
   },
   {
     value: 'rename',
     label: 'Rename - Copy with new name',
     description: 'The file will be copied with a new name to avoid conflict.',
-    icon: 'pi pi-file',
-    color: null
+    icon: 'pi pi-file'
   }
 ]
 
@@ -197,48 +223,39 @@ const onConfirm = () => {
 </script>
 
 <style scoped>
-/* ========== Dialog Header ========== */
-.dialog-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.warning-icon {
-  color: var(--color-warning);
-  font-size: 1.5rem;
-}
-
-/* ========== File Info Cards ========== */
-.file-info-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.file-card {
+/* ========== File Info Cards - PrimeVue Overrides ========== */
+:deep(.file-card) {
   background: var(--bg-tertiary);
   border: 2px solid;
   border-radius: 8px;
-  padding: 1rem;
 }
 
-.source-card {
+:deep(.source-card) {
   border-color: var(--color-primary);
 }
 
-.target-card {
+:deep(.target-card) {
   border-color: var(--color-warning);
 }
 
+/* PrimeVue Card header/body/content padding adjustments */
+:deep(.file-card-header) {
+  padding: 1rem 1rem 0 1rem;
+}
+
+:deep(.file-card-body) {
+  padding: 0;
+}
+
+:deep(.file-card-content) {
+  padding: 0 1rem 1rem 1rem;
+}
+
+/* Card header styling */
 .card-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
   font-size: 1rem;
 }
 
@@ -246,14 +263,15 @@ const onConfirm = () => {
   font-size: 1.1rem;
 }
 
-.source-card .card-header i {
+:deep(.source-card) .card-header i {
   color: var(--color-primary);
 }
 
-.target-card .card-header i {
+:deep(.target-card) .card-header i {
   color: var(--color-warning);
 }
 
+/* Card body and info rows */
 .card-body {
   display: flex;
   flex-direction: column;
@@ -277,103 +295,9 @@ const onConfirm = () => {
   word-break: break-all;
 }
 
-/* ========== Resolution Options ========== */
-.resolution-options {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.option {
-  display: flex;
-  gap: 0.75rem;
-  padding: 1rem;
-  border: 2px solid var(--border-primary);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.option:hover {
-  background: var(--bg-hover);
-  border-color: var(--color-primary);
-}
-
-.option.selected {
-  background: var(--bg-hover);
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-focus-ring);
-}
-
-.option-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.option-content label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--text-primary);
-}
-
-.option-content label i {
-  font-size: 1.1rem;
-}
-
-.option-label {
-  font-weight: 600;
-}
-
-.option-description {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.option-description.warning {
-  color: var(--color-warning);
-  font-weight: 500;
-}
-
-.rename-preview {
-  margin: 0.5rem 0 0 0;
-  padding: 0.5rem;
-  background: var(--bg-primary);
-  border-left: 3px solid var(--color-primary);
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-radius: 4px;
-}
-
-.rename-preview i {
-  color: var(--color-primary);
-}
-
-.rename-preview strong {
-  color: var(--color-primary);
-  font-weight: 600;
-}
-
-/* ========== Dialog Footer ========== */
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
 /* ========== Accessibility ========== */
 /* Focus indicators for radio buttons */
-.option:focus-within {
+div[role="radiogroup"] > div:focus-within {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
@@ -389,26 +313,6 @@ const onConfirm = () => {
 @media (max-width: 768px) {
   :deep(.p-dialog) {
     width: 90vw !important;
-  }
-
-  .file-info-cards {
-    gap: 0.75rem;
-  }
-
-  .file-card {
-    padding: 0.75rem;
-  }
-
-  .option {
-    padding: 0.75rem;
-  }
-
-  .option-content label {
-    font-size: 0.95rem;
-  }
-
-  .option-description {
-    font-size: 0.85rem;
   }
 }
 </style>

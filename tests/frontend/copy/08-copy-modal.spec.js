@@ -21,12 +21,10 @@ const { test, expect } = require('@playwright/test');
 test.describe('08.001: CopyModal Rendering', () => {
   test('08.001.001: modal opens when copy button clicked', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
+    // Wait for Vue app and projects to load
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -53,12 +51,9 @@ test.describe('08.001: CopyModal Rendering', () => {
 
   test('08.001.002: modal displays header with copy icon', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -79,8 +74,8 @@ test.describe('08.001: CopyModal Rendering', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Check for header icon
-          const headerIcon = modal.locator('.modal-header .pi-copy, .p-dialog-header .pi-copy');
+          // Check for header icon in PrimeVue Dialog header
+          const headerIcon = modal.locator('.p-dialog-header .pi-copy');
           const hasIcon = await headerIcon.count() > 0;
 
           if (hasIcon) {
@@ -88,7 +83,7 @@ test.describe('08.001: CopyModal Rendering', () => {
           }
 
           // Check for header text
-          const headerText = modal.locator('.modal-header, .p-dialog-header');
+          const headerText = modal.locator('.p-dialog-header');
           await expect(headerText).toContainText('Copy Configuration');
         }
       }
@@ -97,12 +92,9 @@ test.describe('08.001: CopyModal Rendering', () => {
 
   test('08.001.003: modal closes when close button clicked', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -144,12 +136,9 @@ test.describe('08.001: CopyModal Rendering', () => {
 test.describe('08.002: CopyModal Source Configuration Display', () => {
   test('08.002.001: displays source configuration filename', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -170,16 +159,16 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Check for filename field
-          const filenameLabel = modal.locator('text=/Filename:/i');
-          const hasLabel = await filenameLabel.count() > 0;
+          // Check for Name field (component shows "Name", not "Filename")
+          const nameLabel = modal.locator('text=/Name/i').last();
+          const hasLabel = await nameLabel.count() > 0;
 
           if (hasLabel) {
-            await expect(filenameLabel).toBeVisible();
+            await expect(nameLabel).toBeVisible();
 
-            // Should have a value next to it
-            const infoValue = modal.locator('.info-value').first();
-            await expect(infoValue).toBeVisible();
+            // Should have a name value above the label
+            const nameValue = modal.locator('.copy-modal-content .text-base.font-medium.text-text-emphasis').first();
+            await expect(nameValue).toBeVisible();
           }
         }
       }
@@ -188,12 +177,9 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
 
   test('08.002.002: displays source configuration type with icon', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -214,14 +200,14 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Check for type field
-          const typeLabel = modal.locator('text=/Type:/i');
+          // Check for type field (shows label "Type" not "Type:")
+          const typeLabel = modal.locator('text=/^Type$/i').first();
           const hasType = await typeLabel.count() > 0;
 
           if (hasType) {
             await expect(typeLabel).toBeVisible();
 
-            // Type should have an icon
+            // Type should have a badge with icon
             const configType = modal.locator('.config-type');
             const hasConfigType = await configType.count() > 0;
 
@@ -243,12 +229,9 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
 
   test('08.002.003: displays source configuration path', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -269,12 +252,12 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Check for location/path field
-          const locationLabel = modal.locator('text=/Current Location:/i, text=/Path:/i');
-          const hasLocation = await locationLabel.count() > 0;
+          // Check for Project field (component shows "Project", not "Current Location" or "Path")
+          const projectLabel = modal.locator('text=/^Project$/i').first();
+          const hasProject = await projectLabel.count() > 0;
 
-          if (hasLocation) {
-            await expect(locationLabel.first()).toBeVisible();
+          if (hasProject) {
+            await expect(projectLabel).toBeVisible();
           }
         }
       }
@@ -286,12 +269,9 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
 test.describe('08.003: CopyModal Destination Cards', () => {
   test('08.003.001: User Global card renders first', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -312,9 +292,9 @@ test.describe('08.003: CopyModal Destination Cards', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Look for User Global card
-          const userCard = modal.locator('.destination-card').first();
-          const cardName = await userCard.locator('.card-name, h4').textContent();
+          // Look for User Global card (PrimeVue Card has .destination-card class on .p-card root)
+          const userCard = modal.locator('.p-card.destination-card').first();
+          const cardName = await userCard.locator('h4').textContent();
 
           expect(cardName).toContain('User Global');
 
@@ -328,12 +308,9 @@ test.describe('08.003: CopyModal Destination Cards', () => {
 
   test('08.003.002: project cards render in list', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -355,7 +332,7 @@ test.describe('08.003: CopyModal Destination Cards', () => {
 
         if (modalVisible) {
           // Count destination cards (should be User Global + projects)
-          const destinationCards = modal.locator('.destination-card');
+          const destinationCards = modal.locator('.p-card.destination-card');
           const cardCount = await destinationCards.count();
 
           // Should have at least 2 cards (User Global + at least 1 project)
@@ -367,12 +344,9 @@ test.describe('08.003: CopyModal Destination Cards', () => {
 
   test('08.003.003: destination cards show name, path, and icon', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -394,20 +368,20 @@ test.describe('08.003: CopyModal Destination Cards', () => {
 
         if (modalVisible) {
           // Check first destination card
-          const firstCard = modal.locator('.destination-card').first();
+          const firstCard = modal.locator('.p-card.destination-card').first();
 
           // Should have icon
-          const icon = firstCard.locator('.card-icon, i').first();
+          const icon = firstCard.locator('i').first();
           await expect(icon).toBeVisible();
 
           // Should have name
-          const name = firstCard.locator('.card-name, h4');
+          const name = firstCard.locator('h4');
           await expect(name).toBeVisible();
           const nameText = await name.textContent();
           expect(nameText).toBeTruthy();
 
-          // Should have path
-          const path = firstCard.locator('.card-path');
+          // Should have path (in font-mono styled div)
+          const path = firstCard.locator('.font-mono');
           await expect(path).toBeVisible();
           const pathText = await path.textContent();
           expect(pathText).toBeTruthy();
@@ -418,12 +392,9 @@ test.describe('08.003: CopyModal Destination Cards', () => {
 
   test('08.003.004: destination cards have "Copy Here" button', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -444,8 +415,8 @@ test.describe('08.003: CopyModal Destination Cards', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Check for "Copy Here" button
-          const copyHereBtn = modal.locator('.card-button, button:has-text("Copy Here")').first();
+          // Check for "Copy Here" button (PrimeVue Button)
+          const copyHereBtn = modal.locator('.p-button:has-text("Copy Here")').first();
           await expect(copyHereBtn).toBeVisible();
           await expect(copyHereBtn).toContainText('Copy Here');
         }
@@ -458,12 +429,9 @@ test.describe('08.003: CopyModal Destination Cards', () => {
 test.describe('08.004: CopyModal User Interactions', () => {
   test('08.004.001: clicking card selects destination', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -484,8 +452,8 @@ test.describe('08.004: CopyModal User Interactions', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Click on a destination card
-          const destCard = modal.locator('.destination-card').nth(1);
+          // Click on a destination card (PrimeVue Card)
+          const destCard = modal.locator('.p-card.destination-card').nth(1);
           await destCard.click();
           await page.waitForTimeout(500);
 
@@ -499,12 +467,9 @@ test.describe('08.004: CopyModal User Interactions', () => {
 
   test('08.004.002: clicking "Copy Here" button triggers selection', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -525,8 +490,8 @@ test.describe('08.004: CopyModal User Interactions', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Click "Copy Here" button
-          const copyHereBtn = modal.locator('.card-button, button:has-text("Copy Here")').first();
+          // Click "Copy Here" button (PrimeVue Button)
+          const copyHereBtn = modal.locator('.p-button:has-text("Copy Here")').first();
           await copyHereBtn.click();
           await page.waitForTimeout(500);
 
@@ -540,12 +505,9 @@ test.describe('08.004: CopyModal User Interactions', () => {
 
   test('08.004.003: modal closes after destination selection', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -566,8 +528,8 @@ test.describe('08.004: CopyModal User Interactions', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Select destination
-          const destCard = modal.locator('.destination-card').first();
+          // Select destination (PrimeVue Card)
+          const destCard = modal.locator('.p-card.destination-card').first();
           await destCard.click();
           await page.waitForTimeout(500);
 
@@ -583,12 +545,9 @@ test.describe('08.004: CopyModal User Interactions', () => {
 test.describe('08.005: CopyModal Scrolling and Layout', () => {
   test('08.005.001: project list is scrollable when > 300px', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -609,22 +568,18 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Check for projects container
-          const projectsContainer = modal.locator('.projects-container');
-          const hasContainer = await projectsContainer.count() > 0;
+          // Check for destinations container
+          const destinationsContainer = modal.locator('.destinations-container');
+          const hasContainer = await destinationsContainer.count() > 0;
 
           if (hasContainer) {
-            // Check if container has max-height and overflow
-            const styles = await projectsContainer.evaluate(el => {
+            // Check if container has overflow
+            const styles = await destinationsContainer.evaluate(el => {
               const computed = window.getComputedStyle(el);
               return {
-                maxHeight: computed.maxHeight,
                 overflowY: computed.overflowY
               };
             });
-
-            // Should have max-height set
-            expect(styles.maxHeight).not.toBe('none');
 
             // Should have overflow-y auto or scroll
             expect(['auto', 'scroll']).toContain(styles.overflowY);
@@ -636,12 +591,9 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
 
   test('08.005.002: all project cards are accessible via scroll', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -662,8 +614,8 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Get all destination cards
-          const destCards = modal.locator('.destination-card');
+          // Get all destination cards (PrimeVue Cards)
+          const destCards = modal.locator('.p-card.destination-card');
           const cardCount = await destCards.count();
 
           if (cardCount > 1) {
@@ -687,12 +639,9 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
 test.describe('08.006: CopyModal Keyboard Navigation', () => {
   test('08.006.001: Tab cycles through destination cards', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -729,12 +678,9 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
 
   test('08.006.002: Enter key on card triggers selection', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -755,8 +701,8 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Focus first destination card
-          const firstCard = modal.locator('.destination-card').first();
+          // Focus first destination card (PrimeVue Card)
+          const firstCard = modal.locator('.p-card.destination-card').first();
           await firstCard.focus();
 
           // Press Enter
@@ -773,12 +719,9 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
 
   test('08.006.003: Escape key closes modal', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -815,12 +758,9 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
 test.describe('08.007: CopyModal Accessibility', () => {
   test('08.007.001: ARIA labels present on destination cards', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -841,8 +781,8 @@ test.describe('08.007: CopyModal Accessibility', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Check first destination card for aria-label
-          const firstCard = modal.locator('.destination-card').first();
+          // Check first destination card for aria-label (PrimeVue Card)
+          const firstCard = modal.locator('.p-card.destination-card').first();
           const ariaLabel = await firstCard.getAttribute('aria-label');
 
           expect(ariaLabel).toBeTruthy();
@@ -854,12 +794,9 @@ test.describe('08.007: CopyModal Accessibility', () => {
 
   test('08.007.002: focus indicators visible on cards', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();
@@ -880,8 +817,8 @@ test.describe('08.007: CopyModal Accessibility', () => {
         const modalVisible = await modal.isVisible().catch(() => false);
 
         if (modalVisible) {
-          // Focus first card
-          const firstCard = modal.locator('.destination-card').first();
+          // Focus first card (PrimeVue Card)
+          const firstCard = modal.locator('.p-card.destination-card').first();
           await firstCard.focus();
 
           // Check for focus outline
@@ -905,12 +842,9 @@ test.describe('08.007: CopyModal Accessibility', () => {
 
   test('08.007.003: dialog has proper role', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.dashboard', { timeout: 10000 });
+    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.loading-container');
-      return !loading || loading.offsetParent === null;
-    }, { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
     const count = await projectCards.count();

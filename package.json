@@ -1,6 +1,6 @@
 {
   "name": "claude-code-config-manager",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers",
   "main": "src/backend/server.js",
   "bin": {
@@ -46,6 +46,7 @@
   "author": "Mike Eckert",
   "license": "MIT",
   "dependencies": {
+    "@primevue/themes": "^4.4.1",
     "@vitejs/plugin-vue": "^6.0.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",
@@ -53,17 +54,22 @@
     "pinia": "^3.0.3",
     "primeicons": "^7.0.0",
     "primevue": "^4.4.1",
+    "tailwindcss-primeui": "^0.6.1",
     "vite": "^7.1.10",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
+    "@tailwindcss/postcss": "^4.1.17",
     "@vue/test-utils": "^2.4.6",
+    "autoprefixer": "^10.4.22",
     "axe-playwright": "^2.2.2",
     "happy-dom": "^20.0.10",
     "jest": "^30.2.0",
+    "postcss": "^8.5.6",
     "supertest": "^7.1.4",
+    "tailwindcss": "^4.1.17",
     "vitest": "^4.0.8"
   },
   "engines": {

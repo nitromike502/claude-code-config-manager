@@ -1,30 +1,59 @@
 <template>
   <div class="loading-state">
-    <div
-      v-for="n in count"
-      :key="n"
-      class="skeleton"
-      :class="`skeleton-${type}`"
-    ></div>
+    <!-- Message display (if provided) -->
+    <div v-if="message" class="loading-message">
+      <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+      <p>{{ message }}</p>
+    </div>
+
+    <!-- Skeleton layouts (if type is specified) -->
+    <template v-if="type">
+      <!-- Item type: Simple text skeleton -->
+      <template v-if="type === 'item'">
+        <div v-for="n in count" :key="n" class="item-skeleton">
+          <Skeleton height="2rem" class="mb-2"></Skeleton>
+          <Skeleton height="1rem" width="80%"></Skeleton>
+        </div>
+      </template>
+
+      <!-- Card type: Realistic card layout -->
+      <template v-if="type === 'card'">
+        <div v-for="n in count" :key="n" class="card-skeleton">
+          <Skeleton height="3rem" class="mb-3"></Skeleton>
+          <Skeleton height="1.5rem" count="2" class="mb-2"></Skeleton>
+          <Skeleton height="1rem" width="60%"></Skeleton>
+        </div>
+      </template>
+
+      <!-- List type: Compact row skeleton -->
+      <template v-if="type === 'list'">
+        <div v-for="n in count" :key="n" class="list-skeleton">
+          <Skeleton height="1.5rem"></Skeleton>
+        </div>
+      </template>
+    </template>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'LoadingState',
-  props: {
-    count: {
-      type: Number,
-      default: 3,
-      validator: (value) => value > 0
-    },
-    type: {
-      type: String,
-      default: 'item',
-      validator: (value) => ['item', 'card', 'list'].includes(value)
-    }
+<script setup>
+import Skeleton from 'primevue/skeleton'
+
+defineProps({
+  count: {
+    type: Number,
+    default: 3,
+    validator: (value) => value > 0
+  },
+  type: {
+    type: String,
+    default: null,
+    validator: (value) => !value || ['item', 'card', 'list'].includes(value)
+  },
+  message: {
+    type: String,
+    default: null
   }
-}
+})
 </script>
 
 <style scoped>
@@ -35,51 +64,51 @@ export default {
   width: 100%;
 }
 
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--bg-primary) 0%,
-    var(--border-primary) 50%,
-    var(--bg-primary) 100%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s ease-in-out infinite;
+/* Loading message with spinner */
+.loading-message {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.loading-message i {
+  font-size: 2rem;
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.loading-message p {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Item skeleton: Minimal text content */
+.item-skeleton {
+  padding: 0.5rem;
   border-radius: 4px;
 }
 
-@keyframes skeleton-loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+/* Card skeleton: More prominent, card-like layout */
+.card-skeleton {
+  padding: 1.5rem;
+  border: 1px solid var(--border-secondary);
+  border-radius: 6px;
+  background: var(--bg-secondary);
 }
 
-/* Skeleton Type Variants */
-.skeleton-item {
-  height: 60px;
-  width: 100%;
+/* List skeleton: Compact row layout */
+.list-skeleton {
+  padding: 0.5rem;
+  border-radius: 4px;
 }
 
-.skeleton-card {
-  height: 150px;
-  width: 100%;
+/* Spacing utilities for Skeleton children */
+.mb-2 {
+  margin-bottom: 0.5rem;
 }
 
-.skeleton-list {
-  height: 40px;
-  width: 100%;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .skeleton-item {
-    height: 50px;
-  }
-
-  .skeleton-card {
-    height: 120px;
-  }
+.mb-3 {
+  margin-bottom: 0.75rem;
 }
 </style>

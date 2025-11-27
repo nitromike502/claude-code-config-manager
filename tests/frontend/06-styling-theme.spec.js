@@ -24,14 +24,14 @@ test.describe('06.001: Theme Toggle Functionality', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500); // Wait for Vue to mount
 
-    // Get initial theme - Phase 2: Uses .app-container instead of html
-    const appContainer = page.locator('.app-container');
+    // Get initial theme - PrimeVue: Uses #app with data-theme attribute (last element, Vue replaces empty div)
+    const appContainer = page.locator('#app[data-theme]');
     const initialTheme = await appContainer.getAttribute('data-theme');
     expect(initialTheme).toBeTruthy();
     expect(['light', 'dark']).toContain(initialTheme);
 
-    // Click theme toggle
-    const themeToggle = page.locator('.theme-toggle');
+    // Click theme toggle - PrimeVue: Button with aria-label
+    const themeToggle = page.locator('button[aria-label="Toggle theme"]');
     await expect(themeToggle).toBeVisible({ timeout: 10000 });
     await themeToggle.click();
 
@@ -49,12 +49,12 @@ test.describe('06.001: Theme Toggle Functionality', () => {
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
 
-    // Set to light theme - Phase 2: Uses .app-container instead of html
-    const appContainer = page.locator('.app-container');
+    // Set to light theme - PrimeVue: Uses #app with data-theme attribute (last element, Vue replaces empty div)
+    const appContainer = page.locator('#app[data-theme]');
     let currentTheme = await appContainer.getAttribute('data-theme');
 
     if (currentTheme !== 'light') {
-      await page.click('.theme-toggle');
+      await page.click('button[aria-label="Toggle theme"]');
       await page.waitForTimeout(200);
     }
 
@@ -72,12 +72,12 @@ test.describe('06.001: Theme Toggle Functionality', () => {
   });
 
   test('06.001.003: theme toggle works from any route', async ({ page }) => {
-    // Test from dashboard - Phase 2: Uses .app-container instead of html
+    // Test from dashboard - PrimeVue: Uses #app with data-theme attribute (last element, Vue replaces empty div)
     await page.goto('/');
-    const appContainer = page.locator('.app-container');
+    const appContainer = page.locator('#app[data-theme]');
     const dashboardTheme = await appContainer.getAttribute('data-theme');
 
-    await page.click('.theme-toggle');
+    await page.click('button[aria-label="Toggle theme"]');
     await page.waitForTimeout(200);
 
     const newTheme = await appContainer.getAttribute('data-theme');
@@ -88,7 +88,7 @@ test.describe('06.001: Theme Toggle Functionality', () => {
     await page.waitForLoadState('networkidle');
 
     // Verify theme persisted across navigation
-    const userAppContainer = page.locator('.app-container');
+    const userAppContainer = page.locator('#app[data-theme]');
     const userRouteTheme = await userAppContainer.getAttribute('data-theme');
     expect(userRouteTheme).toBe(newTheme);
   });
@@ -99,12 +99,12 @@ test.describe('06.002: Dark Mode Styling', () => {
   test('06.002.001: dark mode colors applied correctly', async ({ page }) => {
     await page.goto('/');
 
-    // Ensure dark mode - Phase 2: Uses .app-container instead of html
-    const appContainer = page.locator('.app-container');
+    // Ensure dark mode - PrimeVue: Uses #app with data-theme attribute (last element, Vue replaces empty div)
+    const appContainer = page.locator('#app[data-theme]');
     let currentTheme = await appContainer.getAttribute('data-theme');
 
     if (currentTheme !== 'dark') {
-      await page.click('.theme-toggle');
+      await page.click('button[aria-label="Toggle theme"]');
       await page.waitForTimeout(200);
     }
 
@@ -128,40 +128,40 @@ test.describe('06.002: Dark Mode Styling', () => {
   test('06.002.002: dark mode affects all components', async ({ page }) => {
     await page.goto('/');
 
-    // Set to dark mode - Phase 2: Uses .app-container instead of html
-    const appContainer = page.locator('.app-container');
+    // Set to dark mode - PrimeVue: Uses #app with data-theme attribute (last element, Vue replaces empty div)
+    const appContainer = page.locator('#app[data-theme]');
     let currentTheme = await appContainer.getAttribute('data-theme');
 
     if (currentTheme !== 'dark') {
-      await page.click('.theme-toggle');
+      await page.click('button[aria-label="Toggle theme"]');
       await page.waitForTimeout(200);
     }
 
-    // Check header background
-    const header = page.locator('.app-header');
+    // Check header background - PrimeVue: Uses header element
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
     const headerBg = await header.evaluate((el) => {
       return window.getComputedStyle(el).backgroundColor;
     });
 
-    // Should have dark background
-    expect(headerBg).toMatch(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    // Should have a background color (rgb or rgba)
+    expect(headerBg).toMatch(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
   });
 });
 
 // Test Suite 06.003: Light Mode Styling
 test.describe('06.003: Light Mode Styling', () => {
   test('06.003.001: light mode colors applied correctly', async ({ page }) => {
-    // Phase 2 NOTE: Computed styles may differ due to Vue component implementation
+    // PrimeVue NOTE: Computed styles may differ due to PrimeVue component implementation
     await page.goto('/');
 
-    // Ensure light mode - Phase 2: Uses .app-container instead of html
-    const appContainer = page.locator('.app-container');
+    // Ensure light mode - PrimeVue: Uses #app with data-theme attribute (last element, Vue replaces empty div)
+    const appContainer = page.locator('#app[data-theme]');
     let currentTheme = await appContainer.getAttribute('data-theme');
 
     if (currentTheme !== 'light') {
-      await page.click('.theme-toggle');
+      await page.click('button[aria-label="Toggle theme"]');
       await page.waitForTimeout(200);
     }
 
@@ -185,25 +185,25 @@ test.describe('06.003: Light Mode Styling', () => {
   test('06.003.002: light mode affects all components', async ({ page }) => {
     await page.goto('/');
 
-    // Set to light mode
-    const html = page.locator('html');
-    let currentTheme = await html.getAttribute('data-theme');
+    // Set to light mode - PrimeVue: Uses #app with data-theme attribute (last element, Vue replaces empty div)
+    const appContainer = page.locator('#app[data-theme]');
+    let currentTheme = await appContainer.getAttribute('data-theme');
 
     if (currentTheme !== 'light') {
-      await page.click('.theme-toggle');
+      await page.click('button[aria-label="Toggle theme"]');
       await page.waitForTimeout(200);
     }
 
-    // Check header background
-    const header = page.locator('.app-header');
+    // Check header background - PrimeVue: Uses header element
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
     const headerBg = await header.evaluate((el) => {
       return window.getComputedStyle(el).backgroundColor;
     });
 
-    // Should have light background
-    expect(headerBg).toMatch(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    // Should have a background color (rgb or rgba)
+    expect(headerBg).toMatch(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
   });
 });
 
@@ -213,16 +213,13 @@ test.describe('06.004: Responsive Design', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
 
-    // Verify page renders
-    const header = page.locator('.app-header');
+    // Verify page renders - PrimeVue: Uses header element
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
-    // Check if project grid is responsive
-    const projectGrid = page.locator('.project-grid');
-    await expect(projectGrid).toBeVisible();
-
-    // Verify main content is visible
-    const main = page.locator('.app-main');
+    // Check if main content is visible - PrimeVue: Uses main element
+    // (grid created with Tailwind, may or may not have project cards)
+    const main = page.locator('main');
     await expect(main).toBeVisible();
   });
 
@@ -230,25 +227,25 @@ test.describe('06.004: Responsive Design', () => {
     await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto('/');
 
-    // Verify page renders
-    const header = page.locator('.app-header');
+    // Verify page renders - PrimeVue: Uses header element
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
-    // Check if dashboard renders properly
-    const dashboard = page.locator('.dashboard');
-    await expect(dashboard).toBeVisible();
+    // Check if dashboard renders properly (Dashboard component doesn't have .dashboard class)
+    const dashboardContent = page.locator('h2:has-text("Projects")');
+    await expect(dashboardContent).toBeVisible();
   });
 
   test('06.004.003: responsive layout on desktop (1920px)', async ({ page }) => {
     await page.setViewportSize({ width: 1920, height: 1080 });
     await page.goto('/');
 
-    // Verify page renders
-    const header = page.locator('.app-header');
+    // Verify page renders - PrimeVue: Uses header element
+    const header = page.locator('header');
     await expect(header).toBeVisible();
 
-    // Verify wide layout
-    const main = page.locator('.app-main');
+    // Verify wide layout - PrimeVue: Uses main element
+    const main = page.locator('main');
     await expect(main).toBeVisible();
 
     const width = await main.evaluate((el) => el.offsetWidth);
@@ -278,12 +275,12 @@ test.describe('06.005: Visual Regression Prevention', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    // Get initial header position
-    const header = page.locator('.app-header');
+    // Get initial header position - PrimeVue: Uses header element
+    const header = page.locator('header');
     const initialPos = await header.boundingBox();
 
-    // Toggle theme
-    await page.click('.theme-toggle');
+    // Toggle theme - PrimeVue: Button with aria-label
+    await page.click('button[aria-label="Toggle theme"]');
     await page.waitForTimeout(300);
 
     // Get new header position
@@ -298,12 +295,12 @@ test.describe('06.005: Visual Regression Prevention', () => {
   test('06.005.002: all text readable in both themes', async ({ page }) => {
     await page.goto('/');
 
-    // Test dark mode
-    const html = page.locator('html');
-    let currentTheme = await html.getAttribute('data-theme');
+    // Test dark mode - PrimeVue: Uses #app with data-theme attribute (last element, Vue replaces empty div)
+    const appContainer = page.locator('#app[data-theme]');
+    let currentTheme = await appContainer.getAttribute('data-theme');
 
     if (currentTheme !== 'dark') {
-      await page.click('.theme-toggle');
+      await page.click('button[aria-label="Toggle theme"]');
       await page.waitForTimeout(200);
     }
 
@@ -312,7 +309,7 @@ test.describe('06.005: Visual Regression Prevention', () => {
     await expect(h1).toBeVisible();
 
     // Toggle to light mode
-    await page.click('.theme-toggle');
+    await page.click('button[aria-label="Toggle theme"]');
     await page.waitForTimeout(200);
 
     // Check header text still visible
@@ -320,7 +317,7 @@ test.describe('06.005: Visual Regression Prevention', () => {
   });
 
   test('06.005.003: CSS variables are defined', async ({ page }) => {
-    // Phase 2 NOTE: CSS variables are defined on :root, not html element
+    // PrimeVue NOTE: CSS variables are defined on :root, not html element
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(500);
@@ -373,8 +370,8 @@ test.describe('06.006: Transition Smoothness', () => {
       return window.getComputedStyle(el).backgroundColor;
     });
 
-    // Toggle theme
-    await page.click('.theme-toggle');
+    // Toggle theme - PrimeVue: Button with aria-label
+    await page.click('button[aria-label="Toggle theme"]');
 
     // Wait for transition (CSS transition is 0.3s)
     await page.waitForTimeout(350);
@@ -401,7 +398,7 @@ test.describe('06.007: Console Errors', () => {
     });
 
     await page.goto('/');
-    await page.click('.theme-toggle');
+    await page.click('button[aria-label="Toggle theme"]');
     await page.waitForTimeout(300);
 
     // Should have no console errors

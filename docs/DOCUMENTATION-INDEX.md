@@ -1,7 +1,7 @@
 # Documentation Index
 
-**Last Updated:** November 18, 2025
-**Version:** Phase 3 Complete - Documentation Reorganized
+**Last Updated:** November 26, 2025
+**Version:** v2.2.0 - UI Modernization Complete
 
 This index provides a comprehensive guide to all documentation in the Claude Code Manager project. Use this as your starting point to find information about any aspect of the system.
 
@@ -53,6 +53,8 @@ This index provides a comprehensive guide to all documentation in the Claude Cod
 | Phase 2.1 - Component Refactoring | October 26, 2025 | Archived in ticketing system |
 | Phase 2.2 - Bug Fixes | October 27, 2025 | Completed via bug fixes |
 | Phase 2.3 - Production Readiness | November 1, 2025 | Completed via production fixes |
+| Phase 3 - Copy Configuration | November 13, 2025 | Released v2.1.0 |
+| Phase 3.1 - UI Modernization | November 26, 2025 | Released v2.2.0 |
 
 **Note:** Completed phase documentation is managed by the agile-ticket-manager agent in the ticketing system.
 
@@ -61,6 +63,7 @@ This index provides a comprehensive guide to all documentation in the Claude Cod
 | Feature | Document | Status | Priority |
 |---------|----------|--------|----------|
 | Copy Configuration | [PRD-Phase3-Copy-Configuration.md](prd/PRD-Phase3-Copy-Configuration.md) | ✅ Complete | Released v2.1.0 |
+| UI Modernization | [docs/guides/ROADMAP.md](guides/ROADMAP.md#phase-31---ui-modernization) | ✅ Complete | Released v2.2.0 |
 | Subagent Management | [PRD-Subagents.md](prd/PRD-Subagents.md) | 📝 Planned | High |
 | Command Management | [PRD-Commands.md](prd/PRD-Commands.md) | 📝 Planned | Medium |
 | Hooks Configuration | [PRD-Hooks.md](prd/PRD-Hooks.md) | 📝 Planned | Medium |

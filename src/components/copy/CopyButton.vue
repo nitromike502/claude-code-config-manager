@@ -2,12 +2,13 @@
   <Button
     :label="showLabel ? 'Copy to...' : ''"
     icon="pi pi-copy"
-    severity="secondary"
+    outlined
+    size="small"
     :disabled="isDisabled"
     :aria-label="ariaLabel"
     v-tooltip.top="tooltipText"
     @click="handleClick"
-    class="copy-button"
+    class="copy-btn"
   />
 </template>
 
@@ -61,10 +62,10 @@ const ariaLabel = computed(() => {
 const tooltipText = computed(() => {
   // Check if disabled due to plugin
   if (isPluginItem.value) {
-    return 'This configuration is provided by a plugin and cannot be copied';
+    return 'Plugin config cannot be copied';
   }
   // Default tooltip
-  return 'Copy this configuration to another project or user-level';
+  return 'Copy to another project';
 });
 
 // Handle button click
@@ -76,35 +77,11 @@ const handleClick = () => {
 </script>
 
 <style scoped>
-/* Copy Button Styling */
-.copy-button {
-  /* Use PrimeVue's default button styles with CSS variables */
-  transition: all 0.2s ease;
-}
-
-/* Focus indicator for accessibility (WCAG 2.1 AA) */
-.copy-button:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
-}
-
-/* Disabled state styling */
-.copy-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  color: var(--text-disabled);
-}
-
-/* Hover state for non-disabled buttons */
-.copy-button:not(:disabled):hover {
-  background-color: var(--bg-hover);
-}
-
-/* Responsive adjustments */
-@media (max-width: 767px) {
-  .copy-button {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-  }
+/* Copy Button - Match View button hover styles */
+.copy-btn:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
 }
 </style>

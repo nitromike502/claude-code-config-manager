@@ -208,17 +208,17 @@ test.describe('05.006: API Integration - Components Use API Client', () => {
       // Wait for URL to change to project detail
       await page.waitForURL(/\/project\/.*/, { timeout: 5000 });
 
-      // Wait for loading to complete and config cards to appear
-      await page.waitForSelector('.config-card', { timeout: 15000 });
+      // Wait for loading to complete and config panels to appear (Phase 2 uses .config-panel)
+      await page.waitForSelector('.config-panel', { timeout: 15000 });
 
-      // Give time for all config cards to render
+      // Give time for all config panels to render
       await page.waitForTimeout(1000);
 
-      // Verify config cards are visible (loaded via API)
-      const configCards = page.locator('.config-card');
-      const finalCount = await configCards.count();
+      // Verify config panels are visible (loaded via API)
+      const configPanels = page.locator('.config-panel');
+      const finalCount = await configPanels.count();
 
-      // Should have 4 cards (agents, commands, hooks, mcp)
+      // Should have 4 panels (agents, commands, hooks, mcp)
       expect(finalCount).toBeGreaterThanOrEqual(4);
     } else {
       test.skip(true, 'No regular project cards found');
@@ -228,12 +228,12 @@ test.describe('05.006: API Integration - Components Use API Client', () => {
   test('05.006.003: UserGlobal loads user configurations via API client', async ({ page }) => {
     await page.goto('http://localhost:5173/user');
 
-    // Wait for user page to load
-    await page.waitForSelector('.config-card, .loading-container', { timeout: 10000 });
+    // Wait for user page to load - look for page title first
+    await page.waitForSelector('span:has-text("User Configurations")', { timeout: 10000 });
 
-    // Verify config cards are visible (loaded via API)
-    const configCards = page.locator('.config-card');
-    expect(await configCards.count()).toBeGreaterThanOrEqual(4); // agents, commands, hooks, mcp
+    // Verify config panels are visible (loaded via API) - Phase 2 uses .config-panel
+    const configPanels = page.locator('.config-panel');
+    expect(await configPanels.count()).toBeGreaterThanOrEqual(4); // agents, commands, hooks, mcp
   });
 });
 
@@ -242,8 +242,8 @@ test.describe('05.007: API Integration - Timeout Handling', () => {
   test('05.007.001: API client has timeout protection in place', async ({ page }) => {
     await page.goto('http://localhost:5173');
 
-    // Verify the app loads without hanging
-    const loaded = await page.waitForSelector('.dashboard, .error-state', { timeout: 15000 });
+    // Verify the app loads without hanging - Phase 2 uses h2 "Projects" for dashboard
+    const loaded = await page.waitForSelector('h2:has-text("Projects"), .error-state', { timeout: 15000 });
     expect(loaded).toBeTruthy();
   });
 });
@@ -258,10 +258,11 @@ test.describe('05.008: API Integration - Cross-Browser Compatibility', () => {
 
     // Navigate to user page
     await page.goto('http://localhost:5173/user');
-    await page.waitForSelector('.config-card, .loading-container', { timeout: 10000 });
+    // Wait for page title - Phase 2 user page structure
+    await page.waitForSelector('span:has-text("User Configurations")', { timeout: 10000 });
 
-    // Verify data loaded successfully in this browser
-    const hasContent = await page.locator('.config-card, .empty-state').count();
+    // Verify data loaded successfully in this browser - Phase 2 uses .config-panel
+    const hasContent = await page.locator('.config-panel, .empty-state').count();
     expect(hasContent).toBeGreaterThan(0);
   });
 });
@@ -283,7 +284,8 @@ test.describe('05.009: API Integration - No Console Errors', () => {
 
     // Navigate to user page
     await page.goto('http://localhost:5173/user');
-    await page.waitForSelector('.config-card, .loading-container', { timeout: 10000 });
+    // Wait for page title - Phase 2 user page structure
+    await page.waitForSelector('span:has-text("User Configurations")', { timeout: 10000 });
 
     // Navigate back to dashboard
     await page.goto('http://localhost:5173');

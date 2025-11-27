@@ -58,7 +58,7 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     timestamp: new Date().toISOString(),
     version: '1.0.1',
-    service: 'claude-code-manager'
+    service: 'claude-code-config-manager'
   });
 });
 
@@ -98,7 +98,7 @@ app.use((err, req, res, next) => {
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log('='.repeat(60));
-    console.log(`Claude Code Manager Backend Server`);
+    console.log(`Claude Code Config Manager Backend Server`);
     console.log('='.repeat(60));
     console.log(`Server running on: http://localhost:${PORT}`);
     console.log(`API base URL: http://localhost:${PORT}/api`);

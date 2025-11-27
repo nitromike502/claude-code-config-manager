@@ -64,9 +64,9 @@ Hooks in `settings.json` follow this structure:
 
 **Top-level keys under "hooks":**
 
-Valid events: `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `Notification`, `Stop`, `SubagentStop`, `PreCompact`, `SessionStart`, `SessionEnd`
+Valid events: `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `PermissionRequest`, `Notification`, `Stop`, `SubagentStop`, `PreCompact`, `SessionStart`, `SessionEnd`
 
-**Important:** Only `PreToolUse` and `PostToolUse` support the "matcher" field. Other events ignore matcher if present.
+**Important:** Only `PreToolUse`, `PostToolUse`, and `PermissionRequest` support the "matcher" field. Other events ignore matcher if present.
 
 ### Level 2 - Matcher Entries
 

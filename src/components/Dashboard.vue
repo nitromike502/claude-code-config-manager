@@ -1,89 +1,101 @@
 <template>
-  <div class="dashboard">
-    <div class="main-content">
-      <div class="dashboard-container">
-        <div class="dashboard-header">
-          <h2>Projects</h2>
-          <div class="dashboard-actions">
-            <select v-model="sortBy" class="sort-dropdown">
-              <option value="name-asc">Name (A-Z)</option>
-              <option value="name-desc">Name (Z-A)</option>
-              <option value="agents">Most Agents</option>
-              <option value="commands">Most Commands</option>
-            </select>
-            <button
+  <div class="w-full">
+    <!-- Mobile-first padding: p-4 on mobile, p-8 on desktop -->
+    <div class="p-4 md:p-8">
+      <!-- Max width container (1400px = 87.5rem, closest is 7xl at 80rem) -->
+      <div class="max-w-7xl mx-auto">
+        <!-- Dashboard header: flex layout with responsive behavior -->
+        <div class="flex justify-between items-center mb-6 flex-wrap gap-4 md:flex-row flex-col md:items-center items-stretch">
+          <!-- Title with Tailwind text color -->
+          <h2 class="m-0 text-[1.75rem] text-text-primary">Projects</h2>
+          <!-- Actions: responsive flex layout -->
+          <div class="flex gap-3 items-center md:flex-row flex-col">
+            <!-- PrimeVue Select for sort selection -->
+            <Select
+              v-model="sortBy"
+              :options="sortOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Sort by..."
+              class="min-w-[200px]"
+            />
+            <!-- PrimeVue Button with animate-spin for icon -->
+            <Button
               @click="handleRescan"
               :disabled="scanning"
-              class="rescan-btn"
-            >
-              <i class="pi pi-refresh" :class="{ spinning: scanning }"></i>
-              {{ scanning ? 'Scanning...' : 'Rescan' }}
-            </button>
+              :label="scanning ? 'Scanning...' : 'Rescan'"
+              icon="pi pi-refresh"
+              :class="{ 'animate-spin-icon': scanning }"
+            />
           </div>
         </div>
 
         <!-- Loading State -->
-        <div v-if="projectsStore.isLoading" class="loading-container">
-          <div class="spinner"></div>
-          <p>Loading projects...</p>
-        </div>
+        <LoadingState v-if="projectsStore.isLoading" message="Loading projects..." />
 
         <!-- Error State -->
-        <div v-else-if="projectsStore.error" class="error-state">
-          <h4>Error Loading Projects</h4>
-          <p>{{ projectsStore.error }}</p>
-          <button @click="loadProjects" class="retry-btn">Retry</button>
-        </div>
+        <ErrorState
+          v-else-if="projectsStore.error"
+          title="Error Loading Projects"
+          :message="projectsStore.error"
+          retryText="Retry"
+          @retry="loadProjects"
+        />
 
         <!-- Empty State -->
-        <div v-else-if="sortedProjects.length === 0" class="empty-state">
-          <i class="pi pi-folder"></i>
-          <h3>No Projects Found</h3>
-          <p>Add projects in Claude Code and click "Rescan" to see them here.</p>
-        </div>
+        <EmptyState
+          v-else-if="sortedProjects.length === 0"
+          icon="pi pi-folder"
+          title="No Projects Found"
+          message="Add projects in Claude Code and click 'Rescan' to see them here."
+        />
 
-        <!-- Projects Grid -->
-        <div v-else class="project-grid">
-          <div
+        <!-- Projects Grid with responsive auto-fill layout -->
+        <div v-else class="grid gap-5 grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
+          <!-- Using PrimeVue Card component with passthrough props -->
+          <Card
             v-for="project in sortedProjects"
             :key="project.id"
-            class="project-card"
-            :class="{ 'user-card': project.isUser }"
+            :pt="projectCardPt"
+            :class="['project-card', { 'user-card': project.isUser }]"
             @click="navigateToProject(project.id)"
           >
-            <div class="project-header">
-              <i :class="project.isUser ? 'pi pi-user' : 'pi pi-folder'"></i>
-              <h3 class="project-name">{{ project.name }}</h3>
-            </div>
+            <!-- Header slot -->
+            <template #header>
+              <div class="project-header">
+                <i :class="project.isUser ? 'pi pi-user' : 'pi pi-folder'"></i>
+                <h3 class="project-name">{{ project.name }}</h3>
+              </div>
+            </template>
 
-            <div class="project-path">{{ project.path }}</div>
+            <!-- Content slot -->
+            <template #content>
+              <div class="project-path">{{ project.path }}</div>
 
-            <div class="project-stats">
-              <div class="stat stat-agents">
-                <i class="pi pi-users"></i>
-                <span>{{ project.stats?.agents || 0 }} Agents</span>
+              <div class="project-stats">
+                <div class="stat stat-agents">
+                  <i class="pi pi-users"></i>
+                  <span>{{ project.stats?.agents || 0 }} Agents</span>
+                </div>
+                <div class="stat stat-commands">
+                  <i class="pi pi-bolt"></i>
+                  <span>{{ project.stats?.commands || 0 }} Commands</span>
+                </div>
+                <div class="stat stat-hooks">
+                  <i class="pi pi-link"></i>
+                  <span>{{ project.stats?.hooks || 0 }} Hooks</span>
+                </div>
+                <div class="stat stat-mcp">
+                  <i class="pi pi-server"></i>
+                  <span>{{ project.stats?.mcp || 0 }} MCP</span>
+                </div>
               </div>
-              <div class="stat stat-commands">
-                <i class="pi pi-bolt"></i>
-                <span>{{ project.stats?.commands || 0 }} Commands</span>
-              </div>
-              <div class="stat stat-hooks">
-                <i class="pi pi-link"></i>
-                <span>{{ project.stats?.hooks || 0 }} Hooks</span>
-              </div>
-              <div class="stat stat-mcp">
-                <i class="pi pi-server"></i>
-                <span>{{ project.stats?.mcp || 0 }} MCP</span>
-              </div>
-            </div>
 
-            <div class="project-footer">
-              <button class="view-btn">
-                View
-                <i class="pi pi-arrow-right"></i>
-              </button>
-            </div>
-          </div>
+              <div class="project-footer">
+                <Button label="View" icon="pi pi-arrow-right" iconPos="right" class="view-btn" />
+              </div>
+            </template>
+          </Card>
         </div>
       </div>
     </div>
@@ -95,9 +107,16 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
 import * as api from '@/api/client'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import Select from 'primevue/select'
+import LoadingState from '@/components/common/LoadingState.vue'
+import EmptyState from '@/components/common/EmptyState.vue'
+import ErrorState from '@/components/common/ErrorState.vue'
 
 export default {
   name: 'Dashboard',
+  components: { Button, Card, Select, LoadingState, EmptyState, ErrorState },
   setup() {
     const router = useRouter()
     const projectsStore = useProjectsStore()
@@ -105,6 +124,14 @@ export default {
     const sortBy = ref('name-asc')
     const scanning = ref(false)
     const userConfig = ref(null)
+
+    // Sort options for PrimeVue Dropdown
+    const sortOptions = [
+      { label: 'Name (A-Z)', value: 'name-asc' },
+      { label: 'Name (Z-A)', value: 'name-desc' },
+      { label: 'Most Agents', value: 'agents' },
+      { label: 'Most Commands', value: 'commands' }
+    ]
 
     // Load user config stats
     const loadUserConfig = async () => {
@@ -198,7 +225,7 @@ export default {
       projectsStore.setSearchQuery(e.detail)
     }
 
-    // Listen for search from header (backwards compat with Phase 1)
+    // Listen for search from header
     onMounted(async () => {
       if (!projectsStore.projects.length) {
         await loadProjects()
@@ -215,93 +242,48 @@ export default {
       window.removeEventListener('header-search', handleHeaderSearch)
     })
 
+    // PrimeVue Card passthrough configuration
+    const projectCardPt = {
+      root: {
+        class: 'project-card-root',
+        style: { overflow: 'hidden' }
+      },
+      header: {
+        class: 'project-card-header',
+        style: {
+          padding: '0',
+          backgroundColor: 'transparent',
+          border: 'none'
+        }
+      },
+      body: {
+        class: 'project-card-body',
+        style: { padding: '0' }
+      },
+      content: {
+        class: 'project-card-content',
+        style: { padding: '1.5rem' }
+      }
+    }
+
     return {
       projectsStore,
       sortBy,
+      sortOptions,
       scanning,
       sortedProjects,
       loadProjects,
       handleRescan,
-      navigateToProject
+      navigateToProject,
+      projectCardPt
     }
   }
 }
 </script>
 
 <style scoped>
-.dashboard {
-  width: 100%;
-}
-
-.main-content {
-  padding: 2rem;
-}
-
-.dashboard-container {
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.dashboard-header h2 {
-  margin: 0;
-  font-size: 1.75rem;
-  color: var(--text-primary);
-}
-
-.dashboard-actions {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.sort-dropdown {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-primary);
-  border-radius: 4px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  cursor: pointer;
-  min-width: 200px;
-}
-
-.sort-dropdown:hover {
-  border-color: var(--color-primary);
-}
-
-.rescan-btn {
-  padding: 0.5rem 1.25rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background 0.2s;
-}
-
-.rescan-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover);
-}
-
-.rescan-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.rescan-btn i.spinning {
+/* Custom animation for spinning icon (Tailwind animate-spin targets the element itself) */
+.animate-spin-icon :deep(.pi-refresh) {
   animation: spin 1s linear infinite;
 }
 
@@ -310,105 +292,22 @@ export default {
   to { transform: rotate(360deg); }
 }
 
-/* Loading State */
-.loading-container {
-  text-align: center;
-  padding: 3rem 1rem;
-}
-
-.spinner {
-  border: 3px solid var(--border-primary);
-  border-top: 3px solid var(--color-primary);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-.loading-container p {
-  color: var(--text-secondary);
-}
-
-/* Error State */
-.error-state {
-  text-align: center;
-  padding: 3rem 1rem;
-  color: var(--color-error);
-}
-
-.error-state h4 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.25rem;
-}
-
-.error-state p {
-  margin: 0 0 1.5rem 0;
-}
-
-.retry-btn {
-  padding: 0.5rem 1.5rem;
-  background: var(--color-error);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.95rem;
-}
-
-.retry-btn:hover {
-  background: var(--color-error);
-}
-
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: 4rem 1rem;
-  color: var(--text-secondary);
-}
-
-.empty-state i {
-  font-size: 4rem;
-  opacity: 0.3;
-  margin-bottom: 1rem;
-}
-
-.empty-state h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.5rem;
-  color: var(--text-primary);
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: 1rem;
-}
-
-/* Projects Grid */
-.project-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.25rem;
-}
-
+/* Project Card - PrimeVue Card customization */
 .project-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-primary);
   border-radius: 8px;
-  padding: 1.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 }
 
 .project-card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-hover-md);
   transform: translateY(-2px);
 }
 
+/* User Card Variant */
 .project-card.user-card {
   border-color: var(--color-user);
   background: var(--bg-primary);
@@ -416,18 +315,19 @@ export default {
 
 .project-card.user-card:hover {
   border-color: var(--color-user);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+  box-shadow: var(--shadow-hover-md);
 }
 
+/* Project Card Header */
 .project-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  padding: 1.25rem 1.5rem 0.75rem;
 }
 
 .project-header i {
   font-size: 1.5rem;
-  color: var(--color-primary);
 }
 
 .user-card .project-header i {
@@ -442,8 +342,10 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
 }
 
+/* Project Card Content */
 .project-path {
   font-size: 0.85rem;
   color: var(--text-secondary);
@@ -453,12 +355,14 @@ export default {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  margin-bottom: 1rem;
 }
 
 .project-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .stat {
@@ -473,58 +377,21 @@ export default {
   font-size: 1rem;
 }
 
+/* Domain-specific stat icon colors */
 .stat-agents i { color: var(--color-agents); }
 .stat-commands i { color: var(--color-commands); }
 .stat-hooks i { color: var(--color-hooks); }
 .stat-mcp i { color: var(--color-mcp); }
 
+/* Project Card Footer */
 .project-footer {
-  margin-top: auto;
-  padding-top: 0.5rem;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--border-primary);
 }
 
 .view-btn {
   width: 100%;
-  padding: 0.5rem 1rem;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: background 0.2s;
 }
 
-.view-btn:hover {
-  background: var(--color-primary-hover);
-}
-
-.view-btn i {
-  font-size: 0.9rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .dashboard-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .dashboard-actions {
-    flex-direction: column;
-  }
-
-  .sort-dropdown {
-    width: 100%;
-  }
-
-  .project-grid {
-    grid-template-columns: 1fr;
-  }
-}
+/* Responsive breakpoints handled by Tailwind responsive modifiers in template */
 </style>

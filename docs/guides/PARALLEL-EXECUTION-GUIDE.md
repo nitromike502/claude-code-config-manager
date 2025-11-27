@@ -312,8 +312,9 @@ Savings: 40% reduction
 ```
 ACTIVITY-1: Update documentation
 - Agent: documentation-engineer
-- Files: CHANGELOG.md, README.md
+- Files: README.md, API docs, guides
 - Dependencies: None (reads implementation files)
+- Note: CHANGELOG is not updated during PR development
 
 ACTIVITY-2: Code review
 - Agent: code-reviewer
