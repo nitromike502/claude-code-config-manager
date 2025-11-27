@@ -54,12 +54,8 @@ export default {
 <style scoped>
 /* ============================================
    Theme System
-   Status: Complete - CSS custom properties (--bg-*, --text-*, --color-*, --shadow-*)
-   are properly defined in variables.css
-
-   Phase 3.1 Note: Tailwind CSS migration complete. Layout uses Tailwind utilities
-   (min-h-screen, flex, flex-col, px-8, py-4, flex-1, justify-between, items-center).
-   Theme variables remain in variables.css and are applied via style attribute.
-   Both themes (light/dark) are properly segregated with data-theme selector.
+   Layout: Tailwind utility classes (min-h-screen, flex, flex-col, px-8, py-4)
+   Theming: CSS custom properties (--bg-*, --text-*, --color-*) in variables.css
+   Theme Switching: Applied via data-theme attribute on #app element
    ============================================ */
 </style>
