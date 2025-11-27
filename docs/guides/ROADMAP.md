@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Claude Code Manager follows a phased development approach, building incrementally on a solid foundation. With Phase 1 MVP and Phase 2 - Vite Migration complete with 100% test coverage and all critical bugs resolved, the following phases will extend functionality while maintaining quality standards.
+Claude Code Config Manager follows a phased development approach, building incrementally on a solid foundation. With Phase 1 MVP and Phase 2 - Vite Migration complete with 100% test coverage and all critical bugs resolved, the following phases will extend functionality while maintaining quality standards.
 
 ## Development Philosophy
 
@@ -22,11 +22,11 @@ The Claude Code Manager follows a phased development approach, building incremen
 | Phase 2.3 - Production Readiness | ✅ Complete | Completed (Nov 1, 2025) | - |
 | Phase 3 - Copy Configuration | ✅ Complete | Completed (Nov 13, 2025) | High |
 | Phase 3.1 - UI Modernization | ✅ Complete | Completed (Nov 26, 2025) | High |
-| Phase 4 - Subagent CRUD | 📅 Planned | Q1 2026 | Medium |
-| Phase 6 - Command Management | 📅 Planned | Q1 2026 | Medium |
-| Phase 7 - Hooks Configuration | 📅 Planned | Q1 2026 | Medium |
-| Phase 8 - MCP Server Management | 📅 Planned | Q1 2026 | Medium |
-| Phase 9+ - Advanced Features | 🔮 Future | Q2+ 2026 | Low |
+| Subagent CRUD | 📅 Planned | Q1 2026 | Medium |
+| Command Management | 📅 Planned | Q1 2026 | Medium |
+| Hooks Configuration | 📅 Planned | Q1 2026 | Medium |
+| MCP Server Management | 📅 Planned | Q1 2026 | Medium |
+| Advanced Features | 🔮 Future | Q2+ 2026 | Low |
 
 ---
 
@@ -34,7 +34,7 @@ The Claude Code Manager follows a phased development approach, building incremen
 
 **Status:** ✅ Complete
 **Completed:** November 13, 2025
-**Priority:** High (First write operation in Claude Code Manager)
+**Priority:** High (First write operation in Claude Code Config Manager)
 
 ### Objective
 
@@ -204,94 +204,37 @@ Modernize the UI with PrimeVue Aura theme components and Tailwind CSS v4 integra
 
 ---
 
-## Phase 4 - Subagent CRUD
+## Future Work
 
-**Status:** Planned
-**Priority:** Medium
+### Planned Features (Q1 2026)
 
-### Features
-
+**Subagent CRUD**
 - Create, edit, and delete subagent definitions
-- YAML frontmatter validation
-- Live preview of subagent content
+- YAML frontmatter validation and live preview
 - Template system for common subagent types
 
-### User Value
-
-Enables users to manage their Claude Code subagents directly through the web interface, eliminating the need for manual file editing and reducing configuration errors.
-
----
-
-## Phase 6 - Command Management
-
-**Status:** Planned
-**Priority:** Medium
-
-### Features
-
+**Command Management**
 - Create, edit, and delete slash commands
 - Command testing and validation
-- Nested directory support
 - Import/export command libraries
 
-### User Value
-
-Simplifies slash command creation and sharing, making it easy to build and distribute custom command libraries across projects.
-
----
-
-## Phase 7 - Hooks Configuration
-
-**Status:** Planned
-**Priority:** Medium
-
-### Features
-
-- Visual hook editor
-- Hook testing and validation
+**Hooks Configuration**
+- Visual hook editor with validation
 - Pre-built hook templates
 - Hook dependency management
 
-### User Value
-
-Provides a user-friendly interface for configuring Claude Code hooks, making workflow automation accessible without JSON editing.
-
----
-
-## Phase 8 - MCP Server Management
-
-**Status:** Planned
-**Priority:** Medium
-
-### Features
-
+**MCP Server Management**
 - Add, edit, and remove MCP servers
-- Server configuration validation
-- Connection testing
+- Server configuration validation and connection testing
 - Server discovery and recommendations
 
-### User Value
-
-Streamlines MCP server setup and management, with built-in validation and testing to ensure correct configuration.
-
----
-
-## Advanced Features (Future)
-
-**Status:** Future - Not Yet Scheduled
-**Priority:** Low
-
-### Features
+### Future Considerations
 
 - Real-time file watching for automatic updates
 - Configuration version history and rollback
 - Bulk operations and batch editing
 - Multi-project synchronization
 - Configuration backup and restore
-
-### User Value
-
-Advanced functionality for power users and teams managing multiple projects, with enterprise-grade features like version control and bulk operations.
 
 ---
 
@@ -320,23 +263,16 @@ Advanced functionality for power users and teams managing multiple projects, wit
 - 63% reduction in custom CSS
 - Enhanced accessibility and responsive design
 
-### Why Phase 3 Before Phase 4-7?
+### Architecture Decisions
 
-Copy Configuration (Phase 3) was prioritized before other CRUD features because:
+Copy Configuration was implemented before CRUD features because:
 
 1. **Validates Write Infrastructure:** First write operation tests our security model and error handling
 2. **Lower Risk:** Copy operations are safer than create/update/delete (source remains unchanged)
 3. **High User Value:** Enables immediate productivity gains without requiring full CRUD
 4. **Foundation for CRUD:** Patterns established in copy operations inform create/update/delete features
 
-### Phase Dependencies
-
-```
-Phase 1 (MVP) → Phase 2 (Vite Migration) → Phase 2.1 (Refactoring) → Phase 3 (Copy) → Phase 3.1 (UI) → Phases 4-7 (CRUD) → Phase 8+ (Advanced)
-     ✅                ✅                         ✅                       ✅               ✅             📅 Planned       🔮 Future
-```
-
-**Key Insight:** Phase 3 (Copy Configuration) validated our write infrastructure. Phase 3.1 (UI Modernization) established modern component patterns. Phases 4-7 (CRUD features) can now be developed in parallel, as they operate on independent configuration types (agents, commands, hooks, MCP) and share the component foundation.
+**Key Insight:** Copy Configuration validated our write infrastructure. UI Modernization established modern component patterns. CRUD features can now be developed in parallel, as they operate on independent configuration types and share the component foundation.
 
 ### Success Criteria
 
@@ -360,7 +296,6 @@ Have ideas for features or improvements? See the following resources:
 
 ---
 
-**Last Updated:** 2025-11-26
-**Roadmap Version:** 1.6
-**Current Phase:** Phase 4 Planning 📅 - Subagent CRUD
-**Progress:** Phases 1-3.1 complete, Phase 4 planning in progress
+**Last Updated:** 2025-11-27
+**Roadmap Version:** 2.0
+**Status:** All core viewing and copy features complete. CRUD features planned for Q1 2026.

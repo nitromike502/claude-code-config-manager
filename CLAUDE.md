@@ -1,4 +1,4 @@
-# Claude Code Manager
+# Claude Code Config Manager
 
 A web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers.
 

@@ -63,7 +63,7 @@ async function checkIfRunning(port) {
       res.on('end', () => {
         try {
           const json = JSON.parse(data);
-          if (json.status === 'ok' && json.service === 'claude-code-manager') {
+          if (json.status === 'ok' && json.service === 'claude-code-config-manager') {
             resolve(true);
           } else {
             resolve(false);

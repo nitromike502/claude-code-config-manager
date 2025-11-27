@@ -2,7 +2,7 @@
   <div id="app" class="min-h-screen flex flex-col" :data-theme="themeStore.currentTheme">
     <header class="px-8 py-4 bg-bg-header border-b border-border-primary">
       <div class="flex justify-between items-center mb-2">
-        <h1>Claude Code Manager</h1>
+        <h1>Claude Code Config Manager</h1>
         <Button
           @click="themeStore.toggleTheme"
           :icon="themeStore.currentTheme === 'light' ? 'pi pi-moon' : 'pi pi-sun'"
