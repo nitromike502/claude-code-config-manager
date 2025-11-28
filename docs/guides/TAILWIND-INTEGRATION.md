@@ -214,6 +214,7 @@ export default {
         // Category colors (domain-specific)
         agents: 'var(--color-agents)',
         commands: 'var(--color-commands)',
+        skills: 'var(--color-skills)',
         hooks: 'var(--color-hooks)',
         mcp: 'var(--color-mcp)',
       },
