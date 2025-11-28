@@ -964,6 +964,7 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
             !text.includes('HTTP error! status:') &&
             !text.includes('Error loading agents:') &&
             !text.includes('Error loading commands:') &&
+            !text.includes('Error loading skills:') &&
             !text.includes('Error loading hooks:') &&
             !text.includes('Error loading MCP servers:') &&
             !text.includes('net::ERR') &&
@@ -1020,6 +1021,13 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       });
     });
+    await page.route('**/api/user/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
 
     // Mock project detail API endpoints
     await page.route('**/api/projects/cleanproject/agents', (route) => {
@@ -1048,6 +1056,13 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, mcp: [] })
+      });
+    });
+    await page.route('**/api/projects/cleanproject/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
       });
     });
 

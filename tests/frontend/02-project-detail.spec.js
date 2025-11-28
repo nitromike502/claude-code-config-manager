@@ -44,7 +44,7 @@ test.describe('02.001: Page Load and Structure', () => {
     await page.waitForSelector('#app');
 
     // Verify page title (Phase 2 SPA uses same title for all pages)
-    await expect(page).toHaveTitle(/Claude Code Manager/i);
+    await expect(page).toHaveTitle(/Claude Code Config Manager/i);
   });
 
   test('02.001.002: page contains header with correct structure', async ({ page }) => {
@@ -64,7 +64,7 @@ test.describe('02.001: Page Load and Structure', () => {
     // Verify app title (h1 in header)
     const appTitle = page.locator('header h1');
     await expect(appTitle).toBeVisible();
-    await expect(appTitle).toContainText('Claude Code Manager');
+    await expect(appTitle).toContainText('Claude Code Config Manager');
 
     // Search removed in Phase 2 - skip this check
 
@@ -134,19 +134,21 @@ test.describe('02.001: Page Load and Structure', () => {
  // Wait for configuration cards to render - PrimeVue Panel components
     await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-    // Verify all four config cards are displayed
+    // Verify all five config cards are displayed (agents, commands, skills, hooks, mcp)
     const cards = page.locator('.config-panel');
-    expect(await cards.count()).toBe(4);
+    expect(await cards.count()).toBe(5);
 
     // Check each card type is present - using PrimeVue Panel with -panel suffix
     await expect(page.locator('.agents-panel')).toBeVisible();
     await expect(page.locator('.commands-panel')).toBeVisible();
+    await expect(page.locator('.skills-panel')).toBeVisible();
     await expect(page.locator('.hooks-panel')).toBeVisible();
     await expect(page.locator('.mcp-panel')).toBeVisible();
 
     // Verify card titles - look for header text within each panel
     await expect(page.locator('.agents-panel')).toContainText('Subagents');
     await expect(page.locator('.commands-panel')).toContainText('Slash Commands');
+    await expect(page.locator('.skills-panel')).toContainText('Skills');
     await expect(page.locator('.hooks-panel')).toContainText('Hooks');
     await expect(page.locator('.mcp-panel')).toContainText('MCP Servers');
   });
@@ -630,6 +632,18 @@ test.describe('02.005: Error Handling', () => {
       });
     });
 
+    await page.route('**/api/projects/warningproject/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          skills: [],
+          warnings: []
+        })
+      });
+    });
+
     await page.goto('/project/warningproject');
 
     // Wait for Vue app to mount
@@ -762,9 +776,9 @@ test.describe('02.007: Responsive Design', () => {
     const projectTitle = page.locator('.text-2xl.font-semibold');
     await expect(projectTitle).toBeVisible();
 
-    // Verify configuration panels are visible
+    // Verify configuration panels are visible (agents, commands, skills, hooks, mcp)
     const panels = page.locator('.config-panel');
-    expect(await panels.count()).toBe(4);
+    expect(await panels.count()).toBe(5);
   });
 
   test('02.007.002: layout adapts to tablet viewport', async ({ page }) => {
@@ -785,8 +799,9 @@ test.describe('02.007: Responsive Design', () => {
     const header = page.locator('header');
     await expect(header).toBeVisible();
 
+    // Verify configuration panels are visible (agents, commands, skills, hooks, mcp)
     const panels = page.locator('.config-panel');
-    expect(await panels.count()).toBe(4);
+    expect(await panels.count()).toBe(5);
   });
 
   test('02.007.003: layout works on desktop viewport', async ({ page }) => {
@@ -811,8 +826,9 @@ test.describe('02.007: Responsive Design', () => {
     const panelGrid = page.locator('.grid.gap-6');
     await expect(panelGrid).toBeVisible();
 
+    // Verify configuration panels are visible (agents, commands, skills, hooks, mcp)
     const panels = page.locator('.config-panel');
-    expect(await panels.count()).toBe(4);
+    expect(await panels.count()).toBe(5);
   });
 });
 
@@ -829,6 +845,7 @@ test.describe('02.008: Console Error Detection', () => {
             !text.includes('HTTP error! status:') &&
             !text.includes('Error loading agents:') &&
             !text.includes('Error loading commands:') &&
+            !text.includes('Error loading skills:') &&
             !text.includes('Error loading hooks:') &&
             !text.includes('Error loading MCP servers:') &&
             !text.includes('net::ERR') &&
