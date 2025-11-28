@@ -1132,6 +1132,9 @@ async function getProjectSkills(projectPath) {
         // Count files recursively
         const fileCount = await countFilesRecursive(skillDirPath);
 
+        // Get full file list with relative paths (for tree view)
+        const files = await getFilesRecursive(skillDirPath, skillDirPath);
+
         // Detect external references
         const externalReferences = detectExternalReferences(skillDirPath, content);
 
@@ -1144,6 +1147,7 @@ async function getProjectSkills(projectPath) {
           hasParseError: false,
           subdirectories: subdirectories,
           fileCount: fileCount,
+          files: files,
           externalReferences: externalReferences
         });
 
@@ -1263,6 +1267,9 @@ async function getUserSkills() {
         // Count files recursively
         const fileCount = await countFilesRecursive(skillDirPath);
 
+        // Get full file list with relative paths (for tree view)
+        const files = await getFilesRecursive(skillDirPath, skillDirPath);
+
         // Detect external references
         const externalReferences = detectExternalReferences(skillDirPath, content);
 
@@ -1275,6 +1282,7 @@ async function getUserSkills() {
           hasParseError: false,
           subdirectories: subdirectories,
           fileCount: fileCount,
+          files: files,
           externalReferences: externalReferences
         });
 
@@ -1295,6 +1303,56 @@ async function getUserSkills() {
     }
     throw error;
   }
+}
+
+/**
+ * Recursively get all files in a directory with relative paths
+ * Returns a flat structure for JSTree-style display
+ * @param {string} dirPath - Directory path to scan
+ * @param {string} basePath - Base path for calculating relative paths
+ * @param {string} prefix - Current path prefix (for relative path building)
+ * @returns {Promise<Array>} Array of file objects with relativePath
+ */
+async function getFilesRecursive(dirPath, basePath, prefix = '') {
+  const files = [];
+
+  try {
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+
+    // Sort entries: directories first, then files, both alphabetically
+    entries.sort((a, b) => {
+      if (a.isDirectory() && !b.isDirectory()) return -1;
+      if (!a.isDirectory() && b.isDirectory()) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+      const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+      if (entry.isFile()) {
+        files.push({
+          name: entry.name,
+          relativePath: relativePath,
+          type: 'file'
+        });
+      } else if (entry.isDirectory()) {
+        // Add directory entry
+        files.push({
+          name: entry.name,
+          relativePath: relativePath,
+          type: 'directory'
+        });
+        // Recursively get files in subdirectory
+        const subFiles = await getFilesRecursive(fullPath, basePath, relativePath);
+        files.push(...subFiles);
+      }
+    }
+  } catch (error) {
+    console.error(`Error getting files in ${dirPath}:`, error.message);
+  }
+
+  return files;
 }
 
 /**

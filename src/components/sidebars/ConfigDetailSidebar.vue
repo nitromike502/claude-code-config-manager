@@ -114,18 +114,34 @@
           <strong class="text-text-primary">Directory Path:</strong> <code class="bg-bg-primary px-1 py-0.5 rounded font-mono text-xs text-text-secondary">{{ selectedItem.directoryPath }}</code>
         </p>
 
-        <!-- Structure Information -->
-        <div v-if="selectedItem.fileCount || selectedItem.subdirectories" class="my-3 p-3 bg-bg-tertiary rounded">
-          <p class="text-sm font-semibold text-text-primary mb-2">Structure</p>
-          <p v-if="selectedItem.fileCount" class="my-1 text-sm text-text-secondary">
-            <strong class="text-text-primary">Files:</strong> {{ selectedItem.fileCount }}
-          </p>
-          <div v-if="selectedItem.subdirectories && selectedItem.subdirectories.length > 0" class="my-1">
-            <strong class="text-text-primary text-sm">Subdirectories:</strong>
-            <ul class="list-disc ml-4 mt-1">
-              <li v-for="(dir, index) in selectedItem.subdirectories" :key="index" class="text-xs text-text-secondary">{{ dir }}</li>
-            </ul>
-          </div>
+        <!-- Structure Information with Collapsible File Tree -->
+        <div v-if="selectedItem.fileCount || selectedItem.files" class="my-3">
+          <Accordion :value="null" class="skill-structure-accordion">
+            <AccordionPanel value="files">
+              <AccordionHeader>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-folder text-color-skills"></i>
+                  <span class="font-semibold">Structure</span>
+                  <span class="text-text-muted text-xs ml-1">({{ selectedItem.fileCount }} files)</span>
+                </div>
+              </AccordionHeader>
+              <AccordionContent>
+                <div class="file-tree pl-2">
+                  <div
+                    v-for="(file, index) in selectedItem.files"
+                    :key="index"
+                    class="file-tree-item"
+                    :class="{ 'directory': file.type === 'directory' }"
+                    :style="{ paddingLeft: getIndentLevel(file.relativePath) + 'rem' }"
+                  >
+                    <i :class="file.type === 'directory' ? 'pi pi-folder' : 'pi pi-file'"
+                       :style="{ color: file.type === 'directory' ? 'var(--color-skills)' : 'var(--text-muted)' }"></i>
+                    <span class="text-xs text-text-secondary">{{ file.name }}</span>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionPanel>
+          </Accordion>
         </div>
 
         <!-- External References Warning -->
@@ -189,6 +205,10 @@
 import { computed, ref, watch } from 'vue'
 import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
+import Accordion from 'primevue/accordion'
+import AccordionPanel from 'primevue/accordionpanel'
+import AccordionHeader from 'primevue/accordionheader'
+import AccordionContent from 'primevue/accordioncontent'
 
 const props = defineProps({
   visible: {
@@ -286,6 +306,13 @@ const handleNavigateNext = () => {
   if (hasNext.value) {
     emit('navigate', 'next')
   }
+}
+
+// Calculate indentation level for file tree based on path depth
+const getIndentLevel = (relativePath) => {
+  if (!relativePath) return 0
+  const depth = (relativePath.match(/\//g) || []).length
+  return depth * 1.25 // 1.25rem per level
 }
 
 // Handle copy button click
@@ -420,5 +447,58 @@ const handleCopy = () => {
   background: var(--bg-hover) !important;
   transform: translateY(-1px);
   box-shadow: var(--shadow-card);
+}
+
+/* Skills Structure Accordion */
+.skill-structure-accordion {
+  background: var(--bg-tertiary);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+:deep(.skill-structure-accordion .p-accordionheader) {
+  background: var(--bg-tertiary) !important;
+  border: none !important;
+  padding: 0.75rem 1rem !important;
+}
+
+:deep(.skill-structure-accordion .p-accordionheader:hover) {
+  background: var(--bg-hover) !important;
+}
+
+:deep(.skill-structure-accordion .p-accordioncontent-content) {
+  background: var(--bg-primary) !important;
+  border-top: 1px solid var(--border-primary) !important;
+  padding: 0.75rem !important;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* File Tree Styling */
+.file-tree {
+  font-family: var(--font-mono);
+}
+
+.file-tree-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-radius: 0.25rem;
+  transition: background 0.15s;
+}
+
+.file-tree-item:hover {
+  background: var(--bg-hover);
+}
+
+.file-tree-item.directory {
+  font-weight: 500;
+}
+
+.file-tree-item i {
+  font-size: 0.875rem;
+  width: 1rem;
+  text-align: center;
 }
 </style>

@@ -89,6 +89,10 @@
                   <i class="pi pi-server"></i>
                   <span>{{ project.stats?.mcp || 0 }} MCP</span>
                 </div>
+                <div class="stat stat-skills">
+                  <i class="pi pi-sparkles"></i>
+                  <span>{{ project.stats?.skills || 0 }} Skills</span>
+                </div>
               </div>
 
               <div class="project-footer">
@@ -382,6 +386,7 @@ export default {
 .stat-commands i { color: var(--color-commands); }
 .stat-hooks i { color: var(--color-hooks); }
 .stat-mcp i { color: var(--color-mcp); }
+.stat-skills i { color: var(--color-skills); }
 
 /* Project Card Footer */
 .project-footer {

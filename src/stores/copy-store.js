@@ -138,26 +138,35 @@ export const useCopyStore = defineStore('copy', () => {
   function buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy, acknowledgedWarnings) {
     const configType = sourceConfig.configType || sourceConfig.type
 
-    // Agents, Commands, and Skills use sourcePath
-    if (configType === 'agent' || configType === 'command' || configType === 'skill') {
-      const sourcePath = sourceConfig.path || sourceConfig.filePath || sourceConfig.directoryPath
+    // Agents and Commands use sourcePath
+    if (configType === 'agent' || configType === 'command') {
+      const sourcePath = sourceConfig.path || sourceConfig.filePath
       if (!sourcePath) {
-        throw new Error('sourceConfig must have either path, filePath, or directoryPath property')
+        throw new Error('sourceConfig must have either path or filePath property')
       }
 
-      const payload = {
+      return {
         sourcePath,
         targetScope,
         targetProjectId: targetScope === 'project' ? targetProjectId : null,
         conflictStrategy
       }
+    }
 
-      // Include acknowledgedWarnings for skills
-      if (configType === 'skill' && acknowledgedWarnings !== undefined) {
-        payload.acknowledgedWarnings = acknowledgedWarnings
+    // Skills use sourceSkillPath (directory path)
+    if (configType === 'skill') {
+      const sourceSkillPath = sourceConfig.directoryPath || sourceConfig.path
+      if (!sourceSkillPath) {
+        throw new Error('sourceConfig must have directoryPath property for skills')
       }
 
-      return payload
+      return {
+        sourceSkillPath,
+        targetScope,
+        targetProjectId: targetScope === 'project' ? targetProjectId : null,
+        conflictStrategy,
+        acknowledgedWarnings: acknowledgedWarnings || false
+      }
     }
 
     // Hooks use sourceHook object
