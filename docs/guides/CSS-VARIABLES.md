@@ -182,6 +182,7 @@ Specific colors for Claude Code configuration types.
 |----------|---------|------------|-------------|
 | `--color-agents` | Subagents | `#4CAF50` (Green) | `#388e3c` |
 | `--color-commands` | Slash commands | `#2196F3` (Blue) | `#1976d2` |
+| `--color-skills` | Skills | `#a855f7` (Purple) | `#c084fc` |
 | `--color-hooks` | Hooks | `#FF9800` (Orange) | `#f57c00` |
 | `--color-mcp` | MCP servers | `#9C27B0` (Purple) | `#7b1fa2` |
 | `--color-user` | User-level configs | `#9C27B0` (Purple) | `#7b1fa2` |
@@ -197,7 +198,7 @@ Specific colors for Claude Code configuration types.
 
 <script>
 export default {
-  props: ['type'], // 'agents', 'commands', 'hooks', 'mcp', 'user'
+  props: ['type'], // 'agents', 'commands', 'skills', 'hooks', 'mcp', 'user'
   computed: {
     categoryColor() {
       return `var(--color-${this.type})`;

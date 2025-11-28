@@ -196,6 +196,25 @@ export async function getUserMcp() {
 }
 
 /**
+ * Get project skills
+ * @param {string} projectId - Project identifier
+ * @returns {Promise<Object>} - { skills: [], warnings: [] }
+ */
+export async function getProjectSkills(projectId) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/skills`)
+  return response.json()
+}
+
+/**
+ * Get user skills
+ * @returns {Promise<Object>} - { skills: [], warnings: [] }
+ */
+export async function getUserSkills() {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/user/skills`)
+  return response.json()
+}
+
+/**
  * Health check endpoint
  * @returns {Promise<Object>} - { status: string }
  */
@@ -256,6 +275,19 @@ export async function copyMcp(request) {
   return response.json()
 }
 
+/**
+ * Copy skill to target scope
+ * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy, acknowledgedWarnings }
+ * @returns {Promise<Object>} - { success: boolean, message: string, createdPath?: string }
+ */
+export async function copySkill(request) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/skill`, {
+    method: 'POST',
+    body: JSON.stringify(request)
+  })
+  return response.json()
+}
+
 // Default export with all API functions
 export default {
   BASE_URL,
@@ -265,13 +297,16 @@ export default {
   getProjectCommands,
   getProjectHooks,
   getProjectMcp,
+  getProjectSkills,
   getUserAgents,
   getUserCommands,
   getUserHooks,
   getUserMcp,
+  getUserSkills,
   healthCheck,
   copyAgent,
   copyCommand,
   copyHook,
-  copyMcp
+  copyMcp,
+  copySkill
 }

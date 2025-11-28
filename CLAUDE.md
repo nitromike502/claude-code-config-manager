@@ -11,7 +11,7 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 **Current Release:** v2.2.0 - Released November 26, 2025
 
 **Key Features:**
-- Copy configuration between projects (agents, commands, hooks, MCP servers)
+- Copy configuration between projects (agents, commands, skills, hooks, MCP servers)
 - Smart conflict resolution with skip/overwrite/rename strategies
 - Modern PrimeVue UI components with Aura theme
 - Tailwind CSS v4 integration for responsive design
@@ -31,6 +31,7 @@ manager/
 ├── .claude/
 │   ├── agents/                       # Project subagents
 │   ├── commands/                     # Project slash commands
+│   ├── skills/                       # Project skills (directory-based configs)
 │   ├── templates/                    # Workflow templates (session tracking, testing, etc.)
 │   └── settings.json                 # Project Claude Code settings
 ├── docs/
@@ -45,7 +46,7 @@ manager/
 │   ├── api/client.js                 # Centralized API client
 │   └── styles/                       # CSS variables & theming
 ├── tests/
-│   ├── backend/                      # Jest tests (511 tests)
+│   ├── backend/                      # Jest tests (582 tests)
 │   ├── frontend/, e2e/, responsive/  # Playwright tests (644 tests)
 │   └── fixtures/                     # Mock data and test helpers
 └── CLAUDE.md                          # This file
@@ -68,16 +69,18 @@ manager/
 - **Project Discovery** - Automatically discovers all Claude Code projects from `~/.claude.json`
 - **Subagent Viewing** - Browse and view project and user-level subagents with full frontmatter specs
 - **Slash Command Viewing** - View all custom slash commands across projects
+- **Skills Viewing** - Browse and view skills (directory-based configurations with SKILL.md)
 - **Hooks Viewing** - Display configured hooks from settings files
 - **MCP Server Viewing** - View MCP server configurations
 - **Search & Filter** - Quickly find specific configurations
-- **Detail Sidebar** - View full content with markdown rendering
+- **Detail Sidebar** - View full content with markdown rendering and file tree for skills
 
 ### Configuration Management
-- **Copy Configuration** - Copy agents, commands, hooks, and MCP servers between projects
+- **Copy Configuration** - Copy agents, commands, skills, hooks, and MCP servers between projects
 - **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
 - **Cross-Scope Copy** - Copy between user-level and project-level configurations
 - **Smart Merging** - Intelligent merge for hooks and MCP configurations
+- **External Reference Detection** - Warns when skills reference files outside their directory
 
 ### User Experience
 - **SPA Navigation** - Client-side routing with no page reloads
@@ -89,7 +92,6 @@ manager/
 ## Future Enhancements
 
 **Upcoming Features:**
-- **Skills Support** - Copy and manage Claude Code skills between projects
 - **MCP Server Management** - Enable/disable MCP servers from UI
 - **Team Builder** - Create groups of agents, commands, and configurations to copy as a unit
 - **Subagent CRUD** - Create, edit, and delete subagent definitions
@@ -106,6 +108,7 @@ manager/
 ### Per-Project Configurations
 - `.claude/agents/*.md` - Subagents (markdown with YAML frontmatter)
 - `.claude/commands/**/*.md` - Slash commands (markdown, supports nested directories)
+- `.claude/skills/*/SKILL.md` - Skills (directory-based configurations with SKILL.md and supporting files)
 - `.claude/settings.json` - Project settings including hooks
 - `.claude/settings.local.json` - Local project settings
 - `.mcp.json` - Project MCP servers
@@ -113,6 +116,7 @@ manager/
 ### User-Level Configurations
 - `~/.claude/agents/*.md` - User subagents
 - `~/.claude/commands/**/*.md` - User commands
+- `~/.claude/skills/*/SKILL.md` - User skills
 - `~/.claude/settings.json` - User settings including hooks and MCP servers
 
 ## API Endpoints
@@ -121,13 +125,20 @@ manager/
 GET  /api/projects                   - List all projects from ~/.claude.json
 GET  /api/projects/:projectId/agents - Get project subagents
 GET  /api/projects/:projectId/commands - Get project commands
+GET  /api/projects/:projectId/skills - Get project skills
 GET  /api/projects/:projectId/hooks  - Get project hooks
 GET  /api/projects/:projectId/mcp    - Get project MCP servers
 GET  /api/user/agents                - Get user subagents
 GET  /api/user/commands              - Get user commands
+GET  /api/user/skills                - Get user skills
 GET  /api/user/hooks                 - Get user hooks
 GET  /api/user/mcp                   - Get user MCP servers
 POST /api/projects/scan              - Trigger project list refresh
+POST /api/copy/agent                 - Copy agent between projects
+POST /api/copy/command               - Copy command between projects
+POST /api/copy/skill                 - Copy skill directory between projects
+POST /api/copy/hook                  - Copy hook between projects
+POST /api/copy/mcp                   - Copy MCP server between projects
 ```
 
 **Note:** `projectId` = project path with slashes removed (e.g., `/home/user/projects/myapp` → `homeuserprojectsmyapp`)
@@ -223,13 +234,14 @@ backlog → todo → in-progress → review → done
 **Release:** v2.1.0 (November 13, 2025)
 
 **Latest Updates:**
+- Agent Skills support added (EPIC-006)
 - Copy configuration feature released
 - WCAG 2.1 AA accessibility compliance achieved
 - PrimeVue UI components integrated
-- 1,155 tests across backend and frontend
+- 1,226 tests across backend and frontend
 
 **Quality Metrics:**
-- 511 backend tests (100% pass rate)
+- 582 backend tests (100% pass rate)
 - 644 frontend tests (80% pass rate, 20% deferred for manual testing)
 - WCAG 2.1 AA compliant (96%, 0 critical violations)
 - Performance: Grade A+
@@ -338,9 +350,10 @@ This section contains detailed development workflow information for contributors
 
 ### Test Coverage Details
 
-**Backend Tests (511 tests, 100% pass rate):**
+**Backend Tests (582 tests, 100% pass rate):**
 - API endpoints: 276 tests
-- Copy service: 111 tests (agents: 24, commands: 25, hooks: 45, MCP: 17)
+- Parsers: Skills parser with 29 tests (YAML parsing, external reference detection)
+- Copy service: 182 tests (agents: 24, commands: 25, skills: 71, hooks: 45, MCP: 17)
 - Performance: 5 tests (Grade A+, 200x-500x faster than targets)
 
 **Frontend Tests (644 tests, 80% pass rate):**

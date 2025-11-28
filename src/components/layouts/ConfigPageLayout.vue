@@ -89,6 +89,29 @@
             </template>
           </ConfigPanel>
 
+          <!-- Skills Panel -->
+          <ConfigPanel
+            card-type="skills"
+            title="Skills"
+            :count="skills.length"
+            icon="pi pi-sparkles"
+            color="var(--color-skills)"
+            :loading="loadingSkills"
+            :items="skills"
+            :showing-all="showingAllSkills"
+            :initial-display-count="initialDisplayCount"
+            @toggle-show-all="$emit('toggle-skills')"
+          >
+            <template #default="{ items }">
+              <ConfigItemList
+                :items="items"
+                item-type="skills"
+                @item-selected="(item) => $emit('show-detail', item, 'skills', skills)"
+                @copy-clicked="(item) => $emit('copy-clicked', item)"
+              />
+            </template>
+          </ConfigPanel>
+
           <!-- Hooks Panel -->
           <ConfigPanel
             card-type="hooks"
@@ -220,6 +243,10 @@ defineProps({
     type: Boolean,
     default: false
   },
+  loadingSkills: {
+    type: Boolean,
+    default: false
+  },
 
   // Error state
   error: {
@@ -254,6 +281,10 @@ defineProps({
     type: Array,
     default: () => []
   },
+  skills: {
+    type: Array,
+    default: () => []
+  },
 
   // Show all toggles
   showingAllAgents: {
@@ -269,6 +300,10 @@ defineProps({
     default: false
   },
   showingAllMcp: {
+    type: Boolean,
+    default: false
+  },
+  showingAllSkills: {
     type: Boolean,
     default: false
   },
@@ -306,6 +341,7 @@ defineEmits([
   'toggle-commands',
   'toggle-hooks',
   'toggle-mcp',
+  'toggle-skills',
   'show-detail',
   'close-sidebar',
   'navigate',

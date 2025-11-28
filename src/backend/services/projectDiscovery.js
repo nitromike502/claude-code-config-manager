@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs').promises;
 const { expandHome, pathToProjectId, isValidDirectory } = require('../utils/pathUtils');
 const { readJSON, exists, listFiles, listFilesRecursive, readMarkdownWithFrontmatter } = require('./fileReader');
 
@@ -1034,31 +1035,454 @@ function deduplicateHooks(hooks) {
 }
 
 /**
+ * Gets skills for a specific project (from .claude/skills/)
+ * @param {string} projectPath - Absolute project path
+ * @returns {Promise<Object>} Object with skills array and warnings array
+ */
+async function getProjectSkills(projectPath) {
+  const skillsDir = path.join(projectPath, '.claude', 'skills');
+
+  try {
+    // Check if directory exists
+    try {
+      await fs.access(skillsDir);
+    } catch {
+      return { skills: [], warnings: [] }; // Directory doesn't exist
+    }
+
+    // Read subdirectories in skills directory
+    const entries = await fs.readdir(skillsDir, { withFileTypes: true });
+    const skillDirNames = entries
+      .filter(entry => entry.isDirectory())
+      .map(entry => entry.name);
+
+    const skills = [];
+    const warnings = [];
+
+    // Parse each skill directory
+    for (const skillDirName of skillDirNames) {
+      const skillDirPath = path.join(skillsDir, skillDirName);
+
+      try {
+        // Read SKILL.md
+        const skillMdPath = path.join(skillDirPath, 'SKILL.md');
+        let content;
+
+        try {
+          content = await fs.readFile(skillMdPath, 'utf-8');
+        } catch (error) {
+          warnings.push({
+            file: skillDirPath,
+            error: `Missing SKILL.md file in skill directory`,
+            skipped: true
+          });
+          continue;
+        }
+
+        // Parse frontmatter
+        const matter = require('gray-matter');
+        let parsed;
+        let parseError = null;
+
+        try {
+          parsed = matter(content);
+        } catch (yamlError) {
+          console.warn(`YAML parsing error in ${skillMdPath}:`, yamlError.message);
+          parseError = yamlError.message;
+          warnings.push({
+            file: skillMdPath,
+            error: parseError,
+            skipped: false
+          });
+
+          // Create partial skill object with error
+          skills.push({
+            name: skillDirName,
+            description: 'Error parsing YAML frontmatter',
+            allowedTools: [],
+            content: content,
+            directoryPath: skillDirPath,
+            hasParseError: true,
+            subdirectories: [],
+            fileCount: 0,
+            externalReferences: []
+          });
+          continue;
+        }
+
+        // Extract frontmatter and content
+        const { data, content: skillContent } = parsed;
+
+        // Handle allowed-tools field
+        let tools = [];
+        if (data['allowed-tools']) {
+          if (typeof data['allowed-tools'] === 'string') {
+            tools = data['allowed-tools'].split(',').map(t => t.trim()).filter(Boolean);
+          } else if (Array.isArray(data['allowed-tools'])) {
+            tools = data['allowed-tools'];
+          }
+        }
+
+        // Count subdirectories
+        const skillEntries = await fs.readdir(skillDirPath, { withFileTypes: true });
+        const subdirectories = skillEntries
+          .filter(entry => entry.isDirectory())
+          .map(entry => entry.name);
+
+        // Count files recursively
+        const fileCount = await countFilesRecursive(skillDirPath);
+
+        // Get full file list with relative paths (for tree view)
+        const files = await getFilesRecursive(skillDirPath, skillDirPath);
+
+        // Detect external references
+        const externalReferences = detectExternalReferences(skillDirPath, content);
+
+        skills.push({
+          name: data.name || skillDirName,
+          description: data.description || '',
+          allowedTools: tools,
+          content: skillContent.trim(),
+          directoryPath: skillDirPath,
+          hasParseError: false,
+          subdirectories: subdirectories,
+          fileCount: fileCount,
+          files: files,
+          externalReferences: externalReferences
+        });
+
+      } catch (parseError) {
+        console.warn(`Skipping skill directory ${skillDirPath}: ${parseError.message}`);
+        warnings.push({
+          file: skillDirPath,
+          error: parseError.message,
+          skipped: true
+        });
+      }
+    }
+
+    return { skills, warnings };
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return { skills: [], warnings: [] };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Gets user-level skills from ~/.claude/skills/
+ * @returns {Promise<Object>} Object with skills array and warnings array
+ */
+async function getUserSkills() {
+  const skillsDir = expandHome('~/.claude/skills');
+
+  try {
+    // Check if directory exists
+    try {
+      await fs.access(skillsDir);
+    } catch {
+      return { skills: [], warnings: [] }; // Directory doesn't exist
+    }
+
+    // Read subdirectories in skills directory
+    const entries = await fs.readdir(skillsDir, { withFileTypes: true });
+    const skillDirNames = entries
+      .filter(entry => entry.isDirectory())
+      .map(entry => entry.name);
+
+    const skills = [];
+    const warnings = [];
+
+    // Parse each skill directory
+    for (const skillDirName of skillDirNames) {
+      const skillDirPath = path.join(skillsDir, skillDirName);
+
+      try {
+        // Read SKILL.md
+        const skillMdPath = path.join(skillDirPath, 'SKILL.md');
+        let content;
+
+        try {
+          content = await fs.readFile(skillMdPath, 'utf-8');
+        } catch (error) {
+          warnings.push({
+            file: skillDirPath,
+            error: `Missing SKILL.md file in skill directory`,
+            skipped: true
+          });
+          continue;
+        }
+
+        // Parse frontmatter
+        const matter = require('gray-matter');
+        let parsed;
+        let parseError = null;
+
+        try {
+          parsed = matter(content);
+        } catch (yamlError) {
+          console.warn(`YAML parsing error in ${skillMdPath}:`, yamlError.message);
+          parseError = yamlError.message;
+          warnings.push({
+            file: skillMdPath,
+            error: parseError,
+            skipped: false
+          });
+
+          // Create partial skill object with error
+          skills.push({
+            name: skillDirName,
+            description: 'Error parsing YAML frontmatter',
+            allowedTools: [],
+            content: content,
+            directoryPath: skillDirPath,
+            hasParseError: true,
+            subdirectories: [],
+            fileCount: 0,
+            externalReferences: []
+          });
+          continue;
+        }
+
+        // Extract frontmatter and content
+        const { data, content: skillContent } = parsed;
+
+        // Handle allowed-tools field
+        let tools = [];
+        if (data['allowed-tools']) {
+          if (typeof data['allowed-tools'] === 'string') {
+            tools = data['allowed-tools'].split(',').map(t => t.trim()).filter(Boolean);
+          } else if (Array.isArray(data['allowed-tools'])) {
+            tools = data['allowed-tools'];
+          }
+        }
+
+        // Count subdirectories
+        const skillEntries = await fs.readdir(skillDirPath, { withFileTypes: true });
+        const subdirectories = skillEntries
+          .filter(entry => entry.isDirectory())
+          .map(entry => entry.name);
+
+        // Count files recursively
+        const fileCount = await countFilesRecursive(skillDirPath);
+
+        // Get full file list with relative paths (for tree view)
+        const files = await getFilesRecursive(skillDirPath, skillDirPath);
+
+        // Detect external references
+        const externalReferences = detectExternalReferences(skillDirPath, content);
+
+        skills.push({
+          name: data.name || skillDirName,
+          description: data.description || '',
+          allowedTools: tools,
+          content: skillContent.trim(),
+          directoryPath: skillDirPath,
+          hasParseError: false,
+          subdirectories: subdirectories,
+          fileCount: fileCount,
+          files: files,
+          externalReferences: externalReferences
+        });
+
+      } catch (parseError) {
+        console.warn(`Skipping user skill directory ${skillDirPath}: ${parseError.message}`);
+        warnings.push({
+          file: skillDirPath,
+          error: parseError.message,
+          skipped: true
+        });
+      }
+    }
+
+    return { skills, warnings };
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return { skills: [], warnings: [] };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Recursively get all files in a directory with relative paths
+ * Returns a flat structure for JSTree-style display
+ * @param {string} dirPath - Directory path to scan
+ * @param {string} basePath - Base path for calculating relative paths
+ * @param {string} prefix - Current path prefix (for relative path building)
+ * @returns {Promise<Array>} Array of file objects with relativePath
+ */
+async function getFilesRecursive(dirPath, basePath, prefix = '') {
+  const files = [];
+
+  try {
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+
+    // Sort entries: directories first, then files, both alphabetically
+    entries.sort((a, b) => {
+      if (a.isDirectory() && !b.isDirectory()) return -1;
+      if (!a.isDirectory() && b.isDirectory()) return 1;
+      return a.name.localeCompare(b.name);
+    });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+      const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+      if (entry.isFile()) {
+        files.push({
+          name: entry.name,
+          relativePath: relativePath,
+          type: 'file'
+        });
+      } else if (entry.isDirectory()) {
+        // Add directory entry
+        files.push({
+          name: entry.name,
+          relativePath: relativePath,
+          type: 'directory'
+        });
+        // Recursively get files in subdirectory
+        const subFiles = await getFilesRecursive(fullPath, basePath, relativePath);
+        files.push(...subFiles);
+      }
+    }
+  } catch (error) {
+    console.error(`Error getting files in ${dirPath}:`, error.message);
+  }
+
+  return files;
+}
+
+/**
+ * Helper function to count files recursively in a directory
+ * @param {string} dirPath - Directory path
+ * @returns {Promise<number>} Total file count
+ */
+async function countFilesRecursive(dirPath) {
+  let count = 0;
+
+  try {
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name);
+
+      if (entry.isFile()) {
+        count++;
+      } else if (entry.isDirectory()) {
+        count += await countFilesRecursive(fullPath);
+      }
+    }
+  } catch (error) {
+    console.error(`Error counting files in ${dirPath}:`, error.message);
+  }
+
+  return count;
+}
+
+/**
+ * Helper function to detect external references in skill content
+ * @param {string} skillPath - Absolute path to skill directory
+ * @param {string} content - Content to scan
+ * @returns {Array} External references
+ */
+function detectExternalReferences(skillPath, content) {
+  const references = [];
+  const lines = content.split('\n');
+
+  const patterns = [
+    { regex: /(?:^|\s)(\/[^\s'"<>]+)/g, type: 'absolute', severity: 'error' },
+    { regex: /(?:^|\s)(~\/[^\s'"<>]+)/g, type: 'home', severity: 'warning' },
+    { regex: /(?:^|\s)(\.\.[/\\][^\s'"<>]*)/g, type: 'relative', severity: 'warning' },
+    { regex: /(?:node|python|bash|sh)\s+([~./][^\s'"<>]+)/gi, type: 'script', severity: 'error' }
+  ];
+
+  lines.forEach((line, lineIndex) => {
+    patterns.forEach(({ regex, type, severity }) => {
+      regex.lastIndex = 0;
+
+      let match;
+      while ((match = regex.exec(line)) !== null) {
+        const reference = match[1];
+
+        if (reference.match(/^https?:\/\/|^ftp:\/\//)) {
+          continue;
+        }
+
+        let resolvedPath;
+        try {
+          if (reference.startsWith('~')) {
+            resolvedPath = null;
+          } else if (reference.startsWith('/')) {
+            resolvedPath = reference;
+          } else {
+            resolvedPath = path.resolve(skillPath, reference);
+          }
+
+          if (resolvedPath) {
+            const normalizedSkillPath = path.normalize(skillPath);
+            const normalizedResolved = path.normalize(resolvedPath);
+
+            if (normalizedResolved.startsWith(normalizedSkillPath)) {
+              continue;
+            }
+          }
+
+          references.push({
+            file: 'SKILL.md',
+            line: lineIndex + 1,
+            reference: reference,
+            type: type,
+            severity: severity
+          });
+
+        } catch (error) {
+          references.push({
+            file: 'SKILL.md',
+            line: lineIndex + 1,
+            reference: reference,
+            type: type,
+            severity: severity
+          });
+        }
+      }
+    });
+  });
+
+  return references;
+}
+
+/**
  * Counts configuration items for a project (for summary display)
  * @param {string} projectPath - Absolute project path
  * @returns {Promise<Object>} Object with counts
  */
 async function getProjectCounts(projectPath) {
   try {
-    const [agentsResult, commandsResult, hooksResult, mcpResult] = await Promise.all([
+    const [agentsResult, commandsResult, hooksResult, mcpResult, skillsResult] = await Promise.all([
       getProjectAgents(projectPath),
       getProjectCommands(projectPath),
       getProjectHooks(projectPath),
-      getProjectMCP(projectPath)
+      getProjectMCP(projectPath),
+      getProjectSkills(projectPath)
     ]);
 
     return {
       agents: agentsResult.agents.length,
       commands: commandsResult.commands.length,
       hooks: hooksResult.hooks.length,
-      mcp: mcpResult.mcp.length
+      mcp: mcpResult.mcp.length,
+      skills: skillsResult.skills.length
     };
   } catch (error) {
     return {
       agents: 0,
       commands: 0,
       hooks: 0,
-      mcp: 0
+      mcp: 0,
+      skills: 0
     };
   }
 }
@@ -1069,9 +1493,11 @@ module.exports = {
   getProjectCommands,
   getProjectHooks,
   getProjectMCP,
+  getProjectSkills,
   getUserAgents,
   getUserCommands,
   getUserHooks,
   getUserMCP,
+  getUserSkills,
   getProjectCounts
 };

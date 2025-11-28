@@ -6,6 +6,7 @@ const {
   getProjectCommands,
   getProjectHooks,
   getProjectMCP,
+  getProjectSkills,
   getProjectCounts
 } = require('../services/projectDiscovery');
 const { projectIdToPath } = require('../utils/pathUtils');
@@ -320,6 +321,54 @@ router.get('/:projectId/mcp', validateProjectId, async (req, res) => {
     res.json({
       success: true,
       mcp: result.mcp,
+      warnings: result.warnings,
+      projectId,
+      projectPath: projectData.path
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/projects/:projectId/skills
+ * Returns skills for a specific project
+ */
+router.get('/:projectId/skills', validateProjectId, async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    // Ensure projects are loaded
+    if (!projectsCache) {
+      const result = await discoverProjects();
+      projectsCache = result;
+    }
+
+    // Find project path
+    const projectData = projectsCache.projects[projectId];
+
+    if (!projectData) {
+      return res.status(404).json({
+        success: false,
+        error: `Project not found: ${projectId}`
+      });
+    }
+
+    if (!projectData.exists) {
+      return res.status(404).json({
+        success: false,
+        error: `Project directory does not exist: ${projectData.path}`
+      });
+    }
+
+    const result = await getProjectSkills(projectData.path);
+
+    res.json({
+      success: true,
+      skills: result.skills,
       warnings: result.warnings,
       projectId,
       projectPath: projectData.path

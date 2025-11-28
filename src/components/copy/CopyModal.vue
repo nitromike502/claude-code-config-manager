@@ -22,6 +22,45 @@
       </div>
     </template>
 
+    <!-- External Reference Warning (Skills Only) -->
+    <Message
+      v-if="hasExternalReferences"
+      severity="warn"
+      :closable="false"
+      class="mb-4"
+    >
+      <div class="external-ref-warning">
+        <h4 class="font-semibold mb-2 flex items-center gap-2">
+          <i class="pi pi-exclamation-triangle"></i>
+          External References Detected
+        </h4>
+        <p class="mb-3 text-sm">
+          This skill references files outside its directory. These external files
+          will <strong>NOT be copied</strong> and the skill may not work correctly
+          at the destination.
+        </p>
+
+        <div class="external-ref-list mb-3 p-2 bg-bg-secondary rounded max-h-32 overflow-y-auto">
+          <div v-for="(ref, index) in externalReferences" :key="index" class="external-ref-item text-xs mb-2">
+            <div class="flex items-start gap-2">
+              <i class="pi pi-file mt-0.5 text-text-muted"></i>
+              <div class="flex-1">
+                <code class="bg-bg-tertiary px-1 py-0.5 rounded font-mono">{{ ref.reference }}</code>
+                <span class="text-text-muted ml-2">({{ ref.file }}, line {{ ref.line }})</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="acknowledgment-checkbox flex items-center gap-2 p-2 bg-bg-tertiary rounded">
+          <Checkbox v-model="acknowledgedWarnings" inputId="acknowledge-warnings" binary />
+          <label for="acknowledge-warnings" class="text-sm cursor-pointer">
+            I understand and want to proceed anyway
+          </label>
+        </div>
+      </div>
+    </Message>
+
     <!-- 2-Column Layout Container -->
     <div class="copy-modal-content flex gap-6 w-full">
       <!-- Left Column: Source Configuration -->
@@ -139,6 +178,8 @@ import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import Dialog from 'primevue/dialog';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
+import Message from 'primevue/message';
+import Checkbox from 'primevue/checkbox';
 import { useProjectsStore } from '@/stores/projects';
 import { useCopyStore } from '@/stores/copy-store';
 
@@ -151,9 +192,9 @@ const props = defineProps({
     type: Object,
     required: true,
     validator: (value) => {
-      // Config items can have either 'name' (agents, commands, MCP) or 'event' (hooks)
+      // Config items can have either 'name' (agents, commands, MCP, skills) or 'event' (hooks)
       return value && (value.name || value.event) && value.type &&
-             ['agent', 'command', 'hook', 'mcp'].includes(value.type);
+             ['agent', 'command', 'hook', 'mcp', 'skill'].includes(value.type);
     }
   }
 });
@@ -165,7 +206,10 @@ const projectsStore = useProjectsStore();
 const copyStore = useCopyStore();
 
 // Track selected destination
-const selectedDestination = ref(null);
+const selectedDestination = ref(null)
+
+// Track acknowledgment of warnings for skills
+const acknowledgedWarnings = ref(false);
 
 // Responsive modal width
 const windowWidth = ref(window.innerWidth);
@@ -199,6 +243,7 @@ const modalMaxWidth = computed(() => {
 watch(() => props.visible, async (newVal) => {
   if (newVal) {
     selectedDestination.value = null;
+    acknowledgedWarnings.value = false;
     // Always load fresh project list when modal opens
     await projectsStore.loadProjects();
   }
@@ -231,13 +276,26 @@ const availableProjects = computed(() => {
 // Backwards-compatible alias (used in template)
 const mockProjects = availableProjects;
 
+// Check if source has external references (skills only)
+const hasExternalReferences = computed(() => {
+  return props.sourceConfig?.type === 'skill' &&
+         props.sourceConfig?.externalReferences &&
+         props.sourceConfig.externalReferences.length > 0;
+});
+
+// Get external references list
+const externalReferences = computed(() => {
+  return props.sourceConfig?.externalReferences || [];
+});
+
 // Get icon for configuration type
 const getTypeIcon = (type) => {
   const icons = {
     agent: 'pi pi-users',
     command: 'pi pi-bolt',
     hook: 'pi pi-link',
-    mcp: 'pi pi-server'
+    mcp: 'pi pi-server',
+    skill: 'pi pi-sparkles'
   };
   return icons[type] || 'pi pi-file';
 };
@@ -248,7 +306,8 @@ const formatType = (type) => {
     agent: 'Agent',
     command: 'Command',
     hook: 'Hook',
-    mcp: 'MCP Server'
+    mcp: 'MCP Server',
+    skill: 'Skill'
   };
   return formats[type] || type;
 };
@@ -285,6 +344,12 @@ const selectDestination = async (destination) => {
   // Set selection
   selectedDestination.value = destination;
 
+  // Check if this is a skill with external references
+  if (hasExternalReferences.value && !acknowledgedWarnings.value) {
+    // Do not proceed with copy - user must acknowledge warnings first
+    return;
+  }
+
   // Immediately trigger copy operation
   await handleCopy();
 };
@@ -293,6 +358,11 @@ const selectDestination = async (destination) => {
 const handleCopy = async () => {
   if (!selectedDestination.value) {
     return; // No destination selected
+  }
+
+  // Check if warnings must be acknowledged first
+  if (hasExternalReferences.value && !acknowledgedWarnings.value) {
+    return; // User must acknowledge warnings before copy
   }
 
   try {
@@ -306,7 +376,8 @@ const handleCopy = async () => {
       sourceConfig: props.sourceConfig,
       targetScope,
       targetProjectId,
-      conflictStrategy: 'skip' // Default strategy; in future, could prompt user
+      conflictStrategy: 'skip', // Default strategy; in future, could prompt user
+      acknowledgedWarnings: acknowledgedWarnings.value // Include acknowledgment for skills
     };
 
     // Call copy store to perform the copy operation
@@ -380,6 +451,11 @@ const handleButtonCopy = async (destination) => {
 .config-type.type-mcp {
   background: var(--color-mcp-bg);
   color: var(--color-mcp);
+}
+
+.config-type.type-skill {
+  background: var(--color-skills-bg);
+  color: var(--color-skills);
 }
 
 /* Custom scrollbar for destinations container */

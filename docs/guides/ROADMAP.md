@@ -22,11 +22,84 @@ Claude Code Config Manager follows a phased development approach, building incre
 | Phase 2.3 - Production Readiness | ✅ Complete | Completed (Nov 1, 2025) | - |
 | Phase 3 - Copy Configuration | ✅ Complete | Completed (Nov 13, 2025) | High |
 | Phase 3.1 - UI Modernization | ✅ Complete | Completed (Nov 26, 2025) | High |
+| EPIC-006 - Agent Skills | ✅ Complete | Completed (Nov 28, 2025) | High |
 | Subagent CRUD | 📅 Planned | Q1 2026 | Medium |
 | Command Management | 📅 Planned | Q1 2026 | Medium |
 | Hooks Configuration | 📅 Planned | Q1 2026 | Medium |
 | MCP Server Management | 📅 Planned | Q1 2026 | Medium |
 | Advanced Features | 🔮 Future | Q2+ 2026 | Low |
+
+---
+
+## EPIC-006 - Agent Skills Support
+
+**Status:** ✅ Complete
+**Completed:** November 28, 2025
+**Priority:** High (New configuration type support)
+
+### Objective
+
+Add Agent Skills as a new manageable configuration type alongside agents, commands, hooks, and MCP servers. Skills are directory-based configurations containing a SKILL.md file with YAML frontmatter and supporting files.
+
+### Achievements
+
+**Backend Implementation:**
+1. **Skill Parser** (`src/backend/parsers/skillParser.js`)
+   - Parses skill directories containing SKILL.md with YAML frontmatter
+   - Recursive file tree generation for skill directory contents
+   - External reference detection (absolute paths, home directory refs, parent directory escapes)
+   - File count and subdirectory metadata
+   - Error handling for missing/malformed SKILL.md files
+
+2. **API Routes**
+   - `GET /api/projects/:projectId/skills` - Get project skills
+   - `GET /api/user/skills` - Get user-level skills
+   - `POST /api/copy/skill` - Copy skill directory between projects
+
+3. **Copy Service**
+   - Full directory copy with recursive file operations
+   - External reference detection and warnings
+   - Conflict detection (duplicate skill names)
+   - Resolution strategies (skip/overwrite/rename)
+   - Cross-scope copy (user ↔ project)
+
+**Frontend Implementation:**
+1. **Skills Panel**
+   - Added as 5th panel in ConfigPageLayout
+   - Sparkles icon (pi-sparkles) for visual distinction
+   - Full integration with existing component infrastructure
+
+2. **Skills Detail Sidebar**
+   - File tree view showing skill directory structure
+   - External reference warnings with severity levels
+   - Markdown content rendering
+   - Metadata display (file count, subdirectories)
+
+3. **Dashboard Integration**
+   - Skills count displayed on project cards
+   - Sparkles icon for skills section
+   - Consistent with other configuration types
+
+**Testing:**
+- ✅ **71 new copy service tests** for skills
+- ✅ **29 skill parser tests** (YAML parsing, external references, file trees)
+- ✅ **API route tests** for skills endpoints
+- ✅ **Updated frontend tests** (panel count assertions)
+- ✅ **Visual regression snapshots** regenerated
+
+**Results:**
+- ✅ Complete skills viewing and copying
+- ✅ 582 backend tests (100% pass rate) - up from 511
+- ✅ 1,226 total tests - up from 1,155
+- ✅ External reference detection prevents copy issues
+- ✅ Seamless integration with existing UI patterns
+
+### User Value
+
+- **View Skills:** Browse all project and user skills with directory contents
+- **Copy Skills:** Duplicate skills between projects with full directory copy
+- **Safety Warnings:** External reference detection prevents broken skills
+- **Consistent UX:** Skills work just like agents, commands, hooks, and MCP servers
 
 ---
 
@@ -151,10 +224,6 @@ Enable users to copy configuration items (agents, commands, hooks, MCP servers) 
 - ✅ **Security hardening:** Path traversal and permission checks
 - ✅ **Accessibility:** WCAG 2.1 AA compliant (96%, 0 critical violations)
 - ✅ **Performance:** 200x-500x faster than targets
-
-### Deferred Items
-
-- **Skills copy** - Deferred until Skills viewing is implemented in UI
 
 ---
 
@@ -296,6 +365,6 @@ Have ideas for features or improvements? See the following resources:
 
 ---
 
-**Last Updated:** 2025-11-27
-**Roadmap Version:** 2.0
-**Status:** All core viewing and copy features complete. CRUD features planned for Q1 2026.
+**Last Updated:** 2025-11-28
+**Roadmap Version:** 2.1
+**Status:** All core viewing and copy features complete (including Skills). CRUD features planned for Q1 2026.

@@ -1,6 +1,6 @@
 # Claude Code Config Manager
 
-A web-based interface for viewing and managing Claude Code projects, subagents, slash commands, hooks, and MCP servers across your local machine.
+A web-based interface for viewing and managing Claude Code projects, subagents, slash commands, skills, hooks, and MCP servers across your local machine.
 
 ## Overview
 
@@ -38,17 +38,19 @@ Claude Code Config Manager provides a centralized dashboard to browse all your C
 - **Project Discovery** - Automatically discovers all Claude Code projects from `~/.claude.json`
 - **Subagent Viewing** - Browse and view all project and user-level subagents with full frontmatter specs
 - **Slash Command Viewing** - View all custom slash commands across projects
+- **Skills Viewing** - Browse and view skills (directory-based configurations with SKILL.md and supporting files)
 - **Hooks Viewing** - Display configured hooks from settings files
 - **MCP Server Viewing** - View MCP server configurations
 - **Search & Filter** - Quickly find specific configurations
-- **Detail Sidebar** - View full content with markdown rendering and syntax highlighting
+- **Detail Sidebar** - View full content with markdown rendering, syntax highlighting, and file tree for skills
 
 **Configuration Management:**
-- **Copy Configuration** - Copy agents, commands, hooks, and MCP servers between projects
+- **Copy Configuration** - Copy agents, commands, skills, hooks, and MCP servers between projects
 - **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
 - **Single-Click Copy** - Streamlined UX for quick configuration duplication
 - **Cross-Scope Copy** - Copy between user-level and project-level configurations
 - **Smart Merging** - Intelligent merge for hooks and MCP configurations
+- **External Reference Detection** - Warns when skills reference files outside their directory
 
 ### User Experience
 - **SPA Navigation** - Client-side routing with no page reloads
@@ -67,10 +69,11 @@ Claude Code Config Manager provides a centralized dashboard to browse all your C
 - **Instant Navigation** - No page reloads between views
 
 ### Testing
-- **1,155 Tests** - Comprehensive test coverage across all features
-  - **511 Backend tests (Jest)** - 100% pass rate
+- **1,226 Tests** - Comprehensive test coverage across all features
+  - **582 Backend tests (Jest)** - 100% pass rate
     - API endpoints, parsers, error handling
-    - Copy service with 111 tests (agents, commands, hooks, MCP)
+    - Copy service with 182 tests (agents, commands, skills, hooks, MCP)
+    - Skills parser with 29 tests (YAML parsing, external reference detection)
     - Performance tests (Grade A+)
   - **644 Frontend tests (Playwright)** - 80% pass rate (514 passing)
     - E2E workflows, component tests, responsive design
@@ -216,12 +219,14 @@ Claude Code Manager reads your Claude Code configurations directly from the file
 ### Project-Level Configurations
 - `.claude/agents/*.md` - Subagent definitions
 - `.claude/commands/**/*.md` - Slash commands
+- `.claude/skills/*/SKILL.md` - Skills (directory-based configurations with SKILL.md and supporting files)
 - `.claude/settings.json` - Project settings and hooks
 - `.mcp.json` - MCP server configurations
 
 ### User-Level Configurations
 - `~/.claude/agents/*.md` - User subagents
 - `~/.claude/commands/**/*.md` - User commands
+- `~/.claude/skills/*/SKILL.md` - User skills
 - `~/.claude/settings.json` - User settings, hooks, and MCP servers
 - `~/.claude.json` - Project registry
 
@@ -242,7 +247,6 @@ Claude Code Manager works on:
 - See `CHANGELOG.md` for complete release notes
 
 **Future Enhancements** (Planned)
-- **Skills Support** - Copy and manage Claude Code skills between projects
 - **MCP Server Management** - Enable/disable MCP servers directly from the UI
 - **Team Builder** - Create groups of agents, commands, and configurations to copy as a unit
 - **Subagent CRUD** - Create, edit, and delete subagent definitions with YAML validation

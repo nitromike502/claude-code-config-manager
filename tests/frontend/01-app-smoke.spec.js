@@ -25,7 +25,7 @@ test.describe('01.001: Basic App Initialization', () => {
     await page.goto('/');
 
     // Verify page title
-    await expect(page).toHaveTitle(/Claude Code Manager/i);
+    await expect(page).toHaveTitle(/Claude Code Config Manager/i);
   });
 
   test('01.001.002: page contains main app structure', async ({ page }) => {
@@ -41,7 +41,7 @@ test.describe('01.001: Basic App Initialization', () => {
     // Verify app title is visible (h1 in header, not .app-title class)
     const appTitle = page.locator('header h1');
     await expect(appTitle).toBeVisible();
-    await expect(appTitle).toContainText('Claude Code Manager');
+    await expect(appTitle).toContainText('Claude Code Config Manager');
   });
 
   // Search feature removed in Phase 2 - planned for Phase 3

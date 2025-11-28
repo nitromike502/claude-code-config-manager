@@ -30,18 +30,19 @@ export const useCopyStore = defineStore('copy', () => {
    *
    * @param {Object} request - Copy request parameters
    * @param {Object} request.sourceConfig - Source configuration object with type and path
-   * @param {string} request.sourceConfig.type - Configuration type (agent, command, hook, mcp)
+   * @param {string} request.sourceConfig.type - Configuration type (agent, command, hook, mcp, skill)
    * @param {string} request.sourceConfig.path - Source file path (or filePath property)
    * @param {string} request.targetScope - Target scope: 'user' or 'project'
    * @param {string|null} request.targetProjectId - Target project ID (required if targetScope is 'project')
    * @param {string} request.conflictStrategy - How to handle conflicts (skip, overwrite, rename)
+   * @param {boolean} request.acknowledgedWarnings - Whether user acknowledged warnings (for skills)
    * @returns {Promise<Object>} Copy operation result with success, message, conflict?, copiedPath?
    */
   async function copyConfiguration(request) {
     copying.value = true
 
     try {
-      const { sourceConfig, targetScope, targetProjectId, conflictStrategy } = request
+      const { sourceConfig, targetScope, targetProjectId, conflictStrategy, acknowledgedWarnings } = request
 
       // Validate required fields
       const configType = sourceConfig.configType || sourceConfig.type
@@ -59,7 +60,7 @@ export const useCopyStore = defineStore('copy', () => {
       const endpointMethod = getEndpointForType(configType)
 
       // Build request payload based on config type (agents/commands use sourcePath, hooks/MCP use different structures)
-      const payload = buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy)
+      const payload = buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy, acknowledgedWarnings)
 
       // Call API
       const result = await api[endpointMethod](payload)
@@ -103,7 +104,7 @@ export const useCopyStore = defineStore('copy', () => {
   /**
    * Map configuration type to appropriate API client method name
    *
-   * @param {string} type - Configuration type (agent, command, hook, mcp)
+   * @param {string} type - Configuration type (agent, command, hook, mcp, skill)
    * @returns {string} API client method name
    * @throws {Error} If type is unknown
    */
@@ -112,7 +113,8 @@ export const useCopyStore = defineStore('copy', () => {
       'agent': 'copyAgent',
       'command': 'copyCommand',
       'hook': 'copyHook',
-      'mcp': 'copyMcp'
+      'mcp': 'copyMcp',
+      'skill': 'copySkill'
     }
 
     if (!typeMap[type]) {
@@ -130,9 +132,10 @@ export const useCopyStore = defineStore('copy', () => {
    * @param {string} targetScope - Target scope ('user' or 'project')
    * @param {string|null} targetProjectId - Target project ID
    * @param {string} conflictStrategy - Conflict resolution strategy
+   * @param {boolean} acknowledgedWarnings - Whether user acknowledged warnings (for skills)
    * @returns {Object} API request payload
    */
-  function buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy) {
+  function buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy, acknowledgedWarnings) {
     const configType = sourceConfig.configType || sourceConfig.type
 
     // Agents and Commands use sourcePath
@@ -147,6 +150,22 @@ export const useCopyStore = defineStore('copy', () => {
         targetScope,
         targetProjectId: targetScope === 'project' ? targetProjectId : null,
         conflictStrategy
+      }
+    }
+
+    // Skills use sourceSkillPath (directory path)
+    if (configType === 'skill') {
+      const sourceSkillPath = sourceConfig.directoryPath || sourceConfig.path
+      if (!sourceSkillPath) {
+        throw new Error('sourceConfig must have directoryPath property for skills')
+      }
+
+      return {
+        sourceSkillPath,
+        targetScope,
+        targetProjectId: targetScope === 'project' ? targetProjectId : null,
+        conflictStrategy,
+        acknowledgedWarnings: acknowledgedWarnings || false
       }
     }
 

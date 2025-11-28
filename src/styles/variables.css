@@ -157,6 +157,7 @@
   --color-commands: #2196F3;  /* Blue for slash commands */
   --color-hooks: #FF9800;     /* Orange for hooks */
   --color-mcp: #9C27B0;       /* Purple for MCP servers */
+  --color-skills: #a855f7;    /* Purple for skills */
   --color-user: #9C27B0;      /* Purple for user-level configs */
 
   /* ========== Background Variants ========== */
@@ -165,6 +166,7 @@
   --color-badge-bg: rgba(33, 150, 243, 0.2);  /* Blue badge background */
   --color-badge-text: #90caf9;  /* Blue badge text */
   --color-hooks-bg: rgba(255, 152, 0, 0.15);  /* Hooks badge background */
+  --color-skills-bg: rgba(168, 85, 247, 0.15);  /* Skills badge background */
 
   /* ========== Focus Indicators ========== */
   /* Focus ring for interactive elements */
@@ -303,6 +305,7 @@
   --color-commands: #1976d2;
   --color-hooks: #f57c00;
   --color-mcp: #7b1fa2;
+  --color-skills: #c084fc;
   --color-user: #7b1fa2;
 
   /* ========== Background Variants ========== */
@@ -311,6 +314,7 @@
   --color-badge-bg: rgba(25, 118, 210, 0.15);  /* Blue badge background */
   --color-badge-text: #1565c0;  /* Blue badge text */
   --color-hooks-bg: rgba(245, 124, 0, 0.12);  /* Hooks badge background */
+  --color-skills-bg: rgba(192, 132, 252, 0.15);  /* Skills badge background */
 
   /* ========== Focus Indicators ========== */
   /* Focus ring for interactive elements */

@@ -124,7 +124,7 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
     await page.goto('/');
 
     // Verify page loaded successfully
-    await expect(page).toHaveTitle(/Claude Code Manager/i);
+    await expect(page).toHaveTitle(/Claude Code Config Manager/i);
     const header = page.locator('header');
     await expect(header).toBeVisible();
 
@@ -163,7 +163,7 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
     await page.waitForURL(/\/project\/homeuserprojectsmyapp/, { timeout: 10000 });
 
     // Verify we're on the detail page
-    await expect(page).toHaveTitle(/Claude Code Manager/i);
+    await expect(page).toHaveTitle(/Claude Code Config Manager/i);
 
     // Verify project information loaded (ConfigPageLayout renders config-panel elements)
     await page.waitForSelector('.config-panel', { timeout: 10000 });
@@ -193,7 +193,7 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
 
     // Verify we're back on the dashboard
     await page.waitForURL('/');
-    await expect(page).toHaveTitle(/Claude Code Manager/i);
+    await expect(page).toHaveTitle(/Claude Code Config Manager/i);
 
     // Verify project cards are still visible (User card + project cards)
     await page.waitForSelector('.project-card', { timeout: 10000 });
@@ -435,6 +435,7 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
             !text.includes('HTTP error! status:') &&
             !text.includes('Error loading agents:') &&
             !text.includes('Error loading commands:') &&
+            !text.includes('Error loading skills:') &&
             !text.includes('Error loading hooks:') &&
             !text.includes('Error loading MCP servers:') &&
             !text.includes('net::ERR') &&
@@ -496,6 +497,13 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       });
     });
+    await page.route('**/api/user/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
 
     // Mock project detail API endpoints
     await page.route('**/api/projects/cleanproject/agents', (route) => {
@@ -524,6 +532,13 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, mcp: [] })
+      });
+    });
+    await page.route('**/api/projects/cleanproject/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
       });
     });
 
