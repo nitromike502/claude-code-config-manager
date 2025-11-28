@@ -4,7 +4,8 @@ const {
   getUserAgents,
   getUserCommands,
   getUserHooks,
-  getUserMCP
+  getUserMCP,
+  getUserSkills
 } = require('../services/projectDiscovery');
 
 /**
@@ -81,6 +82,27 @@ router.get('/mcp', async (req, res) => {
     res.json({
       success: true,
       mcp: result.mcp,
+      warnings: result.warnings
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/user/skills
+ * Returns user-level skills from ~/.claude/skills/
+ */
+router.get('/skills', async (req, res) => {
+  try {
+    const result = await getUserSkills();
+
+    res.json({
+      success: true,
+      skills: result.skills,
       warnings: result.warnings
     });
   } catch (error) {

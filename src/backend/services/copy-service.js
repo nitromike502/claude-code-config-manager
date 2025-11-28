@@ -967,6 +967,301 @@ class CopyService {
       };
     }
   }
+
+  /**
+   * Recursively copy directory contents
+   * @param {string} sourceDir - Source directory path
+   * @param {string} targetDir - Target directory path
+   * @returns {Promise<{fileCount: number, dirCount: number}>} Count of files and directories copied
+   */
+  async copyDirectoryRecursive(sourceDir, targetDir) {
+    let fileCount = 0;
+    let dirCount = 0;
+
+    // Ensure target directory exists
+    await fs.mkdir(targetDir, { recursive: true });
+    dirCount++;
+
+    // Read source directory
+    const entries = await fs.readdir(sourceDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const sourcePath = path.join(sourceDir, entry.name);
+      const targetPath = path.join(targetDir, entry.name);
+
+      if (entry.isDirectory()) {
+        // Recursively copy subdirectory
+        const subCounts = await this.copyDirectoryRecursive(sourcePath, targetPath);
+        fileCount += subCounts.fileCount;
+        dirCount += subCounts.dirCount;
+      } else if (entry.isFile()) {
+        // Copy file
+        await fs.copyFile(sourcePath, targetPath);
+        fileCount++;
+      }
+    }
+
+    return { fileCount, dirCount };
+  }
+
+  /**
+   * Copies a skill directory from source to target location
+   *
+   * Skills are directory-based configurations containing SKILL.md and supporting files.
+   * This method copies the entire skill directory recursively, handling conflicts
+   * and validating external references.
+   *
+   * @param {Object} request - Copy request object
+   * @param {string} request.sourceSkillPath - Absolute path to source skill directory
+   * @param {string} request.targetScope - Target scope ('project' or 'user')
+   * @param {string|null} request.targetProjectId - Project ID if scope is 'project'
+   * @param {string} [request.conflictStrategy] - How to handle conflicts ('skip', 'overwrite', 'rename')
+   * @param {boolean} [request.acknowledgedWarnings] - Whether user acknowledged external references
+   * @returns {Promise<Object>} Result object with success status and details
+   *
+   * Success return: { success: true, copiedPath: '/absolute/path/to/skill/', fileCount: 15, dirCount: 3 }
+   * Warning return: { success: false, warnings: { externalReferences: [...] }, requiresAcknowledgement: true }
+   * Conflict return: { success: false, conflict: { targetPath, sourceModified, targetModified } }
+   * Skip return: { success: false, skipped: true, message: 'Copy cancelled by user' }
+   * Error return: { success: false, error: 'Descriptive error message' }
+   */
+  async copySkill(request) {
+    try {
+      // 1. Validate source path (security + existence)
+      const validatedSourcePath = await this.validateSource(path.join(request.sourceSkillPath, 'SKILL.md'));
+
+      // Get the skill directory path (remove SKILL.md)
+      const sourceSkillDir = path.dirname(validatedSourcePath);
+
+      // 2. Verify source is a directory
+      const sourceStat = await fs.stat(sourceSkillDir);
+      if (!sourceStat.isDirectory()) {
+        throw new Error('Invalid skill: source path is not a directory');
+      }
+
+      // 3. Read and validate SKILL.md
+      let content;
+      try {
+        content = await fs.readFile(validatedSourcePath, 'utf8');
+      } catch (error) {
+        throw new Error(`Failed to read SKILL.md: ${error.message}`);
+      }
+
+      // Check for YAML frontmatter delimiters
+      const yamlPattern = /^---\s*\n[\s\S]*?\n---\s*\n/;
+      if (!yamlPattern.test(content)) {
+        throw new Error('Invalid skill: SKILL.md missing YAML frontmatter (must start and end with ---)');
+      }
+
+      // 4. Detect external references
+      const matter = require('gray-matter');
+      let parsed;
+      try {
+        parsed = matter(content);
+      } catch (error) {
+        throw new Error(`Failed to parse SKILL.md frontmatter: ${error.message}`);
+      }
+
+      // Scan for external references
+      const externalReferences = this.detectSkillExternalReferences(sourceSkillDir, content);
+
+      // 5. Block copy if external references found and not acknowledged
+      if (externalReferences.length > 0 && !request.acknowledgedWarnings) {
+        return {
+          success: false,
+          warnings: {
+            externalReferences: externalReferences
+          },
+          requiresAcknowledgement: true
+        };
+      }
+
+      // 6. Build target path
+      const skillName = path.basename(sourceSkillDir);
+      let targetSkillDir;
+
+      if (request.targetScope === 'user') {
+        targetSkillDir = path.join(os.homedir(), '.claude', 'skills', skillName);
+      } else {
+        // Project scope
+        const projectPath = await this.getProjectPath(request.targetProjectId);
+        targetSkillDir = path.join(projectPath, '.claude', 'skills', skillName);
+      }
+
+      // 7. Detect conflict (target directory already exists)
+      const conflict = await this.detectConflict(validatedSourcePath, path.join(targetSkillDir, 'SKILL.md'));
+
+      // 8. Handle conflict if detected
+      let finalTargetDir = targetSkillDir;
+
+      if (conflict) {
+        // Conflict exists - check if strategy provided
+        if (!request.conflictStrategy) {
+          // No strategy provided, return conflict for user decision
+          return {
+            success: false,
+            conflict: conflict
+          };
+        }
+
+        // Resolve conflict with provided strategy
+        try {
+          if (request.conflictStrategy === 'skip') {
+            return {
+              success: false,
+              skipped: true,
+              message: 'Copy cancelled by user'
+            };
+          } else if (request.conflictStrategy === 'overwrite') {
+            // Delete existing directory
+            await fs.rm(finalTargetDir, { recursive: true, force: true });
+          } else if (request.conflictStrategy === 'rename') {
+            // Generate unique directory name
+            finalTargetDir = await this.generateUniqueDirectoryPath(targetSkillDir);
+          } else {
+            throw new Error(`Unknown conflict strategy: ${request.conflictStrategy}`);
+          }
+        } catch (error) {
+          // Handle errors during conflict resolution
+          if (error.message === 'Copy cancelled by user') {
+            return {
+              success: false,
+              skipped: true,
+              message: 'Copy cancelled by user'
+            };
+          }
+          throw error;
+        }
+      }
+
+      // 9. Ensure parent directory exists
+      const targetParentDir = path.dirname(finalTargetDir);
+      try {
+        await fs.mkdir(targetParentDir, { recursive: true });
+      } catch (error) {
+        throw new Error(`Failed to create target directory: ${error.message}`);
+      }
+
+      // 10. Copy skill directory recursively
+      let fileCount = 0;
+      let dirCount = 0;
+
+      try {
+        const counts = await this.copyDirectoryRecursive(sourceSkillDir, finalTargetDir);
+        fileCount = counts.fileCount;
+        dirCount = counts.dirCount;
+      } catch (error) {
+        throw new Error(`Failed to copy skill directory: ${error.message}`);
+      }
+
+      // 11. Return success
+      return {
+        success: true,
+        copiedPath: finalTargetDir,
+        fileCount: fileCount,
+        dirCount: dirCount
+      };
+
+    } catch (error) {
+      // Handle all errors with consistent format
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred during skill copy operation'
+      };
+    }
+  }
+
+  /**
+   * Detect external file references in skill content
+   * @param {string} skillPath - Absolute path to skill directory
+   * @param {string} content - Content to scan
+   * @returns {Array} External references
+   */
+  detectSkillExternalReferences(skillPath, content) {
+    const references = [];
+    const lines = content.split('\n');
+
+    const patterns = [
+      { regex: /(?:^|\s)(\/[^\s'"<>]+)/g, type: 'absolute', severity: 'error' },
+      { regex: /(?:^|\s)(~\/[^\s'"<>]+)/g, type: 'home', severity: 'warning' },
+      { regex: /(?:^|\s)(\.\.[/\\][^\s'"<>]*)/g, type: 'relative', severity: 'warning' },
+      { regex: /(?:node|python|bash|sh)\s+([~./][^\s'"<>]+)/gi, type: 'script', severity: 'error' }
+    ];
+
+    lines.forEach((line, lineIndex) => {
+      patterns.forEach(({ regex, type, severity }) => {
+        regex.lastIndex = 0;
+
+        let match;
+        while ((match = regex.exec(line)) !== null) {
+          const reference = match[1];
+
+          if (reference.match(/^https?:\/\/|^ftp:\/\//)) {
+            continue;
+          }
+
+          let resolvedPath;
+          try {
+            if (reference.startsWith('~')) {
+              resolvedPath = null;
+            } else if (reference.startsWith('/')) {
+              resolvedPath = reference;
+            } else {
+              resolvedPath = path.resolve(skillPath, reference);
+            }
+
+            if (resolvedPath) {
+              const normalizedSkillPath = path.normalize(skillPath);
+              const normalizedResolved = path.normalize(resolvedPath);
+
+              if (normalizedResolved.startsWith(normalizedSkillPath)) {
+                continue;
+              }
+            }
+
+            references.push({
+              file: 'SKILL.md',
+              line: lineIndex + 1,
+              reference: reference,
+              type: type,
+              severity: severity
+            });
+
+          } catch (error) {
+            references.push({
+              file: 'SKILL.md',
+              line: lineIndex + 1,
+              reference: reference,
+              type: type,
+              severity: severity
+            });
+          }
+        }
+      });
+    });
+
+    return references;
+  }
+
+  /**
+   * Generates a unique directory path by appending a numeric suffix
+   *
+   * Example: skill-dir -> skill-dir-2, skill-dir-3, etc.
+   *
+   * @param {string} originalPath - Original directory path that has a conflict
+   * @returns {Promise<string>} New unique directory path that doesn't conflict
+   */
+  async generateUniqueDirectoryPath(originalPath) {
+    let counter = 2;
+    let newPath;
+
+    do {
+      newPath = `${originalPath}-${counter}`;
+      counter++;
+    } while (await fs.access(newPath).then(() => true).catch(() => false));
+
+    return newPath;
+  }
 }
 
 // Export singleton instance

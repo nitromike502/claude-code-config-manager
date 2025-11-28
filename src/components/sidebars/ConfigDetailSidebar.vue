@@ -98,6 +98,63 @@
         </p>
         <p v-if="selectedItem.enabled === false" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Status:</strong> Disabled</p>
       </div>
+
+      <!-- Skills Metadata -->
+      <div v-else-if="selectedType === 'skills'">
+        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
+        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Description:</strong> {{ selectedItem.description || 'No description' }}</p>
+        <p v-if="selectedItem.allowedTools && selectedItem.allowedTools.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
+          <strong class="text-text-primary">Allowed Tools:</strong>
+          <span v-for="(tool, index) in selectedItem.allowedTools" :key="index" class="inline-block bg-bg-tertiary px-2 py-1 rounded text-xs mr-1 mt-1">{{ tool }}</span>
+        </p>
+        <p v-else-if="Array.isArray(selectedItem.allowedTools) && selectedItem.allowedTools.length === 0" class="my-2 text-sm text-text-secondary leading-relaxed">
+          <strong class="text-text-primary">Allowed Tools:</strong> None specified
+        </p>
+        <p v-if="selectedItem.directoryPath" class="my-2 text-sm text-text-secondary leading-relaxed">
+          <strong class="text-text-primary">Directory Path:</strong> <code class="bg-bg-primary px-1 py-0.5 rounded font-mono text-xs text-text-secondary">{{ selectedItem.directoryPath }}</code>
+        </p>
+
+        <!-- Structure Information -->
+        <div v-if="selectedItem.fileCount || selectedItem.subdirectories" class="my-3 p-3 bg-bg-tertiary rounded">
+          <p class="text-sm font-semibold text-text-primary mb-2">Structure</p>
+          <p v-if="selectedItem.fileCount" class="my-1 text-sm text-text-secondary">
+            <strong class="text-text-primary">Files:</strong> {{ selectedItem.fileCount }}
+          </p>
+          <div v-if="selectedItem.subdirectories && selectedItem.subdirectories.length > 0" class="my-1">
+            <strong class="text-text-primary text-sm">Subdirectories:</strong>
+            <ul class="list-disc ml-4 mt-1">
+              <li v-for="(dir, index) in selectedItem.subdirectories" :key="index" class="text-xs text-text-secondary">{{ dir }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- External References Warning -->
+        <div v-if="selectedItem.externalReferences && selectedItem.externalReferences.length > 0" class="my-3 p-3 bg-color-warning-bg rounded border border-color-warning">
+          <div class="flex items-start gap-2">
+            <i class="pi pi-exclamation-triangle text-color-warning mt-0.5"></i>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-color-warning mb-2">External References Detected</p>
+              <div v-for="(ref, index) in selectedItem.externalReferences" :key="index" class="mb-2">
+                <p class="text-xs text-text-secondary">
+                  <code class="bg-bg-primary px-1 py-0.5 rounded font-mono">{{ ref.reference }}</code>
+                </p>
+                <p class="text-xs text-text-muted">{{ ref.file }}, line {{ ref.line }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parse Error -->
+        <div v-if="selectedItem.hasError && selectedItem.parseError" class="my-3 p-3 bg-color-error-bg rounded border border-color-error">
+          <div class="flex items-start gap-2">
+            <i class="pi pi-times-circle text-color-error mt-0.5"></i>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-color-error mb-1">Parse Error</p>
+              <p class="text-xs text-text-secondary">{{ selectedItem.parseError }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Content Section -->
@@ -194,7 +251,8 @@ const typeIcon = computed(() => {
     agents: 'pi pi-users',
     commands: 'pi pi-bolt',
     hooks: 'pi pi-link',
-    mcp: 'pi pi-server'
+    mcp: 'pi pi-server',
+    skills: 'pi pi-sparkles'
   }
   return icons[props.selectedType] || 'pi pi-file'
 })
@@ -211,7 +269,8 @@ const typeColor = computed(() => {
     agents: 'var(--color-agents)',
     commands: 'var(--color-commands)',
     hooks: 'var(--color-hooks)',
-    mcp: 'var(--color-mcp)'
+    mcp: 'var(--color-mcp)',
+    skills: 'var(--color-skills)'
   }
   return colors[props.selectedType] || 'var(--text-primary)'
 })
@@ -237,7 +296,8 @@ const handleCopy = () => {
       'agents': 'agent',
       'commands': 'command',
       'hooks': 'hook',
-      'mcp': 'mcp'
+      'mcp': 'mcp',
+      'skills': 'skill'
     };
 
     // Use configType to avoid overwriting hook's type field

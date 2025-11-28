@@ -11,6 +11,7 @@
     :loading-commands="loadingCommands"
     :loading-hooks="loadingHooks"
     :loading-mcp="loadingMCP"
+    :loading-skills="loadingSkills"
     :error="false"
     error-message=""
     :warnings="[]"
@@ -18,10 +19,12 @@
     :commands="commands"
     :hooks="hooks"
     :mcp-servers="mcpServers"
+    :skills="skills"
     :showing-all-agents="showingAllAgents"
     :showing-all-commands="showingAllCommands"
     :showing-all-hooks="showingAllHooks"
     :showing-all-mcp="showingAllMcp"
+    :showing-all-skills="showingAllSkills"
     :initial-display-count="initialDisplayCount"
     :sidebar-visible="sidebarVisible"
     :selected-item="selectedItem"
@@ -32,6 +35,7 @@
     @toggle-commands="showingAllCommands = !showingAllCommands"
     @toggle-hooks="showingAllHooks = !showingAllHooks"
     @toggle-mcp="showingAllMcp = !showingAllMcp"
+    @toggle-skills="showingAllSkills = !showingAllSkills"
     @show-detail="showDetail"
     @close-sidebar="sidebarVisible = false"
     @navigate="onNavigate"
@@ -80,18 +84,21 @@ export default {
     const commands = ref([])
     const hooks = ref([])
     const mcpServers = ref([])
+    const skills = ref([])
 
     const loading = ref(true)
     const loadingAgents = ref(false)
     const loadingCommands = ref(false)
     const loadingHooks = ref(false)
     const loadingMCP = ref(false)
+    const loadingSkills = ref(false)
 
     const initialDisplayCount = 5
     const showingAllAgents = ref(false)
     const showingAllCommands = ref(false)
     const showingAllHooks = ref(false)
     const showingAllMcp = ref(false)
+    const showingAllSkills = ref(false)
 
     const sidebarVisible = ref(false)
     const selectedItem = ref(null)
@@ -113,13 +120,14 @@ export default {
           loadAgents(),
           loadCommands(),
           loadHooks(),
-          loadMCP()
+          loadMCP(),
+          loadSkills()
         ])
 
         // Log any failures but don't break the page
         results.forEach((result, index) => {
           if (result.status === 'rejected') {
-            const configNames = ['agents', 'commands', 'hooks', 'MCP servers']
+            const configNames = ['agents', 'commands', 'hooks', 'MCP servers', 'skills']
             console.error(`Error loading user ${configNames[index]}:`, result.reason)
           }
         })
@@ -195,6 +203,22 @@ export default {
       }
     }
 
+    const loadSkills = async () => {
+      loadingSkills.value = true
+      try {
+        const data = await api.getUserSkills()
+        skills.value = data.skills || []
+      } catch (err) {
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading skills:', err)
+        }
+        skills.value = []
+      } finally {
+        loadingSkills.value = false
+      }
+    }
+
     // Sidebar actions
     const showDetail = (item, type, items) => {
       selectedItem.value = item
@@ -242,6 +266,8 @@ export default {
           type = 'hook'
         } else if (mcpServers.value.includes(configItem)) {
           type = 'mcp'
+        } else if (skills.value.includes(configItem)) {
+          type = 'skill'
         }
       }
 
@@ -276,6 +302,8 @@ export default {
           await loadHooks()
         } else if (configType === 'mcp') {
           await loadMCP()
+        } else if (configType === 'skill') {
+          await loadSkills()
         }
       }
     }
@@ -328,16 +356,19 @@ export default {
       commands,
       hooks,
       mcpServers,
+      skills,
       loading,
       loadingAgents,
       loadingCommands,
       loadingHooks,
       loadingMCP,
+      loadingSkills,
       initialDisplayCount,
       showingAllAgents,
       showingAllCommands,
       showingAllHooks,
       showingAllMcp,
+      showingAllSkills,
       sidebarVisible,
       selectedItem,
       selectedType,
