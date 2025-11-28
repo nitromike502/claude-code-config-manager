@@ -922,4 +922,328 @@ describe('Copy API Routes', () => {
       });
     });
   });
+
+  describe('POST /api/copy/skill', () => {
+    describe('Success cases', () => {
+      test('should copy skill successfully with valid request', async () => {
+        copyService.copySkill.mockResolvedValue({
+          success: true,
+          copiedPath: '/home/user/.claude/skills/test-skill',
+          fileCount: 3,
+          dirCount: 1
+        });
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/project/.claude/skills/test-skill',
+            targetScope: 'user',
+            conflictStrategy: 'skip'
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({
+          success: true,
+          message: 'Skill copied successfully',
+          copiedPath: '/home/user/.claude/skills/test-skill',
+          fileCount: 3,
+          dirCount: 1
+        });
+        expect(copyService.copySkill).toHaveBeenCalledWith({
+          sourceSkillPath: '/source/project/.claude/skills/test-skill',
+          targetScope: 'user',
+          targetProjectId: undefined,
+          conflictStrategy: 'skip',
+          acknowledgedWarnings: false
+        });
+      });
+
+      test('should copy skill to project scope successfully', async () => {
+        copyService.copySkill.mockResolvedValue({
+          success: true,
+          copiedPath: '/home/user/project/.claude/skills/test-skill',
+          fileCount: 2,
+          dirCount: 0
+        });
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/.claude/skills/test-skill',
+            targetScope: 'project',
+            targetProjectId: 'myproject',
+            conflictStrategy: 'overwrite'
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.message).toBe('Skill copied successfully');
+      });
+
+      test('should handle skipped copy (user cancelled)', async () => {
+        copyService.copySkill.mockResolvedValue({
+          skipped: true,
+          message: 'Copy cancelled by user'
+        });
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'user',
+            conflictStrategy: 'skip'
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual({
+          success: false,
+          skipped: true,
+          message: 'Copy cancelled by user'
+        });
+      });
+    });
+
+    describe('External reference warnings', () => {
+      test('should return 422 when external references detected and not acknowledged', async () => {
+        copyService.copySkill.mockResolvedValue({
+          warnings: {
+            externalReferences: [
+              { file: 'SKILL.md', line: 5, reference: '../shared/utils.js', type: 'relative' }
+            ]
+          },
+          requiresAcknowledgement: true
+        });
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'user',
+            acknowledgedWarnings: false
+          });
+
+        expect(response.status).toBe(422);
+        expect(response.body.success).toBe(false);
+        expect(response.body.warnings).toBeDefined();
+        expect(response.body.requiresAcknowledgement).toBe(true);
+      });
+
+      test('should copy skill when external references acknowledged', async () => {
+        copyService.copySkill.mockResolvedValue({
+          success: true,
+          copiedPath: '/home/user/.claude/skills/external-skill',
+          fileCount: 1,
+          dirCount: 0
+        });
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'user',
+            acknowledgedWarnings: true,
+            conflictStrategy: 'skip'
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+      });
+    });
+
+    describe('Conflict handling', () => {
+      test('should return 409 when conflict detected', async () => {
+        copyService.copySkill.mockResolvedValue({
+          conflict: {
+            targetPath: '/target/.claude/skills/test-skill/SKILL.md',
+            sourceModified: '2024-01-15T10:30:00.000Z',
+            targetModified: '2024-01-16T14:45:00.000Z'
+          }
+        });
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'user'
+          });
+
+        expect(response.status).toBe(409);
+        expect(response.body.success).toBe(false);
+        expect(response.body.conflict).toBeDefined();
+        expect(response.body.conflict.targetPath).toContain('test-skill');
+      });
+    });
+
+    describe('Validation errors', () => {
+      test('should return 400 for missing sourceSkillPath', async () => {
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            targetScope: 'user'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toContain('sourceSkillPath');
+      });
+
+      test('should return 400 for empty sourceSkillPath', async () => {
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '   ',
+            targetScope: 'user'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+      });
+
+      test('should return 400 for missing targetScope', async () => {
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toContain('targetScope');
+      });
+
+      test('should return 400 for invalid targetScope', async () => {
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'invalid'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+      });
+
+      test('should return 400 for missing targetProjectId when scope is project', async () => {
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'project'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+        expect(response.body.error).toContain('targetProjectId');
+      });
+
+      test('should return 400 for invalid conflictStrategy', async () => {
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'user',
+            conflictStrategy: 'invalid'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+      });
+    });
+
+    describe('Error code mapping', () => {
+      test('should map EACCES to 403', async () => {
+        copyService.copySkill.mockResolvedValue({
+          error: 'Permission denied: EACCES'
+        });
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'user'
+          });
+
+        expect(response.status).toBe(403);
+        expect(response.body.success).toBe(false);
+      });
+
+      test('should map ENOENT to 404', async () => {
+        copyService.copySkill.mockResolvedValue({
+          error: 'Skill directory not found: ENOENT'
+        });
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'user'
+          });
+
+        expect(response.status).toBe(404);
+        expect(response.body.success).toBe(false);
+      });
+
+      test('should map ENOSPC to 507', async () => {
+        copyService.copySkill.mockResolvedValue({
+          error: 'No space left on device: ENOSPC'
+        });
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'user'
+          });
+
+        expect(response.status).toBe(507);
+        expect(response.body.success).toBe(false);
+      });
+
+      test('should map missing SKILL.md to 400', async () => {
+        copyService.copySkill.mockResolvedValue({
+          error: 'Invalid skill directory: missing SKILL.md'
+        });
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'user'
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body.success).toBe(false);
+      });
+
+      test('should map thrown ENOENT error to 404', async () => {
+        const error = new Error('File not found');
+        error.code = 'ENOENT';
+        copyService.copySkill.mockRejectedValue(error);
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'user'
+          });
+
+        expect(response.status).toBe(404);
+        expect(response.body.success).toBe(false);
+      });
+
+      test('should map unknown errors to 500', async () => {
+        copyService.copySkill.mockRejectedValue(new Error('Unexpected error'));
+
+        const response = await request(app)
+          .post('/api/copy/skill')
+          .send({
+            sourceSkillPath: '/source/skill',
+            targetScope: 'user'
+          });
+
+        expect(response.status).toBe(500);
+        expect(response.body.success).toBe(false);
+      });
+    });
+  });
 });
