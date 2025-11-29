@@ -93,6 +93,7 @@
   --p-button-danger-hover-border-color: var(--p-red-900);  /* Danger button hover border */
   --p-button-danger-hover-color: var(--p-red-100);  /* Danger button hover text */
   --p-message-warn-background: color-mix(in srgb, var(--p-orange-500) 65%, transparent);  /* Warning message background */
+  --p-message-warn-color: var(--p-yellow-200);  /* Warning message text */
   --p-form-field-color: var(--text-primary);  /* Form field text - matches body text #e0e0e0 */
 
   /* ========== Backgrounds ========== */
