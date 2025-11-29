@@ -8,7 +8,7 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Deployment:** Local web server accessible at `http://localhost:5173`
 
-**Current Release:** v2.2.0 - Released November 26, 2025
+**Current Release:** v2.3.0 - Released November 28, 2025
 
 **Key Features:**
 - Copy configuration between projects (agents, commands, skills, hooks, MCP servers)

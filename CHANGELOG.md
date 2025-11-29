@@ -11,6 +11,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.3.0] - 2025-11-28
+
+### Added
+- **Agent Skills Support** (EPIC-006) - Skills as new configuration type alongside agents, commands, hooks, and MCP servers
+  - Skills panel with purple sparkles icon in project and user configuration views
+  - Skills detail sidebar with file tree view showing directory structure
+  - External reference detection and warnings for absolute paths, home directory refs, and parent directory escapes
+  - Full directory copy support with recursive file operations
+  - Cross-scope copy (user ↔ project) for skills
+  - Smart conflict resolution (skip/overwrite/rename) for skill directories
+- Skill parser with YAML frontmatter extraction from SKILL.md files
+- New API endpoints: `GET /api/projects/:id/skills`, `GET /api/user/skills`, `POST /api/copy/skill`
+- 100 new tests: 71 copy service tests + 29 skill parser tests
+- Deploy slash command for automated release workflow
+
+### Changed
+- Updated dashboard to display skills count on project cards
+- ConfigPageLayout now supports 5 configuration panels (agents, commands, skills, hooks, mcp)
+- Copy modal updated with external reference acknowledgment checkbox for skills
+- Visual regression snapshots regenerated for skills UI
+
+### Fixed
+- YAML frontmatter quoting in agent description fields
+- Test assertions updated for 5-panel configuration view
+
+---
+
 ## [2.2.0] - 2025-11-26
 
 ### Added
