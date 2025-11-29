@@ -239,7 +239,7 @@ Claude Code Manager works on:
 
 ## Roadmap
 
-**Current Release: v2.2.0** - UI Modernization Complete ✅
+**Current Release: v2.3.0** - Agent Skills Support ✅
 - PrimeVue Aura theme components throughout application
 - Tailwind CSS v4 integration with responsive utilities
 - 63% reduction in custom CSS code
