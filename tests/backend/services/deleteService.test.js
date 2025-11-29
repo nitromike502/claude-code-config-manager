@@ -112,7 +112,7 @@ describe('deleteService', () => {
         await deleteService.deleteFile(testPath);
         const duration = Date.now() - start;
 
-        expect(duration).toBeLessThan(20); // Allow for CI/system variability
+        expect(duration).toBeLessThan(5);
       });
     });
   });
