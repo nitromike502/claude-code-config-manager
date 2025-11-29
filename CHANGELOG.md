@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.3.1] - 2025-11-28
+
+### Fixed
+- Renamed `postcss.config.js` to `postcss.config.mjs` to eliminate Node.js ES module warning during npm operations
+
+---
+
 ## [2.3.0] - 2025-11-28
 
 ### Added
