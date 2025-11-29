@@ -358,17 +358,11 @@ watch(() => props.modelValue, (newValue) => {
 .display-mode {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 0.5rem;
 }
 
 .display-mode .value {
-  flex: 1;
-  color: var(--p-surface-700);
-}
-
-:global(.dark) .display-mode .value {
-  color: var(--p-surface-200);
+  color: var(--text-primary);
 }
 
 .display-mode .edit-btn {

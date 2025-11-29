@@ -43,7 +43,7 @@
     <!-- Confirmation Input -->
     <div class="mb-4">
       <label for="delete-confirm" class="block text-sm font-semibold mb-2 text-surface-700 dark:text-surface-200">
-        Type <code class="confirm-code">delete</code> to confirm:
+        Type <em>delete</em> to confirm:
       </label>
       <InputText
         id="delete-confirm"
@@ -182,19 +182,6 @@ function onCancel() {
 </script>
 
 <style scoped>
-/* Code styling for "delete" keyword */
-.confirm-code {
-  background: var(--p-surface-100);
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
-  font-family: monospace;
-}
-
-:global(.dark) .confirm-code {
-  background: var(--p-surface-700);
-}
-
 /* Message component customization */
 :deep(.p-message) {
   border-left: 4px solid;
