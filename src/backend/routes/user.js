@@ -278,8 +278,17 @@ router.put('/agents/:agentName', validateAgentName, async (req, res) => {
           if (frontmatter[key] === undefined) delete frontmatter[key];
         });
 
+        // Strip frontmatter from systemPrompt if it contains it
+        // This can happen if the UI accidentally sends the full file content
+        let cleanSystemPrompt = systemPromptUpdate;
+        const systemPromptMatch = systemPromptUpdate.match(frontmatterRegex);
+        if (systemPromptMatch) {
+          // systemPrompt contains frontmatter, extract only the body
+          cleanSystemPrompt = systemPromptMatch[2];
+        }
+
         const yamlStr = yaml.dump(frontmatter, { lineWidth: -1 });
-        const newContent = `---\n${yamlStr}---\n${systemPromptUpdate}`;
+        const newContent = `---\n${yamlStr}---\n${cleanSystemPrompt}`;
 
         await updateFile(agentFilePath, newContent);
       }

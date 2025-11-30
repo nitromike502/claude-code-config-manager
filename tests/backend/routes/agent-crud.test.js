@@ -207,6 +207,42 @@ describe('Agent CRUD API Routes', () => {
         expect(fs.readFile).toHaveBeenCalled();
       });
 
+      test('should strip frontmatter from systemPrompt if it contains it', async () => {
+        // Mock existing agent file
+        fs.readFile.mockResolvedValue('---\nname: test-agent\ndescription: Test\n---\nOld prompt');
+        updateService.updateFile.mockResolvedValue({ success: true });
+
+        parseSubagent.mockResolvedValue({
+          name: 'test-agent',
+          description: 'Test agent',
+          tools: [],
+          systemPrompt: 'This is the cleaned system prompt without frontmatter',
+          filePath: '/home/user/testproject/.claude/agents/test-agent.md',
+          scope: 'project'
+        });
+
+        // Send systemPrompt with embedded frontmatter (simulating UI bug)
+        const response = await request(app)
+          .put('/api/projects/testproject/agents/test-agent')
+          .send({
+            systemPrompt: '---\nname: embedded\ndescription: Embedded frontmatter\n---\nThis is the cleaned system prompt without frontmatter'
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+
+        // Verify updateFile was called with cleaned content (without duplicate frontmatter)
+        expect(updateService.updateFile).toHaveBeenCalled();
+        const updateFileCall = updateService.updateFile.mock.calls[0][1];
+
+        // Should only have 2 frontmatter delimiters, not 4
+        const delimiterCount = (updateFileCall.match(/^---$/gm) || []).length;
+        expect(delimiterCount).toBe(2);
+
+        // Should not contain "embedded" in frontmatter
+        expect(updateFileCall).not.toMatch(/name: embedded/);
+      });
+
       test('should handle agent rename successfully', async () => {
         // Mock new name doesn't exist
         fs.access
@@ -737,6 +773,42 @@ describe('Agent CRUD API Routes', () => {
 
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
+      });
+
+      test('should strip frontmatter from user agent systemPrompt if it contains it', async () => {
+        // Mock existing user agent file
+        fs.readFile.mockResolvedValue('---\nname: test-agent\ndescription: Test\n---\nOld prompt');
+        updateService.updateFile.mockResolvedValue({ success: true });
+
+        parseSubagent.mockResolvedValue({
+          name: 'test-agent',
+          description: 'Test agent',
+          tools: [],
+          systemPrompt: 'This is the cleaned user agent prompt',
+          filePath: '/home/user/.claude/agents/test-agent.md',
+          scope: 'user'
+        });
+
+        // Send systemPrompt with embedded frontmatter (simulating UI bug)
+        const response = await request(app)
+          .put('/api/user/agents/test-agent')
+          .send({
+            systemPrompt: '---\nname: embedded-user\ndescription: Embedded in user agent\n---\nThis is the cleaned user agent prompt'
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+
+        // Verify updateFile was called with cleaned content (without duplicate frontmatter)
+        expect(updateService.updateFile).toHaveBeenCalled();
+        const updateFileCall = updateService.updateFile.mock.calls[0][1];
+
+        // Should only have 2 frontmatter delimiters, not 4
+        const delimiterCount = (updateFileCall.match(/^---$/gm) || []).length;
+        expect(delimiterCount).toBe(2);
+
+        // Should not contain "embedded-user" in frontmatter
+        expect(updateFileCall).not.toMatch(/name: embedded-user/);
       });
 
       test('should handle user agent rename successfully', async () => {
