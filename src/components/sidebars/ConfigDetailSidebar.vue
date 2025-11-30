@@ -474,14 +474,8 @@ const handleFieldUpdate = async (fieldName, newValue) => {
 
   try {
     // Build updates object with just the changed field
-    const updates = {}
-
-    // Map field names to API format
-    if (fieldName === 'systemPrompt') {
-      updates.content = newValue
-    } else {
-      updates[fieldName] = newValue
-    }
+    // Note: All field names map directly to API - systemPrompt is expected by the API
+    const updates = { [fieldName]: newValue }
 
     // Call API through store
     const result = await agentsStore.updateAgent(
