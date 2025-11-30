@@ -4,7 +4,7 @@
     <div v-if="!isBlockField" class="flex items-start gap-2">
       <div class="text-text-primary font-bold shrink-0 mt-2 mr-1">{{ label }}:</div>
       <InlineEditField
-        v-model="modelValue"
+        :model-value="modelValue"
         :field-type="fieldType"
         :label="label"
         :placeholder="placeholder"
@@ -117,6 +117,45 @@
 </template>
 
 <script setup>
+/**
+ * LabeledEditField Component
+ *
+ * A wrapper around InlineEditField that includes the label as part of the component.
+ * Provides two layout modes based on field type:
+ * - Inline layout: Label and field appear side-by-side (text, select, number, colorpalette, selectbutton)
+ * - Block layout: Label with edit button on top, content below (textarea, multiselect)
+ *
+ * @component
+ * @example
+ * <!-- Inline layout (text field) -->
+ * <LabeledEditField
+ *   v-model="agent.name"
+ *   field-type="text"
+ *   label="Agent Name"
+ *   placeholder="Enter name"
+ * />
+ *
+ * @example
+ * <!-- Block layout (textarea) -->
+ * <LabeledEditField
+ *   v-model="agent.description"
+ *   field-type="textarea"
+ *   label="Description"
+ *   :validation="[{ rule: 'minLength', value: 10 }]"
+ * />
+ *
+ * @example
+ * <!-- SelectButton with options -->
+ * <LabeledEditField
+ *   v-model="hook.enabled"
+ *   field-type="selectbutton"
+ *   label="Status"
+ *   :options="[
+ *     { label: 'Enabled', value: true },
+ *     { label: 'Disabled', value: false }
+ *   ]"
+ * />
+ */
 import { ref, computed, nextTick } from 'vue'
 import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
@@ -126,38 +165,50 @@ import InlineEditField from './InlineEditField.vue'
 import { useFormValidation } from '@/composables/useFormValidation'
 
 const props = defineProps({
+  /** The field value (v-model) */
   modelValue: {
     type: [String, Number, Boolean, Array, Object],
     default: null
   },
+  /**
+   * Type of edit field
+   * @values 'text', 'textarea', 'select', 'selectbutton', 'multiselect', 'colorpalette', 'number'
+   */
   fieldType: {
     type: String,
     required: true
   },
+  /** Label text displayed with the field */
   label: {
     type: String,
     required: true
   },
+  /** Options array for select/multiselect/selectbutton fields */
   options: {
     type: Array,
     default: () => []
   },
+  /** Placeholder text for the input field */
   placeholder: {
     type: String,
     default: ''
   },
+  /** Disable editing */
   disabled: {
     type: Boolean,
     default: false
   },
+  /** Array of validation rules from useFormValidation composable */
   validation: {
     type: Array,
     default: () => []
   },
+  /** Minimum value for number fields */
   min: {
     type: Number,
     default: undefined
   },
+  /** Maximum value for number fields */
   max: {
     type: Number,
     default: undefined
@@ -165,15 +216,23 @@ const props = defineProps({
 })
 
 const emit = defineEmits([
+  /** Emitted when the value changes (v-model update) */
   'update:modelValue',
+  /** Emitted when editing starts */
   'edit-start',
+  /** Emitted when editing is cancelled */
   'edit-cancel',
+  /** Emitted when the new value is accepted */
   'edit-accept'
 ])
 
 const { validate } = useFormValidation()
 
-// Determine if this is a "block" field type (large content)
+/**
+ * Determines if this field should use block layout (label above, content below)
+ * Block fields: textarea, multiselect
+ * Inline fields: text, select, number, colorpalette, selectbutton
+ */
 const isBlockField = computed(() => {
   return ['textarea', 'multiselect'].includes(props.fieldType)
 })
@@ -185,7 +244,10 @@ const validationError = ref(null)
 const loading = ref(false)
 const fieldRef = ref(null)
 
-// Display value for textarea
+/**
+ * Formatted display value for textarea fields in display mode
+ * Shows "Not set" if value is null/undefined, otherwise converts to string
+ */
 const displayValue = computed(() => {
   if (props.modelValue === null || props.modelValue === undefined) {
     return 'Not set'
@@ -193,7 +255,10 @@ const displayValue = computed(() => {
   return String(props.modelValue)
 })
 
-// Display array for multiselect
+/**
+ * Array value for multiselect fields in display mode
+ * Returns empty array if value is not an array
+ */
 const displayArray = computed(() => {
   if (Array.isArray(props.modelValue)) {
     return props.modelValue
@@ -201,6 +266,10 @@ const displayArray = computed(() => {
   return []
 })
 
+/**
+ * Start editing mode for block fields (textarea, multiselect)
+ * Deep clones the value, focuses the input field, and emits edit-start event
+ */
 function startEdit() {
   if (props.disabled) return
 
@@ -222,6 +291,10 @@ function startEdit() {
   })
 }
 
+/**
+ * Accept the edited value
+ * Runs validation if provided, emits update events, and exits edit mode
+ */
 function accept() {
   // Run validation if provided
   if (props.validation && props.validation.length > 0) {
@@ -244,6 +317,10 @@ function accept() {
   }, 100)
 }
 
+/**
+ * Cancel editing and revert to original value
+ * Clears validation errors and emits edit-cancel event
+ */
 function cancel() {
   if (loading.value) return
 

@@ -95,6 +95,91 @@
         </div>
       </section>
 
+      <!-- LabeledEditField Tests -->
+      <section class="test-section">
+        <h2>LabeledEditField Component</h2>
+
+        <div class="test-box">
+          <h3>Inline Text Field</h3>
+          <LabeledEditField
+            v-model="labeledAgentName"
+            field-type="text"
+            label="Agent Name"
+            placeholder="Enter agent name"
+            :validation="nameValidation"
+          />
+          <div class="value-display">Current value: {{ labeledAgentName }}</div>
+        </div>
+
+        <div class="test-box">
+          <h3>Block Textarea Field</h3>
+          <LabeledEditField
+            v-model="labeledDescription"
+            field-type="textarea"
+            label="Description"
+            placeholder="Enter description"
+          />
+          <div class="value-display">Current value: {{ labeledDescription }}</div>
+        </div>
+
+        <div class="test-box">
+          <h3>Inline Select Field</h3>
+          <LabeledEditField
+            v-model="labeledModel"
+            field-type="select"
+            label="Model"
+            :options="MODEL_OPTIONS"
+            placeholder="Select a model"
+          />
+          <div class="value-display">Current value: {{ labeledModel }}</div>
+        </div>
+
+        <div class="test-box">
+          <h3>Block MultiSelect Field</h3>
+          <LabeledEditField
+            v-model="labeledTools"
+            field-type="multiselect"
+            label="Allowed Tools"
+            :options="TOOL_OPTIONS"
+            placeholder="Select tools"
+          />
+          <div class="value-display">Current value: {{ labeledTools }}</div>
+        </div>
+
+        <div class="test-box">
+          <h3>Inline Number Field</h3>
+          <LabeledEditField
+            v-model="labeledTimeout"
+            field-type="number"
+            label="Timeout"
+            :min="1"
+            :max="3600"
+          />
+          <div class="value-display">Current value: {{ labeledTimeout }}</div>
+        </div>
+
+        <div class="test-box">
+          <h3>Inline Color Field</h3>
+          <LabeledEditField
+            v-model="labeledColor"
+            field-type="colorpalette"
+            label="Color"
+          />
+          <div class="value-display">Current value: {{ labeledColor }}</div>
+        </div>
+
+        <div class="test-box">
+          <h3>Disabled Field</h3>
+          <LabeledEditField
+            v-model="disabledValue"
+            field-type="text"
+            label="Disabled Field"
+            :disabled="true"
+          />
+          <div class="value-display">Current value: {{ disabledValue }}</div>
+        </div>
+      </section>
+
       <!-- ColorPaletteDropdown Test -->
       <section class="test-section">
         <h2>ColorPaletteDropdown Component</h2>
@@ -168,6 +253,7 @@
 import { ref } from 'vue'
 import Button from 'primevue/button'
 import InlineEditField from '@/components/forms/InlineEditField.vue'
+import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import ColorPaletteDropdown from '@/components/forms/ColorPaletteDropdown.vue'
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal.vue'
 import {
@@ -184,6 +270,15 @@ const enabled = ref(true)
 const tools = ref(['Read', 'Write', 'Bash'])
 const color = ref('blue')
 const timeout = ref(60)
+
+// LabeledEditField test data
+const labeledAgentName = ref('test-agent')
+const labeledDescription = ref('This is a test description for the agent.')
+const labeledModel = ref('sonnet')
+const labeledTools = ref(['Read', 'Write'])
+const labeledTimeout = ref(120)
+const labeledColor = ref('green')
+const disabledValue = ref('This field is disabled')
 
 // Validation rules for agent name
 const nameValidation = [

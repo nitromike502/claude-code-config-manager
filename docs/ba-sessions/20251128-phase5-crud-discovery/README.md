@@ -33,6 +33,7 @@ Phase 5 adds Create, Read, Update, Delete (CRUD) operations for Claude Code conf
 - [x] Document hook specifications (`config-specs/hooks.md`)
 - [x] Document MCP server specifications (`config-specs/mcp-servers.md`)
 - [x] Document InlineEditField component spec (`component-specs/inline-edit-field.md`)
+- [x] Document LabeledEditField component spec (`component-specs/labeled-edit-field.md`)
 - [x] Document DeleteConfirmationModal spec (`component-specs/delete-confirmation-modal.md`)
 - [x] Document ColorPaletteDropdown spec (`component-specs/color-palette-dropdown.md`)
 - [x] Document form field type mappings (`component-specs/form-field-types.md`)
@@ -62,6 +63,7 @@ docs/ba-sessions/20251128-phase5-crud-discovery/
 │   └── mcp-servers.md
 ├── component-specs/            # UI component specifications
 │   ├── inline-edit-field.md
+│   ├── labeled-edit-field.md
 │   ├── delete-confirmation-modal.md
 │   ├── color-palette-dropdown.md
 │   └── form-field-types.md

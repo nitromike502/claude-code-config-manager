@@ -64,96 +64,78 @@
         />
 
         <!-- Description Field -->
-        <div class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary block mb-1">Description:</strong>
-          <InlineEditField
-            v-model="agentData.description"
-            field-type="textarea"
-            label="Description"
-            placeholder="Brief description"
-            :disabled="!canEdit || editingField !== null && editingField !== 'description'"
-            :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Description must be at least 10 characters' }]"
-            @edit-start="editingField = 'description'"
-            @edit-cancel="editingField = null"
-            @edit-accept="handleFieldUpdate('description', $event)"
-          />
-        </div>
+        <LabeledEditField
+          v-model="agentData.description"
+          field-type="textarea"
+          label="Description"
+          placeholder="Brief description"
+          :disabled="!canEdit || editingField !== null && editingField !== 'description'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Description must be at least 10 characters' }]"
+          @edit-start="editingField = 'description'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('description', $event)"
+        />
 
         <!-- Color Field -->
-        <div class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary block mb-1">Color:</strong>
-          <InlineEditField
-            v-model="agentData.color"
-            field-type="colorpalette"
-            label="Color"
-            :disabled="!canEdit || editingField !== null && editingField !== 'color'"
-            @edit-start="editingField = 'color'"
-            @edit-cancel="editingField = null"
-            @edit-accept="handleFieldUpdate('color', $event)"
-          />
-        </div>
+        <LabeledEditField
+          v-model="agentData.color"
+          field-type="colorpalette"
+          label="Color"
+          :disabled="!canEdit || editingField !== null && editingField !== 'color'"
+          @edit-start="editingField = 'color'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('color', $event)"
+        />
 
         <!-- Model Field -->
-        <div class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary block mb-1">Model:</strong>
-          <InlineEditField
-            v-model="agentData.model"
-            field-type="selectbutton"
-            label="Model"
-            :options="modelOptions"
-            :disabled="!canEdit || editingField !== null && editingField !== 'model'"
-            @edit-start="editingField = 'model'"
-            @edit-cancel="editingField = null"
-            @edit-accept="handleFieldUpdate('model', $event)"
-          />
-        </div>
+        <LabeledEditField
+          v-model="agentData.model"
+          field-type="selectbutton"
+          label="Model"
+          :options="modelOptions"
+          :disabled="!canEdit || editingField !== null && editingField !== 'model'"
+          @edit-start="editingField = 'model'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('model', $event)"
+        />
 
         <!-- Permission Mode Field -->
-        <div class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary block mb-1">Permission Mode:</strong>
-          <InlineEditField
-            v-model="agentData.permissionMode"
-            field-type="select"
-            label="Permission Mode"
-            :options="permissionOptions"
-            :disabled="!canEdit || editingField !== null && editingField !== 'permissionMode'"
-            @edit-start="editingField = 'permissionMode'"
-            @edit-cancel="editingField = null"
-            @edit-accept="handleFieldUpdate('permissionMode', $event)"
-          />
-        </div>
+        <LabeledEditField
+          v-model="agentData.permissionMode"
+          field-type="select"
+          label="Permission Mode"
+          :options="permissionOptions"
+          :disabled="!canEdit || editingField !== null && editingField !== 'permissionMode'"
+          @edit-start="editingField = 'permissionMode'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('permissionMode', $event)"
+        />
 
         <!-- Tools Field -->
-        <div class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary block mb-1">Allowed Tools:</strong>
-          <InlineEditField
-            v-model="agentData.tools"
-            field-type="multiselect"
-            label="Allowed Tools"
-            :options="toolOptions"
-            placeholder="Select allowed tools"
-            :disabled="!canEdit || editingField !== null && editingField !== 'tools'"
-            @edit-start="editingField = 'tools'"
-            @edit-cancel="editingField = null"
-            @edit-accept="handleFieldUpdate('tools', $event)"
-          />
-        </div>
+        <LabeledEditField
+          v-model="agentData.tools"
+          field-type="multiselect"
+          label="Allowed Tools"
+          :options="toolOptions"
+          placeholder="Select allowed tools"
+          :disabled="!canEdit || editingField !== null && editingField !== 'tools'"
+          @edit-start="editingField = 'tools'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('tools', $event)"
+        />
 
         <!-- Skills Field -->
-        <div class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary block mb-1">Skills:</strong>
-          <InlineEditField
-            v-model="agentData.skills"
-            field-type="multiselect"
-            label="Skills"
-            :options="skillOptions"
-            placeholder="Select skills"
-            :disabled="!canEdit || editingField !== null && editingField !== 'skills'"
-            @edit-start="editingField = 'skills'"
-            @edit-cancel="editingField = null"
-            @edit-accept="handleFieldUpdate('skills', $event)"
-          />
-        </div>
+        <LabeledEditField
+          v-model="agentData.skills"
+          field-type="multiselect"
+          label="Skills"
+          :options="skillOptions"
+          placeholder="Select skills"
+          :disabled="!canEdit || editingField !== null && editingField !== 'skills'"
+          @edit-start="editingField = 'skills'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('skills', $event)"
+        />
       </div>
 
       <!-- Commands Metadata -->
@@ -275,7 +257,7 @@
 
       <!-- For agents, use inline editing -->
       <div v-if="selectedType === 'agents'">
-        <InlineEditField
+        <LabeledEditField
           v-model="agentData.systemPrompt"
           field-type="textarea"
           label="System Prompt"
