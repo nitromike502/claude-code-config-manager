@@ -51,20 +51,17 @@
       <!-- Agents Metadata -->
       <div v-if="selectedType === 'agents'">
         <!-- Name Field -->
-        <div class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary block mb-1">Name:</strong>
-          <InlineEditField
-            v-model="agentData.name"
-            field-type="text"
-            label="Name"
-            placeholder="agent-name"
-            :disabled="!canEdit || editingField !== null && editingField !== 'name'"
-            :validation="[{ type: 'required' }, { type: 'agentName' }]"
-            @edit-start="editingField = 'name'"
-            @edit-cancel="editingField = null"
-            @edit-accept="handleFieldUpdate('name', $event)"
-          />
-        </div>
+        <LabeledEditField
+          v-model="agentData.name"
+          field-type="text"
+          label="Name"
+          placeholder="agent-name"
+          :disabled="!canEdit || editingField !== null && editingField !== 'name'"
+          :validation="[{ type: 'required' }, { type: 'agentName' }]"
+          @edit-start="editingField = 'name'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('name', $event)"
+        />
 
         <!-- Description Field -->
         <div class="my-2 text-sm text-text-secondary leading-relaxed">
@@ -337,7 +334,7 @@ import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
-import InlineEditField from '@/components/forms/InlineEditField.vue'
+import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import { useAgentsStore } from '@/stores/agents'
 
 const agentsStore = useAgentsStore()
