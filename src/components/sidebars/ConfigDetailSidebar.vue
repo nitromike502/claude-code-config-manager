@@ -274,34 +274,38 @@
       <pre v-else class="bg-bg-primary p-4 rounded border border-border-primary font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[400px] overflow-y-auto text-text-primary">{{ selectedItem.content }}</pre>
     </div>
 
-    <!-- Footer with Actions -->
+    <!-- Footer with Actions (inline icon buttons) -->
     <template #footer>
-      <div class="flex gap-3 w-full">
+      <div class="flex items-center justify-end gap-2">
         <!-- Delete Button (only for agents with edit enabled) -->
         <Button
           v-if="selectedType === 'agents' && canEdit"
           @click="handleDelete"
           :disabled="!selectedItem"
-          label="Delete"
           icon="pi pi-trash"
-          severity="danger"
           outlined
-          class="delete-action-btn flex-1"
+          severity="danger"
+          aria-label="Delete"
+          v-tooltip.top="'Delete'"
+          class="sidebar-action-btn delete-action-btn"
         />
 
         <Button
           @click="handleCopy"
           :disabled="!selectedItem"
-          label="Copy"
           icon="pi pi-copy"
-          class="copy-action-btn flex-1"
+          outlined
+          aria-label="Copy"
+          v-tooltip.top="'Copy'"
+          class="sidebar-action-btn copy-action-btn"
         />
         <Button
           @click="localVisible = false"
-          label="Close"
           icon="pi pi-times"
           outlined
-          class="close-action-btn flex-1"
+          aria-label="Close"
+          v-tooltip.top="'Close'"
+          class="sidebar-action-btn close-action-btn"
         />
       </div>
     </template>
@@ -653,39 +657,38 @@ const handleCopy = () => {
   cursor: not-allowed !important;
 }
 
-/* Copy action button */
-.copy-action-btn {
-  background: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-  color: white !important;
-  padding: 0.75rem 1rem !important;
-  font-weight: 500 !important;
+/* Sidebar action buttons (footer) - icon-only outlined style */
+.sidebar-action-btn {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  padding: 0 !important;
   transition: all 0.2s !important;
 }
 
+.sidebar-action-btn:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+}
+
+/* Copy action button */
+.copy-action-btn {
+  background: var(--bg-secondary) !important;
+  color: var(--color-primary) !important;
+  border: 1px solid var(--color-primary) !important;
+}
+
 .copy-action-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover) !important;
-  border-color: var(--color-primary-hover) !important;
+  background: var(--color-primary) !important;
+  color: white !important;
   transform: translateY(-1px);
   box-shadow: var(--shadow-card);
 }
 
-.copy-action-btn:disabled {
-  opacity: 0.6 !important;
-  cursor: not-allowed !important;
-  background: var(--bg-tertiary) !important;
-  border-color: var(--bg-tertiary) !important;
-  color: var(--text-disabled) !important;
-}
-
-/* Delete action button (danger outlined) */
+/* Delete action button */
 .delete-action-btn {
   background: var(--bg-secondary) !important;
   color: var(--color-error) !important;
   border: 1px solid var(--color-error) !important;
-  padding: 0.75rem 1rem !important;
-  font-weight: 500 !important;
-  transition: all 0.2s !important;
 }
 
 .delete-action-btn:hover:not(:disabled) {
@@ -695,19 +698,11 @@ const handleCopy = () => {
   box-shadow: var(--shadow-card);
 }
 
-.delete-action-btn:disabled {
-  opacity: 0.6 !important;
-  cursor: not-allowed !important;
-}
-
-/* Close action button (outlined) */
+/* Close action button */
 .close-action-btn {
   background: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border-primary) !important;
-  padding: 0.75rem 1rem !important;
-  font-weight: 500 !important;
-  transition: all 0.2s !important;
 }
 
 .close-action-btn:hover {

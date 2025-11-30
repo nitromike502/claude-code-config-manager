@@ -60,8 +60,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="agents"
+                :enable-crud="enableAgentCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'agents', agents)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('agent-delete', item)"
               />
             </template>
           </ConfigPanel>
