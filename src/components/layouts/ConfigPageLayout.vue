@@ -60,8 +60,13 @@
               <ConfigItemList
                 :items="items"
                 item-type="agents"
+                :scope="scope"
+                :project-id="projectId"
+                :enable-crud="enableAgentCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'agents', agents)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @edit-clicked="(item) => $emit('agent-edit', item)"
+                @delete-clicked="(item) => $emit('agent-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -332,6 +337,21 @@ defineProps({
   selectedIndex: {
     type: Number,
     default: -1
+  },
+
+  // CRUD support (for agents)
+  scope: {
+    type: String,
+    default: null,
+    validator: (value) => value === null || ['project', 'user'].includes(value)
+  },
+  projectId: {
+    type: String,
+    default: null
+  },
+  enableAgentCrud: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -345,7 +365,9 @@ defineEmits([
   'show-detail',
   'close-sidebar',
   'navigate',
-  'copy-clicked'
+  'copy-clicked',
+  'agent-edit',
+  'agent-delete'
 ])
 </script>
 

@@ -31,6 +31,8 @@
     :selected-type="selectedType"
     :current-items="currentItems"
     :selected-index="currentIndex"
+    scope="user"
+    :enable-agent-crud="true"
     @toggle-agents="showingAllAgents = !showingAllAgents"
     @toggle-commands="showingAllCommands = !showingAllCommands"
     @toggle-hooks="showingAllHooks = !showingAllHooks"
@@ -40,6 +42,8 @@
     @close-sidebar="sidebarVisible = false"
     @navigate="onNavigate"
     @copy-clicked="handleCopyClick"
+    @agent-edit="handleAgentEdit"
+    @agent-delete="handleAgentDelete"
   >
     <template #copy-modal>
       <CopyModal
@@ -52,6 +56,27 @@
       />
     </template>
   </ConfigPageLayout>
+
+  <!-- Agent Edit Dialog -->
+  <AgentEditDialog
+    v-if="editingAgent"
+    v-model:visible="showEditDialog"
+    :agent="editingAgent"
+    :loading="agentEditLoading"
+    @save="handleAgentSave"
+    @cancel="handleAgentEditCancel"
+  />
+
+  <!-- Agent Delete Confirmation Dialog -->
+  <DeleteConfirmationModal
+    v-model:visible="showDeleteDialog"
+    item-type="agent"
+    :item-name="deletingAgent?.name || ''"
+    :dependent-items="agentReferences"
+    :loading="agentDeleteLoading"
+    @confirm="handleAgentDeleteConfirm"
+    @cancel="handleAgentDeleteCancel"
+  />
 </template>
 
 <script>
@@ -60,20 +85,26 @@ import { useToast } from 'primevue/usetoast'
 import * as api from '@/api/client'
 import ConfigPageLayout from '@/components/layouts/ConfigPageLayout.vue'
 import CopyModal from '@/components/copy/CopyModal.vue'
+import AgentEditDialog from '@/components/dialogs/AgentEditDialog.vue'
+import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal.vue'
 import { useCopyStore } from '@/stores/copy-store'
 import { useProjectsStore } from '@/stores/projects'
+import { useAgentsStore } from '@/stores/agents'
 
 export default {
   name: 'UserGlobal',
   components: {
     ConfigPageLayout,
-    CopyModal
+    CopyModal,
+    AgentEditDialog,
+    DeleteConfirmationModal
   },
   setup() {
     // Initialize stores
     const toast = useToast()
     const copyStore = useCopyStore()
     const projectsStore = useProjectsStore()
+    const agentsStore = useAgentsStore()
 
     const breadcrumbItems = [
       { label: 'Dashboard', route: '/', icon: 'pi pi-home' },
@@ -109,6 +140,16 @@ export default {
     // Copy modal state
     const showCopyModal = ref(false)
     const selectedConfig = ref(null)
+
+    // Agent CRUD state
+    const showEditDialog = ref(false)
+    const editingAgent = ref(null)
+    const agentEditLoading = ref(false)
+
+    const showDeleteDialog = ref(false)
+    const deletingAgent = ref(null)
+    const agentDeleteLoading = ref(false)
+    const agentReferences = ref([])
 
     // Load user data
     const loadUserData = async () => {
@@ -251,6 +292,88 @@ export default {
       }
     }
 
+    // Agent CRUD handlers
+    const handleAgentEdit = (agent) => {
+      editingAgent.value = agent
+      showEditDialog.value = true
+    }
+
+    const handleAgentSave = async (updates) => {
+      agentEditLoading.value = true
+
+      try {
+        const result = await agentsStore.updateAgent(
+          null, // no projectId for user scope
+          editingAgent.value.name,
+          updates,
+          'user'
+        )
+
+        if (result.success) {
+          showEditDialog.value = false
+          await loadAgents() // Refresh agent list
+        }
+      } finally {
+        agentEditLoading.value = false
+      }
+    }
+
+    const handleAgentEditCancel = () => {
+      showEditDialog.value = false
+      editingAgent.value = null
+    }
+
+    const handleAgentDelete = async (agent) => {
+      deletingAgent.value = agent
+      agentDeleteLoading.value = true
+
+      try {
+        // Check for references before showing the modal
+        const result = await agentsStore.checkAgentReferences(
+          null, // no projectId for user scope
+          agent.name,
+          'user'
+        )
+
+        if (result.success) {
+          agentReferences.value = result.references || []
+          showDeleteDialog.value = true
+        }
+      } finally {
+        agentDeleteLoading.value = false
+      }
+    }
+
+    const handleAgentDeleteConfirm = async () => {
+      agentDeleteLoading.value = true
+
+      try {
+        const result = await agentsStore.deleteAgent(
+          null, // no projectId for user scope
+          deletingAgent.value.name,
+          'user'
+        )
+
+        if (result.success) {
+          showDeleteDialog.value = false
+          await loadAgents() // Refresh agent list
+
+          // Close sidebar if the deleted agent was being viewed
+          if (selectedItem.value?.name === deletingAgent.value.name) {
+            sidebarVisible.value = false
+          }
+        }
+      } finally {
+        agentDeleteLoading.value = false
+      }
+    }
+
+    const handleAgentDeleteCancel = () => {
+      showDeleteDialog.value = false
+      deletingAgent.value = null
+      agentReferences.value = []
+    }
+
     // Copy modal event handlers
     const handleCopyClick = (configItem) => {
       // Use type from configItem if already present (added by ConfigItemList)
@@ -381,7 +504,21 @@ export default {
       handleCopyClick,
       handleCopySuccess,
       handleCopyError,
-      handleCopyCancelled
+      handleCopyCancelled,
+      // Agent CRUD
+      showEditDialog,
+      editingAgent,
+      agentEditLoading,
+      showDeleteDialog,
+      deletingAgent,
+      agentDeleteLoading,
+      agentReferences,
+      handleAgentEdit,
+      handleAgentSave,
+      handleAgentEditCancel,
+      handleAgentDelete,
+      handleAgentDeleteConfirm,
+      handleAgentDeleteCancel
     }
   }
 }
