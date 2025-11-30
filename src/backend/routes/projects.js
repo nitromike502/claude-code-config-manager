@@ -67,9 +67,13 @@ router.use('/:projectId/*', (req, res, next) => {
     });
   }
 
-  // Check for extra unmatched path segments (e.g., /project/with/slashes/agents)
-  // The wildcard should be a simple resource name (agents, commands, hooks, mcp) without additional slashes
-  if (wildcard && wildcard.includes('/')) {
+  // Check if wildcard starts with a valid resource name
+  // Valid patterns: agents, agents/:name, commands, commands/:name, hooks, mcp, skills, skills/:name
+  // Invalid patterns: with/slashes/agents (path traversal attempt)
+  const validResourcePrefixes = ['agents', 'commands', 'hooks', 'mcp', 'skills'];
+  const wildcardFirstSegment = wildcard.split('/')[0];
+
+  if (wildcard && !validResourcePrefixes.includes(wildcardFirstSegment)) {
     return res.status(400).json({
       success: false,
       error: 'Invalid project ID format',
@@ -479,11 +483,20 @@ router.put('/:projectId/agents/:agentName', validateProjectId, validateAgentName
     }
 
     // Validate updates
-    if (!updates || typeof updates !== 'object') {
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
       return res.status(400).json({
         success: false,
         error: 'Invalid request body',
         details: 'Request body must be a JSON object with agent properties'
+      });
+    }
+
+    // Check if request body is empty
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must contain at least one property to update'
       });
     }
 

@@ -180,11 +180,20 @@ router.put('/agents/:agentName', validateAgentName, async (req, res) => {
     }
 
     // Validate updates
-    if (!updates || typeof updates !== 'object') {
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
       return res.status(400).json({
         success: false,
         error: 'Invalid request body',
         details: 'Request body must be a JSON object with agent properties'
+      });
+    }
+
+    // Check if request body is empty
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must contain at least one property to update'
       });
     }
 
