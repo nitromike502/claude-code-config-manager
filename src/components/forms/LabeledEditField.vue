@@ -234,7 +234,7 @@ const { validate } = useFormValidation()
  * Inline fields: text, select, number, colorpalette, selectbutton
  */
 const isBlockField = computed(() => {
-  return ['textarea', 'multiselect'].includes(props.fieldType)
+  return ['textarea'].includes(props.fieldType)
 })
 
 // State for block field editing
