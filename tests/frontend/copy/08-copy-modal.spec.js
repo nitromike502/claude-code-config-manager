@@ -35,7 +35,7 @@ test.describe('08.001: CopyModal Rendering', () => {
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
       // Click copy button
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -63,7 +63,7 @@ test.describe('08.001: CopyModal Rendering', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -104,7 +104,7 @@ test.describe('08.001: CopyModal Rendering', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -148,7 +148,7 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -189,7 +189,7 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -241,7 +241,7 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -281,7 +281,7 @@ test.describe('08.003: CopyModal Destination Cards', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -320,7 +320,7 @@ test.describe('08.003: CopyModal Destination Cards', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -356,7 +356,7 @@ test.describe('08.003: CopyModal Destination Cards', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -404,7 +404,7 @@ test.describe('08.003: CopyModal Destination Cards', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -441,7 +441,7 @@ test.describe('08.004: CopyModal User Interactions', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -479,7 +479,7 @@ test.describe('08.004: CopyModal User Interactions', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -517,7 +517,7 @@ test.describe('08.004: CopyModal User Interactions', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -557,7 +557,7 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -603,7 +603,7 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -651,7 +651,7 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -690,7 +690,7 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -731,7 +731,7 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -770,7 +770,7 @@ test.describe('08.007: CopyModal Accessibility', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -806,7 +806,7 @@ test.describe('08.007: CopyModal Accessibility', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -854,7 +854,7 @@ test.describe('08.007: CopyModal Accessibility', () => {
       await page.waitForURL(/\/project\//, { timeout: 10000 });
       await page.waitForSelector('.config-cards-container', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
