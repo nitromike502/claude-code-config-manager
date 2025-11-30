@@ -159,10 +159,17 @@ async function updateYamlFrontmatter(filePath, updates) {
     // Step 3: Shallow merge updates into existing frontmatter
     const mergedFrontmatter = { ...parsed.data, ...updates };
 
+    // Normalize body content: trim leading newlines, then add blank line separator
+    // This ensures consistent formatting: ---\nfrontmatter\n---\n\nbody
+    let bodyContent = parsed.content;
+    if (bodyContent) {
+      bodyContent = '\n\n' + bodyContent.replace(/^\n+/, '');
+    }
+
     // Step 4: Reconstruct file using gray-matter's stringify
     let newContent;
     try {
-      newContent = matter.stringify(parsed.content, mergedFrontmatter);
+      newContent = matter.stringify(bodyContent, mergedFrontmatter);
     } catch (stringifyError) {
       throw new Error(`Failed to serialize updated frontmatter: ${stringifyError.message}`);
     }

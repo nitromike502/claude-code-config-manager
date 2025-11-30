@@ -287,8 +287,13 @@ router.put('/agents/:agentName', validateAgentName, async (req, res) => {
           cleanSystemPrompt = systemPromptMatch[2];
         }
 
+        // Normalize: trim leading newlines, then add blank line separator
+        // Result: ---\n\nBody (blank line between frontmatter and content)
+        cleanSystemPrompt = '\n\n' + cleanSystemPrompt.replace(/^\n+/, '');
+
+        // Serialize and write
         const yamlStr = yaml.dump(frontmatter, { lineWidth: -1 });
-        const newContent = `---\n${yamlStr}---\n${cleanSystemPrompt}`;
+        const newContent = `---\n${yamlStr}---${cleanSystemPrompt}`;
 
         await updateFile(agentFilePath, newContent);
       }
