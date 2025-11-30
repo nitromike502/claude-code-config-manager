@@ -44,8 +44,8 @@
     @close-sidebar="sidebarVisible = false"
     @navigate="onNavigate"
     @copy-clicked="handleCopyClick"
-    @agent-edit="handleAgentEdit"
     @agent-delete="handleAgentDelete"
+    @agent-updated="handleAgentUpdated"
   >
     <template #copy-modal>
       <CopyModal
@@ -58,16 +58,6 @@
       />
     </template>
   </ConfigPageLayout>
-
-  <!-- Agent Edit Dialog -->
-  <AgentEditDialog
-    v-if="editingAgent"
-    v-model:visible="showEditDialog"
-    :agent="editingAgent"
-    :loading="agentEditLoading"
-    @save="handleAgentSave"
-    @cancel="handleAgentEditCancel"
-  />
 
   <!-- Agent Delete Confirmation Dialog -->
   <DeleteConfirmationModal
@@ -88,7 +78,6 @@ import { useToast } from 'primevue/usetoast'
 import * as api from '@/api/client'
 import ConfigPageLayout from '@/components/layouts/ConfigPageLayout.vue'
 import CopyModal from '@/components/copy/CopyModal.vue'
-import AgentEditDialog from '@/components/dialogs/AgentEditDialog.vue'
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal.vue'
 import { useCopyStore } from '@/stores/copy-store'
 import { useProjectsStore } from '@/stores/projects'
@@ -96,7 +85,7 @@ import { useAgentsStore } from '@/stores/agents'
 
 export default {
   name: 'ProjectDetail',
-  components: { ConfigPageLayout, CopyModal, AgentEditDialog, DeleteConfirmationModal },
+  components: { ConfigPageLayout, CopyModal, DeleteConfirmationModal },
   props: ['id'],
   setup(props) {
     const route = useRoute()
@@ -125,10 +114,6 @@ export default {
     const selectedConfig = ref(null)
 
     // Agent CRUD state
-    const showEditDialog = ref(false)
-    const editingAgent = ref(null)
-    const agentEditLoading = ref(false)
-
     const showDeleteDialog = ref(false)
     const deletingAgent = ref(null)
     const agentDeleteLoading = ref(false)
@@ -378,34 +363,9 @@ export default {
     }
 
     // Agent CRUD handlers
-    const handleAgentEdit = (agent) => {
-      editingAgent.value = agent
-      showEditDialog.value = true
-    }
-
-    const handleAgentSave = async (updates) => {
-      agentEditLoading.value = true
-
-      try {
-        const result = await agentsStore.updateAgent(
-          projectId.value,
-          editingAgent.value.name,
-          updates,
-          'project'
-        )
-
-        if (result.success) {
-          showEditDialog.value = false
-          await loadAgents() // Refresh agent list
-        }
-      } finally {
-        agentEditLoading.value = false
-      }
-    }
-
-    const handleAgentEditCancel = () => {
-      showEditDialog.value = false
-      editingAgent.value = null
+    const handleAgentUpdated = async () => {
+      // Refresh agent list after sidebar edit
+      await loadAgents()
     }
 
     const handleAgentDelete = async (agent) => {
@@ -586,16 +546,11 @@ export default {
       handleCopyError,
       handleCopyCancelled,
       // Agent CRUD
-      showEditDialog,
-      editingAgent,
-      agentEditLoading,
       showDeleteDialog,
       deletingAgent,
       agentDeleteLoading,
       agentReferences,
-      handleAgentEdit,
-      handleAgentSave,
-      handleAgentEditCancel,
+      handleAgentUpdated,
       handleAgentDelete,
       handleAgentDeleteConfirm,
       handleAgentDeleteCancel

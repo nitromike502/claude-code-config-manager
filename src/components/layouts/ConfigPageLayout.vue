@@ -60,13 +60,8 @@
               <ConfigItemList
                 :items="items"
                 item-type="agents"
-                :scope="scope"
-                :project-id="projectId"
-                :enable-crud="enableAgentCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'agents', agents)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
-                @edit-clicked="(item) => $emit('agent-edit', item)"
-                @delete-clicked="(item) => $emit('agent-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -181,9 +176,14 @@
       :selected-type="selectedType"
       :current-items="currentItems"
       :selected-index="selectedIndex"
+      :scope="scope"
+      :project-id="projectId"
+      :enable-crud="enableAgentCrud"
       @close="$emit('close-sidebar')"
       @navigate="(direction) => $emit('navigate', direction)"
       @copy-clicked="(item) => $emit('copy-clicked', item)"
+      @agent-delete="(item) => $emit('agent-delete', item)"
+      @agent-updated="$emit('agent-updated')"
     />
 
     <!-- Copy Modal Slot -->
@@ -366,8 +366,8 @@ defineEmits([
   'close-sidebar',
   'navigate',
   'copy-clicked',
-  'agent-edit',
-  'agent-delete'
+  'agent-delete',
+  'agent-updated'
 ])
 </script>
 
