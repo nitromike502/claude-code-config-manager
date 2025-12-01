@@ -1,7 +1,7 @@
 /**
  * End-to-End Tests: Agent CRUD Operations (Edit & Delete)
  *
- * Test Suite: 107.001 - Agent Edit Flow
+ * Test Suite: 107.001 - Agent Edit Flow (Inline Editing in Sidebar)
  * Test Suite: 107.002 - Agent Delete Flow
  * Test Suite: 107.003 - Edit Validation
  * Test Suite: 107.004 - Reference Checks
@@ -10,19 +10,22 @@
  * Numbering Format: 107.SUITE.TEST
  *
  * Tests the complete agent CRUD workflow including:
- * - Opening edit dialog and updating agent fields
+ * - Inline editing in sidebar (one field at a time)
  * - Delete confirmation with dependency checks
  * - Form validation and error handling
  * - API integration with success/error states
  * - Project and user-level agent operations
  *
  * Implementation:
- * - AgentEditDialog.vue - Edit dialog component
+ * - ConfigDetailSidebar.vue - Sidebar with inline editing
+ * - LabeledEditField.vue - Inline edit component
  * - DeleteConfirmationModal.vue - Delete confirmation
- * - ConfigItemList.vue - Edit/Delete buttons
+ * - ConfigItemList.vue - Delete button in sidebar footer
  * - useAgentsStore - Pinia store for agent operations
  * - API endpoints: PUT/DELETE /api/projects/:id/agents/:name
  * - API endpoints: PUT/DELETE /api/user/agents/:name
+ *
+ * NOTE: Edit UX changed from dialog to inline editing per commit 3a229e6
  */
 
 const { test, expect } = require('@playwright/test')
@@ -46,7 +49,7 @@ const mockAgent = {
 
 const mockAgents = [mockAgent]
 
-// Test Suite 107.001: Agent Edit Flow
+// Test Suite 107.001: Agent Edit Flow (Inline Editing)
 test.describe('107.001: Agent Edit Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Mock projects API
@@ -133,39 +136,43 @@ test.describe('107.001: Agent Edit Flow', () => {
     await page.waitForLoadState('networkidle')
   })
 
-  test('107.001.001: should open edit dialog when edit button is clicked', async ({ page }) => {
-    // Click edit button on agent card
-    const editButton = page.locator('.edit-btn').first()
-    await editButton.click()
+  test('107.001.001: should open sidebar with editable fields when view button is clicked', async ({ page }) => {
+    // Click View button on agent card
+    const viewButton = page.locator('.view-btn').first()
+    await viewButton.click()
 
-    // Verify dialog is visible
-    const dialog = page.getByRole('dialog')
-    await expect(dialog).toBeVisible()
+    // Verify sidebar is visible (PrimeVue Drawer)
+    const sidebar = page.locator('.p-drawer')
+    await expect(sidebar).toBeVisible()
 
-    // Verify dialog title
-    await expect(dialog.getByText('Edit Agent: test-agent')).toBeVisible()
+    // Verify agent name in sidebar header (first occurrence)
+    await expect(sidebar.getByText('test-agent').first()).toBeVisible()
+
+    // Verify inline edit fields are present
+    await expect(sidebar.getByText('Name')).toBeVisible()
+    await expect(sidebar.getByText('Description')).toBeVisible()
+    // System Prompt appears multiple times (header + field label), check for first occurrence
+    await expect(sidebar.getByText('System Prompt').first()).toBeVisible()
   })
 
-  test('107.001.002: should populate form fields with current agent values', async ({ page }) => {
-    // Click edit button
-    await page.locator('.edit-btn').first().click()
+  test('107.001.002: should display current agent values in sidebar fields', async ({ page }) => {
+    // Click View button
+    await page.locator('.view-btn').first().click()
 
-    const dialog = page.getByRole('dialog')
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
 
-    // Verify name field
-    const nameInput = dialog.locator('#agent-name')
-    await expect(nameInput).toHaveValue('test-agent')
+    // Wait a moment for fields to populate
+    await page.waitForTimeout(500)
 
-    // Verify description field
-    const descInput = dialog.locator('#agent-description')
-    await expect(descInput).toHaveValue('A test agent for CRUD operations')
-
-    // Verify system prompt field
-    const promptInput = dialog.locator('#agent-prompt')
-    await expect(promptInput).toHaveValue('You are a test agent. Help with testing.')
+    // Verify field values (LabeledEditField shows values in display mode)
+    // Use .first() to avoid strict mode violations when text appears multiple times
+    await expect(sidebar.locator('text=test-agent').first()).toBeVisible()
+    await expect(sidebar.getByText('A test agent for CRUD operations')).toBeVisible()
+    await expect(sidebar.getByText('You are a test agent. Help with testing.')).toBeVisible()
   })
 
-  test('107.001.003: should update agent description and save successfully', async ({ page }) => {
+  test('107.001.003: should update agent description using inline edit and save successfully', async ({ page }) => {
     const updatedDescription = 'Updated description for the test agent'
     let updateCalled = false
 
@@ -188,53 +195,64 @@ test.describe('107.001: Agent Edit Flow', () => {
       }
     })
 
-    // Click edit button
-    await page.locator('.edit-btn').first().click()
+    // Click View button to open sidebar
+    await page.locator('.view-btn').first().click()
 
-    const dialog = page.getByRole('dialog')
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
 
-    // Update description
-    const descInput = dialog.locator('#agent-description')
-    await descInput.fill(updatedDescription)
+    // Find the description field container (it's a BLOCK field - uses "Save" button)
+    const descriptionField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Description' })
 
-    // Click save button
-    const saveButton = dialog.getByRole('button', { name: 'Save Changes' })
+    // Click the edit button (pencil icon) to enter edit mode
+    const editButton = descriptionField.locator('.edit-btn')
+    await editButton.click()
+
+    // Now in edit mode - find textarea and update value
+    const textarea = descriptionField.locator('textarea')
+    await textarea.fill(updatedDescription)
+
+    // Click save button (BLOCK fields use "Save" not "Accept")
+    const saveButton = descriptionField.getByRole('button', { name: 'Save' })
     await saveButton.click()
 
-    // Wait for dialog to close
-    await expect(dialog).not.toBeVisible({ timeout: 3000 })
+    // Wait for save to complete
+    await page.waitForTimeout(1000)
 
     // Verify API was called
-    await page.waitForTimeout(500) // Give API call time to complete
     expect(updateCalled).toBe(true)
   })
 
-  test('107.001.004: should cancel edit and close dialog', async ({ page }) => {
-    // Click edit button
-    await page.locator('.edit-btn').first().click()
+  test('107.001.004: should cancel inline edit without saving', async ({ page }) => {
+    // Click View button to open sidebar
+    await page.locator('.view-btn').first().click()
 
-    const dialog = page.getByRole('dialog')
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
+
+    // Find description field and enter edit mode
+    const descriptionField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Description' })
+    await descriptionField.locator('.edit-btn').click()
 
     // Make a change
-    const descInput = dialog.locator('#agent-description')
-    await descInput.fill('Changed but not saved')
+    const textarea = descriptionField.locator('textarea')
+    await textarea.fill('Changed but not saved')
 
-    // Click cancel button
-    const cancelButton = dialog.getByRole('button', { name: 'Cancel' })
+    // Click cancel button (BLOCK fields use "Cancel" button)
+    const cancelButton = descriptionField.getByRole('button', { name: 'Cancel' })
     await cancelButton.click()
 
-    // Verify dialog is closed
-    await expect(dialog).not.toBeVisible()
+    // Verify field reverted to original value
+    await expect(sidebar.getByText('A test agent for CRUD operations')).toBeVisible()
 
-    // Verify no API call was made (changes not saved)
-    // This is implicit - the test would fail if an API call triggered an error
+    // Verify no API call was made (implicitly - test would fail if error occurred)
   })
 
-  test('107.001.005: should show loading state during save', async ({ page }) => {
-    // Mock slow API response
+  test('107.001.005: should show loading state during inline field save', async ({ page }) => {
+    // Mock slow API response (2 seconds to ensure we can catch loading state)
     await page.route('**/api/projects/testproject/agents/test-agent', async (route) => {
       if (route.request().method() === 'PUT') {
-        await new Promise(resolve => setTimeout(resolve, 300))
+        await new Promise(resolve => setTimeout(resolve, 2000))
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -243,68 +261,81 @@ test.describe('107.001: Agent Edit Flow', () => {
       }
     })
 
-    // Click edit button
-    await page.locator('.edit-btn').first().click()
+    // Click View button
+    await page.locator('.view-btn').first().click()
 
-    const dialog = page.getByRole('dialog')
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
 
-    // Update description
-    const descInput = dialog.locator('#agent-description')
-    await descInput.fill('Updated with loading test')
+    // Edit description (BLOCK field)
+    const descriptionField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Description' })
+    await descriptionField.locator('.edit-btn').click()
+    await descriptionField.locator('textarea').fill('Updated with loading test')
 
-    // Click save button
-    const saveButton = dialog.getByRole('button', { name: 'Save Changes' })
+    // Get the save button reference
+    const saveButton = descriptionField.getByRole('button', { name: 'Save' })
+
+    // Click save button and immediately check for loading state
     await saveButton.click()
 
-    // Verify loading state (button should be disabled)
-    await expect(saveButton).toBeDisabled()
+    // Verify loading state (button should be disabled or have loading icon)
+    // Use a shorter timeout since button changes immediately
+    try {
+      await expect(saveButton).toBeDisabled({ timeout: 500 })
+    } catch {
+      // Alternative: check for loading icon if button isn't disabled
+      const loadingIcon = saveButton.locator('.p-button-loading-icon, .pi-spinner')
+      await expect(loadingIcon).toBeVisible({ timeout: 500 })
+    }
 
     // Wait for save to complete
-    await expect(dialog).not.toBeVisible({ timeout: 2000 })
+    await page.waitForTimeout(2500)
+
+    // Field should return to display mode
+    await expect(descriptionField.locator('textarea')).not.toBeVisible({ timeout: 2000 })
   })
 
-  test('107.001.006: should refresh agent list after successful update', async ({ page }) => {
-    let agentsRequestCount = 0
+  test('107.001.006: should update multiple fields independently', async ({ page }) => {
+    let updateCount = 0
 
-    // Mock agents API with counter
-    await page.route('**/api/projects/testproject/agents', async (route) => {
-      agentsRequestCount++
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ success: true, agents: mockAgents })
-      })
-    })
-
-    // Mock update API
+    // Mock update API to count calls
     await page.route('**/api/projects/testproject/agents/test-agent', async (route) => {
       if (route.request().method() === 'PUT') {
+        updateCount++
+        const requestBody = route.request().postDataJSON()
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ success: true, agent: mockAgent })
+          body: JSON.stringify({
+            success: true,
+            agent: { ...mockAgent, ...requestBody }
+          })
         })
       }
     })
 
-    // Reset counter after initial load
-    agentsRequestCount = 0
+    // Click View button
+    await page.locator('.view-btn').first().click()
 
-    // Click edit button
-    await page.locator('.edit-btn').first().click()
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
 
-    const dialog = page.getByRole('dialog')
+    // Update description (BLOCK field with Save button)
+    const descField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Description' }).first()
+    await descField.locator('.edit-btn').click()
+    await descField.locator('textarea').fill('New description')
+    await descField.getByRole('button', { name: 'Save' }).click()
+    await page.waitForTimeout(500)
 
-    // Update and save
-    await dialog.locator('#agent-description').fill('Refreshed description')
-    await dialog.getByRole('button', { name: 'Save Changes' }).click()
+    // Update system prompt (BLOCK field with Save button)
+    const promptField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'System Prompt' })
+    await promptField.locator('.edit-btn').click()
+    await promptField.locator('textarea').fill('New system prompt for testing')
+    await promptField.getByRole('button', { name: 'Save' }).click()
+    await page.waitForTimeout(500)
 
-    // Wait for dialog to close
-    await expect(dialog).not.toBeVisible()
-
-    // Note: The actual implementation may or may not refresh the list
-    // depending on whether it updates the store or refetches
-    // This test documents the expected behavior
+    // Verify two separate API calls were made
+    expect(updateCount).toBe(2)
   })
 })
 
@@ -372,7 +403,19 @@ test.describe('107.002: Agent Delete Flow', () => {
     await page.waitForLoadState('networkidle')
   })
 
-  test('107.002.001: should open delete confirmation modal when delete button is clicked', async ({ page }) => {
+  test('107.002.001: should show delete button in sidebar footer', async ({ page }) => {
+    // Click View to open sidebar
+    await page.locator('.view-btn').first().click()
+
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
+
+    // Verify delete button is in footer
+    const deleteButton = sidebar.locator('.delete-action-btn')
+    await expect(deleteButton).toBeVisible()
+  })
+
+  test('107.002.002: should open delete confirmation modal when sidebar delete button is clicked', async ({ page }) => {
     // Mock references API (no references)
     await page.route('**/api/projects/testproject/agents/test-agent/references', async (route) => {
       await route.fulfill({
@@ -386,8 +429,14 @@ test.describe('107.002: Agent Delete Flow', () => {
       })
     })
 
-    // Click delete button
-    const deleteButton = page.locator('.delete-btn').first()
+    // Click View to open sidebar
+    await page.locator('.view-btn').first().click()
+
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
+
+    // Click delete button in footer
+    const deleteButton = sidebar.locator('.delete-action-btn')
     await deleteButton.click()
 
     // Verify modal is visible
@@ -398,7 +447,7 @@ test.describe('107.002: Agent Delete Flow', () => {
     await expect(dialog.locator('.text-lg.font-semibold')).toContainText('Delete')
   })
 
-  test('107.002.002: should display agent name in confirmation message', async ({ page }) => {
+  test('107.002.003: should display agent name in confirmation message', async ({ page }) => {
     // Mock references API
     await page.route('**/api/projects/testproject/agents/test-agent/references', async (route) => {
       await route.fulfill({
@@ -412,8 +461,9 @@ test.describe('107.002: Agent Delete Flow', () => {
       })
     })
 
-    // Click delete button
-    await page.locator('.delete-btn').first().click()
+    // Click View to open sidebar and then delete
+    await page.locator('.view-btn').first().click()
+    await page.locator('.delete-action-btn').click()
 
     const dialog = page.getByRole('dialog')
 
@@ -421,7 +471,7 @@ test.describe('107.002: Agent Delete Flow', () => {
     await expect(dialog.getByText('"test-agent"')).toBeVisible()
   })
 
-  test('107.002.003: should require typing "delete" to enable confirmation', async ({ page }) => {
+  test('107.002.004: should require typing "delete" to enable confirmation', async ({ page }) => {
     // Mock references API
     await page.route('**/api/projects/testproject/agents/test-agent/references', async (route) => {
       await route.fulfill({
@@ -435,8 +485,9 @@ test.describe('107.002: Agent Delete Flow', () => {
       })
     })
 
-    // Click delete button
-    await page.locator('.delete-btn').first().click()
+    // Open sidebar and click delete
+    await page.locator('.view-btn').first().click()
+    await page.locator('.delete-action-btn').click()
 
     const dialog = page.getByRole('dialog')
     const confirmInput = dialog.getByRole('textbox', { name: /Type delete to confirm/i })
@@ -454,7 +505,7 @@ test.describe('107.002: Agent Delete Flow', () => {
     await expect(deleteButton).toBeEnabled()
   })
 
-  test('107.002.004: should delete agent successfully', async ({ page }) => {
+  test('107.002.005: should delete agent successfully', async ({ page }) => {
     let deleteCalled = false
 
     // Mock references API
@@ -482,8 +533,9 @@ test.describe('107.002: Agent Delete Flow', () => {
       }
     })
 
-    // Click delete button
-    await page.locator('.delete-btn').first().click()
+    // Open sidebar and click delete
+    await page.locator('.view-btn').first().click()
+    await page.locator('.delete-action-btn').click()
 
     // Wait for dialog and references to load
     const dialog = page.getByRole('dialog')
@@ -505,7 +557,7 @@ test.describe('107.002: Agent Delete Flow', () => {
     expect(deleteCalled).toBe(true)
   })
 
-  test('107.002.005: should cancel delete and close modal', async ({ page }) => {
+  test('107.002.006: should cancel delete and close modal', async ({ page }) => {
     // Mock references API
     await page.route('**/api/projects/testproject/agents/test-agent/references', async (route) => {
       await route.fulfill({
@@ -519,8 +571,9 @@ test.describe('107.002: Agent Delete Flow', () => {
       })
     })
 
-    // Click delete button
-    await page.locator('.delete-btn').first().click()
+    // Open sidebar and click delete
+    await page.locator('.view-btn').first().click()
+    await page.locator('.delete-action-btn').click()
 
     const dialog = page.getByRole('dialog')
 
@@ -532,7 +585,7 @@ test.describe('107.002: Agent Delete Flow', () => {
     await expect(dialog).not.toBeVisible()
   })
 
-  test('107.002.006: should show loading state during delete', async ({ page }) => {
+  test('107.002.007: should show loading state during delete', async ({ page }) => {
     // Mock references API
     await page.route('**/api/projects/testproject/agents/test-agent/references', async (route) => {
       await route.fulfill({
@@ -558,8 +611,9 @@ test.describe('107.002: Agent Delete Flow', () => {
       }
     })
 
-    // Click delete button
-    await page.locator('.delete-btn').first().click()
+    // Open sidebar and click delete
+    await page.locator('.view-btn').first().click()
+    await page.locator('.delete-action-btn').click()
 
     const dialog = page.getByRole('dialog')
 
@@ -627,96 +681,189 @@ test.describe('107.003: Edit Validation', () => {
   })
 
   test('107.003.001: should show error for invalid agent name', async ({ page }) => {
-    // Click edit button
-    await page.locator('.edit-btn').first().click()
+    // Mock API to return validation error
+    await page.route('**/api/projects/testproject/agents/test-agent', async (route) => {
+      if (route.request().method() === 'PUT') {
+        await route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: false,
+            error: 'Agent name must contain only lowercase letters, numbers, hyphens, and underscores'
+          })
+        })
+      }
+    })
 
-    const dialog = page.getByRole('dialog')
-    await dialog.waitFor({ state: 'visible' })
+    // Open sidebar
+    await page.locator('.view-btn').first().click()
+
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
+
+    // Edit name field with invalid value (Name is INLINE field)
+    const nameField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Name' })
+    await nameField.locator('.edit-btn').click()
 
     // Enter invalid name (uppercase letters)
-    const nameInput = dialog.locator('#agent-name')
+    const nameInput = nameField.locator('input[type="text"]')
     await nameInput.fill('InvalidName')
 
-    // Try to save
-    const saveButton = dialog.getByRole('button', { name: 'Save Changes' })
-    await saveButton.click()
+    // Try to accept (INLINE fields use aria-label="Accept changes")
+    const acceptButton = nameField.locator('button[aria-label="Accept changes"]')
+    await acceptButton.click()
 
     // Wait a moment for validation
-    await page.waitForTimeout(300)
+    await page.waitForTimeout(500)
 
-    // Verify error message is displayed (look for small error text)
-    const errorMessages = dialog.locator('small.text-red-500')
-    await expect(errorMessages.first()).toBeVisible({ timeout: 2000 })
-
-    // Verify dialog remains open
-    await expect(dialog).toBeVisible()
+    // Verify error message is displayed (shows as PrimeVue Message component)
+    const errorMessage = nameField.locator('.p-message-error, .p-message')
+    await expect(errorMessage).toBeVisible({ timeout: 2000 })
   })
 
   test('107.003.002: should show error for short description', async ({ page }) => {
-    // Click edit button
-    await page.locator('.edit-btn').first().click()
+    // Mock API to return validation error
+    await page.route('**/api/projects/testproject/agents/test-agent', async (route) => {
+      if (route.request().method() === 'PUT') {
+        await route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: false,
+            error: 'Description must be at least 10 characters'
+          })
+        })
+      }
+    })
 
-    const dialog = page.getByRole('dialog')
-    await dialog.waitFor({ state: 'visible' })
+    // Open sidebar
+    await page.locator('.view-btn').first().click()
+
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
+
+    // Edit description with short value (BLOCK field)
+    const descField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Description' }).first()
+    await descField.locator('.edit-btn').click()
 
     // Enter short description (< 10 chars)
-    const descInput = dialog.locator('#agent-description')
-    await descInput.fill('Short')
+    const textarea = descField.locator('textarea')
+    await textarea.fill('Short')
 
-    // Try to save
-    await dialog.getByRole('button', { name: 'Save Changes' }).click()
+    // Try to save (BLOCK fields use "Save" button)
+    await descField.getByRole('button', { name: 'Save' }).click()
 
     // Wait for validation
-    await page.waitForTimeout(300)
+    await page.waitForTimeout(500)
 
-    // Verify error message
-    const errorMessages = dialog.locator('small.text-red-500')
-    await expect(errorMessages.first()).toBeVisible({ timeout: 2000 })
+    // Verify error message (PrimeVue Message component)
+    const errorMessage = descField.locator('.p-message-error, .p-message')
+    await expect(errorMessage).toBeVisible({ timeout: 2000 })
   })
 
   test('107.003.003: should show error for short system prompt', async ({ page }) => {
-    // Click edit button
-    await page.locator('.edit-btn').first().click()
+    // Mock API to return validation error
+    await page.route('**/api/projects/testproject/agents/test-agent', async (route) => {
+      if (route.request().method() === 'PUT') {
+        await route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: false,
+            error: 'System prompt must be at least 20 characters'
+          })
+        })
+      }
+    })
 
-    const dialog = page.getByRole('dialog')
-    await dialog.waitFor({ state: 'visible' })
+    // Open sidebar
+    await page.locator('.view-btn').first().click()
+
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
+
+    // Edit system prompt with short value (BLOCK field)
+    const promptField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'System Prompt' })
+    await promptField.locator('.edit-btn').click()
 
     // Enter short system prompt (< 20 chars)
-    const promptInput = dialog.locator('#agent-prompt')
-    await promptInput.fill('Too short')
+    const textarea = promptField.locator('textarea')
+    await textarea.fill('Too short')
 
-    // Try to save
-    await dialog.getByRole('button', { name: 'Save Changes' }).click()
+    // Try to save (BLOCK fields use "Save" button)
+    await promptField.getByRole('button', { name: 'Save' }).click()
 
     // Wait for validation
-    await page.waitForTimeout(300)
+    await page.waitForTimeout(500)
 
-    // Verify error message
-    const errorMessages = dialog.locator('small.text-red-500')
-    await expect(errorMessages.last()).toBeVisible({ timeout: 2000 })
+    // Verify error message (PrimeVue Message component)
+    const errorMessage = promptField.locator('.p-message-error, .p-message')
+    await expect(errorMessage).toBeVisible({ timeout: 2000 })
   })
 
   test('107.003.004: should clear errors when valid input is entered', async ({ page }) => {
-    // Click edit button
-    await page.locator('.edit-btn').first().click()
+    // Mock API to succeed on second attempt
+    let attemptCount = 0
+    await page.route('**/api/projects/testproject/agents/test-agent', async (route) => {
+      if (route.request().method() === 'PUT') {
+        attemptCount++
+        if (attemptCount === 1) {
+          // First attempt fails
+          await route.fulfill({
+            status: 400,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              success: false,
+              error: 'Agent name must contain only lowercase letters'
+            })
+          })
+        } else {
+          // Second attempt succeeds
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ success: true, agent: mockAgent })
+          })
+        }
+      }
+    })
 
-    const dialog = page.getByRole('dialog')
+    // Open sidebar
+    await page.locator('.view-btn').first().click()
 
-    // Enter invalid name to trigger error
-    const nameInput = dialog.locator('#agent-name')
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
+
+    // Edit name with invalid value (INLINE field)
+    const nameField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Name' })
+    await nameField.locator('.edit-btn').click()
+
+    const nameInput = nameField.locator('input[type="text"]')
     await nameInput.fill('INVALID')
-    await dialog.getByRole('button', { name: 'Save Changes' }).click()
+    await nameField.locator('button[aria-label="Accept changes"]').click()
 
     // Verify error appears
-    await expect(dialog.locator('.text-red-500').first()).toBeVisible()
+    await expect(nameField.locator('.p-message')).toBeVisible({ timeout: 2000 })
 
-    // Fix the name
+    // Cancel and try again with valid value
+    // First need to be in edit mode again
+    await page.waitForTimeout(500)
+
+    // If field stayed in edit mode due to error, just update the value
+    // Otherwise click edit again
+    const isInEditMode = await nameField.locator('input[type="text"]').isVisible()
+    if (!isInEditMode) {
+      await nameField.locator('.edit-btn').click()
+    }
+
     await nameInput.fill('valid-agent-name')
-    await dialog.getByRole('button', { name: 'Save Changes' }).click()
+    await nameField.locator('button[aria-label="Accept changes"]').click()
 
-    // Error should be gone (if description and prompt are valid)
-    // In this case, we'll see an error for description since we haven't filled it properly
-    // But the name error specifically should be cleared
+    // Wait for success
+    await page.waitForTimeout(500)
+
+    // Error should be gone and field should be in display mode
+    await expect(nameField.locator('input[type="text"]')).not.toBeVisible({ timeout: 2000 })
   })
 
   test('107.003.005: should accept valid agent name formats', async ({ page }) => {
@@ -731,29 +878,33 @@ test.describe('107.003: Edit Validation', () => {
       }
     })
 
-    // Click edit button
-    await page.locator('.edit-btn').first().click()
+    // Open sidebar
+    await page.locator('.view-btn').first().click()
 
-    const dialog = page.getByRole('dialog')
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
 
-    // Test valid name formats
-    const validNames = ['agent-name', 'agent_name', 'agent123', 'agent-name_123']
+    // Test one valid name format (INLINE field)
+    const validName = 'agent-name_123'
 
-    for (const validName of validNames) {
-      const nameInput = dialog.locator('#agent-name')
-      await nameInput.fill(validName)
+    const nameField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Name' })
+    await nameField.locator('.edit-btn').click()
 
-      // Try to save (should not show name validation error)
-      await dialog.getByRole('button', { name: 'Save Changes' }).click()
+    const nameInput = nameField.locator('input[type="text"]')
+    await nameInput.fill(validName)
 
-      // If we see a name validation error, the test fails
-      const nameErrors = dialog.locator('.text-red-500').filter({ hasText: /lowercase/ })
-      await expect(nameErrors).toHaveCount(0)
+    // Try to accept (INLINE fields use "Accept changes" aria-label)
+    await nameField.locator('button[aria-label="Accept changes"]').click()
 
-      // May have other validation errors, but not for the name
-      // Break after first successful check to avoid multiple saves
-      break
-    }
+    // Wait for save
+    await page.waitForTimeout(500)
+
+    // Should not see error message
+    const nameErrors = nameField.locator('.p-message')
+    await expect(nameErrors).not.toBeVisible()
+
+    // Field should return to display mode (success)
+    await expect(nameInput).not.toBeVisible({ timeout: 2000 })
   })
 })
 
@@ -857,8 +1008,9 @@ test.describe('107.004: Reference Checks', () => {
       })
     })
 
-    // Click delete button
-    await page.locator('.delete-btn').first().click()
+    // Open sidebar and click delete
+    await page.locator('.view-btn').first().click()
+    await page.locator('.delete-action-btn').click()
 
     // Wait for dialog to appear
     const dialog = page.getByRole('dialog')
@@ -889,8 +1041,9 @@ test.describe('107.004: Reference Checks', () => {
       })
     })
 
-    // Click delete button
-    await page.locator('.delete-btn').first().click()
+    // Open sidebar and click delete
+    await page.locator('.view-btn').first().click()
+    await page.locator('.delete-action-btn').click()
 
     // Wait for dialog to appear
     const dialog = page.getByRole('dialog')
@@ -928,8 +1081,9 @@ test.describe('107.004: Reference Checks', () => {
       }
     })
 
-    // Click delete button
-    await page.locator('.delete-btn').first().click()
+    // Open sidebar and click delete
+    await page.locator('.view-btn').first().click()
+    await page.locator('.delete-action-btn').click()
 
     // Wait for dialog to appear
     const dialog = page.getByRole('dialog')
@@ -1042,23 +1196,22 @@ test.describe('107.005: Cross-Scope Operations', () => {
       }
     })
 
-    // Click edit button on user agent
-    await page.locator('.edit-btn').first().click()
+    // Click View button to open sidebar
+    await page.locator('.view-btn').first().click()
 
-    const dialog = page.getByRole('dialog')
-    await dialog.waitFor({ state: 'visible' })
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
 
-    // Update description
-    await dialog.locator('#agent-description').fill('Updated user-level agent')
+    // Edit description (BLOCK field with Save button)
+    const descField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Description' }).first()
+    await descField.locator('.edit-btn').click()
+    await descField.locator('textarea').fill('Updated user-level agent')
+    await descField.getByRole('button', { name: 'Save' }).click()
 
-    // Save
-    await dialog.getByRole('button', { name: 'Save Changes' }).click()
-
-    // Verify dialog closes
-    await expect(dialog).not.toBeVisible({ timeout: 3000 })
+    // Wait for save
+    await page.waitForTimeout(1000)
 
     // Verify API was called
-    await page.waitForTimeout(500)
     expect(updateCalled).toBe(true)
   })
 
@@ -1090,8 +1243,9 @@ test.describe('107.005: Cross-Scope Operations', () => {
       }
     })
 
-    // Click delete button
-    await page.locator('.delete-btn').first().click()
+    // Open sidebar and click delete
+    await page.locator('.view-btn').first().click()
+    await page.locator('.delete-action-btn').click()
 
     // Wait for dialog to appear
     const dialog = page.getByRole('dialog')
@@ -1112,7 +1266,7 @@ test.describe('107.005: Cross-Scope Operations', () => {
     expect(deleteCalled).toBe(true)
   })
 
-  test('107.005.003: should not show edit/delete buttons for plugin agents', async ({ page }) => {
+  test('107.005.003: should not show delete button in sidebar for plugin agents', async ({ page }) => {
     // Mock agents with one from plugin
     await page.route('**/api/user/agents', async (route) => {
       if (route.request().method() === 'GET') {
@@ -1135,11 +1289,14 @@ test.describe('107.005: Cross-Scope Operations', () => {
     await page.reload()
     await page.waitForLoadState('networkidle')
 
-    // Edit and delete buttons should be disabled
-    const editButton = page.locator('.edit-btn').first()
-    const deleteButton = page.locator('.delete-btn').first()
+    // Click View to open sidebar
+    await page.locator('.view-btn').first().click()
 
-    await expect(editButton).toBeDisabled()
-    await expect(deleteButton).toBeDisabled()
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
+
+    // Delete button should not be visible in footer for plugin agents
+    const deleteButton = sidebar.locator('.delete-action-btn')
+    await expect(deleteButton).not.toBeVisible()
   })
 })

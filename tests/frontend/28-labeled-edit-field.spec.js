@@ -147,20 +147,21 @@ test.describe('28.002: LabeledEditField Block Field Rendering', () => {
     await expect(contentDisplay).toContainText('This is a test description')
   })
 
-  test('28.002.003: multiselect field renders in block layout', async ({ page }) => {
+  test('28.002.003: multiselect field renders with inline layout', async ({ page }) => {
     const multiselectField = page.locator('.test-box').filter({ hasText: 'Block MultiSelect Field' }).first()
 
-    // Check label with edit button
+    // Check label is visible (multiselect now uses inline layout)
     const label = multiselectField.locator('.labeled-edit-field .text-text-primary.font-bold')
     await expect(label).toBeVisible()
     await expect(label).toContainText('Allowed Tools:')
 
+    // Multiselect uses inline layout, so edit button is in display mode
+    const displayMode = multiselectField.locator('.display-mode')
+    await expect(displayMode).toBeVisible()
+
+    // Edit button should be visible on hover
     const editButton = multiselectField.getByRole('button', { name: 'Edit Allowed Tools' })
     await expect(editButton).toBeVisible()
-
-    // Check content displays as chips
-    const chips = multiselectField.locator('.content-display span')
-    expect(await chips.count()).toBeGreaterThan(0)
   })
 
   test('28.002.004: edit button is next to label, not content for block fields', async ({ page }) => {
@@ -355,14 +356,15 @@ test.describe('28.005: LabeledEditField Block Field Types', () => {
     await expect(contentDisplay).toContainText('with multiple lines')
   })
 
-  test('28.005.002: multiselect field updates chip display', async ({ page }) => {
+  test('28.005.002: multiselect field updates value using inline layout', async ({ page }) => {
     const multiselectField = page.locator('.test-box').filter({ hasText: 'Block MultiSelect Field' }).first()
     const editButton = multiselectField.getByRole('button', { name: 'Edit Allowed Tools' })
 
     await editButton.click()
 
-    // Click the multiselect dropdown
+    // Wait for multiselect to appear
     const dropdown = multiselectField.locator('.p-multiselect')
+    await expect(dropdown).toBeVisible()
     await dropdown.click()
 
     // Toggle an option - use exact match to avoid ambiguity with BashOutput
@@ -371,12 +373,14 @@ test.describe('28.005: LabeledEditField Block Field Types', () => {
     // Close dropdown
     await page.keyboard.press('Escape')
 
-    const saveButton = multiselectField.getByRole('button', { name: 'Save' })
-    await saveButton.click()
+    // Multiselect uses inline layout, so it has Accept button (not Save)
+    const acceptButton = multiselectField.getByRole('button', { name: 'Accept changes' })
+    await acceptButton.click()
 
-    // Should show updated chips
-    const contentDisplay = multiselectField.locator('.content-display')
-    await expect(contentDisplay).toBeVisible()
+    // Should exit edit mode and return to display mode
+    await expect(dropdown).not.toBeVisible()
+    const displayMode = multiselectField.locator('.display-mode')
+    await expect(displayMode).toBeVisible()
   })
 
   test('28.005.003: textarea shows "Not set" when empty', async ({ page }) => {
