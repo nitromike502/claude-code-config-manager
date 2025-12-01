@@ -247,8 +247,10 @@ async function findReferences(itemType, itemName, projectPath) {
     ]);
 
     // If timed out, return partial results
+    // Note: Using console.warn here is appropriate as this is a degraded service condition
+    // (not an error) that operators should be aware of for monitoring/debugging purposes
     if (timedOut) {
-      console.warn(`Reference scan timed out after ${timeout}ms, returning partial results`);
+      console.warn(`[ReferenceChecker] Scan timed out after ${timeout}ms for ${itemType}:${itemName} in ${projectPath}, returning partial results`);
     }
 
     return references;

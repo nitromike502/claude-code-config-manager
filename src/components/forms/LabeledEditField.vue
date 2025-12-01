@@ -230,8 +230,9 @@ const { validate } = useFormValidation()
 
 /**
  * Determines if this field should use block layout (label above, content below)
- * Block fields: textarea, multiselect
- * Inline fields: text, select, number, colorpalette, selectbutton
+ * Block fields: textarea
+ * Inline fields: text, select, number, colorpalette, selectbutton, multiselect
+ * Note: multiselect uses inline layout for better visual consistency with other controls
  */
 const isBlockField = computed(() => {
   return ['textarea'].includes(props.fieldType)

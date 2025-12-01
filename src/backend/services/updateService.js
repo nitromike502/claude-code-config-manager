@@ -161,6 +161,9 @@ async function updateYamlFrontmatter(filePath, updates) {
 
     // Normalize body content: trim leading newlines, then add blank line separator
     // This ensures consistent formatting: ---\nfrontmatter\n---\n\nbody
+    // The blank line after closing --- is required by markdown parsers (gray-matter)
+    // to properly separate frontmatter from body content. Without it, the first line
+    // of body content may be interpreted as part of the frontmatter block.
     let bodyContent = parsed.content;
     if (bodyContent) {
       bodyContent = '\n\n' + bodyContent.replace(/^\n+/, '');
