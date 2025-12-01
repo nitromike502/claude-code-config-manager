@@ -94,6 +94,9 @@ async function scanDirectory(dirPath, pattern) {
  * - .claude/settings.json - hooks
  * - .mcp.json - MCP servers
  *
+ * Note: Self-references are excluded (e.g., an agent file won't be listed as
+ * referencing itself just because the agent name appears in its frontmatter)
+ *
  * @param {string} itemType - Type of item ('agent', 'command', 'skill', 'hook', 'mcp')
  * @param {string} itemName - Name of item to search for
  * @param {string} projectPath - Absolute path to project root
@@ -135,10 +138,20 @@ async function findReferences(itemType, itemName, projectPath) {
     }, timeout);
   });
 
+  // Determine the self-reference file to exclude
+  // For agents: exclude the agent's own file (agentName.md)
+  // For other types, we'll handle similarly
+  const selfFileName = itemType === 'agent' ? `${itemName}.md` : null;
+
   try {
     // Scan .claude/agents/*.md
     const agentFiles = await scanDirectory(path.join(claudeDir, 'agents'), '.md');
     for (const filePath of agentFiles) {
+      // Skip self-reference for agents
+      if (itemType === 'agent' && path.basename(filePath) === selfFileName) {
+        continue;
+      }
+
       scanTasks.push(
         searchFileForReferences(filePath, itemName).then(lines => {
           if (lines.length > 0) {
@@ -234,8 +247,10 @@ async function findReferences(itemType, itemName, projectPath) {
     ]);
 
     // If timed out, return partial results
+    // Note: Using console.warn here is appropriate as this is a degraded service condition
+    // (not an error) that operators should be aware of for monitoring/debugging purposes
     if (timedOut) {
-      console.warn(`Reference scan timed out after ${timeout}ms, returning partial results`);
+      console.warn(`[ReferenceChecker] Scan timed out after ${timeout}ms for ${itemType}:${itemName} in ${projectPath}, returning partial results`);
     }
 
     return references;

@@ -12,12 +12,27 @@
         <div class="flex items-center justify-between gap-3 px-4 py-3">
           <span class="font-semibold text-[0.95rem] text-text-primary truncate">{{ getItemName(item) }}</span>
           <div class="flex items-center gap-2 shrink-0" @click.stop>
+            <!-- Delete Button (agents only) -->
+            <Button
+              v-if="canDelete(item)"
+              icon="pi pi-trash"
+              outlined
+              size="small"
+              severity="danger"
+              aria-label="Delete"
+              class="delete-btn"
+              @click.stop="handleDeleteClick(item)"
+            />
+
+            <!-- Copy Button -->
             <CopyButton
               :configItem="item"
               :disabled="item.location === 'plugin'"
               :showLabel="false"
               @copy-clicked="handleCopyClick"
             />
+
+            <!-- View Button -->
             <Button
               label="View"
               icon="pi pi-eye"
@@ -73,22 +88,47 @@ const props = defineProps({
   itemType: {
     type: String,
     required: true,
-    validator: (value) => ['agents', 'commands', 'hooks', 'mcp'].includes(value),
+    validator: (value) => ['agents', 'commands', 'hooks', 'mcp', 'skills'].includes(value),
   },
   truncateDescription: {
     type: Boolean,
     default: true,
   },
+  /**
+   * Enable CRUD operations (delete button shown for agents)
+   */
+  enableCrud: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const emit = defineEmits({
   'item-selected': (item, itemType) => {
-    return item !== null && typeof itemType === 'string' && ['agents', 'commands', 'hooks', 'mcp'].includes(itemType)
+    return item !== null && typeof itemType === 'string' && ['agents', 'commands', 'hooks', 'mcp', 'skills'].includes(itemType)
   },
   'copy-clicked': (item) => {
     return item !== null && typeof item === 'object';
+  },
+  'delete-clicked': (item) => {
+    return item !== null && typeof item === 'object';
   }
 });
+
+/**
+ * Check if delete button should be shown for an item
+ * Only show for agents that are not plugins
+ */
+const canDelete = (item) => {
+  return props.enableCrud && props.itemType === 'agents' && item.location !== 'plugin';
+};
+
+/**
+ * Handle delete button click
+ */
+const handleDeleteClick = (item) => {
+  emit('delete-clicked', item);
+};
 
 /**
  * Handle copy button click - emit event to parent
@@ -197,6 +237,30 @@ const getItemDescription = (item, type) => {
 /* Card Content - Padding for description */
 :deep(.config-item-card-content) {
   padding: 0.75rem 1rem;
+}
+
+/* CRUD Buttons - Icon-only styling */
+.crud-btn {
+  font-size: 0.8rem;
+  min-width: 2rem;
+}
+
+.crud-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+/* Delete Button - Danger outlined button */
+.delete-btn {
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  background: var(--color-error) !important;
+  color: white !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
 }
 
 /* View Button - Smaller styling */

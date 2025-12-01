@@ -1,6 +1,10 @@
 /**
  * Frontend UI Performance Tests
  *
+ * Test Suite: 11.001 - Copy Modal Performance
+ *
+ * Numbering Format: 11.SUITE.TEST
+ *
  * Tests frontend UI performance against Phase 3 targets:
  * - Modal Animation: <300ms (open + close)
  * - Data Refresh: <1000ms (from copy success to UI update)
@@ -14,29 +18,105 @@
 
 import { test, expect } from '@playwright/test';
 
-test.describe('UI Performance Tests', () => {
+test.describe('11.001: Copy Modal Performance', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to project detail page
-    await page.goto('http://localhost:5173');
+    // Mock projects API
+    await page.route('**/api/projects', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          projects: [
+            {
+              id: 'testproject',
+              name: 'Test Project',
+              path: '/home/user/testproject',
+              stats: { agents: 1, commands: 0, hooks: 0, mcp: 0 },
+              icon: 'pi pi-folder'
+            }
+          ]
+        })
+      });
+    });
 
-    // Wait for projects to load (exclude user card)
-    await page.waitForSelector('.project-card:not(.user-card)', { timeout: 5000 });
+    // Mock user endpoints
+    await page.route('**/api/user/agents', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, agents: [] })
+      });
+    });
+    await page.route('**/api/user/commands', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, commands: [] })
+      });
+    });
+    await page.route('**/api/user/hooks', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, hooks: [] })
+      });
+    });
+    await page.route('**/api/user/mcp', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, mcp: [] })
+      });
+    });
 
-    // Click first actual project card to navigate
-    await page.locator('.project-card:not(.user-card)').first().click();
+    // Mock project agents (has 1 agent with copy button)
+    await page.route('**/api/projects/testproject/agents', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          agents: [
+            {
+              name: 'test-agent',
+              description: 'Test agent for performance testing',
+              content: '# Test Agent',
+              filePath: '/home/user/testproject/.claude/agents/test-agent.md'
+            }
+          ]
+        })
+      });
+    });
 
-    // Wait for project detail page to load
-    await page.waitForURL(/\/project\/.+/);
+    // Mock other project endpoints
+    ['commands', 'hooks', 'mcp'].forEach(endpoint => {
+      page.route(`**/api/projects/testproject/${endpoint}`, (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            success: true,
+            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+          })
+        });
+      });
+    });
 
-    // Wait for config panels to load (use ConfigPanel component class)
-    await page.waitForSelector('.config-panel', { timeout: 5000 });
+    // Navigate directly to project detail page
+    await page.goto('http://localhost:5173/project/testproject');
+    await page.waitForSelector('.config-panel', { timeout: 10000 });
+
+    // Wait for agents to load
+    await page.waitForTimeout(500);
   });
 
-  test('[Test 11.001.001] Modal animation performance - open and close (target: <300ms each)', async ({ page }) => {
-    // Find a copy button (prefer agent for consistency)
-    const copyButton = page.locator('.copy-btn').first();
+  test('11.001.001: Modal animation performance - open and close (target: <300ms each)', async ({ page }) => {
+    // Find a copy button in the agents panel
+    const agentsPanel = page.locator('.config-panel.agents-panel');
+    await expect(agentsPanel).toBeVisible();
 
-    // Ensure button is visible and ready
+    const copyButton = agentsPanel.locator('.copy-btn').first();
     await expect(copyButton).toBeVisible();
 
     // Measure modal open time
@@ -83,7 +163,7 @@ test.describe('UI Performance Tests', () => {
     expect(true).toBe(true);
   });
 
-  test('[Test 11.001.002] Toast notification timing (target: visible for 3 seconds)', async ({ page }) => {
+  test('11.001.002: Toast notification timing (target: visible for 3 seconds)', async ({ page }) => {
     // Mock successful copy operation for testing
     await page.route('**/api/copy/agent', route => {
       route.fulfill({
@@ -97,7 +177,10 @@ test.describe('UI Performance Tests', () => {
     });
 
     // Trigger copy operation
-    const copyButton = page.locator('.copy-btn').first();
+    const agentsPanel = page.locator('.config-panel.agents-panel');
+    await expect(agentsPanel).toBeVisible();
+
+    const copyButton = agentsPanel.locator('.copy-btn').first();
     await copyButton.click();
 
     // Wait for modal
@@ -147,7 +230,7 @@ test.describe('UI Performance Tests', () => {
     expect(true).toBe(true);
   });
 
-  test('[Test 11.001.003] Data refresh after copy (target: <1000ms)', async ({ page }) => {
+  test('11.001.003: Data refresh after copy (target: <1000ms)', async ({ page }) => {
     // Mock successful copy operation
     await page.route('**/api/copy/agent', route => {
       route.fulfill({
@@ -208,7 +291,10 @@ test.describe('UI Performance Tests', () => {
     console.log(`   Initial agent count: ${initialAgentCards}`);
 
     // Trigger copy operation
-    const copyButton = page.locator('.copy-btn').first();
+    const agentsPanel = page.locator('.config-panel.agents-panel');
+    await expect(agentsPanel).toBeVisible();
+
+    const copyButton = agentsPanel.locator('.copy-btn').first();
     await copyButton.click();
 
     // Wait for modal
@@ -248,8 +334,11 @@ test.describe('UI Performance Tests', () => {
     expect(true).toBe(true);
   });
 
-  test('[Test 11.001.004] Copy button click response time (target: <100ms)', async ({ page }) => {
-    const copyButton = page.locator('.copy-btn').first();
+  test('11.001.004: Copy button click response time (target: <100ms)', async ({ page }) => {
+    const agentsPanel = page.locator('.config-panel.agents-panel');
+    await expect(agentsPanel).toBeVisible();
+
+    const copyButton = agentsPanel.locator('.copy-btn').first();
     await expect(copyButton).toBeVisible();
 
     // Measure time from click to modal visible
@@ -276,7 +365,7 @@ test.describe('UI Performance Tests', () => {
     expect(true).toBe(true);
   });
 
-  test('[Test 11.001.005] Conflict/error UI response (target: <200ms)', async ({ page }) => {
+  test('11.001.005: Conflict/error UI response (target: <200ms)', async ({ page }) => {
     // Mock API to return conflict error (409)
     // Current implementation shows error toast for conflicts
     await page.route('**/api/copy/agent', route => {
@@ -296,7 +385,10 @@ test.describe('UI Performance Tests', () => {
     });
 
     // Trigger copy operation
-    const copyButton = page.locator('.copy-btn').first();
+    const agentsPanel = page.locator('.config-panel.agents-panel');
+    await expect(agentsPanel).toBeVisible();
+
+    const copyButton = agentsPanel.locator('.copy-btn').first();
     await copyButton.click();
 
     // Wait for modal

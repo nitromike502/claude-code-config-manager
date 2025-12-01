@@ -50,16 +50,92 @@
 
       <!-- Agents Metadata -->
       <div v-if="selectedType === 'agents'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Description:</strong> {{ selectedItem.description }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Color:</strong> {{ selectedItem.color || 'Not specified' }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Model:</strong> {{ selectedItem.model || 'inherit' }}</p>
-        <p v-if="selectedItem.tools && selectedItem.tools.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
-        </p>
-        <p v-else-if="Array.isArray(selectedItem.tools) && selectedItem.tools.length === 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> None specified
-        </p>
+        <!-- Name Field -->
+        <LabeledEditField
+          v-model="agentData.name"
+          field-type="text"
+          label="Name"
+          placeholder="agent-name"
+          :disabled="!canEdit || editingField !== null && editingField !== 'name'"
+          :validation="[{ type: 'required' }, { type: 'agentName' }]"
+          @edit-start="editingField = 'name'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('name', $event)"
+        />
+
+        <!-- Description Field -->
+        <LabeledEditField
+          v-model="agentData.description"
+          field-type="textarea"
+          label="Description"
+          placeholder="Brief description"
+          :disabled="!canEdit || editingField !== null && editingField !== 'description'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Description must be at least 10 characters' }]"
+          @edit-start="editingField = 'description'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('description', $event)"
+        />
+
+        <!-- Color Field -->
+        <LabeledEditField
+          v-model="agentData.color"
+          field-type="colorpalette"
+          label="Color"
+          :disabled="!canEdit || editingField !== null && editingField !== 'color'"
+          @edit-start="editingField = 'color'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('color', $event)"
+        />
+
+        <!-- Model Field -->
+        <LabeledEditField
+          v-model="agentData.model"
+          field-type="selectbutton"
+          label="Model"
+          :options="modelOptions"
+          :disabled="!canEdit || editingField !== null && editingField !== 'model'"
+          @edit-start="editingField = 'model'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('model', $event)"
+        />
+
+        <!-- Permission Mode Field -->
+        <LabeledEditField
+          v-model="agentData.permissionMode"
+          field-type="select"
+          label="Permission Mode"
+          :options="permissionOptions"
+          :disabled="!canEdit || editingField !== null && editingField !== 'permissionMode'"
+          @edit-start="editingField = 'permissionMode'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('permissionMode', $event)"
+        />
+
+        <!-- Tools Field -->
+        <LabeledEditField
+          v-model="agentData.tools"
+          field-type="multiselect"
+          label="Allowed Tools"
+          :options="toolOptions"
+          placeholder="Select allowed tools"
+          :disabled="!canEdit || editingField !== null && editingField !== 'tools'"
+          @edit-start="editingField = 'tools'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('tools', $event)"
+        />
+
+        <!-- Skills Field -->
+        <LabeledEditField
+          v-model="agentData.skills"
+          field-type="multiselect"
+          label="Skills"
+          :options="skillOptions"
+          placeholder="Select skills"
+          :disabled="!canEdit || editingField !== null && editingField !== 'skills'"
+          @edit-start="editingField = 'skills'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('skills', $event)"
+        />
       </div>
 
       <!-- Commands Metadata -->
@@ -175,26 +251,61 @@
 
     <!-- Content Section -->
     <div v-if="selectedItem?.content" class="mb-6">
-      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Content</h4>
-      <pre class="bg-bg-primary p-4 rounded border border-border-primary font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[400px] overflow-y-auto text-text-primary">{{ selectedItem.content }}</pre>
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">
+        {{ selectedType === 'agents' ? 'System Prompt' : 'Content' }}
+      </h4>
+
+      <!-- For agents, use inline editing -->
+      <div v-if="selectedType === 'agents'">
+        <LabeledEditField
+          v-model="agentData.systemPrompt"
+          field-type="textarea"
+          label="System Prompt"
+          placeholder="The agent's system prompt (instructions)"
+          :disabled="!canEdit || editingField !== null && editingField !== 'systemPrompt'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 20, message: 'System prompt must be at least 20 characters' }]"
+          @edit-start="editingField = 'systemPrompt'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('systemPrompt', $event)"
+        />
+      </div>
+
+      <!-- For other types, show as read-only -->
+      <pre v-else class="bg-bg-primary p-4 rounded border border-border-primary font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[400px] overflow-y-auto text-text-primary">{{ selectedItem.content }}</pre>
     </div>
 
-    <!-- Footer with Actions -->
+    <!-- Footer with Actions (inline icon buttons) -->
     <template #footer>
-      <div class="flex gap-3 w-full">
+      <div class="flex items-center justify-end gap-2">
+        <!-- Delete Button (only for agents with edit enabled) -->
+        <Button
+          v-if="selectedType === 'agents' && canEdit"
+          @click="handleDelete"
+          :disabled="!selectedItem"
+          icon="pi pi-trash"
+          outlined
+          severity="danger"
+          aria-label="Delete"
+          v-tooltip.top="'Delete'"
+          class="sidebar-action-btn delete-action-btn"
+        />
+
         <Button
           @click="handleCopy"
           :disabled="!selectedItem"
-          label="Copy"
           icon="pi pi-copy"
-          class="copy-action-btn flex-1"
+          outlined
+          aria-label="Copy"
+          v-tooltip.top="'Copy'"
+          class="sidebar-action-btn copy-action-btn"
         />
         <Button
           @click="localVisible = false"
-          label="Close"
           icon="pi pi-times"
           outlined
-          class="close-action-btn flex-1"
+          aria-label="Close"
+          v-tooltip.top="'Close'"
+          class="sidebar-action-btn close-action-btn"
         />
       </div>
     </template>
@@ -209,6 +320,10 @@ import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
+import LabeledEditField from '@/components/forms/LabeledEditField.vue'
+import { useAgentsStore } from '@/stores/agents'
+
+const agentsStore = useAgentsStore()
 
 const props = defineProps({
   visible: {
@@ -231,6 +346,20 @@ const props = defineProps({
   selectedIndex: {
     type: Number,
     default: -1
+  },
+  // CRUD support (for agents)
+  scope: {
+    type: String,
+    default: null,
+    validator: (value) => value === null || ['project', 'user'].includes(value)
+  },
+  projectId: {
+    type: String,
+    default: null
+  },
+  enableCrud: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -242,6 +371,10 @@ const emit = defineEmits({
   'copy-clicked': (item) => {
     return item && typeof item === 'object'
   },
+  'agent-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'agent-updated': () => true,
   'update:visible': (value) => typeof value === 'boolean'
 })
 
@@ -260,6 +393,122 @@ watch(localVisible, (newVal) => {
   }
   emit('update:visible', newVal)
 })
+
+// Agent editing state
+const agentData = ref({
+  name: '',
+  description: '',
+  color: '',
+  model: 'inherit',
+  permissionMode: 'default',
+  tools: [],
+  skills: [],
+  systemPrompt: ''
+})
+const editingField = ref(null)
+
+// Computed: Can edit agents (only if enableCrud is true and not a plugin agent)
+const canEdit = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'agents' &&
+         props.selectedItem?.location !== 'plugin'
+})
+
+// Model options for agents
+const modelOptions = [
+  { label: 'Inherit', value: 'inherit' },
+  { label: 'Sonnet', value: 'sonnet' },
+  { label: 'Opus', value: 'opus' },
+  { label: 'Haiku', value: 'haiku' }
+]
+
+// Permission mode options for agents
+const permissionOptions = [
+  { label: 'Default', value: 'default' },
+  { label: 'Accept Edits', value: 'acceptEdits' },
+  { label: 'Bypass Permissions', value: 'bypassPermissions' },
+  { label: 'Plan', value: 'plan' },
+  { label: 'Ignore', value: 'ignore' }
+]
+
+// Tool options for agents
+const toolOptions = [
+  { label: 'Bash', value: 'Bash' },
+  { label: 'Read', value: 'Read' },
+  { label: 'Write', value: 'Write' },
+  { label: 'Edit', value: 'Edit' },
+  { label: 'Glob', value: 'Glob' },
+  { label: 'Grep', value: 'Grep' },
+  { label: 'WebFetch', value: 'WebFetch' },
+  { label: 'TodoRead', value: 'TodoRead' },
+  { label: 'TodoWrite', value: 'TodoWrite' }
+]
+
+// Skill options for agents (TODO: populate from available skills)
+const skillOptions = computed(() => {
+  // For now, return empty array
+  // TODO: Get actual skills from store/API
+  return []
+})
+
+// Watch for selectedItem changes to update agentData
+watch(() => props.selectedItem, (newItem) => {
+  if (newItem && props.selectedType === 'agents') {
+    // Trim leading newline from systemPrompt for display (it's just formatting for the file)
+    let displaySystemPrompt = newItem.content || ''
+    if (displaySystemPrompt.startsWith('\n')) {
+      displaySystemPrompt = displaySystemPrompt.substring(1)
+    }
+
+    agentData.value = {
+      name: newItem.name || '',
+      description: newItem.description || '',
+      color: newItem.color || '',
+      model: newItem.model || 'inherit',
+      permissionMode: newItem.permissionMode || 'default',
+      tools: newItem.tools || [],
+      skills: newItem.skills || [],
+      systemPrompt: displaySystemPrompt
+    }
+    editingField.value = null
+  }
+}, { immediate: true })
+
+// Handle field update (called when InlineEditField saves)
+const handleFieldUpdate = async (fieldName, newValue) => {
+  if (!canEdit.value) return
+
+  try {
+    // Build updates object with just the changed field
+    // Note: All field names map directly to API - systemPrompt is expected by the API
+    const updates = { [fieldName]: newValue }
+
+    // Call API through store
+    const result = await agentsStore.updateAgent(
+      props.projectId,
+      props.selectedItem.name,
+      updates,
+      props.scope
+    )
+
+    if (result.success) {
+      // Update local agentData
+      agentData.value[fieldName] = newValue
+
+      // Notify parent that agent was updated
+      emit('agent-updated')
+    }
+  } finally {
+    editingField.value = null
+  }
+}
+
+// Handle delete button click
+const handleDelete = () => {
+  if (canEdit.value && props.selectedItem) {
+    emit('agent-delete', props.selectedItem)
+  }
+}
 
 // Computed: navigation state
 const hasPrev = computed(() => props.selectedIndex > 0)
@@ -408,39 +657,52 @@ const handleCopy = () => {
   cursor: not-allowed !important;
 }
 
-/* Copy action button */
-.copy-action-btn {
-  background: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-  color: white !important;
-  padding: 0.75rem 1rem !important;
-  font-weight: 500 !important;
+/* Sidebar action buttons (footer) - icon-only outlined style */
+.sidebar-action-btn {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  padding: 0 !important;
   transition: all 0.2s !important;
 }
 
+.sidebar-action-btn:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+}
+
+/* Copy action button */
+.copy-action-btn {
+  background: var(--bg-secondary) !important;
+  color: var(--color-primary) !important;
+  border: 1px solid var(--color-primary) !important;
+}
+
 .copy-action-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover) !important;
-  border-color: var(--color-primary-hover) !important;
+  background: var(--color-primary) !important;
+  color: white !important;
   transform: translateY(-1px);
   box-shadow: var(--shadow-card);
 }
 
-.copy-action-btn:disabled {
-  opacity: 0.6 !important;
-  cursor: not-allowed !important;
-  background: var(--bg-tertiary) !important;
-  border-color: var(--bg-tertiary) !important;
-  color: var(--text-disabled) !important;
+/* Delete action button */
+.delete-action-btn {
+  background: var(--bg-secondary) !important;
+  color: var(--color-error) !important;
+  border: 1px solid var(--color-error) !important;
 }
 
-/* Close action button (outlined) */
+.delete-action-btn:hover:not(:disabled) {
+  background: var(--color-error) !important;
+  color: white !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+/* Close action button */
 .close-action-btn {
   background: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border-primary) !important;
-  padding: 0.75rem 1rem !important;
-  font-weight: 500 !important;
-  transition: all 0.2s !important;
 }
 
 .close-action-btn:hover {

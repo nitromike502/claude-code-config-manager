@@ -35,7 +35,7 @@
       <div>
         <p class="font-semibold mb-2">Referenced by:</p>
         <ul class="list-disc list-inside text-sm space-y-1">
-          <li v-for="item in dependentItems" :key="item">{{ item }}</li>
+          <li v-for="(item, index) in dependentItems" :key="index">{{ formatReference(item) }}</li>
         </ul>
       </div>
     </Message>
@@ -146,6 +146,33 @@ const itemTypeLabel = computed(() => {
 const isConfirmValid = computed(() => {
   return confirmText.value.toLowerCase() === 'delete'
 })
+
+/**
+ * Format a reference item for display
+ * Handles both string items and object items from the referenceChecker service
+ * @param {string|Object} item - Reference item (string or {type, name, location, lines})
+ * @returns {string} Formatted display string
+ */
+function formatReference(item) {
+  // If it's already a string, return as-is
+  if (typeof item === 'string') {
+    return item
+  }
+
+  // If it's an object with type/name/lines structure
+  if (item && typeof item === 'object') {
+    const typeName = item.type || 'file'
+    const name = item.name || 'unknown'
+    const lines = Array.isArray(item.lines) && item.lines.length > 0
+      ? ` (line${item.lines.length > 1 ? 's' : ''} ${item.lines.join(', ')})`
+      : ''
+
+    return `${typeName}: ${name}${lines}`
+  }
+
+  // Fallback: convert to string
+  return String(item)
+}
 
 /**
  * Handle Enter key in confirmation input

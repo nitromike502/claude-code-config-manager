@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs').promises;
 const {
   discoverProjects,
   getProjectAgents,
@@ -10,6 +12,10 @@ const {
   getProjectCounts
 } = require('../services/projectDiscovery');
 const { projectIdToPath } = require('../utils/pathUtils');
+const { updateYamlFrontmatter, updateFile } = require('../services/updateService');
+const { deleteFile } = require('../services/deleteService');
+const { findReferences } = require('../services/referenceChecker');
+const { parseSubagent } = require('../parsers/subagentParser');
 
 // Cache for projects (refreshed on scan)
 let projectsCache = null;
@@ -61,9 +67,13 @@ router.use('/:projectId/*', (req, res, next) => {
     });
   }
 
-  // Check for extra unmatched path segments (e.g., /project/with/slashes/agents)
-  // The wildcard should be a simple resource name (agents, commands, hooks, mcp) without additional slashes
-  if (wildcard && wildcard.includes('/')) {
+  // Check if wildcard starts with a valid resource name
+  // Valid patterns: agents, agents/:name, commands, commands/:name, hooks, mcp, skills, skills/:name
+  // Invalid patterns: with/slashes/agents (path traversal attempt)
+  const validResourcePrefixes = ['agents', 'commands', 'hooks', 'mcp', 'skills'];
+  const wildcardFirstSegment = wildcard.split('/')[0];
+
+  if (wildcard && !validResourcePrefixes.includes(wildcardFirstSegment)) {
     return res.status(400).json({
       success: false,
       error: 'Invalid project ID format',
@@ -374,6 +384,341 @@ router.get('/:projectId/skills', validateProjectId, async (req, res) => {
       projectPath: projectData.path
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Validate agent name format
+ * Must be lowercase letters, numbers, hyphens, underscores, max 64 chars
+ * @param {string} name - Agent name to validate
+ * @returns {boolean} True if valid
+ */
+function isValidAgentName(name) {
+  if (!name || typeof name !== 'string') return false;
+  return /^[a-z0-9_-]{1,64}$/.test(name);
+}
+
+/**
+ * Validate agent name parameter middleware
+ */
+function validateAgentName(req, res, next) {
+  const { agentName } = req.params;
+
+  if (!agentName || !isValidAgentName(agentName)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid agent name format',
+      details: 'Agent name must be lowercase letters, numbers, hyphens, or underscores (max 64 chars)'
+    });
+  }
+
+  next();
+}
+
+/**
+ * Helper to get project path from projectId
+ * @param {string} projectId - Project identifier
+ * @returns {Promise<{path: string, error: string|null}>} Project path or error
+ */
+async function getProjectPath(projectId) {
+  // Ensure projects are loaded
+  if (!projectsCache) {
+    const result = await discoverProjects();
+    projectsCache = result;
+  }
+
+  const projectData = projectsCache.projects[projectId];
+
+  if (!projectData) {
+    return { path: null, error: `Project not found: ${projectId}` };
+  }
+
+  if (!projectData.exists) {
+    return { path: null, error: `Project directory does not exist: ${projectData.path}` };
+  }
+
+  return { path: projectData.path, error: null };
+}
+
+/**
+ * PUT /api/projects/:projectId/agents/:agentName
+ * Update a subagent's properties
+ *
+ * Request body can include:
+ * - name: string (new name, triggers rename)
+ * - description: string
+ * - tools: string[] | string
+ * - model: 'sonnet' | 'opus' | 'haiku' | 'inherit'
+ * - color: string (one of the valid colors)
+ * - permissionMode: 'default' | 'acceptEdits' | 'bypassPermissions' | 'plan' | 'ignore'
+ * - skills: string[] | string
+ * - systemPrompt: string (body content)
+ */
+router.put('/:projectId/agents/:agentName', validateProjectId, validateAgentName, async (req, res) => {
+  try {
+    const { projectId, agentName } = req.params;
+    const updates = req.body;
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Construct agent file path
+    const agentFilePath = path.join(projectPath, '.claude', 'agents', `${agentName}.md`);
+
+    // Check if agent file exists
+    try {
+      await fs.access(agentFilePath);
+    } catch {
+      return res.status(404).json({
+        success: false,
+        error: `Agent not found: ${agentName}`
+      });
+    }
+
+    // Validate updates
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must be a JSON object with agent properties'
+      });
+    }
+
+    // Check if request body is empty
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must contain at least one property to update'
+      });
+    }
+
+    // Validate name if being updated
+    if (updates.name !== undefined && updates.name !== agentName) {
+      if (!isValidAgentName(updates.name)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid agent name format',
+          details: 'Agent name must be lowercase letters, numbers, hyphens, or underscores (max 64 chars)'
+        });
+      }
+    }
+
+    // Validate description if provided
+    if (updates.description !== undefined) {
+      if (typeof updates.description !== 'string' || updates.description.trim().length < 10) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid description',
+          details: 'Description must be at least 10 characters'
+        });
+      }
+    }
+
+    // Validate model if provided
+    const validModels = ['sonnet', 'opus', 'haiku', 'inherit'];
+    if (updates.model !== undefined && !validModels.includes(updates.model)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid model',
+        details: `Model must be one of: ${validModels.join(', ')}`
+      });
+    }
+
+    // Validate color if provided
+    const validColors = ['blue', 'cyan', 'green', 'orange', 'purple', 'red', 'yellow', 'pink', 'indigo', 'teal'];
+    if (updates.color !== undefined && updates.color !== null && !validColors.includes(updates.color)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid color',
+        details: `Color must be one of: ${validColors.join(', ')}`
+      });
+    }
+
+    // Validate permissionMode if provided
+    const validPermissionModes = ['default', 'acceptEdits', 'bypassPermissions', 'plan', 'ignore'];
+    if (updates.permissionMode !== undefined && !validPermissionModes.includes(updates.permissionMode)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid permissionMode',
+        details: `permissionMode must be one of: ${validPermissionModes.join(', ')}`
+      });
+    }
+
+    // Handle systemPrompt update separately (it's the body content, not frontmatter)
+    let systemPromptUpdate = null;
+    if (updates.systemPrompt !== undefined) {
+      if (typeof updates.systemPrompt !== 'string' || updates.systemPrompt.trim().length < 20) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid systemPrompt',
+          details: 'System prompt must be at least 20 characters'
+        });
+      }
+      systemPromptUpdate = updates.systemPrompt;
+      delete updates.systemPrompt; // Remove from frontmatter updates
+    }
+
+    // If systemPrompt is being updated, we need to handle it specially
+    if (systemPromptUpdate !== null) {
+      // Read the current file
+      const content = await fs.readFile(agentFilePath, 'utf8');
+      const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+      const match = content.match(frontmatterRegex);
+
+      if (match) {
+        const yaml = require('js-yaml');
+        let frontmatter = yaml.load(match[1]) || {};
+
+        // Merge frontmatter updates
+        frontmatter = { ...frontmatter, ...updates };
+
+        // Remove undefined/null values
+        Object.keys(frontmatter).forEach(key => {
+          if (frontmatter[key] === undefined) delete frontmatter[key];
+        });
+
+        // Strip frontmatter from systemPrompt if it contains it
+        // This can happen if the UI accidentally sends the full file content
+        let cleanSystemPrompt = systemPromptUpdate;
+        const systemPromptMatch = systemPromptUpdate.match(frontmatterRegex);
+        if (systemPromptMatch) {
+          // systemPrompt contains frontmatter, extract only the body
+          cleanSystemPrompt = systemPromptMatch[2];
+        }
+
+        // Normalize: trim leading newlines, then add blank line separator
+        // Result: ---\n\nBody (blank line between frontmatter and content)
+        cleanSystemPrompt = '\n\n' + cleanSystemPrompt.replace(/^\n+/, '');
+
+        // Serialize and write
+        const yamlStr = yaml.dump(frontmatter, { lineWidth: -1 });
+        const newContent = `---\n${yamlStr}---${cleanSystemPrompt}`;
+
+        await updateFile(agentFilePath, newContent);
+      }
+    } else {
+      // Only frontmatter updates
+      if (Object.keys(updates).length > 0) {
+        await updateYamlFrontmatter(agentFilePath, updates);
+      }
+    }
+
+    // Handle rename if name changed
+    if (updates.name && updates.name !== agentName) {
+      const newFilePath = path.join(projectPath, '.claude', 'agents', `${updates.name}.md`);
+
+      // Check if new name already exists
+      try {
+        await fs.access(newFilePath);
+        return res.status(409).json({
+          success: false,
+          error: 'Agent name conflict',
+          details: `An agent named "${updates.name}" already exists`
+        });
+      } catch {
+        // Good - new name doesn't exist
+      }
+
+      await fs.rename(agentFilePath, newFilePath);
+    }
+
+    // Re-read the updated agent to return
+    const finalPath = updates.name && updates.name !== agentName
+      ? path.join(projectPath, '.claude', 'agents', `${updates.name}.md`)
+      : agentFilePath;
+
+    const updatedAgent = await parseSubagent(finalPath, 'project');
+
+    res.json({
+      success: true,
+      message: 'Agent updated successfully',
+      agent: updatedAgent
+    });
+  } catch (error) {
+    console.error('Error updating agent:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/projects/:projectId/agents/:agentName
+ * Delete a subagent
+ */
+router.delete('/:projectId/agents/:agentName', validateProjectId, validateAgentName, async (req, res) => {
+  try {
+    const { projectId, agentName } = req.params;
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Construct agent file path
+    const agentFilePath = path.join(projectPath, '.claude', 'agents', `${agentName}.md`);
+
+    // Delete the file
+    await deleteFile(agentFilePath);
+
+    res.json({
+      success: true,
+      message: `Agent "${agentName}" deleted successfully`,
+      deleted: agentFilePath
+    });
+  } catch (error) {
+    // Handle file not found specifically
+    if (error.message.includes('File not found')) {
+      return res.status(404).json({
+        success: false,
+        error: `Agent not found: ${req.params.agentName}`
+      });
+    }
+
+    console.error('Error deleting agent:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/projects/:projectId/agents/:agentName/references
+ * Check for references to an agent in other configurations
+ */
+router.get('/:projectId/agents/:agentName/references', validateProjectId, validateAgentName, async (req, res) => {
+  try {
+    const { projectId, agentName } = req.params;
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Find references using the referenceChecker service
+    const references = await findReferences('agent', agentName, projectPath);
+
+    res.json({
+      success: true,
+      agentName,
+      references,
+      hasReferences: references.length > 0,
+      referenceCount: references.length
+    });
+  } catch (error) {
+    console.error('Error checking agent references:', error);
     res.status(500).json({
       success: false,
       error: error.message

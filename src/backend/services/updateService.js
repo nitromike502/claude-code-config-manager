@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs').promises;
 const yaml = require('js-yaml');
+const matter = require('gray-matter');
 
 /**
  * UpdateService - Handles atomic updates to configuration files
@@ -119,10 +120,15 @@ async function updateFile(filePath, newContent) {
  *
  * Process:
  * 1. Read existing file
- * 2. Parse frontmatter and body using regex
+ * 2. Parse frontmatter and body using gray-matter (robust, handles edge cases)
  * 3. Shallow merge updates into existing frontmatter
- * 4. Reconstruct file with updated frontmatter and original body
+ * 4. Reconstruct file with updated frontmatter and original body using gray-matter
  * 5. Write atomically using updateFile()
+ *
+ * Benefits of gray-matter:
+ * - Handles various frontmatter formats (different line endings, spacing)
+ * - Consistent with parsing used in subagentParser.js
+ * - Prevents duplicate frontmatter bugs from regex mismatches
  *
  * @param {string} filePath - Absolute path to markdown file with YAML frontmatter
  * @param {Object} updates - Object with frontmatter properties to update/add
@@ -142,42 +148,34 @@ async function updateYamlFrontmatter(filePath, updates) {
     // Step 1: Read existing file
     const content = await fs.readFile(validatedPath, 'utf8');
 
-    // Step 2: Parse frontmatter and body
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
-    const match = content.match(frontmatterRegex);
-
-    let existingFrontmatter = {};
-    let bodyContent = '';
-
-    if (match) {
-      // File has frontmatter
-      const yamlContent = match[1];
-      bodyContent = match[2];
-
-      // Parse existing frontmatter
-      try {
-        existingFrontmatter = yaml.load(yamlContent) || {};
-      } catch (yamlError) {
-        throw new Error(`Failed to parse existing YAML frontmatter: ${yamlError.message}`);
-      }
-    } else {
-      // No frontmatter, treat entire content as body
-      bodyContent = content;
-    }
-
-    // Step 3: Shallow merge updates
-    const mergedFrontmatter = { ...existingFrontmatter, ...updates };
-
-    // Validate merged frontmatter can be serialized
-    let yamlString;
+    // Step 2: Parse frontmatter and body using gray-matter
+    let parsed;
     try {
-      yamlString = yaml.dump(mergedFrontmatter, { lineWidth: -1 });
-    } catch (yamlError) {
-      throw new Error(`Failed to serialize updated frontmatter: ${yamlError.message}`);
+      parsed = matter(content);
+    } catch (parseError) {
+      throw new Error(`Failed to parse file with gray-matter: ${parseError.message}`);
     }
 
-    // Step 4: Reconstruct file
-    const newContent = `---\n${yamlString}---\n${bodyContent}`;
+    // Step 3: Shallow merge updates into existing frontmatter
+    const mergedFrontmatter = { ...parsed.data, ...updates };
+
+    // Normalize body content: trim leading newlines, then add blank line separator
+    // This ensures consistent formatting: ---\nfrontmatter\n---\n\nbody
+    // The blank line after closing --- is required by markdown parsers (gray-matter)
+    // to properly separate frontmatter from body content. Without it, the first line
+    // of body content may be interpreted as part of the frontmatter block.
+    let bodyContent = parsed.content;
+    if (bodyContent) {
+      bodyContent = '\n\n' + bodyContent.replace(/^\n+/, '');
+    }
+
+    // Step 4: Reconstruct file using gray-matter's stringify
+    let newContent;
+    try {
+      newContent = matter.stringify(bodyContent, mergedFrontmatter);
+    } catch (stringifyError) {
+      throw new Error(`Failed to serialize updated frontmatter: ${stringifyError.message}`);
+    }
 
     // Step 5: Write atomically
     return await updateFile(validatedPath, newContent);
