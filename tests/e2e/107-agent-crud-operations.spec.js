@@ -249,10 +249,10 @@ test.describe('107.001: Agent Edit Flow', () => {
   })
 
   test('107.001.005: should show loading state during inline field save', async ({ page }) => {
-    // Mock slow API response (2 seconds to ensure we can catch loading state)
+    // Mock slow API response (3 seconds to ensure we can catch loading state)
     await page.route('**/api/projects/testproject/agents/test-agent', async (route) => {
       if (route.request().method() === 'PUT') {
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        await new Promise(resolve => setTimeout(resolve, 3000))
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
@@ -272,24 +272,24 @@ test.describe('107.001: Agent Edit Flow', () => {
     await descriptionField.locator('.edit-btn').click()
     await descriptionField.locator('textarea').fill('Updated with loading test')
 
-    // Get the save button reference
+    // Get the save button reference before clicking
     const saveButton = descriptionField.getByRole('button', { name: 'Save' })
 
     // Click save button and immediately check for loading state
     await saveButton.click()
 
     // Verify loading state (button should be disabled or have loading icon)
-    // Use a shorter timeout since button changes immediately
+    // Check immediately after click with longer timeout to catch the state
     try {
-      await expect(saveButton).toBeDisabled({ timeout: 500 })
+      await expect(saveButton).toBeDisabled({ timeout: 1000 })
     } catch {
       // Alternative: check for loading icon if button isn't disabled
       const loadingIcon = saveButton.locator('.p-button-loading-icon, .pi-spinner')
-      await expect(loadingIcon).toBeVisible({ timeout: 500 })
+      await expect(loadingIcon).toBeVisible({ timeout: 1000 })
     }
 
     // Wait for save to complete
-    await page.waitForTimeout(2500)
+    await page.waitForTimeout(3500)
 
     // Field should return to display mode
     await expect(descriptionField.locator('textarea')).not.toBeVisible({ timeout: 2000 })
@@ -439,8 +439,8 @@ test.describe('107.002: Agent Delete Flow', () => {
     const deleteButton = sidebar.locator('.delete-action-btn')
     await deleteButton.click()
 
-    // Verify modal is visible
-    const dialog = page.getByRole('dialog')
+    // Verify modal is visible (use .p-dialog to distinguish from sidebar drawer)
+    const dialog = page.locator('.p-dialog')
     await expect(dialog).toBeVisible()
 
     // Verify modal title contains "Delete"
@@ -465,7 +465,7 @@ test.describe('107.002: Agent Delete Flow', () => {
     await page.locator('.view-btn').first().click()
     await page.locator('.delete-action-btn').click()
 
-    const dialog = page.getByRole('dialog')
+    const dialog = page.locator('.p-dialog')
 
     // Verify agent name is in the warning message
     await expect(dialog.getByText('"test-agent"')).toBeVisible()
@@ -489,7 +489,7 @@ test.describe('107.002: Agent Delete Flow', () => {
     await page.locator('.view-btn').first().click()
     await page.locator('.delete-action-btn').click()
 
-    const dialog = page.getByRole('dialog')
+    const dialog = page.locator('.p-dialog')
     const confirmInput = dialog.getByRole('textbox', { name: /Type delete to confirm/i })
     const deleteButton = dialog.getByRole('button', { name: 'Delete', exact: true })
 
@@ -538,7 +538,7 @@ test.describe('107.002: Agent Delete Flow', () => {
     await page.locator('.delete-action-btn').click()
 
     // Wait for dialog and references to load
-    const dialog = page.getByRole('dialog')
+    const dialog = page.locator('.p-dialog')
     await dialog.waitFor({ state: 'visible', timeout: 5000 })
 
     // Type confirmation
@@ -575,7 +575,7 @@ test.describe('107.002: Agent Delete Flow', () => {
     await page.locator('.view-btn').first().click()
     await page.locator('.delete-action-btn').click()
 
-    const dialog = page.getByRole('dialog')
+    const dialog = page.locator('.p-dialog')
 
     // Click cancel button
     const cancelButton = dialog.getByRole('button', { name: 'Cancel' })
@@ -615,7 +615,7 @@ test.describe('107.002: Agent Delete Flow', () => {
     await page.locator('.view-btn').first().click()
     await page.locator('.delete-action-btn').click()
 
-    const dialog = page.getByRole('dialog')
+    const dialog = page.locator('.p-dialog')
 
     // Type confirmation and click delete
     await dialog.getByRole('textbox', { name: /Type delete to confirm/i }).fill('delete')
@@ -1013,7 +1013,7 @@ test.describe('107.004: Reference Checks', () => {
     await page.locator('.delete-action-btn').click()
 
     // Wait for dialog to appear
-    const dialog = page.getByRole('dialog')
+    const dialog = page.locator('.p-dialog')
     await dialog.waitFor({ state: 'visible', timeout: 5000 })
 
     // Wait for references to load
@@ -1046,7 +1046,7 @@ test.describe('107.004: Reference Checks', () => {
     await page.locator('.delete-action-btn').click()
 
     // Wait for dialog to appear
-    const dialog = page.getByRole('dialog')
+    const dialog = page.locator('.p-dialog')
     await dialog.waitFor({ state: 'visible', timeout: 5000 })
 
     // Wait for references check to complete
@@ -1086,7 +1086,7 @@ test.describe('107.004: Reference Checks', () => {
     await page.locator('.delete-action-btn').click()
 
     // Wait for dialog to appear
-    const dialog = page.getByRole('dialog')
+    const dialog = page.locator('.p-dialog')
     await dialog.waitFor({ state: 'visible', timeout: 5000 })
 
     // Wait for references to load
@@ -1248,7 +1248,7 @@ test.describe('107.005: Cross-Scope Operations', () => {
     await page.locator('.delete-action-btn').click()
 
     // Wait for dialog to appear
-    const dialog = page.getByRole('dialog')
+    const dialog = page.locator('.p-dialog')
     await dialog.waitFor({ state: 'visible', timeout: 5000 })
 
     // Wait for references to load
