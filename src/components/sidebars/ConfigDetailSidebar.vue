@@ -454,6 +454,12 @@ const skillOptions = computed(() => {
 // Watch for selectedItem changes to update agentData
 watch(() => props.selectedItem, (newItem) => {
   if (newItem && props.selectedType === 'agents') {
+    // Trim leading newline from systemPrompt for display (it's just formatting for the file)
+    let displaySystemPrompt = newItem.content || ''
+    if (displaySystemPrompt.startsWith('\n')) {
+      displaySystemPrompt = displaySystemPrompt.substring(1)
+    }
+
     agentData.value = {
       name: newItem.name || '',
       description: newItem.description || '',
@@ -462,7 +468,7 @@ watch(() => props.selectedItem, (newItem) => {
       permissionMode: newItem.permissionMode || 'default',
       tools: newItem.tools || [],
       skills: newItem.skills || [],
-      systemPrompt: newItem.content || ''
+      systemPrompt: displaySystemPrompt
     }
     editingField.value = null
   }
