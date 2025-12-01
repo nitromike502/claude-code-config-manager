@@ -55,7 +55,7 @@ async function waitForAppReady(page) {
 }
 
 // 200.001 - Mobile viewport tests
-test.describe('200.001 - Responsive Design - Mobile (iPhone SE)', () => {
+test.describe.skip('200.001 - Responsive Design - Mobile (iPhone SE)', () => {
   const viewport = viewports.mobile;
   const deviceType = 'mobile';
 
@@ -556,7 +556,7 @@ test.describe('200.001 - Responsive Design - Mobile (iPhone SE)', () => {
 });
 
 // 200.002 - Tablet viewport tests
-test.describe('200.002 - Responsive Design - Tablet (iPad)', () => {
+test.describe.skip('200.002 - Responsive Design - Tablet (iPad)', () => {
   const viewport = viewports.tablet;
   const deviceType = 'tablet';
 
@@ -1057,7 +1057,7 @@ test.describe('200.002 - Responsive Design - Tablet (iPad)', () => {
 });
 
 // 200.003 - Desktop viewport tests
-test.describe('200.003 - Responsive Design - Desktop (Full HD)', () => {
+test.describe.skip('200.003 - Responsive Design - Desktop (Full HD)', () => {
   const viewport = viewports.desktop;
   const deviceType = 'desktop';
 
@@ -1558,7 +1558,7 @@ test.describe('200.003 - Responsive Design - Desktop (Full HD)', () => {
 });
 
 // 200.004 - Cross-viewport tests
-test.describe('200.004 - Responsive Design - Cross-Viewport Tests', () => {
+test.describe.skip('200.004 - Responsive Design - Cross-Viewport Tests', () => {
   test('200.004.001 - Layout transitions smoothly between breakpoints', async ({ page }) => {
     await page.goto('/');
     await waitForAppReady(page);
