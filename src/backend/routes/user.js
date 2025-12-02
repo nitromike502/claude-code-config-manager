@@ -407,4 +407,181 @@ router.get('/agents/:agentName/references', validateAgentName, async (req, res) 
   }
 });
 
+/**
+ * PUT /api/user/commands/:commandPath
+ * Update a user-level command's properties
+ *
+ * Request body can include:
+ * - name: string
+ * - description: string
+ * - allowed-tools: string[] | string
+ * - model: 'sonnet' | 'opus' | 'haiku' | 'inherit'
+ * - argument-hint: string
+ * - disable-model-invocation: boolean
+ * - color: string
+ * - content: string (body content)
+ */
+router.put('/commands/:commandPath(*)', async (req, res) => {
+  try {
+    const commandPath = decodeURIComponent(req.params.commandPath);
+    const updates = req.body;
+
+    // Get user home directory
+    const userHome = getUserHome();
+    const commandFilePath = path.join(userHome, '.claude', 'commands', `${commandPath}.md`);
+
+    // Check if command file exists
+    try {
+      await fs.access(commandFilePath);
+    } catch {
+      return res.status(404).json({
+        success: false,
+        error: `User command not found: ${commandPath}`
+      });
+    }
+
+    // Validate updates
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must be a JSON object with command properties'
+      });
+    }
+
+    // Check if request body is empty
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must contain at least one property to update'
+      });
+    }
+
+    // Validate name if provided
+    if (updates.name !== undefined) {
+      if (typeof updates.name !== 'string' || updates.name.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid name',
+          details: 'Name must be a non-empty string'
+        });
+      }
+    }
+
+    // Validate description if provided
+    if (updates.description !== undefined) {
+      if (typeof updates.description !== 'string' || updates.description.trim().length < 10) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid description',
+          details: 'Description must be at least 10 characters'
+        });
+      }
+    }
+
+    // Validate model if provided
+    const validModels = ['sonnet', 'opus', 'haiku', 'inherit'];
+    if (updates.model !== undefined && !validModels.includes(updates.model)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid model',
+        details: `Model must be one of: ${validModels.join(', ')}`
+      });
+    }
+
+    // Validate color if provided
+    const validColors = ['blue', 'cyan', 'green', 'orange', 'purple', 'red', 'yellow', 'pink', 'indigo', 'teal'];
+    if (updates.color !== undefined && updates.color !== null && !validColors.includes(updates.color)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid color',
+        details: `Color must be one of: ${validColors.join(', ')}`
+      });
+    }
+
+    // Validate disable-model-invocation if provided
+    if (updates['disable-model-invocation'] !== undefined && typeof updates['disable-model-invocation'] !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid disable-model-invocation',
+        details: 'disable-model-invocation must be a boolean'
+      });
+    }
+
+    // Handle content update separately (it's the body content, not frontmatter)
+    let contentUpdate = null;
+    if (updates.content !== undefined) {
+      if (typeof updates.content !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid content',
+          details: 'Content must be a string'
+        });
+      }
+      contentUpdate = updates.content;
+      delete updates.content; // Remove from frontmatter updates
+    }
+
+    // If content is being updated, we need to handle it specially
+    if (contentUpdate !== null) {
+      // Read the current file
+      const fileContent = await fs.readFile(commandFilePath, 'utf8');
+      const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+      const match = fileContent.match(frontmatterRegex);
+
+      if (match) {
+        const yaml = require('js-yaml');
+        let frontmatter = yaml.load(match[1]) || {};
+
+        // Merge frontmatter updates
+        frontmatter = { ...frontmatter, ...updates };
+
+        // Remove undefined/null values
+        Object.keys(frontmatter).forEach(key => {
+          if (frontmatter[key] === undefined) delete frontmatter[key];
+        });
+
+        // Strip frontmatter from content if it contains it
+        let cleanContent = contentUpdate;
+        const contentMatch = contentUpdate.match(frontmatterRegex);
+        if (contentMatch) {
+          cleanContent = contentMatch[2];
+        }
+
+        // Normalize: trim leading newlines, then add blank line separator
+        cleanContent = '\n\n' + cleanContent.replace(/^\n+/, '');
+
+        // Serialize and write
+        const yamlStr = yaml.dump(frontmatter, { lineWidth: -1 });
+        const newContent = `---\n${yamlStr}---${cleanContent}`;
+
+        await updateFile(commandFilePath, newContent);
+      }
+    } else {
+      // Only frontmatter updates
+      if (Object.keys(updates).length > 0) {
+        await updateYamlFrontmatter(commandFilePath, updates);
+      }
+    }
+
+    // Re-read the updated command to return
+    const { parseCommand } = require('../parsers/commandParser');
+    const baseDir = path.join(userHome, '.claude', 'commands');
+    const updatedCommand = await parseCommand(commandFilePath, baseDir, 'user');
+
+    res.json({
+      success: true,
+      message: 'User command updated successfully',
+      command: updatedCommand
+    });
+  } catch (error) {
+    console.error('Error updating user command:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
