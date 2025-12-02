@@ -85,8 +85,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="commands"
+                :enable-crud="enableCommandCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'commands', commands)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('command-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -374,6 +376,7 @@ defineEmits([
   'navigate',
   'copy-clicked',
   'agent-delete',
+  'command-delete',
   'agent-updated',
   'command-updated'
 ])
