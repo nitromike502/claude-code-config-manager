@@ -367,6 +367,91 @@ export async function getUserAgentReferences(agentName) {
   return response.json()
 }
 
+// ========================================
+// Command CRUD Operations
+// ========================================
+
+/**
+ * Update a project command
+ * @param {string} projectId - Project identifier
+ * @param {string} commandPath - Command path (e.g., "mycommand" or "utils/helper")
+ * @param {Object} updates - Properties to update
+ * @returns {Promise<Object>} - { success: boolean, command: Object }
+ */
+export async function updateCommand(projectId, commandPath, updates) {
+  const encodedPath = encodeURIComponent(commandPath)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/commands/${encodedPath}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates)
+  })
+  return response.json()
+}
+
+/**
+ * Delete a project command
+ * @param {string} projectId - Project identifier
+ * @param {string} commandPath - Command path
+ * @returns {Promise<Object>} - { success: boolean, message: string }
+ */
+export async function deleteCommand(projectId, commandPath) {
+  const encodedPath = encodeURIComponent(commandPath)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/commands/${encodedPath}`, {
+    method: 'DELETE'
+  })
+  return response.json()
+}
+
+/**
+ * Get references to a project command
+ * @param {string} projectId - Project identifier
+ * @param {string} commandPath - Command path
+ * @returns {Promise<Object>} - { success: boolean, references: Array, hasReferences: boolean }
+ */
+export async function getCommandReferences(projectId, commandPath) {
+  const encodedPath = encodeURIComponent(commandPath)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/commands/${encodedPath}/references`)
+  return response.json()
+}
+
+/**
+ * Update a user-level command
+ * @param {string} commandPath - Command path (e.g., "mycommand" or "utils/helper")
+ * @param {Object} updates - Properties to update
+ * @returns {Promise<Object>} - { success: boolean, command: Object }
+ */
+export async function updateUserCommand(commandPath, updates) {
+  const encodedPath = encodeURIComponent(commandPath)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/user/commands/${encodedPath}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates)
+  })
+  return response.json()
+}
+
+/**
+ * Delete a user-level command
+ * @param {string} commandPath - Command path
+ * @returns {Promise<Object>} - { success: boolean, message: string }
+ */
+export async function deleteUserCommand(commandPath) {
+  const encodedPath = encodeURIComponent(commandPath)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/user/commands/${encodedPath}`, {
+    method: 'DELETE'
+  })
+  return response.json()
+}
+
+/**
+ * Get references to a user-level command
+ * @param {string} commandPath - Command path
+ * @returns {Promise<Object>} - { success: boolean, references: Array, hasReferences: boolean }
+ */
+export async function getUserCommandReferences(commandPath) {
+  const encodedPath = encodeURIComponent(commandPath)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/user/commands/${encodedPath}/references`)
+  return response.json()
+}
+
 // Default export with all API functions
 export default {
   BASE_URL,
@@ -394,5 +479,12 @@ export default {
   getProjectAgentReferences,
   updateUserAgent,
   deleteUserAgent,
-  getUserAgentReferences
+  getUserAgentReferences,
+  // Command CRUD
+  updateCommand,
+  deleteCommand,
+  getCommandReferences,
+  updateUserCommand,
+  deleteUserCommand,
+  getUserCommandReferences
 }
