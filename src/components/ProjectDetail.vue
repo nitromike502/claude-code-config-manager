@@ -47,7 +47,9 @@
     @copy-clicked="handleCopyClick"
     @agent-delete="handleAgentDelete"
     @agent-updated="handleAgentUpdated"
+    @command-delete="handleCommandDelete"
     @command-updated="handleCommandUpdated"
+    @command-deleted="handleCommandDeleted"
   >
     <template #copy-modal>
       <CopyModal
@@ -71,6 +73,17 @@
     @confirm="handleAgentDeleteConfirm"
     @cancel="handleAgentDeleteCancel"
   />
+
+  <!-- Command Delete Confirmation Dialog -->
+  <DeleteConfirmationModal
+    v-model:visible="showCommandDeleteDialog"
+    item-type="command"
+    :item-name="deletingCommand?.name || ''"
+    :dependent-items="commandReferences"
+    :loading="commandDeleteLoading"
+    @confirm="handleCommandDeleteConfirm"
+    @cancel="handleCommandDeleteCancel"
+  />
 </template>
 
 <script>
@@ -84,6 +97,7 @@ import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal
 import { useCopyStore } from '@/stores/copy-store'
 import { useProjectsStore } from '@/stores/projects'
 import { useAgentsStore } from '@/stores/agents'
+import { useCommandsStore } from '@/stores/commands'
 
 export default {
   name: 'ProjectDetail',
@@ -95,6 +109,7 @@ export default {
     const copyStore = useCopyStore()
     const projectsStore = useProjectsStore()
     const agentsStore = useAgentsStore()
+    const commandsStore = useCommandsStore()
 
     const projectId = computed(() => props.id || route.params.id)
     const projectName = ref('Loading...')
@@ -120,6 +135,12 @@ export default {
     const deletingAgent = ref(null)
     const agentDeleteLoading = ref(false)
     const agentReferences = ref([])
+
+    // Command CRUD state
+    const showCommandDeleteDialog = ref(false)
+    const deletingCommand = ref(null)
+    const commandDeleteLoading = ref(false)
+    const commandReferences = ref([])
 
     const loading = ref(true)
     const loadingAgents = ref(false)
@@ -376,6 +397,73 @@ export default {
       await loadCommands()
     }
 
+    const handleCommandDelete = async (command) => {
+      deletingCommand.value = command
+      commandDeleteLoading.value = true
+
+      try {
+        // Extract command path from filePath
+        const commandPath = command.filePath
+          .replace(/^\.claude\/commands\//, '')
+          .replace(/\.md$/, '')
+
+        // Check for references before showing the modal
+        const result = await commandsStore.checkCommandReferences(
+          projectId.value,
+          commandPath,
+          'project'
+        )
+
+        if (result.success) {
+          commandReferences.value = result.references || []
+          showCommandDeleteDialog.value = true
+        }
+      } finally {
+        commandDeleteLoading.value = false
+      }
+    }
+
+    const handleCommandDeleteConfirm = async () => {
+      commandDeleteLoading.value = true
+
+      try {
+        // Extract command path from filePath
+        const commandPath = deletingCommand.value.filePath
+          .replace(/^\.claude\/commands\//, '')
+          .replace(/\.md$/, '')
+
+        const result = await commandsStore.deleteCommand(
+          projectId.value,
+          commandPath,
+          'project'
+        )
+
+        if (result.success) {
+          showCommandDeleteDialog.value = false
+          await loadCommands() // Refresh command list
+
+          // Close sidebar if the deleted command was being viewed
+          if (selectedItem.value?.filePath === deletingCommand.value.filePath) {
+            sidebarVisible.value = false
+          }
+        }
+      } finally {
+        commandDeleteLoading.value = false
+      }
+    }
+
+    const handleCommandDeleteCancel = () => {
+      showCommandDeleteDialog.value = false
+      deletingCommand.value = null
+      commandReferences.value = []
+    }
+
+    const handleCommandDeleted = async () => {
+      // Handle command deletion from sidebar
+      await loadCommands()
+      sidebarVisible.value = false
+    }
+
     const handleAgentDelete = async (agent) => {
       deletingAgent.value = agent
       agentDeleteLoading.value = true
@@ -563,7 +651,15 @@ export default {
       handleAgentDeleteConfirm,
       handleAgentDeleteCancel,
       // Command CRUD
-      handleCommandUpdated
+      showCommandDeleteDialog,
+      deletingCommand,
+      commandDeleteLoading,
+      commandReferences,
+      handleCommandUpdated,
+      handleCommandDelete,
+      handleCommandDeleteConfirm,
+      handleCommandDeleteCancel,
+      handleCommandDeleted
     }
   }
 }
