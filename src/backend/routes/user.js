@@ -584,4 +584,39 @@ router.put('/commands/:commandPath(*)', async (req, res) => {
   }
 });
 
+/**
+ * DELETE /api/user/commands/:commandPath
+ * Delete a user-level command
+ */
+router.delete('/commands/:commandPath(*)', async (req, res) => {
+  try {
+    const commandPath = decodeURIComponent(req.params.commandPath);
+
+    const userHome = getUserHome();
+    const commandFilePath = path.join(userHome, '.claude', 'commands', `${commandPath}.md`);
+
+    await deleteFile(commandFilePath);
+
+    res.json({
+      success: true,
+      message: 'Command deleted successfully',
+      path: `${commandPath}.md`
+    });
+  } catch (error) {
+    if (error.message.includes('File not found')) {
+      return res.status(404).json({
+        success: false,
+        error: `Command not found: ${req.params.commandPath}`
+      });
+    }
+
+    console.error('Error deleting user command:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete command',
+      details: error.message
+    });
+  }
+});
+
 module.exports = router;

@@ -909,4 +909,48 @@ router.put('/:projectId/commands/:commandPath(*)', validateProjectId, async (req
   }
 });
 
+/**
+ * DELETE /api/projects/:projectId/commands/:commandPath
+ * Delete a command
+ */
+router.delete('/:projectId/commands/:commandPath(*)', validateProjectId, async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const commandPath = decodeURIComponent(req.params.commandPath);
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Construct command file path
+    const commandFilePath = path.join(projectPath, '.claude', 'commands', `${commandPath}.md`);
+
+    // Delete the file
+    await deleteFile(commandFilePath);
+
+    res.json({
+      success: true,
+      message: 'Command deleted successfully',
+      path: `${commandPath}.md`
+    });
+  } catch (error) {
+    // Handle file not found specifically
+    if (error.message.includes('File not found')) {
+      return res.status(404).json({
+        success: false,
+        error: `Command not found: ${req.params.commandPath}`
+      });
+    }
+
+    console.error('Error deleting command:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete command',
+      details: error.message
+    });
+  }
+});
+
 module.exports = router;
