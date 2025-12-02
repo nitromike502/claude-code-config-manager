@@ -708,7 +708,7 @@ const handleFieldUpdate = async (fieldName, newValue) => {
         props.projectId,
         commandPath,
         updates,
-        props.scope
+        props.scope || 'project'
       )
 
       if (result.success) {
