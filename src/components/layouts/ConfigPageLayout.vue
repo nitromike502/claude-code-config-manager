@@ -180,12 +180,13 @@
       :selected-index="selectedIndex"
       :scope="scope"
       :project-id="projectId"
-      :enable-crud="enableAgentCrud"
+      :enable-crud="enableAgentCrud || enableCommandCrud"
       @close="$emit('close-sidebar')"
       @navigate="(direction) => $emit('navigate', direction)"
       @copy-clicked="(item) => $emit('copy-clicked', item)"
       @agent-delete="(item) => $emit('agent-delete', item)"
       @agent-updated="$emit('agent-updated')"
+      @command-updated="$emit('command-updated')"
     />
 
     <!-- Copy Modal Slot -->
@@ -354,6 +355,10 @@ defineProps({
   enableAgentCrud: {
     type: Boolean,
     default: false
+  },
+  enableCommandCrud: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -369,7 +374,8 @@ defineEmits([
   'navigate',
   'copy-clicked',
   'agent-delete',
-  'agent-updated'
+  'agent-updated',
+  'command-updated'
 ])
 </script>
 

@@ -140,17 +140,92 @@
 
       <!-- Commands Metadata -->
       <div v-else-if="selectedType === 'commands'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Description:</strong> {{ selectedItem.description }}</p>
-        <p v-if="selectedItem.namespace" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Namespace:</strong> {{ selectedItem.namespace }}</p>
-        <p v-if="selectedItem.color" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Color:</strong> {{ selectedItem.color }}</p>
-        <p v-if="selectedItem.argumentHint" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Argument Hint:</strong> {{ selectedItem.argumentHint }}</p>
-        <p v-if="selectedItem.tools && selectedItem.tools.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
-        </p>
-        <p v-else-if="Array.isArray(selectedItem.tools) && selectedItem.tools.length === 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> None specified
-        </p>
+        <!-- Name Field -->
+        <LabeledEditField
+          v-model="commandData.name"
+          field-type="text"
+          label="Name"
+          placeholder="command-name"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'name'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 1, message: 'Name must not be empty' }]"
+          @edit-start="editingField = 'name'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('name', $event)"
+        />
+
+        <!-- Description Field -->
+        <LabeledEditField
+          v-model="commandData.description"
+          field-type="textarea"
+          label="Description"
+          placeholder="Brief description"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'description'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Description must be at least 10 characters' }]"
+          @edit-start="editingField = 'description'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('description', $event)"
+        />
+
+        <!-- Color Field -->
+        <LabeledEditField
+          v-model="commandData.color"
+          field-type="select"
+          label="Color"
+          :options="colorOptions"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'color'"
+          @edit-start="editingField = 'color'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('color', $event)"
+        />
+
+        <!-- Model Field -->
+        <LabeledEditField
+          v-model="commandData.model"
+          field-type="selectbutton"
+          label="Model"
+          :options="modelOptions"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'model'"
+          @edit-start="editingField = 'model'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('model', $event)"
+        />
+
+        <!-- Tools Field -->
+        <LabeledEditField
+          v-model="commandData.tools"
+          field-type="multiselect"
+          label="Allowed Tools"
+          :options="toolOptions"
+          placeholder="Select allowed tools"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'tools'"
+          @edit-start="editingField = 'tools'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('tools', $event)"
+        />
+
+        <!-- Argument Hint Field -->
+        <LabeledEditField
+          v-model="commandData.argumentHint"
+          field-type="text"
+          label="Argument Hint"
+          placeholder="Optional argument hint"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'argumentHint'"
+          @edit-start="editingField = 'argumentHint'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('argumentHint', $event)"
+        />
+
+        <!-- Disable Model Invocation Field -->
+        <LabeledEditField
+          v-model="commandData.disableModelInvocation"
+          field-type="selectbutton"
+          label="Disable Model Invocation"
+          :options="disableModelInvocationOptions"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'disableModelInvocation'"
+          @edit-start="editingField = 'disableModelInvocation'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('disableModelInvocation', $event)"
+        />
       </div>
 
       <!-- Hooks Metadata -->
@@ -262,11 +337,25 @@
           field-type="textarea"
           label="System Prompt"
           placeholder="The agent's system prompt (instructions)"
-          :disabled="!canEdit || editingField !== null && editingField !== 'systemPrompt'"
+          :disabled="!canEditAgent || editingField !== null && editingField !== 'systemPrompt'"
           :validation="[{ type: 'required' }, { type: 'minLength', param: 20, message: 'System prompt must be at least 20 characters' }]"
           @edit-start="editingField = 'systemPrompt'"
           @edit-cancel="editingField = null"
           @edit-accept="handleFieldUpdate('systemPrompt', $event)"
+        />
+      </div>
+
+      <!-- For commands, use inline editing -->
+      <div v-else-if="selectedType === 'commands'">
+        <LabeledEditField
+          v-model="commandData.content"
+          field-type="textarea"
+          label="Content"
+          placeholder="Command body content (markdown)"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'content'"
+          @edit-start="editingField = 'content'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('content', $event)"
         />
       </div>
 
@@ -322,8 +411,10 @@ import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import { useAgentsStore } from '@/stores/agents'
+import { useCommandsStore } from '@/stores/commands'
 
 const agentsStore = useAgentsStore()
+const commandsStore = useCommandsStore()
 
 const props = defineProps({
   visible: {
@@ -375,6 +466,7 @@ const emit = defineEmits({
     return item && typeof item === 'object'
   },
   'agent-updated': () => true,
+  'command-updated': () => true,
   'update:visible': (value) => typeof value === 'boolean'
 })
 
@@ -405,13 +497,37 @@ const agentData = ref({
   skills: [],
   systemPrompt: ''
 })
+
+// Command editing state
+const commandData = ref({
+  name: '',
+  description: '',
+  color: '',
+  model: 'inherit',
+  tools: [],
+  argumentHint: '',
+  disableModelInvocation: false,
+  content: ''
+})
+
 const editingField = ref(null)
 
 // Computed: Can edit agents (only if enableCrud is true and not a plugin agent)
-const canEdit = computed(() => {
+const canEditAgent = computed(() => {
   return props.enableCrud &&
          props.selectedType === 'agents' &&
          props.selectedItem?.location !== 'plugin'
+})
+
+// Computed: Can edit commands (only if enableCrud is true)
+const canEditCommand = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'commands'
+})
+
+// Generic canEdit for backward compatibility
+const canEdit = computed(() => {
+  return canEditAgent.value || canEditCommand.value
 })
 
 // Model options for agents
@@ -451,6 +567,26 @@ const skillOptions = computed(() => {
   return []
 })
 
+// Color options for commands
+const colorOptions = [
+  { label: 'Blue', value: 'blue' },
+  { label: 'Cyan', value: 'cyan' },
+  { label: 'Green', value: 'green' },
+  { label: 'Orange', value: 'orange' },
+  { label: 'Purple', value: 'purple' },
+  { label: 'Red', value: 'red' },
+  { label: 'Yellow', value: 'yellow' },
+  { label: 'Pink', value: 'pink' },
+  { label: 'Indigo', value: 'indigo' },
+  { label: 'Teal', value: 'teal' }
+]
+
+// Disable model invocation options for commands
+const disableModelInvocationOptions = [
+  { label: 'No', value: false },
+  { label: 'Yes', value: true }
+]
+
 // Watch for selectedItem changes to update agentData
 watch(() => props.selectedItem, (newItem) => {
   if (newItem && props.selectedType === 'agents') {
@@ -471,6 +607,24 @@ watch(() => props.selectedItem, (newItem) => {
       systemPrompt: displaySystemPrompt
     }
     editingField.value = null
+  } else if (newItem && props.selectedType === 'commands') {
+    // Trim leading newline from content for display
+    let displayContent = newItem.content || ''
+    if (displayContent.startsWith('\n')) {
+      displayContent = displayContent.substring(1)
+    }
+
+    commandData.value = {
+      name: newItem.name || '',
+      description: newItem.description || '',
+      color: newItem.color || '',
+      model: newItem.model || 'inherit',
+      tools: newItem.tools || [],
+      argumentHint: newItem.argumentHint || '',
+      disableModelInvocation: newItem.disableModelInvocation || false,
+      content: displayContent
+    }
+    editingField.value = null
   }
 }, { immediate: true })
 
@@ -479,24 +633,58 @@ const handleFieldUpdate = async (fieldName, newValue) => {
   if (!canEdit.value) return
 
   try {
-    // Build updates object with just the changed field
-    // Note: All field names map directly to API - systemPrompt is expected by the API
-    const updates = { [fieldName]: newValue }
+    if (props.selectedType === 'agents') {
+      // Build updates object with just the changed field
+      // Note: All field names map directly to API - systemPrompt is expected by the API
+      const updates = { [fieldName]: newValue }
 
-    // Call API through store
-    const result = await agentsStore.updateAgent(
-      props.projectId,
-      props.selectedItem.name,
-      updates,
-      props.scope
-    )
+      // Call API through store
+      const result = await agentsStore.updateAgent(
+        props.projectId,
+        props.selectedItem.name,
+        updates,
+        props.scope
+      )
 
-    if (result.success) {
-      // Update local agentData
-      agentData.value[fieldName] = newValue
+      if (result.success) {
+        // Update local agentData
+        agentData.value[fieldName] = newValue
 
-      // Notify parent that agent was updated
-      emit('agent-updated')
+        // Notify parent that agent was updated
+        emit('agent-updated')
+      }
+    } else if (props.selectedType === 'commands') {
+      // Build updates object with just the changed field
+      // Map camelCase to kebab-case for API
+      const fieldMapping = {
+        'argumentHint': 'argument-hint',
+        'disableModelInvocation': 'disable-model-invocation',
+        'tools': 'allowed-tools'
+      }
+      const apiFieldName = fieldMapping[fieldName] || fieldName
+      const updates = { [apiFieldName]: newValue }
+
+      // Extract command path from filePath
+      // Remove '.claude/commands/' prefix and '.md' extension
+      const commandPath = props.selectedItem.filePath
+        .replace(/^\.claude\/commands\//, '')
+        .replace(/\.md$/, '')
+
+      // Call API through store
+      const result = await commandsStore.updateCommand(
+        props.projectId,
+        commandPath,
+        updates,
+        props.scope
+      )
+
+      if (result.success) {
+        // Update local commandData
+        commandData.value[fieldName] = newValue
+
+        // Notify parent that command was updated
+        emit('command-updated')
+      }
     }
   } finally {
     editingField.value = null

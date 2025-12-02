@@ -34,6 +34,7 @@
     scope="project"
     :project-id="projectId"
     :enable-agent-crud="true"
+    :enable-command-crud="true"
     @retry="retryLoad"
     @toggle-agents="showingAllAgents = !showingAllAgents"
     @toggle-commands="showingAllCommands = !showingAllCommands"
@@ -46,6 +47,7 @@
     @copy-clicked="handleCopyClick"
     @agent-delete="handleAgentDelete"
     @agent-updated="handleAgentUpdated"
+    @command-updated="handleCommandUpdated"
   >
     <template #copy-modal>
       <CopyModal
@@ -368,6 +370,12 @@ export default {
       await loadAgents()
     }
 
+    // Command CRUD handlers
+    const handleCommandUpdated = async () => {
+      // Refresh command list after sidebar edit
+      await loadCommands()
+    }
+
     const handleAgentDelete = async (agent) => {
       deletingAgent.value = agent
       agentDeleteLoading.value = true
@@ -553,7 +561,9 @@ export default {
       handleAgentUpdated,
       handleAgentDelete,
       handleAgentDeleteConfirm,
-      handleAgentDeleteCancel
+      handleAgentDeleteCancel,
+      // Command CRUD
+      handleCommandUpdated
     }
   }
 }
