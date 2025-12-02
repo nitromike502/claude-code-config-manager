@@ -953,4 +953,56 @@ router.delete('/:projectId/commands/:commandPath(*)', validateProjectId, async (
   }
 });
 
+/**
+ * GET /api/projects/:projectId/commands/:commandPath/references
+ * Check for references to a command in other configurations
+ */
+router.get('/:projectId/commands/:commandPath(*)/references', validateProjectId, async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const commandPath = decodeURIComponent(req.params.commandPath);
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Construct command file path to verify it exists
+    const commandFilePath = path.join(projectPath, '.claude', 'commands', `${commandPath}.md`);
+
+    // Check if command exists
+    try {
+      await fs.access(commandFilePath);
+    } catch {
+      return res.status(404).json({
+        success: false,
+        error: `Command not found: ${commandPath}`
+      });
+    }
+
+    // Extract command name (basename without extension)
+    const commandName = path.basename(commandPath, '.md');
+
+    // Find references using the referenceChecker service
+    const references = await findReferences('command', commandName, projectPath);
+
+    res.json({
+      success: true,
+      commandName,
+      commandPath,
+      references,
+      hasReferences: references.length > 0,
+      referenceCount: references.length
+    });
+  } catch (error) {
+    console.error('Error checking command references:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to check references',
+      details: error.message
+    });
+  }
+});
+
 module.exports = router;
