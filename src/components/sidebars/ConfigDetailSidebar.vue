@@ -368,9 +368,23 @@
       <div class="flex items-center justify-end gap-2">
         <!-- Delete Button (only for agents with edit enabled) -->
         <Button
-          v-if="selectedType === 'agents' && canEdit"
+          v-if="selectedType === 'agents' && canEditAgent"
           @click="handleDelete"
           :disabled="!selectedItem"
+          icon="pi pi-trash"
+          outlined
+          severity="danger"
+          aria-label="Delete"
+          v-tooltip.top="'Delete'"
+          class="sidebar-action-btn delete-action-btn"
+        />
+
+        <!-- Delete Button (only for commands with edit enabled) -->
+        <Button
+          v-if="selectedType === 'commands' && canEditCommand"
+          @click="handleCommandDeleteClick"
+          :disabled="!selectedItem"
+          :loading="isDeletingCommand"
           icon="pi pi-trash"
           outlined
           severity="danger"
@@ -399,6 +413,16 @@
       </div>
     </template>
   </Drawer>
+
+  <!-- Delete Confirmation Modal -->
+  <DeleteConfirmationModal
+    :visible="showDeleteModal"
+    item-type="command"
+    :item-name="selectedItem?.name || ''"
+    :dependent-items="commandReferences"
+    @confirm="handleCommandDeleteConfirm"
+    @cancel="handleCommandDeleteCancel"
+  />
 </template>
 
 <script setup>
@@ -410,11 +434,14 @@ import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
+import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal.vue'
 import { useAgentsStore } from '@/stores/agents'
 import { useCommandsStore } from '@/stores/commands'
+import { useToast } from 'primevue/usetoast'
 
 const agentsStore = useAgentsStore()
 const commandsStore = useCommandsStore()
+const toast = useToast()
 
 const props = defineProps({
   visible: {
@@ -467,6 +494,7 @@ const emit = defineEmits({
   },
   'agent-updated': () => true,
   'command-updated': () => true,
+  'command-deleted': () => true,
   'update:visible': (value) => typeof value === 'boolean'
 })
 
@@ -511,6 +539,11 @@ const commandData = ref({
 })
 
 const editingField = ref(null)
+
+// Delete modal state
+const showDeleteModal = ref(false)
+const commandReferences = ref([])
+const isDeletingCommand = ref(false)
 
 // Computed: Can edit agents (only if enableCrud is true and not a plugin agent)
 const canEditAgent = computed(() => {
@@ -691,11 +724,81 @@ const handleFieldUpdate = async (fieldName, newValue) => {
   }
 }
 
-// Handle delete button click
+// Handle delete button click (for agents)
 const handleDelete = () => {
-  if (canEdit.value && props.selectedItem) {
+  if (canEditAgent.value && props.selectedItem) {
     emit('agent-delete', props.selectedItem)
   }
+}
+
+// Handle delete button click (for commands)
+const handleCommandDeleteClick = async () => {
+  if (!canEditCommand.value || !props.selectedItem) return
+
+  isDeletingCommand.value = true
+
+  try {
+    // Extract command path from filePath
+    const commandPath = extractCommandPath(props.selectedItem.filePath)
+
+    // Check references
+    const result = await commandsStore.checkCommandReferences(
+      props.projectId,
+      commandPath,
+      props.scope || 'project'
+    )
+
+    commandReferences.value = result.references || []
+    showDeleteModal.value = true
+  } catch (error) {
+    // Show error toast
+    toast.add({
+      severity: 'error',
+      summary: 'Error checking references',
+      detail: error.message || 'Failed to check command references',
+      life: 5000
+    })
+  } finally {
+    isDeletingCommand.value = false
+  }
+}
+
+// Handle delete confirmation
+const handleCommandDeleteConfirm = async () => {
+  if (!props.selectedItem) return
+
+  try {
+    // Extract command path from filePath
+    const commandPath = extractCommandPath(props.selectedItem.filePath)
+
+    // Delete command
+    await commandsStore.deleteCommand(
+      props.projectId,
+      commandPath,
+      props.scope || 'project'
+    )
+
+    showDeleteModal.value = false
+    emit('command-deleted') // Close sidebar and refresh list
+  } catch (error) {
+    // Error toast already shown by store
+    showDeleteModal.value = false
+  }
+}
+
+// Handle delete cancel
+const handleCommandDeleteCancel = () => {
+  showDeleteModal.value = false
+  commandReferences.value = []
+}
+
+// Helper: Extract command path from filePath
+const extractCommandPath = (filePath) => {
+  if (!filePath) return ''
+  // Remove '.claude/commands/' prefix and '.md' extension
+  return filePath
+    .replace(/^\.claude\/commands\//, '')
+    .replace(/\.md$/, '')
 }
 
 // Computed: navigation state
