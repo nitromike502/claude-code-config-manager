@@ -186,6 +186,8 @@
       @copy-clicked="(item) => $emit('copy-clicked', item)"
       @agent-delete="(item) => $emit('agent-delete', item)"
       @agent-updated="$emit('agent-updated')"
+      @command-delete="(item) => $emit('command-delete', item)"
+      @command-updated="$emit('command-updated')"
     />
 
     <!-- Copy Modal Slot -->
@@ -369,7 +371,9 @@ defineEmits([
   'navigate',
   'copy-clicked',
   'agent-delete',
-  'agent-updated'
+  'agent-updated',
+  'command-delete',
+  'command-updated'
 ])
 </script>
 

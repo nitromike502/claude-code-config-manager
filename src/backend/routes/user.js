@@ -407,4 +407,327 @@ router.get('/agents/:agentName/references', validateAgentName, async (req, res) 
   }
 });
 
+/**
+ * Validate command path format
+ * Must end with .md, no path traversal, no absolute paths
+ * @param {string} commandPath - Command path to validate (may include nested directories)
+ * @returns {boolean} True if valid
+ */
+function isValidCommandPath(commandPath) {
+  if (!commandPath || typeof commandPath !== 'string') return false;
+
+  // Must end with .md
+  if (!commandPath.endsWith('.md')) return false;
+
+  // No path traversal
+  if (commandPath.includes('..') || commandPath.startsWith('/')) return false;
+
+  // No backslashes (Windows path separators)
+  if (commandPath.includes('\\')) return false;
+
+  return true;
+}
+
+/**
+ * Validate command path parameter middleware
+ */
+function validateCommandPath(req, res, next) {
+  const { commandPath } = req.params;
+
+  // URL decode the path
+  const decodedPath = decodeURIComponent(commandPath);
+
+  if (!decodedPath || !isValidCommandPath(decodedPath)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid command path format',
+      details: 'Command path must end with .md and not contain path traversal sequences'
+    });
+  }
+
+  // Store decoded path for handlers to use
+  req.decodedCommandPath = decodedPath;
+
+  next();
+}
+
+/**
+ * PUT /api/user/commands/:commandPath
+ * Update a user-level command's properties
+ */
+router.put('/commands/:commandPath', validateCommandPath, async (req, res) => {
+  try {
+    const commandPath = req.decodedCommandPath; // Use decoded path from middleware
+    const updates = req.body;
+
+    // Get user home directory
+    const userHome = getUserHome();
+    const commandFilePath = path.join(userHome, '.claude', 'commands', commandPath);
+
+    // Check if command file exists
+    try {
+      await fs.access(commandFilePath);
+    } catch {
+      return res.status(404).json({
+        success: false,
+        error: `User command not found: ${commandPath}`
+      });
+    }
+
+    // Validate updates
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must be a JSON object with command properties'
+      });
+    }
+
+    // Check if request body is empty
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must contain at least one property to update'
+      });
+    }
+
+    // Validate name (new path) if being updated
+    if (updates.name !== undefined && updates.name !== commandPath) {
+      if (!isValidCommandPath(updates.name)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid command path format',
+          details: 'Command path must end with .md and not contain path traversal sequences'
+        });
+      }
+    }
+
+    // Validate description if provided (optional for commands)
+    if (updates.description !== undefined) {
+      if (typeof updates.description !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid description',
+          details: 'Description must be a string'
+        });
+      }
+    }
+
+    // Validate model if provided
+    const validModels = ['sonnet', 'opus', 'haiku', 'inherit'];
+    if (updates.model !== undefined && !validModels.includes(updates.model)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid model',
+        details: `Model must be one of: ${validModels.join(', ')}`
+      });
+    }
+
+    // Validate color if provided
+    const validColors = ['blue', 'cyan', 'green', 'orange', 'purple', 'red', 'yellow', 'pink', 'indigo', 'teal'];
+    if (updates.color !== undefined && updates.color !== null && !validColors.includes(updates.color)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid color',
+        details: `Color must be one of: ${validColors.join(', ')}`
+      });
+    }
+
+    // Validate argumentHint if provided
+    if (updates.argumentHint !== undefined && typeof updates.argumentHint !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid argumentHint',
+        details: 'argumentHint must be a string'
+      });
+    }
+
+    // Validate disableModelInvocation if provided
+    if (updates.disableModelInvocation !== undefined && typeof updates.disableModelInvocation !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid disableModelInvocation',
+        details: 'disableModelInvocation must be a boolean'
+      });
+    }
+
+    // Map frontend field names to frontmatter field names
+    const frontmatterUpdates = {};
+
+    if (updates.name !== undefined) frontmatterUpdates.name = path.basename(updates.name, '.md');
+    if (updates.description !== undefined) frontmatterUpdates.description = updates.description;
+    if (updates.model !== undefined) frontmatterUpdates.model = updates.model;
+    if (updates.color !== undefined) frontmatterUpdates.color = updates.color;
+    if (updates.argumentHint !== undefined) frontmatterUpdates['argument-hint'] = updates.argumentHint;
+    if (updates.disableModelInvocation !== undefined) frontmatterUpdates['disable-model-invocation'] = updates.disableModelInvocation;
+
+    // Handle allowedTools (maps to 'allowed-tools' in frontmatter)
+    if (updates.allowedTools !== undefined) {
+      frontmatterUpdates['allowed-tools'] = updates.allowedTools;
+    }
+
+    // Handle content update separately (it's the body content, not frontmatter)
+    let contentUpdate = null;
+    if (updates.content !== undefined) {
+      if (typeof updates.content !== 'string' || updates.content.trim().length < 1) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid content',
+          details: 'Content must be a non-empty string'
+        });
+      }
+      contentUpdate = updates.content;
+    }
+
+    // If content is being updated, handle it specially
+    if (contentUpdate !== null) {
+      const fileContent = await fs.readFile(commandFilePath, 'utf8');
+      const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+      const match = fileContent.match(frontmatterRegex);
+
+      if (match) {
+        const yaml = require('js-yaml');
+        let frontmatter = yaml.load(match[1]) || {};
+        frontmatter = { ...frontmatter, ...frontmatterUpdates };
+
+        Object.keys(frontmatter).forEach(key => {
+          if (frontmatter[key] === undefined) delete frontmatter[key];
+        });
+
+        // Strip frontmatter from content if it contains it
+        let cleanContent = contentUpdate;
+        const contentMatch = contentUpdate.match(frontmatterRegex);
+        if (contentMatch) {
+          // Content contains frontmatter, extract only the body
+          cleanContent = contentMatch[2];
+        }
+
+        // Normalize: trim leading newlines, then add blank line separator
+        cleanContent = '\n\n' + cleanContent.replace(/^\n+/, '');
+
+        // Serialize and write
+        const yamlStr = yaml.dump(frontmatter, { lineWidth: -1 });
+        const newContent = `---\n${yamlStr}---${cleanContent}`;
+
+        await updateFile(commandFilePath, newContent);
+      }
+    } else {
+      if (Object.keys(frontmatterUpdates).length > 0) {
+        await updateYamlFrontmatter(commandFilePath, frontmatterUpdates);
+      }
+    }
+
+    // Handle rename if name changed
+    if (updates.name && updates.name !== commandPath) {
+      const newFilePath = path.join(userHome, '.claude', 'commands', updates.name);
+      const newDir = path.dirname(newFilePath);
+
+      // Create directory if it doesn't exist (for nested paths)
+      await fs.mkdir(newDir, { recursive: true });
+
+      try {
+        await fs.access(newFilePath);
+        return res.status(409).json({
+          success: false,
+          error: 'Command name conflict',
+          details: `A user command named "${updates.name}" already exists`
+        });
+      } catch {
+        // Good - new name doesn't exist
+      }
+
+      await fs.rename(commandFilePath, newFilePath);
+    }
+
+    // Re-read the updated command to return
+    const finalPath = updates.name && updates.name !== commandPath
+      ? path.join(userHome, '.claude', 'commands', updates.name)
+      : commandFilePath;
+
+    const { parseCommand } = require('../parsers/commandParser');
+    const baseDir = path.join(userHome, '.claude', 'commands');
+    const updatedCommand = await parseCommand(finalPath, baseDir, 'user');
+
+    res.json({
+      success: true,
+      message: 'User command updated successfully',
+      command: updatedCommand
+    });
+  } catch (error) {
+    console.error('Error updating user command:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/user/commands/:commandPath
+ * Delete a user-level command
+ */
+router.delete('/commands/:commandPath', validateCommandPath, async (req, res) => {
+  try {
+    const commandPath = req.decodedCommandPath; // Use decoded path from middleware
+
+    const userHome = getUserHome();
+    const commandFilePath = path.join(userHome, '.claude', 'commands', commandPath);
+
+    await deleteFile(commandFilePath);
+
+    res.json({
+      success: true,
+      message: `User command "${commandPath}" deleted successfully`,
+      deleted: commandFilePath
+    });
+  } catch (error) {
+    if (error.message.includes('File not found')) {
+      return res.status(404).json({
+        success: false,
+        error: `User command not found: ${req.decodedCommandPath}`
+      });
+    }
+
+    console.error('Error deleting user command:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/user/commands/:commandPath/references
+ * Check for references to a user-level command
+ */
+router.get('/commands/:commandPath/references', validateCommandPath, async (req, res) => {
+  try {
+    const commandPath = req.decodedCommandPath; // Use decoded path from middleware
+    const userHome = getUserHome();
+
+    // Extract command name (without .md extension) for reference checking
+    const commandName = path.basename(commandPath, '.md');
+
+    // For user commands, we check references in the user's .claude directory
+    // findReferences expects a project path, but for user-level, we pass the parent of .claude
+    const references = await findReferences('command', commandName, userHome);
+
+    res.json({
+      success: true,
+      commandPath,
+      commandName,
+      references,
+      hasReferences: references.length > 0,
+      referenceCount: references.length
+    });
+  } catch (error) {
+    console.error('Error checking user command references:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
