@@ -753,10 +753,10 @@ function isValidCommandPath(commandPath) {
 function validateCommandPath(req, res, next) {
   const { commandPath } = req.params;
 
-  // URL decode the path
-  const decodedPath = decodeURIComponent(commandPath);
+  // Express automatically URL-decodes route parameters, so no need to decode again
+  // The route pattern :commandPath(.*) captures the full path including nested slashes
 
-  if (!decodedPath || !isValidCommandPath(decodedPath)) {
+  if (!commandPath || !isValidCommandPath(commandPath)) {
     return res.status(400).json({
       success: false,
       error: 'Invalid command path format',
@@ -765,13 +765,13 @@ function validateCommandPath(req, res, next) {
   }
 
   // Store decoded path for handlers to use
-  req.decodedCommandPath = decodedPath;
+  req.decodedCommandPath = commandPath;
 
   next();
 }
 
 /**
- * PUT /api/projects/:projectId/commands/:commandPath
+ * PUT /api/projects/:projectId/commands/:commandPath(.*)
  * Update a command's properties
  *
  * Request body can include:
@@ -784,7 +784,7 @@ function validateCommandPath(req, res, next) {
  * - disableModelInvocation: boolean (maps to 'disable-model-invocation')
  * - content: string (body content)
  */
-router.put('/:projectId/commands/:commandPath', validateProjectId, validateCommandPath, async (req, res) => {
+router.put('/:projectId/commands/:commandPath(.*)', validateProjectId, validateCommandPath, async (req, res) => {
   try {
     const { projectId } = req.params;
     const commandPath = req.decodedCommandPath; // Use decoded path from middleware
@@ -1005,10 +1005,10 @@ router.put('/:projectId/commands/:commandPath', validateProjectId, validateComma
 });
 
 /**
- * DELETE /api/projects/:projectId/commands/:commandPath
+ * DELETE /api/projects/:projectId/commands/:commandPath(.*)
  * Delete a command
  */
-router.delete('/:projectId/commands/:commandPath', validateProjectId, validateCommandPath, async (req, res) => {
+router.delete('/:projectId/commands/:commandPath(.*)', validateProjectId, validateCommandPath, async (req, res) => {
   try {
     const { projectId } = req.params;
     const commandPath = req.decodedCommandPath; // Use decoded path from middleware
@@ -1048,10 +1048,10 @@ router.delete('/:projectId/commands/:commandPath', validateProjectId, validateCo
 });
 
 /**
- * GET /api/projects/:projectId/commands/:commandPath/references
+ * GET /api/projects/:projectId/commands/:commandPath(.*)/references
  * Check for references to a command in other configurations
  */
-router.get('/:projectId/commands/:commandPath/references', validateProjectId, validateCommandPath, async (req, res) => {
+router.get('/:projectId/commands/:commandPath(.*)/references', validateProjectId, validateCommandPath, async (req, res) => {
   try {
     const { projectId } = req.params;
     const commandPath = req.decodedCommandPath; // Use decoded path from middleware

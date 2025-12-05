@@ -169,8 +169,8 @@ test.describe('108.001: Command Edit Flow', () => {
     const updatedName = 'updated-test-command'
     let updateCalled = false
 
-    // Mock successful update API call
-    await page.route('**/api/projects/testproject/commands/test-command.md', async (route) => {
+    // Mock successful update API call (matches any command path)
+    await page.route('**/api/projects/testproject/commands/**', async (route) => {
       if (route.request().method() === 'PUT') {
         updateCalled = true
         await route.fulfill({
@@ -219,8 +219,8 @@ test.describe('108.001: Command Edit Flow', () => {
     const updatedDescription = 'Updated description for the test command'
     let updateCalled = false
 
-    // Mock successful update API call
-    await page.route('**/api/projects/testproject/commands/test-command.md', async (route) => {
+    // Mock successful update API call (matches any command path)
+    await page.route('**/api/projects/testproject/commands/**', async (route) => {
       if (route.request().method() === 'PUT') {
         updateCalled = true
         await route.fulfill({
@@ -259,8 +259,8 @@ test.describe('108.001: Command Edit Flow', () => {
   test('108.001.005: should update command model selection', async ({ page }) => {
     let updateCalled = false
 
-    // Mock successful update API call
-    await page.route('**/api/projects/testproject/commands/test-command.md', async (route) => {
+    // Mock successful update API call (matches any command path)
+    await page.route('**/api/projects/testproject/commands/**', async (route) => {
       if (route.request().method() === 'PUT') {
         updateCalled = true
         await route.fulfill({
@@ -283,8 +283,9 @@ test.describe('108.001: Command Edit Flow', () => {
     const sidebar = page.locator('.p-drawer')
     await sidebar.waitFor({ state: 'visible' })
 
-    // Find model field
-    const modelField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Model' })
+    // Find model field (use getByRole to find the specific label)
+    const modelLabel = sidebar.getByRole('heading', { name: 'Model', exact: true }).or(sidebar.getByText('Model', { exact: true }))
+    const modelField = modelLabel.locator('..').locator('..')
     await modelField.locator('.edit-btn').click()
 
     // Select different model (SelectButton)

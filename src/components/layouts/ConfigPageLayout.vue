@@ -85,8 +85,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="commands"
+                :enable-crud="enableCommandCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'commands', commands)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('command-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -343,7 +345,7 @@ defineProps({
     default: -1
   },
 
-  // CRUD support (for agents)
+  // CRUD support (for agents and commands)
   scope: {
     type: String,
     default: null,
@@ -354,6 +356,10 @@ defineProps({
     default: null
   },
   enableAgentCrud: {
+    type: Boolean,
+    default: false
+  },
+  enableCommandCrud: {
     type: Boolean,
     default: false
   }

@@ -202,19 +202,17 @@
           @edit-accept="handleCommandFieldUpdate('argumentHint', $event)"
         />
 
-        <!-- Disable Model Invocation Field (Checkbox) -->
-        <div class="my-3">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              v-model="commandData.disableModelInvocation"
-              :disabled="!canEditCommand"
-              @change="handleCommandFieldUpdate('disableModelInvocation', commandData.disableModelInvocation)"
-              class="w-4 h-4 text-primary bg-bg-primary border-border-primary rounded focus:ring-primary"
-            />
-            <span class="text-sm font-medium text-text-primary">Disable Model Invocation</span>
-          </label>
-        </div>
+        <!-- Model Invocation Field -->
+        <LabeledEditField
+          v-model="commandData.disableModelInvocation"
+          field-type="selectbutton"
+          label="Model Invocation"
+          :options="modelInvocationOptions"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'disableModelInvocation'"
+          @edit-start="editingField = 'disableModelInvocation'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('disableModelInvocation', $event)"
+        />
       </div>
 
       <!-- Hooks Metadata -->
@@ -517,6 +515,12 @@ const commandModelOptions = [
   { label: 'Haiku', value: 'haiku' }
 ]
 
+// Model invocation options for commands
+const modelInvocationOptions = [
+  { label: 'Allow Model', value: false },
+  { label: 'Skip Model', value: true }
+]
+
 // Permission mode options for agents
 const permissionOptions = [
   { label: 'Default', value: 'default' },
@@ -614,19 +618,13 @@ const handleCommandFieldUpdate = async (fieldName, newValue) => {
   if (!canEditCommand.value) return
 
   try {
-    // Map frontend field names to backend API field names (camelCase → kebab-case)
-    const fieldNameMapping = {
-      allowedTools: 'allowed-tools',
-      argumentHint: 'argument-hint',
-      disableModelInvocation: 'disable-model-invocation'
-    }
-
     // Build updates object
-    const apiFieldName = fieldNameMapping[fieldName] || fieldName
-    const updates = { [apiFieldName]: newValue }
+    // Note: Backend expects camelCase field names (argumentHint, allowedTools, disableModelInvocation)
+    // Backend handles the conversion to kebab-case for YAML frontmatter internally
+    const updates = { [fieldName]: newValue }
 
-    // Get the command path (use path property if available, otherwise name)
-    const commandPath = props.selectedItem.path || props.selectedItem.name
+    // Get the command path (commands use filePath property, e.g., 'utils/helper.md')
+    const commandPath = props.selectedItem.filePath || props.selectedItem.name
 
     // Call API through store
     const result = await commandsStore.updateCommand(
