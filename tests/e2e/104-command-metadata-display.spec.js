@@ -141,14 +141,14 @@ test.describe('104.001: Command Metadata Display in Sidebar', () => {
     await expect(drawerContent).toContainText('Write');
     await expect(drawerContent).toContainText('Edit');
 
-    // Verify argument hint is displayed
-    const argumentHintSection = drawerContent.getByText('Argument Hint');
-    await expect(argumentHintSection).toBeVisible();
+    // Verify argument hint is displayed (look for the label specifically)
+    const argumentHintLabel = drawerContent.getByText('Argument Hint:');
+    await expect(argumentHintLabel).toBeVisible();
     await expect(drawerContent).toContainText('This is the argument hint');
   });
 
-  // Test 104.001.002: command without allowed-tools displays None specified
-  test('104.001.002: command without allowed-tools displays None specified', async ({ page }) => {
+  // Test 104.001.002: command without allowed-tools displays None selected
+  test('104.001.002: command without allowed-tools displays None selected', async ({ page }) => {
     // Find and click the deploy command (no tools)
     const deployCard = page.locator('text=deploy').first();
     await deployCard.click();
@@ -160,15 +160,16 @@ test.describe('104.001: Command Metadata Display in Sidebar', () => {
     const drawerHeader = page.locator('.p-drawer-header');
     await expect(drawerHeader).toContainText('deploy');
 
-    // Verify Allowed Tools shows None specified (since tools array is empty)
+    // Verify Allowed Tools shows "None selected" (since tools array is empty)
+    // Note: With CRUD enabled, the multiselect component shows "None selected" when empty
     const drawerContent = page.locator('.p-drawer-content');
     const allowedToolsSection = drawerContent.getByText('Allowed Tools');
     await expect(allowedToolsSection).toBeVisible();
-    await expect(drawerContent).toContainText('None specified');
+    await expect(drawerContent).toContainText('None selected');
   });
 
-  // Test 104.001.003: command without argument-hint does not display the field
-  test('104.001.003: command without argument-hint does not display the field', async ({ page }) => {
+  // Test 104.001.003: command without argument-hint shows empty field when CRUD enabled
+  test('104.001.003: command without argument-hint shows empty field when CRUD enabled', async ({ page }) => {
     // Find and click the deploy command (no argument hint)
     const deployCard = page.locator('text=deploy').first();
     await deployCard.click();
@@ -176,10 +177,11 @@ test.describe('104.001: Command Metadata Display in Sidebar', () => {
     // Wait for sidebar to appear
     await page.waitForSelector('.p-drawer');
 
-    // Verify Argument Hint is NOT displayed (field is optional)
+    // With CRUD enabled, the Argument Hint field IS visible (for editing purposes)
+    // even when the value is empty. The field shows with placeholder text.
     const drawerContent = page.locator('.p-drawer-content');
-    const argumentHintText = drawerContent.getByText('Argument Hint');
-    await expect(argumentHintText).not.toBeVisible();
+    const argumentHintLabel = drawerContent.getByText('Argument Hint:');
+    await expect(argumentHintLabel).toBeVisible();
   });
 
   // Test 104.001.004: tools from allowed-tools are properly parsed from comma-separated string
@@ -234,11 +236,12 @@ test.describe('104.001: Command Metadata Display in Sidebar', () => {
     const drawerHeader2 = page.locator('.p-drawer-header');
     const drawerContent2 = page.locator('.p-drawer-content');
     await expect(drawerHeader2).toContainText('deploy');
-    await expect(drawerContent2).toContainText('None specified');
+    // With CRUD enabled, empty multiselect shows "None selected" instead of "None specified"
+    await expect(drawerContent2).toContainText('None selected');
 
-    // Argument hint should not be visible for deploy
-    const argumentHintText = drawerContent2.getByText('Argument Hint');
-    await expect(argumentHintText).not.toBeVisible();
+    // With CRUD enabled, Argument Hint field IS visible (for editing), even when empty
+    const argumentHintLabel = drawerContent2.getByText('Argument Hint:');
+    await expect(argumentHintLabel).toBeVisible();
   });
 
   // Test 104.001.006: metadata is extracted from correct frontmatter properties
