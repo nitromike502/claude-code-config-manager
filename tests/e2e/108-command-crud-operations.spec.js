@@ -283,9 +283,9 @@ test.describe('108.001: Command Edit Flow', () => {
     const sidebar = page.locator('.p-drawer')
     await sidebar.waitFor({ state: 'visible' })
 
-    // Find model field (use getByRole to find the specific label)
-    const modelLabel = sidebar.getByRole('heading', { name: 'Model', exact: true }).or(sidebar.getByText('Model', { exact: true }))
-    const modelField = modelLabel.locator('..').locator('..')
+    // Find model field - use nth(0) to get the first "Model" field (not "Model Invocation")
+    const modelFields = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Model' })
+    const modelField = modelFields.nth(0) // First match is "Model", second would be "Model Invocation"
     await modelField.locator('.edit-btn').click()
 
     // Select different model (SelectButton)
