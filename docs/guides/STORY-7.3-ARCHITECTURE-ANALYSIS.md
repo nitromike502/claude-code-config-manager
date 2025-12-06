@@ -718,6 +718,184 @@ Use this as a final verification before marking STORY-7.4 complete:
 
 ---
 
+## STORY-7.4 Implementation Learnings (Commands)
+
+**Date Added:** December 6, 2025
+**Purpose:** Document command-specific issues discovered during STORY-7.4 implementation
+
+### Issues Encountered and Resolutions
+
+#### Issue 1: Express Route Pattern for Nested Paths
+
+**Problem:** Standard Express route `/:commandPath` failed to capture nested paths like `utils/helper.md` because Express interprets `/` as route separators.
+
+**Solution:** Use wildcard route pattern `/:commandPath(.*)` to capture the entire path including slashes.
+
+```javascript
+// ❌ WRONG - stops at first slash
+router.put('/:projectId/commands/:commandPath', ...)
+
+// ✅ CORRECT - captures entire path
+router.put('/:projectId/commands/:commandPath(.*)', ...)
+```
+
+**Applies to:** Skills (directory paths), potentially MCP (if using path-based identifiers)
+
+---
+
+#### Issue 2: Command Path Construction in Frontend
+
+**Problem:** Frontend was sending `filePath` (absolute path like `/home/user/project/.claude/commands/utils/helper.md`) instead of relative path (`utils/helper.md`) to API.
+
+**Solution:** Construct command path from `namespace` + `name` + `.md`:
+
+```javascript
+// ❌ WRONG - sends absolute path
+const commandPath = selectedItem.filePath
+
+// ✅ CORRECT - construct relative path
+const commandPath = selectedItem.namespace
+  ? `${selectedItem.namespace}/${selectedItem.name}.md`
+  : `${selectedItem.name}.md`
+```
+
+**Applies to:** Any config type with nested paths or namespaces
+
+---
+
+#### Issue 3: Parser Not Extracting All Frontmatter Fields
+
+**Problem:** Command parser wasn't extracting `model` and `disableModelInvocation` fields from YAML frontmatter, causing these values to always be null.
+
+**Solution:** Added explicit parsing for all expected fields in the command parser:
+
+```javascript
+// Ensure all fields are extracted from frontmatter
+const command = {
+  name: frontmatter.name || file.replace('.md', ''),
+  description: frontmatter.description || '',
+  model: frontmatter.model || null,  // ← Was missing
+  disableModelInvocation: frontmatter['disable-model-invocation'] ?? null,  // ← Was missing
+  // ... other fields
+}
+```
+
+**Applies to:** All config types - always verify parser extracts ALL frontmatter fields, especially new ones added to the spec
+
+---
+
+#### Issue 4: SelectButton vs Checkbox for Boolean-like Fields
+
+**Problem:** Used checkbox for `disableModelInvocation` but the field has three states: `true`, `false`, and `null` (inherit).
+
+**Solution:** Use PrimeVue SelectButton with explicit options for three-state fields:
+
+```vue
+<!-- ❌ WRONG - only two states -->
+<Checkbox v-model="value" :binary="true" />
+
+<!-- ✅ CORRECT - three states with clear labels -->
+<SelectButton
+  v-model="value"
+  :options="[
+    { label: 'Yes', value: true },
+    { label: 'No', value: false },
+    { label: 'Inherit', value: null }
+  ]"
+/>
+```
+
+**Applies to:** Any field with `true`/`false`/`null` semantics (model inheritance, permission modes)
+
+---
+
+#### Issue 5: Delete Button Visibility Check
+
+**Problem:** `canDelete()` function only checked for agent type, so delete button was hidden for commands.
+
+**Solution:** Update `canDelete()` to support all editable config types:
+
+```javascript
+// ❌ WRONG - agent-only
+const canDelete = computed(() => {
+  return props.selectedType === 'agents' && props.enableCrud
+})
+
+// ✅ CORRECT - supports multiple types
+const canDelete = computed(() => {
+  return (props.selectedType === 'agents' && props.enableCrud) ||
+         (props.selectedType === 'commands' && props.enableCrud)
+})
+```
+
+**Applies to:** Skills, hooks, MCP - update this check when adding each new type
+
+---
+
+#### Issue 6: Optional Field Visibility in CRUD Mode
+
+**Problem:** Tests expected optional fields (Argument Hint, Model Invocation) to be hidden when empty, but CRUD mode displays them for editing.
+
+**Solution:** Use conditional display based on both value presence AND edit permission:
+
+```vue
+<!-- Show field if has value OR can edit -->
+<LabeledEditField
+  v-if="canEditCommand || commandData.argumentHint"
+  v-model="commandData.argumentHint"
+  ...
+/>
+```
+
+**Tests Impact:** Test 104 expectations needed updating to account for CRUD-enabled behavior.
+
+**Applies to:** All optional fields in all config types
+
+---
+
+### Property Mapping Reference (Frontmatter ↔ JavaScript)
+
+| Config Type | Frontmatter Field | JavaScript Field | Notes |
+|-------------|-------------------|------------------|-------|
+| Agent | `tools` | `tools` | Same name |
+| Agent | `permissionMode` | `permissionMode` | Same name |
+| Command | `allowed-tools` | `allowedTools` | Kebab → camelCase |
+| Command | `argument-hint` | `argumentHint` | Kebab → camelCase |
+| Command | `disable-model-invocation` | `disableModelInvocation` | Kebab → camelCase |
+| Skill | (TBD) | (TBD) | Document when implementing |
+| Hook | (TBD) | (TBD) | Document when implementing |
+| MCP | (TBD) | (TBD) | Document when implementing |
+
+**Critical:** Backend must handle kebab-case in frontmatter, frontend uses camelCase.
+
+---
+
+### Checklist Updates for Future Config Types
+
+Based on STORY-7.4 learnings, add these checks to the implementation checklist:
+
+#### Backend Checklist Additions
+- [ ] Express route uses `(.*)` pattern if paths can contain slashes
+- [ ] Parser extracts ALL frontmatter fields (not just common ones)
+- [ ] Property mapping handles kebab-case ↔ camelCase conversion
+- [ ] Validation accounts for three-state fields (`true`/`false`/`null`)
+
+#### Frontend Checklist Additions
+- [ ] Path construction uses namespace+name (not absolute filePath)
+- [ ] URL encoding applied to all path parameters
+- [ ] `canDelete()` updated to include new config type
+- [ ] SelectButton used for three-state boolean fields
+- [ ] Optional fields use `v-if="canEdit || hasValue"` pattern
+- [ ] Tests updated to account for CRUD-enabled field visibility
+
+#### Testing Checklist Additions
+- [ ] Test nested path CRUD operations explicitly
+- [ ] Test property value persistence (save → refresh → verify)
+- [ ] Test three-state field transitions (null → true → false → null)
+- [ ] Update existing display tests when adding CRUD to a config type
+
+---
+
 ## Conclusion
 
 STORY-7.3 established a **proven, production-ready pattern** for configuration CRUD operations. The architecture is:
