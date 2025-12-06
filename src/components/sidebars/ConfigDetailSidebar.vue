@@ -190,8 +190,9 @@
           @edit-accept="handleCommandFieldUpdate('allowedTools', $event)"
         />
 
-        <!-- Argument Hint Field -->
+        <!-- Argument Hint Field (optional - only show if has value or can edit) -->
         <LabeledEditField
+          v-if="canEditCommand || commandData.argumentHint"
           v-model="commandData.argumentHint"
           field-type="text"
           label="Argument Hint"
@@ -202,8 +203,9 @@
           @edit-accept="handleCommandFieldUpdate('argumentHint', $event)"
         />
 
-        <!-- Model Invocation Field -->
+        <!-- Model Invocation Field (optional - only show if has value or can edit) -->
         <LabeledEditField
+          v-if="canEditCommand || commandData.disableModelInvocation !== null"
           v-model="commandData.disableModelInvocation"
           field-type="selectbutton"
           label="Model Invocation"
