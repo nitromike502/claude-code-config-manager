@@ -332,6 +332,21 @@
         />
       </div>
 
+      <!-- For commands, use inline editing -->
+      <div v-else-if="selectedType === 'commands'">
+        <LabeledEditField
+          v-model="commandData.content"
+          field-type="textarea"
+          label="Content"
+          placeholder="The command's content (instructions)"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'content'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Content must be at least 10 characters' }]"
+          @edit-start="editingField = 'content'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('content', $event)"
+        />
+      </div>
+
       <!-- For other types, show as read-only -->
       <pre v-else class="bg-bg-primary p-4 rounded border border-border-primary font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[400px] overflow-y-auto text-text-primary">{{ selectedItem.content }}</pre>
     </div>
@@ -578,7 +593,8 @@ watch(() => props.selectedItem, (newItem) => {
       model: newItem.model || 'inherit',
       allowedTools: newItem.tools || [],
       argumentHint: newItem.argumentHint || '',
-      disableModelInvocation: newItem.disableModelInvocation || false
+      disableModelInvocation: newItem.disableModelInvocation || false,
+      content: newItem.content || ''
     }
     editingField.value = null
   }
