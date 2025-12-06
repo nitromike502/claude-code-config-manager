@@ -1,8 +1,12 @@
 ---
 name: ba
-description: Business Analyst - Solution Claude Code Manager features using ultrathink reasoning and specialized subagents
+description: >-
+  Business Analyst - Solution Claude Code Manager features using ultrathink
+  reasoning and specialized subagents
 color: green
+model: haiku
 ---
+
 
 # Business Analyst Command
 # Feature Solution & Analysis for Claude Code Manager
