@@ -623,8 +623,12 @@ const handleCommandFieldUpdate = async (fieldName, newValue) => {
     // Backend handles the conversion to kebab-case for YAML frontmatter internally
     const updates = { [fieldName]: newValue }
 
-    // Get the command path (commands use filePath property, e.g., 'utils/helper.md')
-    const commandPath = props.selectedItem.filePath || props.selectedItem.name
+    // Get the command path (construct from namespace + name + .md)
+    // Commands have: { name: 'helper', namespace: 'utils', filePath: '/full/path/...' }
+    // Backend expects: 'utils/helper.md' or 'helper.md' (relative path)
+    const commandPath = props.selectedItem.namespace
+      ? `${props.selectedItem.namespace}/${props.selectedItem.name}.md`
+      : `${props.selectedItem.name}.md`
 
     // Call API through store
     const result = await commandsStore.updateCommand(

@@ -447,8 +447,10 @@ export default {
       commandDeleteLoading.value = true
 
       try {
-        // Get command path for API calls
-        const commandPath = command.path || command.name
+        // Get command path for API calls (construct from namespace + name + .md)
+        const commandPath = command.namespace
+          ? `${command.namespace}/${command.name}.md`
+          : `${command.name}.md`
 
         // Check for references before showing the modal
         const references = await commandsStore.getCommandReferences(
@@ -468,8 +470,10 @@ export default {
       commandDeleteLoading.value = true
 
       try {
-        // Get command path for API calls
-        const commandPath = deletingCommand.value.path || deletingCommand.value.name
+        // Get command path for API calls (construct from namespace + name + .md)
+        const commandPath = deletingCommand.value.namespace
+          ? `${deletingCommand.value.namespace}/${deletingCommand.value.name}.md`
+          : `${deletingCommand.value.name}.md`
 
         const result = await commandsStore.deleteCommand(
           'project',
