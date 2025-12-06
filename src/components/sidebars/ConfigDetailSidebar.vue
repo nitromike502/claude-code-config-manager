@@ -140,17 +140,81 @@
 
       <!-- Commands Metadata -->
       <div v-else-if="selectedType === 'commands'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Description:</strong> {{ selectedItem.description }}</p>
-        <p v-if="selectedItem.namespace" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Namespace:</strong> {{ selectedItem.namespace }}</p>
-        <p v-if="selectedItem.color" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Color:</strong> {{ selectedItem.color }}</p>
-        <p v-if="selectedItem.argumentHint" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Argument Hint:</strong> {{ selectedItem.argumentHint }}</p>
-        <p v-if="selectedItem.tools && selectedItem.tools.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
-        </p>
-        <p v-else-if="Array.isArray(selectedItem.tools) && selectedItem.tools.length === 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> None specified
-        </p>
+        <!-- Name Field -->
+        <LabeledEditField
+          v-model="commandData.name"
+          field-type="text"
+          label="Name"
+          placeholder="command-name"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'name'"
+          :validation="[{ type: 'required' }]"
+          @edit-start="editingField = 'name'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('name', $event)"
+        />
+
+        <!-- Description Field -->
+        <LabeledEditField
+          v-model="commandData.description"
+          field-type="textarea"
+          label="Description"
+          placeholder="Brief description"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'description'"
+          @edit-start="editingField = 'description'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('description', $event)"
+        />
+
+        <!-- Model Field -->
+        <LabeledEditField
+          v-model="commandData.model"
+          field-type="selectbutton"
+          label="Model"
+          :options="commandModelOptions"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'model'"
+          @edit-start="editingField = 'model'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('model', $event)"
+        />
+
+        <!-- Allowed Tools Field -->
+        <LabeledEditField
+          v-model="commandData.allowedTools"
+          field-type="multiselect"
+          label="Allowed Tools"
+          :options="toolOptions"
+          placeholder="Select allowed tools"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'allowedTools'"
+          @edit-start="editingField = 'allowedTools'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('allowedTools', $event)"
+        />
+
+        <!-- Argument Hint Field (optional - only show if has value or can edit) -->
+        <LabeledEditField
+          v-if="canEditCommand || commandData.argumentHint"
+          v-model="commandData.argumentHint"
+          field-type="text"
+          label="Argument Hint"
+          placeholder="<query>"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'argumentHint'"
+          @edit-start="editingField = 'argumentHint'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('argumentHint', $event)"
+        />
+
+        <!-- Model Invocation Field (optional - only show if has value or can edit) -->
+        <LabeledEditField
+          v-if="canEditCommand || commandData.disableModelInvocation !== null"
+          v-model="commandData.disableModelInvocation"
+          field-type="selectbutton"
+          label="Model Invocation"
+          :options="modelInvocationOptions"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'disableModelInvocation'"
+          @edit-start="editingField = 'disableModelInvocation'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('disableModelInvocation', $event)"
+        />
       </div>
 
       <!-- Hooks Metadata -->
@@ -270,6 +334,21 @@
         />
       </div>
 
+      <!-- For commands, use inline editing -->
+      <div v-else-if="selectedType === 'commands'">
+        <LabeledEditField
+          v-model="commandData.content"
+          field-type="textarea"
+          label="Content"
+          placeholder="The command's content (instructions)"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'content'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Content must be at least 10 characters' }]"
+          @edit-start="editingField = 'content'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('content', $event)"
+        />
+      </div>
+
       <!-- For other types, show as read-only -->
       <pre v-else class="bg-bg-primary p-4 rounded border border-border-primary font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[400px] overflow-y-auto text-text-primary">{{ selectedItem.content }}</pre>
     </div>
@@ -277,9 +356,9 @@
     <!-- Footer with Actions (inline icon buttons) -->
     <template #footer>
       <div class="flex items-center justify-end gap-2">
-        <!-- Delete Button (only for agents with edit enabled) -->
+        <!-- Delete Button (for agents and commands with edit enabled) -->
         <Button
-          v-if="selectedType === 'agents' && canEdit"
+          v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand)"
           @click="handleDelete"
           :disabled="!selectedItem"
           icon="pi pi-trash"
@@ -322,8 +401,10 @@ import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import { useAgentsStore } from '@/stores/agents'
+import { useCommandsStore } from '@/stores/commands'
 
 const agentsStore = useAgentsStore()
+const commandsStore = useCommandsStore()
 
 const props = defineProps({
   visible: {
@@ -375,6 +456,10 @@ const emit = defineEmits({
     return item && typeof item === 'object'
   },
   'agent-updated': () => true,
+  'command-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'command-updated': () => true,
   'update:visible': (value) => typeof value === 'boolean'
 })
 
@@ -405,6 +490,17 @@ const agentData = ref({
   skills: [],
   systemPrompt: ''
 })
+
+// Command editing state
+const commandData = ref({
+  name: '',
+  description: '',
+  model: 'inherit',
+  allowedTools: [],
+  argumentHint: '',
+  disableModelInvocation: false
+})
+
 const editingField = ref(null)
 
 // Computed: Can edit agents (only if enableCrud is true and not a plugin agent)
@@ -414,12 +510,32 @@ const canEdit = computed(() => {
          props.selectedItem?.location !== 'plugin'
 })
 
+// Computed: Can edit commands (only if enableCrud is true)
+const canEditCommand = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'commands'
+})
+
 // Model options for agents
 const modelOptions = [
   { label: 'Inherit', value: 'inherit' },
   { label: 'Sonnet', value: 'sonnet' },
   { label: 'Opus', value: 'opus' },
   { label: 'Haiku', value: 'haiku' }
+]
+
+// Model options for commands (same as agents)
+const commandModelOptions = [
+  { label: 'Inherit', value: 'inherit' },
+  { label: 'Sonnet', value: 'sonnet' },
+  { label: 'Opus', value: 'opus' },
+  { label: 'Haiku', value: 'haiku' }
+]
+
+// Model invocation options for commands
+const modelInvocationOptions = [
+  { label: 'Allow Model', value: false },
+  { label: 'Skip Model', value: true }
 ]
 
 // Permission mode options for agents
@@ -471,6 +587,18 @@ watch(() => props.selectedItem, (newItem) => {
       systemPrompt: displaySystemPrompt
     }
     editingField.value = null
+  } else if (newItem && props.selectedType === 'commands') {
+    // Update command data
+    commandData.value = {
+      name: newItem.name || '',
+      description: newItem.description || '',
+      model: newItem.model || 'inherit',
+      allowedTools: newItem.tools || [],
+      argumentHint: newItem.argumentHint || '',
+      disableModelInvocation: newItem.disableModelInvocation || false,
+      content: newItem.content || ''
+    }
+    editingField.value = null
   }
 }, { immediate: true })
 
@@ -503,10 +631,49 @@ const handleFieldUpdate = async (fieldName, newValue) => {
   }
 }
 
+// Handle command field update
+const handleCommandFieldUpdate = async (fieldName, newValue) => {
+  if (!canEditCommand.value) return
+
+  try {
+    // Build updates object
+    // Note: Backend expects camelCase field names (argumentHint, allowedTools, disableModelInvocation)
+    // Backend handles the conversion to kebab-case for YAML frontmatter internally
+    const updates = { [fieldName]: newValue }
+
+    // Get the command path (construct from namespace + name + .md)
+    // Commands have: { name: 'helper', namespace: 'utils', filePath: '/full/path/...' }
+    // Backend expects: 'utils/helper.md' or 'helper.md' (relative path)
+    const commandPath = props.selectedItem.namespace
+      ? `${props.selectedItem.namespace}/${props.selectedItem.name}.md`
+      : `${props.selectedItem.name}.md`
+
+    // Call API through store
+    const result = await commandsStore.updateCommand(
+      props.scope,
+      props.projectId,
+      commandPath,
+      updates
+    )
+
+    if (result.success) {
+      // Update local commandData
+      commandData.value[fieldName] = newValue
+
+      // Notify parent that command was updated
+      emit('command-updated')
+    }
+  } finally {
+    editingField.value = null
+  }
+}
+
 // Handle delete button click
 const handleDelete = () => {
   if (canEdit.value && props.selectedItem) {
     emit('agent-delete', props.selectedItem)
+  } else if (canEditCommand.value && props.selectedItem) {
+    emit('command-delete', props.selectedItem)
   }
 }
 

@@ -182,7 +182,10 @@ async function getProjectCommands(projectPath) {
             content: parsed.content,
             description: parsed.frontmatter.description || '',
             tools: tools,
+            color: parsed.frontmatter.color || null,
+            model: parsed.frontmatter.model || null,
             argumentHint: parsed.frontmatter['argument-hint'] || null,
+            disableModelInvocation: parsed.frontmatter['disable-model-invocation'] || null,
             hasParseError: parsed.hasError || false
           });
         }
@@ -760,7 +763,10 @@ async function getUserCommands() {
             content: parsed.content,
             description: parsed.frontmatter.description || '',
             tools: tools,
+            color: parsed.frontmatter.color || null,
+            model: parsed.frontmatter.model || null,
             argumentHint: parsed.frontmatter['argument-hint'] || null,
+            disableModelInvocation: parsed.frontmatter['disable-model-invocation'] || null,
             hasParseError: parsed.hasError || false
           });
         }

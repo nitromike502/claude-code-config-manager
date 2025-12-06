@@ -85,8 +85,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="commands"
+                :enable-crud="enableCommandCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'commands', commands)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('command-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -186,6 +188,8 @@
       @copy-clicked="(item) => $emit('copy-clicked', item)"
       @agent-delete="(item) => $emit('agent-delete', item)"
       @agent-updated="$emit('agent-updated')"
+      @command-delete="(item) => $emit('command-delete', item)"
+      @command-updated="$emit('command-updated')"
     />
 
     <!-- Copy Modal Slot -->
@@ -341,7 +345,7 @@ defineProps({
     default: -1
   },
 
-  // CRUD support (for agents)
+  // CRUD support (for agents and commands)
   scope: {
     type: String,
     default: null,
@@ -352,6 +356,10 @@ defineProps({
     default: null
   },
   enableAgentCrud: {
+    type: Boolean,
+    default: false
+  },
+  enableCommandCrud: {
     type: Boolean,
     default: false
   }
@@ -369,7 +377,9 @@ defineEmits([
   'navigate',
   'copy-clicked',
   'agent-delete',
-  'agent-updated'
+  'agent-updated',
+  'command-delete',
+  'command-updated'
 ])
 </script>
 

@@ -726,4 +726,363 @@ router.get('/:projectId/agents/:agentName/references', validateProjectId, valida
   }
 });
 
+/**
+ * Validate command path format
+ * Must end with .md, no path traversal, no absolute paths
+ * @param {string} commandPath - Command path to validate (may include nested directories)
+ * @returns {boolean} True if valid
+ */
+function isValidCommandPath(commandPath) {
+  if (!commandPath || typeof commandPath !== 'string') return false;
+
+  // Must end with .md
+  if (!commandPath.endsWith('.md')) return false;
+
+  // No path traversal
+  if (commandPath.includes('..') || commandPath.startsWith('/')) return false;
+
+  // No backslashes (Windows path separators)
+  if (commandPath.includes('\\')) return false;
+
+  return true;
+}
+
+/**
+ * Validate command path parameter middleware
+ */
+function validateCommandPath(req, res, next) {
+  const { commandPath } = req.params;
+
+  // Express automatically URL-decodes route parameters, so no need to decode again
+  // The route pattern :commandPath(.*) captures the full path including nested slashes
+
+  if (!commandPath || !isValidCommandPath(commandPath)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid command path format',
+      details: 'Command path must end with .md and not contain path traversal sequences'
+    });
+  }
+
+  // Store decoded path for handlers to use
+  req.decodedCommandPath = commandPath;
+
+  next();
+}
+
+/**
+ * PUT /api/projects/:projectId/commands/:commandPath(.*)
+ * Update a command's properties
+ *
+ * Request body can include:
+ * - name: string (new path/name, triggers rename)
+ * - description: string (optional)
+ * - allowedTools: string[] | string (maps to 'allowed-tools' in frontmatter)
+ * - model: 'sonnet' | 'opus' | 'haiku' | 'inherit'
+ * - color: string (one of the valid colors)
+ * - argumentHint: string (maps to 'argument-hint')
+ * - disableModelInvocation: boolean (maps to 'disable-model-invocation')
+ * - content: string (body content)
+ */
+router.put('/:projectId/commands/:commandPath(.*)', validateProjectId, validateCommandPath, async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const commandPath = req.decodedCommandPath; // Use decoded path from middleware
+    const updates = req.body;
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Construct command file path
+    const commandFilePath = path.join(projectPath, '.claude', 'commands', commandPath);
+
+    // Check if command file exists
+    try {
+      await fs.access(commandFilePath);
+    } catch {
+      return res.status(404).json({
+        success: false,
+        error: `Command not found: ${commandPath}`
+      });
+    }
+
+    // Validate updates
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must be a JSON object with command properties'
+      });
+    }
+
+    // Check if request body is empty
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must contain at least one property to update'
+      });
+    }
+
+    // Validate name (new path) if being updated
+    if (updates.name !== undefined && updates.name !== commandPath) {
+      if (!isValidCommandPath(updates.name)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid command path format',
+          details: 'Command path must end with .md and not contain path traversal sequences'
+        });
+      }
+    }
+
+    // Validate description if provided (optional for commands, unlike agents)
+    if (updates.description !== undefined) {
+      if (typeof updates.description !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid description',
+          details: 'Description must be a string'
+        });
+      }
+    }
+
+    // Validate model if provided
+    const validModels = ['sonnet', 'opus', 'haiku', 'inherit'];
+    if (updates.model !== undefined && !validModels.includes(updates.model)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid model',
+        details: `Model must be one of: ${validModels.join(', ')}`
+      });
+    }
+
+    // Validate color if provided
+    const validColors = ['blue', 'cyan', 'green', 'orange', 'purple', 'red', 'yellow', 'pink', 'indigo', 'teal'];
+    if (updates.color !== undefined && updates.color !== null && !validColors.includes(updates.color)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid color',
+        details: `Color must be one of: ${validColors.join(', ')}`
+      });
+    }
+
+    // Validate argumentHint if provided
+    if (updates.argumentHint !== undefined && typeof updates.argumentHint !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid argumentHint',
+        details: 'argumentHint must be a string'
+      });
+    }
+
+    // Validate disableModelInvocation if provided
+    if (updates.disableModelInvocation !== undefined && typeof updates.disableModelInvocation !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid disableModelInvocation',
+        details: 'disableModelInvocation must be a boolean'
+      });
+    }
+
+    // Map frontend field names to frontmatter field names
+    const frontmatterUpdates = {};
+
+    if (updates.name !== undefined) frontmatterUpdates.name = path.basename(updates.name, '.md');
+    if (updates.description !== undefined) frontmatterUpdates.description = updates.description;
+    if (updates.model !== undefined) frontmatterUpdates.model = updates.model;
+    if (updates.color !== undefined) frontmatterUpdates.color = updates.color;
+    if (updates.argumentHint !== undefined) frontmatterUpdates['argument-hint'] = updates.argumentHint;
+    if (updates.disableModelInvocation !== undefined) frontmatterUpdates['disable-model-invocation'] = updates.disableModelInvocation;
+
+    // Handle allowedTools (maps to 'allowed-tools' in frontmatter)
+    if (updates.allowedTools !== undefined) {
+      frontmatterUpdates['allowed-tools'] = updates.allowedTools;
+    }
+
+    // Handle content update separately (it's the body content, not frontmatter)
+    let contentUpdate = null;
+    if (updates.content !== undefined) {
+      if (typeof updates.content !== 'string' || updates.content.trim().length < 1) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid content',
+          details: 'Content must be a non-empty string'
+        });
+      }
+      contentUpdate = updates.content;
+    }
+
+    // If content is being updated, handle it specially
+    if (contentUpdate !== null) {
+      // Read the current file
+      const fileContent = await fs.readFile(commandFilePath, 'utf8');
+      const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+      const match = fileContent.match(frontmatterRegex);
+
+      if (match) {
+        const yaml = require('js-yaml');
+        let frontmatter = yaml.load(match[1]) || {};
+
+        // Merge frontmatter updates
+        frontmatter = { ...frontmatter, ...frontmatterUpdates };
+
+        // Remove undefined/null values
+        Object.keys(frontmatter).forEach(key => {
+          if (frontmatter[key] === undefined) delete frontmatter[key];
+        });
+
+        // Strip frontmatter from content if it contains it
+        let cleanContent = contentUpdate;
+        const contentMatch = contentUpdate.match(frontmatterRegex);
+        if (contentMatch) {
+          // Content contains frontmatter, extract only the body
+          cleanContent = contentMatch[2];
+        }
+
+        // Normalize: trim leading newlines, then add blank line separator
+        cleanContent = '\n\n' + cleanContent.replace(/^\n+/, '');
+
+        // Serialize and write
+        const yamlStr = yaml.dump(frontmatter, { lineWidth: -1 });
+        const newContent = `---\n${yamlStr}---${cleanContent}`;
+
+        await updateFile(commandFilePath, newContent);
+      }
+    } else {
+      // Only frontmatter updates
+      if (Object.keys(frontmatterUpdates).length > 0) {
+        await updateYamlFrontmatter(commandFilePath, frontmatterUpdates);
+      }
+    }
+
+    // Handle rename if name changed
+    if (updates.name && updates.name !== commandPath) {
+      const newFilePath = path.join(projectPath, '.claude', 'commands', updates.name);
+      const newDir = path.dirname(newFilePath);
+
+      // Create directory if it doesn't exist (for nested paths)
+      await fs.mkdir(newDir, { recursive: true });
+
+      // Check if new name already exists
+      try {
+        await fs.access(newFilePath);
+        return res.status(409).json({
+          success: false,
+          error: 'Command name conflict',
+          details: `A command named "${updates.name}" already exists`
+        });
+      } catch {
+        // Good - new name doesn't exist
+      }
+
+      await fs.rename(commandFilePath, newFilePath);
+    }
+
+    // Re-read the updated command to return
+    const finalPath = updates.name && updates.name !== commandPath
+      ? path.join(projectPath, '.claude', 'commands', updates.name)
+      : commandFilePath;
+
+    const { parseCommand } = require('../parsers/commandParser');
+    const baseDir = path.join(projectPath, '.claude', 'commands');
+    const updatedCommand = await parseCommand(finalPath, baseDir, 'project');
+
+    res.json({
+      success: true,
+      message: 'Command updated successfully',
+      command: updatedCommand
+    });
+  } catch (error) {
+    console.error('Error updating command:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/projects/:projectId/commands/:commandPath(.*)
+ * Delete a command
+ */
+router.delete('/:projectId/commands/:commandPath(.*)', validateProjectId, validateCommandPath, async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const commandPath = req.decodedCommandPath; // Use decoded path from middleware
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Construct command file path
+    const commandFilePath = path.join(projectPath, '.claude', 'commands', commandPath);
+
+    // Delete the file
+    await deleteFile(commandFilePath);
+
+    res.json({
+      success: true,
+      message: `Command "${commandPath}" deleted successfully`,
+      deleted: commandFilePath
+    });
+  } catch (error) {
+    // Handle file not found specifically
+    if (error.message.includes('File not found')) {
+      return res.status(404).json({
+        success: false,
+        error: `Command not found: ${req.decodedCommandPath}`
+      });
+    }
+
+    console.error('Error deleting command:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/projects/:projectId/commands/:commandPath(.*)/references
+ * Check for references to a command in other configurations
+ */
+router.get('/:projectId/commands/:commandPath(.*)/references', validateProjectId, validateCommandPath, async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const commandPath = req.decodedCommandPath; // Use decoded path from middleware
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Extract command name (without .md extension) for reference checking
+    const commandName = path.basename(commandPath, '.md');
+
+    // Find references using the referenceChecker service
+    const references = await findReferences('command', commandName, projectPath);
+
+    res.json({
+      success: true,
+      commandPath,
+      commandName,
+      references,
+      hasReferences: references.length > 0,
+      referenceCount: references.length
+    });
+  } catch (error) {
+    console.error('Error checking command references:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

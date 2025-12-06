@@ -117,10 +117,12 @@ const emit = defineEmits({
 
 /**
  * Check if delete button should be shown for an item
- * Only show for agents that are not plugins
+ * Show for agents and commands that are not plugins
  */
 const canDelete = (item) => {
-  return props.enableCrud && props.itemType === 'agents' && item.location !== 'plugin';
+  return props.enableCrud &&
+         (props.itemType === 'agents' || props.itemType === 'commands') &&
+         item.location !== 'plugin';
 };
 
 /**
