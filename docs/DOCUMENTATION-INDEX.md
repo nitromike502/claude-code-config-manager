@@ -15,6 +15,7 @@ This index provides a comprehensive guide to all documentation in the Claude Cod
 3. [docs/prd/README.md](prd/README.md) - Phase Requirements Documents index
 
 **Looking for specific information?**
+- **Quick Guide Finder:** [docs/guides/DOCUMENTATION-INDEX.md](guides/DOCUMENTATION-INDEX.md) - Find the right workflow guide for your task
 - **API Reference:** [docs/API.md](API.md)
 - **Testing Guide:** [docs/testing/README.md](testing/README.md)
 - **Development Guides:** [docs/guides/](guides/)

@@ -1,7 +1,7 @@
 ---
 name: frontend-developer
 description: Expert in Vue.js 3 and PrimeVue components. Use this agent when building UI components, implementing frontend features, or working with the Vue + PrimeVue interface for the Claude Code Manager project.
-tools: Read, Write, Edit, WebFetch, Glob, Bash, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_click, mcp__playwright__browser_hover, mcp__playwright__browser_fill_form, mcp__playwright__browser_evaluate, mcp__playwright__browser_wait_for, mcp__playwright__browser_console_messages
+tools: Read, Write, Edit, WebFetch, Glob, Bash, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_click, mcp__playwright__browser_hover, mcp__playwright__browser_fill_form, mcp__playwright__browser_evaluate, mcp__playwright__browser_wait_for, mcp__playwright__browser_console_messages, mcp__playwright__browser_drag, mcp__playwright__browser_select_option, mcp__playwright__browser_tabs
 model: sonnet
 color: cyan
 ---

@@ -250,6 +250,12 @@ backlog → todo → in-progress → review → done
 
 **Read these documents when you need them:**
 
+### 📚 Documentation Navigation
+- **Documentation index:** `docs/guides/DOCUMENTATION-INDEX.md`
+  - When: Starting any task, need to find the right guide quickly
+  - Contains: Decision tree, guide quick reference, common scenarios, context efficiency strategy
+  - Key benefit: Helps you find exactly the right documentation for your current task
+
 ### 🎯 SWARM Workflow
 - **Complete workflow guide:** `docs/guides/SWARM-WORKFLOW.md`
   - When: Implementing any ticket (Story/Task/Bug)
@@ -271,7 +277,21 @@ backlog → todo → in-progress → review → done
   - When: Creating commits, PRs, or managing branches
   - Contains: Mandatory rules, commit format, branch naming, one-commit-per-task policy
 
+- **Code review best practices:** `docs/guides/CODE-REVIEW-BEST-PRACTICES.md`
+  - When: Reviewing pull requests, especially feature parity work
+  - Contains: UX consistency verification, review checklists, response templates
+  - Critical for: Preventing bugs when implementing features across entity types
+
 ### 📐 Implementation Patterns
+- **Implementation outlining:** `docs/guides/IMPLEMENTATION-OUTLINE-GUIDE.md`
+  - When: End of Phase 1, before Phase 3 implementation (complex features, feature parity work)
+  - Contains: Outline template, comparative analysis for feature parity, real-world case studies
+  - Key benefit: 15 minutes of outlining prevents 2+ hours of debugging
+
+- **Feature parity implementation:** `docs/guides/FEATURE-PARITY-IMPLEMENTATION-GUIDE.md`
+  - When: Implementing features that already work for another entity type (e.g., Commands after Agents)
+  - Contains: Comparative analysis workflow, structural difference detection, 16:1 ROI demonstrated
+
 - **Spec-based implementation:** `docs/guides/SPEC-IMPLEMENTATION-GUIDE.md`
   - When: Implementing from official specifications (Claude Code, Playwright, Vue, etc.)
   - Contains: 5-step pattern, BUG-030 case study, common pitfalls

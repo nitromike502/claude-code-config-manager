@@ -1,7 +1,7 @@
 ---
 name: test-automation-engineer
 description: Executes targeted or comprehensive automated tests (Jest backend, Playwright frontend, E2E, visual regression) as a hard quality gate in Phase 3 of SWARM workflow. Uses targeted testing during development, full suite at ticket completion. Blocks progression if ANY tests fail. Returns structured pass/fail reports to main agent.
-tools: Read, Write, Edit, Bash, Glob, Grep
+tools: Read, Write, Edit, Bash, Glob, Grep, mcp__playwright__browser_navigate, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_click, mcp__playwright__browser_wait_for, mcp__playwright__browser_fill_form, mcp__playwright__browser_evaluate
 model: sonnet
 color: cyan
 ---
