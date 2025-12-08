@@ -16,6 +16,7 @@ const { updateYamlFrontmatter, updateFile } = require('../services/updateService
 const { deleteFile } = require('../services/deleteService');
 const { findReferences } = require('../services/referenceChecker');
 const { parseSubagent } = require('../parsers/subagentParser');
+const { parseSkill } = require('../parsers/skillParser');
 
 // Cache for projects (refreshed on scan)
 let projectsCache = null;
@@ -392,6 +393,195 @@ router.get('/:projectId/skills', validateProjectId, async (req, res) => {
 });
 
 /**
+ * PUT /api/projects/:projectId/skills/:skillName
+ * Update a skill's properties
+ *
+ * Request body can include:
+ * - name: string (new name - NOTE: directory rename not supported in this story)
+ * - description: string (required field, min 10 chars)
+ * - allowedTools: string[] | string (maps to 'allowed-tools' in frontmatter)
+ * - content: string (body content of SKILL.md)
+ *
+ * Note: Supporting files in skill directory are READ-ONLY and not modified
+ */
+router.put('/:projectId/skills/:skillName', validateProjectId, validateSkillName, async (req, res) => {
+  try {
+    const { projectId, skillName } = req.params;
+    const updates = req.body;
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Construct SKILL.md file path
+    const skillDirPath = path.join(projectPath, '.claude', 'skills', skillName);
+    const skillFilePath = path.join(skillDirPath, 'SKILL.md');
+
+    // Check if SKILL.md exists
+    try {
+      await fs.access(skillFilePath);
+    } catch {
+      return res.status(404).json({
+        success: false,
+        error: `Skill not found: ${skillName}`
+      });
+    }
+
+    // Validate updates
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must be a JSON object with skill properties'
+      });
+    }
+
+    // Check if request body is empty
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must contain at least one property to update'
+      });
+    }
+
+    // Validate name if being updated
+    if (updates.name !== undefined && updates.name !== skillName) {
+      if (!isValidSkillName(updates.name)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid skill name format',
+          details: 'Skill name must be lowercase letters, numbers, hyphens, or underscores (max 64 chars)'
+        });
+      }
+      // NOTE: Directory rename is out of scope for this story
+      return res.status(400).json({
+        success: false,
+        error: 'Skill directory rename not supported',
+        details: 'Renaming skill directories is not yet implemented. Please use the name field only to update the frontmatter.'
+      });
+    }
+
+    // Validate description if provided
+    if (updates.description !== undefined) {
+      if (typeof updates.description !== 'string' || updates.description.trim().length < 10) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid description',
+          details: 'Description must be at least 10 characters'
+        });
+      }
+    }
+
+    // Validate allowedTools if provided (accepts array or comma-separated string)
+    if (updates.allowedTools !== undefined) {
+      if (typeof updates.allowedTools === 'string') {
+        // Convert comma-separated string to array
+        updates.allowedTools = updates.allowedTools.split(',').map(t => t.trim()).filter(Boolean);
+      }
+      if (!Array.isArray(updates.allowedTools)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid allowedTools',
+          details: 'allowedTools must be an array of strings or comma-separated string'
+        });
+      }
+    }
+
+    // Map frontend field names to frontmatter field names
+    const frontmatterUpdates = {};
+
+    if (updates.name !== undefined) frontmatterUpdates.name = updates.name;
+    if (updates.description !== undefined) frontmatterUpdates.description = updates.description;
+
+    // Handle allowedTools (maps to 'allowed-tools' in frontmatter)
+    if (updates.allowedTools !== undefined) {
+      frontmatterUpdates['allowed-tools'] = updates.allowedTools;
+    }
+
+    // Handle content update separately (it's the body content, not frontmatter)
+    let contentUpdate = null;
+    if (updates.content !== undefined) {
+      if (typeof updates.content !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid content',
+          details: 'Content must be a string'
+        });
+      }
+      contentUpdate = updates.content;
+    }
+
+    // If content is being updated, handle it specially
+    if (contentUpdate !== null) {
+      // Read the current file
+      const fileContent = await fs.readFile(skillFilePath, 'utf8');
+      const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+      const match = fileContent.match(frontmatterRegex);
+
+      if (match) {
+        const yaml = require('js-yaml');
+        let frontmatter = yaml.load(match[1]) || {};
+
+        // Merge frontmatter updates
+        frontmatter = { ...frontmatter, ...frontmatterUpdates };
+
+        // Remove undefined/null values
+        Object.keys(frontmatter).forEach(key => {
+          if (frontmatter[key] === undefined) delete frontmatter[key];
+        });
+
+        // Strip frontmatter from content if it contains it
+        let cleanContent = contentUpdate;
+        const contentMatch = contentUpdate.match(frontmatterRegex);
+        if (contentMatch) {
+          // Content contains frontmatter, extract only the body
+          cleanContent = contentMatch[2];
+        }
+
+        // Normalize: trim leading newlines, then add blank line separator
+        cleanContent = '\n\n' + cleanContent.replace(/^\n+/, '');
+
+        // Serialize and write
+        const yamlStr = yaml.dump(frontmatter, { lineWidth: -1 });
+        const newContent = `---\n${yamlStr}---${cleanContent}`;
+
+        await updateFile(skillFilePath, newContent);
+      }
+    } else {
+      // Only frontmatter updates
+      if (Object.keys(frontmatterUpdates).length > 0) {
+        await updateYamlFrontmatter(skillFilePath, frontmatterUpdates);
+      }
+    }
+
+    // Re-read the updated skill to return (with external reference detection)
+    const updatedSkill = await parseSkill(skillDirPath, 'project');
+
+    // Create warnings array if external references exist
+    const warnings = [];
+    if (updatedSkill.externalReferences && updatedSkill.externalReferences.length > 0) {
+      warnings.push(`Skill contains ${updatedSkill.externalReferences.length} external reference(s) that may affect portability`);
+    }
+
+    res.json({
+      success: true,
+      message: 'Skill updated successfully',
+      skill: updatedSkill,
+      warnings: warnings.length > 0 ? warnings : undefined
+    });
+  } catch (error) {
+    console.error('Error updating skill:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
  * Validate agent name format
  * Must be lowercase letters, numbers, hyphens, underscores, max 64 chars
  * @param {string} name - Agent name to validate
@@ -413,6 +603,34 @@ function validateAgentName(req, res, next) {
       success: false,
       error: 'Invalid agent name format',
       details: 'Agent name must be lowercase letters, numbers, hyphens, or underscores (max 64 chars)'
+    });
+  }
+
+  next();
+}
+
+/**
+ * Validate skill name format
+ * Must be lowercase letters, numbers, hyphens, underscores, max 64 chars
+ * @param {string} name - Skill name to validate
+ * @returns {boolean} True if valid
+ */
+function isValidSkillName(name) {
+  if (!name || typeof name !== 'string') return false;
+  return /^[a-z0-9_-]{1,64}$/.test(name);
+}
+
+/**
+ * Validate skill name parameter middleware
+ */
+function validateSkillName(req, res, next) {
+  const { skillName } = req.params;
+
+  if (!skillName || !isValidSkillName(skillName)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid skill name format',
+      details: 'Skill name must be lowercase letters, numbers, hyphens, or underscores (max 64 chars)'
     });
   }
 

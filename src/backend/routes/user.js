@@ -14,6 +14,7 @@ const { updateYamlFrontmatter, updateFile } = require('../services/updateService
 const { deleteFile } = require('../services/deleteService');
 const { findReferences } = require('../services/referenceChecker');
 const { parseSubagent } = require('../parsers/subagentParser');
+const { parseSkill } = require('../parsers/skillParser');
 
 /**
  * Get user home directory path
@@ -723,6 +724,220 @@ router.get('/commands/:commandPath/references', validateCommandPath, async (req,
     });
   } catch (error) {
     console.error('Error checking user command references:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Validate skill name format
+ * Must be lowercase letters, numbers, hyphens, underscores, max 64 chars
+ * @param {string} name - Skill name to validate
+ * @returns {boolean} True if valid
+ */
+function isValidSkillName(name) {
+  if (!name || typeof name !== 'string') return false;
+  return /^[a-z0-9_-]{1,64}$/.test(name);
+}
+
+/**
+ * Validate skill name parameter middleware
+ */
+function validateSkillName(req, res, next) {
+  const { skillName } = req.params;
+
+  if (!skillName || !isValidSkillName(skillName)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid skill name format',
+      details: 'Skill name must be lowercase letters, numbers, hyphens, or underscores (max 64 chars)'
+    });
+  }
+
+  next();
+}
+
+/**
+ * PUT /api/user/skills/:skillName
+ * Update a user-level skill's properties
+ *
+ * Request body can include:
+ * - name: string (new name - NOTE: directory rename not supported in this story)
+ * - description: string (required field, min 10 chars)
+ * - allowedTools: string[] | string (maps to 'allowed-tools' in frontmatter)
+ * - content: string (body content of SKILL.md)
+ *
+ * Note: Supporting files in skill directory are READ-ONLY and not modified
+ */
+router.put('/skills/:skillName', validateSkillName, async (req, res) => {
+  try {
+    const { skillName } = req.params;
+    const updates = req.body;
+
+    // Get user home directory
+    const userHome = getUserHome();
+
+    // Construct SKILL.md file path
+    const skillDirPath = path.join(userHome, '.claude', 'skills', skillName);
+    const skillFilePath = path.join(skillDirPath, 'SKILL.md');
+
+    // Check if SKILL.md exists
+    try {
+      await fs.access(skillFilePath);
+    } catch {
+      return res.status(404).json({
+        success: false,
+        error: `User skill not found: ${skillName}`
+      });
+    }
+
+    // Validate updates
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must be a JSON object with skill properties'
+      });
+    }
+
+    // Check if request body is empty
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must contain at least one property to update'
+      });
+    }
+
+    // Validate name if being updated
+    if (updates.name !== undefined && updates.name !== skillName) {
+      if (!isValidSkillName(updates.name)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid skill name format',
+          details: 'Skill name must be lowercase letters, numbers, hyphens, or underscores (max 64 chars)'
+        });
+      }
+      // NOTE: Directory rename is out of scope for this story
+      return res.status(400).json({
+        success: false,
+        error: 'Skill directory rename not supported',
+        details: 'Renaming skill directories is not yet implemented. Please use the name field only to update the frontmatter.'
+      });
+    }
+
+    // Validate description if provided
+    if (updates.description !== undefined) {
+      if (typeof updates.description !== 'string' || updates.description.trim().length < 10) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid description',
+          details: 'Description must be at least 10 characters'
+        });
+      }
+    }
+
+    // Validate allowedTools if provided (accepts array or comma-separated string)
+    if (updates.allowedTools !== undefined) {
+      if (typeof updates.allowedTools === 'string') {
+        // Convert comma-separated string to array
+        updates.allowedTools = updates.allowedTools.split(',').map(t => t.trim()).filter(Boolean);
+      }
+      if (!Array.isArray(updates.allowedTools)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid allowedTools',
+          details: 'allowedTools must be an array of strings or comma-separated string'
+        });
+      }
+    }
+
+    // Map frontend field names to frontmatter field names
+    const frontmatterUpdates = {};
+
+    if (updates.name !== undefined) frontmatterUpdates.name = updates.name;
+    if (updates.description !== undefined) frontmatterUpdates.description = updates.description;
+
+    // Handle allowedTools (maps to 'allowed-tools' in frontmatter)
+    if (updates.allowedTools !== undefined) {
+      frontmatterUpdates['allowed-tools'] = updates.allowedTools;
+    }
+
+    // Handle content update separately (it's the body content, not frontmatter)
+    let contentUpdate = null;
+    if (updates.content !== undefined) {
+      if (typeof updates.content !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid content',
+          details: 'Content must be a string'
+        });
+      }
+      contentUpdate = updates.content;
+    }
+
+    // If content is being updated, handle it specially
+    if (contentUpdate !== null) {
+      // Read the current file
+      const fileContent = await fs.readFile(skillFilePath, 'utf8');
+      const frontmatterRegex = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
+      const match = fileContent.match(frontmatterRegex);
+
+      if (match) {
+        const yaml = require('js-yaml');
+        let frontmatter = yaml.load(match[1]) || {};
+
+        // Merge frontmatter updates
+        frontmatter = { ...frontmatter, ...frontmatterUpdates };
+
+        // Remove undefined/null values
+        Object.keys(frontmatter).forEach(key => {
+          if (frontmatter[key] === undefined) delete frontmatter[key];
+        });
+
+        // Strip frontmatter from content if it contains it
+        let cleanContent = contentUpdate;
+        const contentMatch = contentUpdate.match(frontmatterRegex);
+        if (contentMatch) {
+          // Content contains frontmatter, extract only the body
+          cleanContent = contentMatch[2];
+        }
+
+        // Normalize: trim leading newlines, then add blank line separator
+        cleanContent = '\n\n' + cleanContent.replace(/^\n+/, '');
+
+        // Serialize and write
+        const yamlStr = yaml.dump(frontmatter, { lineWidth: -1 });
+        const newContent = `---\n${yamlStr}---${cleanContent}`;
+
+        await updateFile(skillFilePath, newContent);
+      }
+    } else {
+      // Only frontmatter updates
+      if (Object.keys(frontmatterUpdates).length > 0) {
+        await updateYamlFrontmatter(skillFilePath, frontmatterUpdates);
+      }
+    }
+
+    // Re-read the updated skill to return (with external reference detection)
+    const updatedSkill = await parseSkill(skillDirPath, 'user');
+
+    // Create warnings array if external references exist
+    const warnings = [];
+    if (updatedSkill.externalReferences && updatedSkill.externalReferences.length > 0) {
+      warnings.push(`Skill contains ${updatedSkill.externalReferences.length} external reference(s) that may affect portability`);
+    }
+
+    res.json({
+      success: true,
+      message: 'User skill updated successfully',
+      skill: updatedSkill,
+      warnings: warnings.length > 0 ? warnings : undefined
+    });
+  } catch (error) {
+    console.error('Error updating user skill:', error);
     res.status(500).json({
       success: false,
       error: error.message
