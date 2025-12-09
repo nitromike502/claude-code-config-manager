@@ -49,7 +49,11 @@ export const useSkillsStore = defineStore('skills', () => {
         // Update local state
         if (scope === 'project') {
           const skills = projectSkills.value.get(projectId) || []
-          const index = skills.findIndex(s => s.name === skillName)
+          // Skills are identified by directory name, which is the last segment of directoryPath
+          const index = skills.findIndex(s => {
+            const dirName = s.directoryPath ? s.directoryPath.split('/').pop() : s.name
+            return dirName === skillName
+          })
           if (index !== -1) {
             // Replace with updated skill
             skills[index] = result.skill
@@ -57,7 +61,11 @@ export const useSkillsStore = defineStore('skills', () => {
           }
         } else {
           // User scope
-          const index = userSkills.value.findIndex(s => s.name === skillName)
+          // Skills are identified by directory name, which is the last segment of directoryPath
+          const index = userSkills.value.findIndex(s => {
+            const dirName = s.directoryPath ? s.directoryPath.split('/').pop() : s.name
+            return dirName === skillName
+          })
           if (index !== -1) {
             userSkills.value[index] = result.skill
           }

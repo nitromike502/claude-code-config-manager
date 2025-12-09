@@ -754,10 +754,16 @@ const handleSkillFieldUpdate = async (fieldName, newValue) => {
     // Build updates object with just the changed field
     const updates = { [fieldName]: newValue }
 
+    // Extract skill directory name from directoryPath
+    // Skills are identified by their directory name (e.g., 'write-file'), not display name
+    const skillDirName = props.selectedItem.directoryPath
+      ? props.selectedItem.directoryPath.split('/').pop()
+      : props.selectedItem.name
+
     // Call API through store
     const result = await skillsStore.updateSkill(
       props.projectId,
-      props.selectedItem.name,
+      skillDirName,
       updates,
       props.scope
     )
