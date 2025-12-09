@@ -241,27 +241,46 @@
 
       <!-- Skills Metadata -->
       <div v-else-if="selectedType === 'skills'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Description:</strong> {{ selectedItem.description || 'No description' }}</p>
-        <p v-if="selectedItem.allowedTools && selectedItem.allowedTools.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong>
-          <span v-for="(tool, index) in selectedItem.allowedTools" :key="index" class="inline-block bg-bg-tertiary px-2 py-1 rounded text-xs mr-1 mt-1">{{ tool }}</span>
-        </p>
-        <p v-else-if="Array.isArray(selectedItem.allowedTools) && selectedItem.allowedTools.length === 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> None specified
-        </p>
-        <p v-if="selectedItem.directoryPath" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Directory Path:</strong> <code class="bg-bg-primary px-1 py-0.5 rounded font-mono text-xs text-text-secondary">{{ selectedItem.directoryPath }}</code>
+        <!-- Skill Name (Read-Only - directory name cannot be changed) -->
+        <p class="my-2 text-sm text-text-secondary leading-relaxed">
+          <strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}
         </p>
 
-        <!-- Structure Information with Collapsible File Tree -->
+        <!-- Skill Description Field -->
+        <LabeledEditField
+          v-model="skillData.description"
+          field-type="textarea"
+          label="Description"
+          placeholder="Brief description of what this skill does"
+          :disabled="!canEditSkill || editingField !== null && editingField !== 'description'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Description must be at least 10 characters' }]"
+          @edit-start="editingField = 'description'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleSkillFieldUpdate('description', $event)"
+        />
+
+        <!-- Allowed Tools Field -->
+        <LabeledEditField
+          v-model="skillData.allowedTools"
+          field-type="multiselect"
+          label="Allowed Tools"
+          :options="toolOptions"
+          placeholder="Select allowed tools"
+          :disabled="!canEditSkill || editingField !== null && editingField !== 'allowedTools'"
+          @edit-start="editingField = 'allowedTools'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleSkillFieldUpdate('allowedTools', $event)"
+        />
+
+        <!-- Supporting Files (Read-Only Display) -->
         <div v-if="selectedItem.fileCount || selectedItem.files" class="my-3">
+          <div class="text-text-primary font-bold text-sm mb-2">Supporting Files (Read-Only)</div>
           <Accordion :value="null" class="skill-structure-accordion">
             <AccordionPanel value="files">
               <AccordionHeader>
                 <div class="flex items-center gap-2">
                   <i class="pi pi-folder text-color-skills"></i>
-                  <span class="font-semibold">Structure</span>
+                  <span class="font-semibold">File Tree</span>
                   <span class="text-text-muted text-xs ml-1">({{ selectedItem.fileCount }} files)</span>
                 </div>
               </AccordionHeader>
@@ -287,14 +306,26 @@
         <!-- External References Warning -->
         <div v-if="selectedItem.externalReferences && selectedItem.externalReferences.length > 0" class="my-3 p-3 bg-color-warning-bg rounded border border-color-warning">
           <div class="flex items-start gap-2">
-            <i class="pi pi-exclamation-triangle text-color-warning mt-0.5"></i>
+            <i class="pi pi-exclamation-triangle text-color-warning mt-0.5 text-lg"></i>
             <div class="flex-1">
-              <p class="text-sm font-semibold text-color-warning mb-2">External References Detected</p>
-              <div v-for="(ref, index) in selectedItem.externalReferences" :key="index" class="mb-2">
-                <p class="text-xs text-text-secondary">
-                  <code class="bg-bg-primary px-1 py-0.5 rounded font-mono">{{ ref.reference }}</code>
-                </p>
-                <p class="text-xs text-text-muted">{{ ref.file }}, line {{ ref.line }}</p>
+              <p class="text-sm font-semibold text-color-warning mb-1">External References Detected</p>
+              <p class="text-xs text-text-secondary mb-3">
+                This skill contains {{ selectedItem.externalReferences.length }}
+                reference{{ selectedItem.externalReferences.length > 1 ? 's' : '' }} to files outside the skill directory, which may affect portability when copying to other projects.
+              </p>
+              <div class="space-y-2">
+                <div v-for="(ref, index) in selectedItem.externalReferences" :key="index" class="bg-bg-primary p-2 rounded text-xs">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-text-muted">Line {{ ref.line }}:</span>
+                    <Tag
+                      :severity="ref.severity === 'error' ? 'danger' : 'warning'"
+                      :value="ref.type?.toUpperCase() || 'REFERENCE'"
+                      class="text-[10px] px-1.5 py-0.5"
+                    />
+                  </div>
+                  <code class="block bg-bg-secondary px-2 py-1 rounded font-mono text-text-secondary break-all">{{ ref.reference }}</code>
+                  <p class="text-text-muted mt-1">in {{ ref.file }}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -315,7 +346,8 @@
 
     <!-- Content Section -->
     <div v-if="selectedItem?.content" class="mb-6">
-      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">
+      <!-- For agents and commands, show section header -->
+      <h4 v-if="selectedType === 'agents' || selectedType === 'commands'" class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">
         {{ selectedType === 'agents' ? 'System Prompt' : 'Content' }}
       </h4>
 
@@ -349,6 +381,21 @@
         />
       </div>
 
+      <!-- For skills, use inline editing with label on the field (no section header) -->
+      <div v-else-if="selectedType === 'skills'">
+        <LabeledEditField
+          v-model="skillData.content"
+          field-type="textarea"
+          label="Content"
+          placeholder="The skill's markdown content (instructions, examples, etc.)"
+          :disabled="!canEditSkill || editingField !== null && editingField !== 'content'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Content must be at least 10 characters' }]"
+          @edit-start="editingField = 'content'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleSkillFieldUpdate('content', $event)"
+        />
+      </div>
+
       <!-- For other types, show as read-only -->
       <pre v-else class="bg-bg-primary p-4 rounded border border-border-primary font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[400px] overflow-y-auto text-text-primary">{{ selectedItem.content }}</pre>
     </div>
@@ -356,7 +403,7 @@
     <!-- Footer with Actions (inline icon buttons) -->
     <template #footer>
       <div class="flex items-center justify-end gap-2">
-        <!-- Delete Button (for agents and commands with edit enabled) -->
+        <!-- Delete Button (for agents and commands with edit enabled - skills delete in separate story) -->
         <Button
           v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand)"
           @click="handleDelete"
@@ -399,12 +446,15 @@ import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
+import Tag from 'primevue/tag'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import { useAgentsStore } from '@/stores/agents'
 import { useCommandsStore } from '@/stores/commands'
+import { useSkillsStore } from '@/stores/skills'
 
 const agentsStore = useAgentsStore()
 const commandsStore = useCommandsStore()
+const skillsStore = useSkillsStore()
 
 const props = defineProps({
   visible: {
@@ -460,6 +510,10 @@ const emit = defineEmits({
     return item && typeof item === 'object'
   },
   'command-updated': () => true,
+  'skill-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'skill-updated': () => true,
   'update:visible': (value) => typeof value === 'boolean'
 })
 
@@ -498,7 +552,16 @@ const commandData = ref({
   model: 'inherit',
   allowedTools: [],
   argumentHint: '',
-  disableModelInvocation: false
+  disableModelInvocation: false,
+  content: ''
+})
+
+// Skill editing state
+const skillData = ref({
+  name: '',
+  description: '',
+  allowedTools: [],
+  content: ''
 })
 
 const editingField = ref(null)
@@ -514,6 +577,12 @@ const canEdit = computed(() => {
 const canEditCommand = computed(() => {
   return props.enableCrud &&
          props.selectedType === 'commands'
+})
+
+// Computed: Can edit skills (only if enableCrud is true)
+const canEditSkill = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'skills'
 })
 
 // Model options for agents
@@ -599,6 +668,15 @@ watch(() => props.selectedItem, (newItem) => {
       content: newItem.content || ''
     }
     editingField.value = null
+  } else if (newItem && props.selectedType === 'skills') {
+    // Update skill data
+    skillData.value = {
+      name: newItem.name || '',
+      description: newItem.description || '',
+      allowedTools: newItem.allowedTools || [],
+      content: newItem.content || ''
+    }
+    editingField.value = null
   }
 }, { immediate: true })
 
@@ -668,12 +746,48 @@ const handleCommandFieldUpdate = async (fieldName, newValue) => {
   }
 }
 
+// Handle skill field update
+const handleSkillFieldUpdate = async (fieldName, newValue) => {
+  if (!canEditSkill.value) return
+
+  try {
+    // Build updates object with just the changed field
+    const updates = { [fieldName]: newValue }
+
+    // Extract skill directory name from directoryPath
+    // Skills are identified by their directory name (e.g., 'write-file'), not display name
+    const skillDirName = props.selectedItem.directoryPath
+      ? props.selectedItem.directoryPath.split('/').pop()
+      : props.selectedItem.name
+
+    // Call API through store
+    const result = await skillsStore.updateSkill(
+      props.projectId,
+      skillDirName,
+      updates,
+      props.scope
+    )
+
+    if (result.success) {
+      // Update local skillData
+      skillData.value[fieldName] = newValue
+
+      // Notify parent that skill was updated
+      emit('skill-updated')
+    }
+  } finally {
+    editingField.value = null
+  }
+}
+
 // Handle delete button click
 const handleDelete = () => {
   if (canEdit.value && props.selectedItem) {
     emit('agent-delete', props.selectedItem)
   } else if (canEditCommand.value && props.selectedItem) {
     emit('command-delete', props.selectedItem)
+  } else if (canEditSkill.value && props.selectedItem) {
+    emit('skill-delete', props.selectedItem)
   }
 }
 

@@ -452,6 +452,39 @@ export async function getUserCommandReferences(commandPath) {
   return response.json()
 }
 
+// ========================================
+// Skill CRUD Operations
+// ========================================
+
+/**
+ * Update a project skill
+ * @param {string} projectId - Project identifier
+ * @param {string} skillName - Skill name (directory name)
+ * @param {Object} updates - Properties to update (description, allowedTools, content)
+ * @returns {Promise<Object>} - { success: boolean, skill: Object, warnings?: string[] }
+ */
+export async function updateProjectSkill(projectId, skillName, updates) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/skills/${skillName}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates)
+  })
+  return response.json()
+}
+
+/**
+ * Update a user-level skill
+ * @param {string} skillName - Skill name (directory name)
+ * @param {Object} updates - Properties to update (description, allowedTools, content)
+ * @returns {Promise<Object>} - { success: boolean, skill: Object, warnings?: string[] }
+ */
+export async function updateUserSkill(skillName, updates) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/user/skills/${skillName}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates)
+  })
+  return response.json()
+}
+
 // Default export with all API functions
 export default {
   BASE_URL,
@@ -486,5 +519,8 @@ export default {
   getProjectCommandReferences,
   updateUserCommand,
   deleteUserCommand,
-  getUserCommandReferences
+  getUserCommandReferences,
+  // Skill CRUD
+  updateProjectSkill,
+  updateUserSkill
 }

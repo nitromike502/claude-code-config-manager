@@ -72,6 +72,20 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 
 ---
 
+## Technical Debt
+
+### From STORY-7.5 (Skill Edit Operations)
+
+- [ ] **Remove name editing capability from agents and commands** - User decision: configuration names (which map to file/directory names) should NOT be editable via the UI. This was correctly implemented for skills, but agents and commands still have name editing enabled. Remove name field editing from agent and command edit forms to maintain consistency with skills approach.
+
+- [ ] **Code duplication in field update handlers** - `ConfigDetailSidebar.vue` has three nearly identical handlers: `handleFieldUpdate` (agents), `handleCommandFieldUpdate`, and `handleSkillFieldUpdate`. Consider extracting common logic into a shared helper function to follow DRY principle and reduce maintenance burden.
+
+- [ ] **Missing input sanitization in skills store** - `src/stores/skills.js` - The `updateSkill` function doesn't validate the updates object before sending to API. Add basic validation to ensure updates is an object and not empty before making API calls.
+
+- [ ] **Incomplete JSDoc for skill API methods** - `src/api/client.js` - The `updateProjectSkill` and `updateUserSkill` methods are missing complete return type documentation. The warnings array in the response object is not documented in the JSDoc comments.
+
+---
+
 ## Ideas That Have Been Implemented
 
 These ideas were originally captured in this TODO and have since been completed:
