@@ -764,7 +764,7 @@ function validateSkillName(req, res, next) {
  * Update a user-level skill's properties
  *
  * Request body can include:
- * - name: string (new name - NOTE: directory rename not supported in this story)
+ * - name: string (silently ignored - skill names cannot be changed as they are directory names)
  * - description: string (required field, min 10 chars)
  * - allowedTools: string[] | string (maps to 'allowed-tools' in frontmatter)
  * - content: string (body content of SKILL.md)
@@ -811,21 +811,10 @@ router.put('/skills/:skillName', validateSkillName, async (req, res) => {
       });
     }
 
-    // Validate name if being updated
-    if (updates.name !== undefined && updates.name !== skillName) {
-      if (!isValidSkillName(updates.name)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid skill name format',
-          details: 'Skill name must be lowercase letters, numbers, hyphens, or underscores (max 64 chars)'
-        });
-      }
-      // NOTE: Directory rename is out of scope for this story
-      return res.status(400).json({
-        success: false,
-        error: 'Skill directory rename not supported',
-        details: 'Renaming skill directories is not yet implemented. Please use the name field only to update the frontmatter.'
-      });
+    // Skill names are directory names and cannot be changed
+    // Silently ignore any name updates
+    if (updates.name !== undefined) {
+      delete updates.name;
     }
 
     // Validate description if provided
@@ -857,7 +846,7 @@ router.put('/skills/:skillName', validateSkillName, async (req, res) => {
     // Map frontend field names to frontmatter field names
     const frontmatterUpdates = {};
 
-    if (updates.name !== undefined) frontmatterUpdates.name = updates.name;
+    // Note: name is already removed/ignored at validation stage
     if (updates.description !== undefined) frontmatterUpdates.description = updates.description;
 
     // Handle allowedTools (maps to 'allowed-tools' in frontmatter)

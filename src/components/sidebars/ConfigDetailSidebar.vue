@@ -241,18 +241,10 @@
 
       <!-- Skills Metadata -->
       <div v-else-if="selectedType === 'skills'">
-        <!-- Skill Name Field -->
-        <LabeledEditField
-          v-model="skillData.name"
-          field-type="text"
-          label="Name"
-          placeholder="skill-name"
-          :disabled="!canEditSkill || editingField !== null && editingField !== 'name'"
-          :validation="[{ type: 'required' }, { type: 'pattern', param: /^[a-z0-9_-]{1,64}$/, message: 'Skill name must be lowercase alphanumeric with dashes/underscores (1-64 chars)' }]"
-          @edit-start="editingField = 'name'"
-          @edit-cancel="editingField = null"
-          @edit-accept="handleSkillFieldUpdate('name', $event)"
-        />
+        <!-- Skill Name (Read-Only - directory name cannot be changed) -->
+        <p class="my-2 text-sm text-text-secondary leading-relaxed">
+          <strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}
+        </p>
 
         <!-- Skill Description Field -->
         <LabeledEditField
@@ -267,23 +259,18 @@
           @edit-accept="handleSkillFieldUpdate('description', $event)"
         />
 
-        <!-- Allowed Tools (Read-Only Display) -->
-        <div class="my-2 text-sm text-text-secondary leading-relaxed">
-          <div class="flex items-start gap-2">
-            <div class="text-text-primary font-bold shrink-0 mt-2 mr-1">Allowed Tools:</div>
-            <div class="flex-1">
-              <div v-if="selectedItem.allowedTools && selectedItem.allowedTools.length > 0" class="flex flex-wrap gap-1 mt-2">
-                <span v-for="(tool, index) in selectedItem.allowedTools" :key="index" class="inline-block bg-bg-tertiary px-2 py-1 rounded text-xs">{{ tool }}</span>
-              </div>
-              <span v-else class="text-text-muted mt-2 inline-block">None specified</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Directory Path (Read-Only) -->
-        <p v-if="selectedItem.directoryPath" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Directory Path:</strong> <code class="bg-bg-primary px-1 py-0.5 rounded font-mono text-xs text-text-secondary">{{ selectedItem.directoryPath }}</code>
-        </p>
+        <!-- Allowed Tools Field -->
+        <LabeledEditField
+          v-model="skillData.allowedTools"
+          field-type="multiselect"
+          label="Allowed Tools"
+          :options="toolOptions"
+          placeholder="Select allowed tools"
+          :disabled="!canEditSkill || editingField !== null && editingField !== 'allowedTools'"
+          @edit-start="editingField = 'allowedTools'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleSkillFieldUpdate('allowedTools', $event)"
+        />
 
         <!-- Supporting Files (Read-Only Display) -->
         <div v-if="selectedItem.fileCount || selectedItem.files" class="my-3">
@@ -359,7 +346,8 @@
 
     <!-- Content Section -->
     <div v-if="selectedItem?.content" class="mb-6">
-      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">
+      <!-- For agents and commands, show section header -->
+      <h4 v-if="selectedType === 'agents' || selectedType === 'commands'" class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">
         {{ selectedType === 'agents' ? 'System Prompt' : 'Content' }}
       </h4>
 
@@ -393,7 +381,7 @@
         />
       </div>
 
-      <!-- For skills, use inline editing -->
+      <!-- For skills, use inline editing with label on the field (no section header) -->
       <div v-else-if="selectedType === 'skills'">
         <LabeledEditField
           v-model="skillData.content"
@@ -415,9 +403,9 @@
     <!-- Footer with Actions (inline icon buttons) -->
     <template #footer>
       <div class="flex items-center justify-end gap-2">
-        <!-- Delete Button (for agents, commands, and skills with edit enabled) -->
+        <!-- Delete Button (for agents and commands with edit enabled - skills delete in separate story) -->
         <Button
-          v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand) || (selectedType === 'skills' && canEditSkill)"
+          v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand)"
           @click="handleDelete"
           :disabled="!selectedItem"
           icon="pi pi-trash"
@@ -572,6 +560,7 @@ const commandData = ref({
 const skillData = ref({
   name: '',
   description: '',
+  allowedTools: [],
   content: ''
 })
 
@@ -684,6 +673,7 @@ watch(() => props.selectedItem, (newItem) => {
     skillData.value = {
       name: newItem.name || '',
       description: newItem.description || '',
+      allowedTools: newItem.allowedTools || [],
       content: newItem.content || ''
     }
     editingField.value = null

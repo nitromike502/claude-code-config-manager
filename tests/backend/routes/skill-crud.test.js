@@ -606,14 +606,15 @@ describe('Skill CRUD API Routes', () => {
         expect(response.body.error).toContain('Invalid content');
       });
 
-      test('should reject skill rename attempt', async () => {
+      test('should silently ignore skill rename attempt', async () => {
         const response = await request(app)
           .put('/api/projects/testproject/skills/test-skill')
-          .send({ name: 'renamed-skill' });
+          .send({ name: 'renamed-skill', description: 'Valid description for testing' });
 
-        expect(response.status).toBe(400);
-        expect(response.body.success).toBe(false);
-        expect(response.body.error).toContain('Skill directory rename not supported');
+        // Name field should be silently ignored, update should succeed
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.message).toBe('Skill updated successfully');
       });
     });
 
@@ -965,14 +966,15 @@ describe('Skill CRUD API Routes', () => {
         expect(response.body.success).toBe(false);
       });
 
-      test('should reject skill rename attempt', async () => {
+      test('should silently ignore skill rename attempt', async () => {
         const response = await request(app)
           .put('/api/user/skills/test-skill')
-          .send({ name: 'renamed-user-skill' });
+          .send({ name: 'renamed-user-skill', description: 'Valid description for testing user skills' });
 
-        expect(response.status).toBe(400);
-        expect(response.body.success).toBe(false);
-        expect(response.body.error).toContain('Skill directory rename not supported');
+        // Name field should be silently ignored, update should succeed
+        expect(response.status).toBe(200);
+        expect(response.body.success).toBe(true);
+        expect(response.body.message).toBe('User skill updated successfully');
       });
     });
 
