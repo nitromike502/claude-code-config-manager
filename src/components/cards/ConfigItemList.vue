@@ -101,7 +101,8 @@ const handleCopyClick = (item) => {
     'agents': 'agent',
     'commands': 'command',
     'hooks': 'hook',
-    'mcp': 'mcp'
+    'mcp': 'mcp',
+    'skills': 'skill'
   };
 
   const itemWithType = {
