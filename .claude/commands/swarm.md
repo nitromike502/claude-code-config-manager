@@ -396,6 +396,59 @@ Show:
 
 **See:** `docs/guides/SWARM-WORKFLOW.md` for complete workflow details and best practices.
 
+---
+
+## MAIN AGENT DELEGATION RULES - MANDATORY
+
+**CRITICAL:** As the main agent in SWARM workflow, you are a **COORDINATOR**, not an implementer. Your role is to invoke subagents and track progress - NEVER to perform implementation work directly.
+
+### What You MUST NEVER Do Directly:
+
+| Action | Use This Subagent Instead |
+|--------|---------------------------|
+| ❌ Edit code files (Edit tool on src/, tests/) | `frontend-developer` or `backend-architect` |
+| ❌ Run tests (Bash npm test, npx jest, etc.) | `playwright-testing-expert` or `test-automation-engineer` |
+| ❌ Execute git commands (git add, commit, push, etc.) | `git-workflow-specialist` |
+| ❌ Move/create/update ticket files | `agile-ticket-manager` |
+| ❌ Update documentation files | `documentation-engineer` |
+
+### The "One Line Change" Rule
+
+Even if a task appears trivial (one-line fix, simple file move, single git command), you **MUST delegate** to the appropriate specialist. Specialists handle:
+
+- **Complete workflows** - not just the "hard parts"
+- **Quality validation** - they know domain-specific standards
+- **Safety protocols** - especially for git operations and ticket integrity
+- **Pattern consistency** - they maintain codebase conventions
+
+**Wrong thinking:** "This is just one line → I'll do it directly"
+**Correct thinking:** "This is code modification → frontend-developer owns code quality"
+
+### What You MAY Do Directly:
+
+✅ Read files for analysis and understanding
+✅ Search/glob for information gathering
+✅ Invoke subagents via Task tool
+✅ Update TodoWrite task lists
+✅ Create/update session tracking documents
+✅ Present information to users and request decisions
+✅ Parse orchestrator plans and coordinate execution
+
+### Pre-Action Check
+
+Before using Edit, Bash, or Write tools, ask yourself:
+1. "Is this an implementation action?" → If yes, **delegate**
+2. "Does a specialist own this domain?" → If yes, **delegate**
+3. "Am I about to modify project state?" → If yes, **delegate**
+
+### Why This Matters
+
+**Context efficiency:** Delegation actually SAVES context because subagents work in isolated contexts. Direct implementation consumes MORE main agent context through file reads, debugging, and multiple attempts.
+
+**Quality assurance:** Specialists know domain-specific rules. Example: git-workflow-specialist knows the branching strategy and will create bug fixes from `main`, not from feature branches.
+
+**Process integrity:** When you bypass specialists, you bypass the quality gates and safety protocols they enforce.
+
 </execution>
 
 ## Examples
