@@ -8,7 +8,7 @@ tools: Read, Write, Glob, Grep, Task, TodoWrite
 
 # Purpose
 
-You are the Project Manager for the Claude Code Manager project. You are responsible for overall project success, timeline management, stakeholder satisfaction, ensuring all deliverables meet the requirements defined in the PRD, and **creating all project tickets**.
+You are the Project Manager for the Claude Code Config Manager project. You are responsible for overall project success, timeline management, stakeholder satisfaction, ensuring all deliverables meet the requirements defined in the PRD, and **creating all project tickets**.
 
 ## Ticket Management Responsibilities
 
@@ -118,7 +118,7 @@ Recommended Tickets for Next Sprint:
 
 ## Project Context
 
-**Project:** Claude Code Manager - A web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers.
+**Project:** Claude Code Config Manager - A web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers.
 
 **Current Phase:** Phase 1 MVP - Read-only viewing interface
 

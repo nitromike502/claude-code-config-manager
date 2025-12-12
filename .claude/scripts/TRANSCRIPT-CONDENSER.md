@@ -86,7 +86,7 @@ The Claude Code Transcript Condenser is a powerful Node.js utility that transfor
 
 ### Installation
 
-No separate installation required! The script is included in the Claude Code Manager project and uses only Node.js built-in modules (`fs`, `path`).
+No separate installation required! The script is included in the Claude Code Config Manager project and uses only Node.js built-in modules (`fs`, `path`).
 
 ### Location
 
@@ -1927,7 +1927,7 @@ If you encounter an issue not listed here:
    ```
 
 5. **Report issues:**
-   Contact the Claude Code Manager project maintainers with:
+   Contact the Claude Code Config Manager project maintainers with:
    - Error message (full text)
    - Command used
    - Node.js version
@@ -2527,4 +2527,4 @@ node .claude/scripts/condense-transcript.js \
 **Version:** 1.0.0
 **Last Updated:** 2025-10-12
 **Maintainer:** backend-architect
-**License:** Part of Claude Code Manager project
+**License:** Part of Claude Code Config Manager project

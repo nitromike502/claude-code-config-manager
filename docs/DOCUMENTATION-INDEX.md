@@ -3,7 +3,7 @@
 **Last Updated:** November 26, 2025
 **Version:** v2.2.0 - UI Modernization Complete
 
-This index provides a comprehensive guide to all documentation in the Claude Code Manager project. Use this as your starting point to find information about any aspect of the system.
+This index provides a comprehensive guide to all documentation in the Claude Code Config Manager project. Use this as your starting point to find information about any aspect of the system.
 
 ---
 

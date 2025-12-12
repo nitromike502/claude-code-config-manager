@@ -640,7 +640,7 @@ describe('GET /api/projects/:id/hooks - Spec Compliance', () => {
 - **Specification Validation Report:** `/home/claude/manager/docs/validation/BUG-038-SPECIFICATION-VALIDATION-REPORT.md` (557 lines, comprehensive analysis)
 - **Official Claude Code Hooks Docs:** https://docs.claude.com/en/docs/claude-code/hooks
 - **Official JSON Schema:** https://json.schemastore.org/claude-code-settings.json
-- **TODO Item:** Line 50 in `TODO.md` - "Verify Claude Code Manager hook array handling"
+- **TODO Item:** Line 50 in `TODO.md` - "Verify Claude Code Config Manager hook array handling"
 
 ---
 

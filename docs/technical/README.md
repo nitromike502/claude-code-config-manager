@@ -2,7 +2,7 @@
 
 ## Overview
 
-This directory contains comprehensive technical specifications, architecture documentation, and implementation details for the Claude Code Manager project. These documents provide in-depth coverage beyond what inline code comments can reasonably contain.
+This directory contains comprehensive technical specifications, architecture documentation, and implementation details for the Claude Code Config Manager project. These documents provide in-depth coverage beyond what inline code comments can reasonably contain.
 
 ## When to Create Technical Documentation
 

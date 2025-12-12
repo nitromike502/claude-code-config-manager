@@ -9,7 +9,7 @@
 
 ## Overview
 
-This document contains all test development tickets for the Claude Code Manager backend. Tickets are organized by priority and feature group.
+This document contains all test development tickets for the Claude Code Config Manager backend. Tickets are organized by priority and feature group.
 
 **Total Estimated Tests:** 160-235 tests across all feature groups
 **Testing Framework:** Jest + Supertest
@@ -946,7 +946,7 @@ From `tests/fixtures/`:
 
 ---
 
-**Document Owner:** Claude Code Manager Team
+**Document Owner:** Claude Code Config Manager Team
 **Review Schedule:** Daily during test development
 **Next Review:** After Ticket 0 (Fixtures) completion
 

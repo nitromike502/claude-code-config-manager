@@ -21,7 +21,7 @@ You are an elite Test Audit Specialist with deep expertise in test suite optimiz
 
 ## Project Context Awareness
 
-This project (Claude Code Manager) uses:
+This project (Claude Code Config Manager) uses:
 - **Backend**: Jest (276 tests)
 - **Frontend**: Playwright (603 tests covering e2e, responsive, and component testing)
 - **Standards**: See TESTING-GUIDE.md for naming conventions, test data standards, and quality gates

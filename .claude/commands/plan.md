@@ -1,12 +1,12 @@
 # Project Planning & Ticket Creation
-# Creates Epic/Story/Task breakdown for Claude Code Manager development
+# Creates Epic/Story/Task breakdown for Claude Code Config Manager development
 
 <task>
 Launch the project-manager agent to assess current project state and create appropriate Epic/Story/Task breakdown based on what's next in the development workflow.
 </task>
 
 <context>
-**Project**: Claude Code Manager - Web-based tool for managing Claude Code projects
+**Project**: Claude Code Config Manager - Web-based tool for managing Claude Code projects
 **Tech Stack**: Node.js + Express (backend), Vue 3 + PrimeVue (frontend, CDN)
 **Architecture**: Local web server on port 8420, live file system reads
 

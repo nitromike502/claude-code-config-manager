@@ -46,7 +46,7 @@ curl -s http://localhost:5173
   <script type="module" src="/@vite/client"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Claude Code Manager</title>
+  <title>Claude Code Config Manager</title>
 </head>
 <body>
   <div id="app"></div>
@@ -73,7 +73,7 @@ curl -s http://localhost:5173/src/App.vue | head -30
 - Vue SFC correctly compiled to JavaScript
 - Component name: "App"
 - Template rendered with placeholder content:
-  - H1: "Claude Code Manager"
+  - H1: "Claude Code Config Manager"
   - P1: "Phase 2 Migration in progress..."
   - P2: "Vite development server is running successfully!"
 - Scoped styles compiled and included

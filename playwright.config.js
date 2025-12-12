@@ -1,7 +1,7 @@
 const { defineConfig, devices } = require('@playwright/test');
 
 /**
- * Playwright Configuration for Claude Code Manager Frontend Tests
+ * Playwright Configuration for Claude Code Config Manager Frontend Tests
  *
  * Test Directories:
  * - tests/frontend: Component-level tests for UI elements

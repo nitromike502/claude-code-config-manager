@@ -5,7 +5,7 @@
 
 ## Overview
 
-This directory contains initial planning documents for three candidate features that extend Claude Code Manager's capabilities beyond the Phase 2.3 baseline (read-only viewing of agents, commands, hooks, and MCP servers).
+This directory contains initial planning documents for three candidate features that extend Claude Code Config Manager's capabilities beyond the Phase 2.3 baseline (read-only viewing of agents, commands, hooks, and MCP servers).
 
 ## Features Documented
 
@@ -35,7 +35,7 @@ View installed plugins with their metadata and the configurations they provide (
 **Effort:** 3-4 days (~24 hours)
 **Status:** Documented, awaiting prioritization decision
 
-Copy agents, commands, hooks, Skills, and MCP server configurations between projects or between user-level and project-level scopes. First write operation in Claude Code Manager.
+Copy agents, commands, hooks, Skills, and MCP server configurations between projects or between user-level and project-level scopes. First write operation in Claude Code Config Manager.
 
 **Key Value:** Workflow productivity (massive time savings), standardization across projects, bridge to full CRUD operations
 
@@ -114,7 +114,7 @@ Each feature directory contains:
 ## Key Insights from Planning
 
 ### Architecture Patterns
-All three features can leverage existing Claude Code Manager patterns:
+All three features can leverage existing Claude Code Config Manager patterns:
 - **Reusable Components:** ConfigCard, ConfigDetailSidebar, LoadingState, EmptyState (from Phase 2.1)
 - **Parser Patterns:** YAML frontmatter + markdown (from agents/commands)
 - **API Consistency:** REST patterns established in Phase 1

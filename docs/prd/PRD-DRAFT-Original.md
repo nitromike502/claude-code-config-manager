@@ -1,4 +1,4 @@
-# Product Requirements Document: Claude Code Manager
+# Product Requirements Document: Claude Code Config Manager
 
 **Version:** 1.0 (MVP)
 **Last Updated:** 2025-10-06
@@ -8,7 +8,7 @@
 
 ## 1. Project Overview
 
-**Project Name:** Claude Code Manager
+**Project Name:** Claude Code Config Manager
 **Purpose:** Web-based management interface for Claude Code projects, providing centralized visibility and management of subagents, slash commands, hooks, and MCP servers across all projects on the local machine.
 
 **Tech Stack:**

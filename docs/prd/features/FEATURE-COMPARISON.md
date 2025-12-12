@@ -100,7 +100,7 @@ Three features have been analyzed for potential inclusion in upcoming phases:
 - Fast project setup (copy proven configs from existing projects)
 
 **Technical Highlights:**
-- **First Write Operation** in Claude Code Manager
+- **First Write Operation** in Claude Code Config Manager
 - **API:** 6 new endpoints (copy agent, copy command, copy skill, copy hook, copy MCP, validate)
 - **Operations:**
   - File-based: Simple file copy (agents, commands)

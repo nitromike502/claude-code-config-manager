@@ -1,7 +1,7 @@
 # Session Summary - October 24, 2025
 
 ## Overview
-This session focused on resolving critical display bugs discovered during testing of the Claude Code Manager dashboard and configuration views. All identified issues were fixed with comprehensive test coverage.
+This session focused on resolving critical display bugs discovered during testing of the Claude Code Config Manager dashboard and configuration views. All identified issues were fixed with comprehensive test coverage.
 
 ## Bugs Fixed
 

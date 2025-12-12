@@ -1,6 +1,6 @@
-# Claude Code Manager - API Documentation
+# Claude Code Config Manager - API Documentation
 
-Complete API reference for the Claude Code Manager backend.
+Complete API reference for the Claude Code Config Manager backend.
 
 **Base URL:** `http://localhost:8420/api`
 
@@ -157,7 +157,7 @@ Returns server health status and version information.
   "status": "healthy",
   "timestamp": "2025-10-07T12:34:56.789Z",
   "version": "1.0.0",
-  "service": "Claude Code Manager Backend"
+  "service": "Claude Code Config Manager Backend"
 }
 ```
 

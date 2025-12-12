@@ -2,7 +2,7 @@
 
 ## Overview
 
-**SWARM** stands for **Specialized Workflow with Autonomous Resource Management** - a coordinated multi-agent development methodology used in the Claude Code Manager project to execute complex software development tasks efficiently and systematically.
+**SWARM** stands for **Specialized Workflow with Autonomous Resource Management** - a coordinated multi-agent development methodology used in the Claude Code Config Manager project to execute complex software development tasks efficiently and systematically.
 
 ### Architecture Philosophy
 

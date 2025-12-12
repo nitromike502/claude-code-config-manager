@@ -2,7 +2,7 @@
 
 ## Overview
 
-End-to-end (e2e) tests have been successfully implemented for the Claude Code Manager application, covering all 5 critical user flows identified in the workflow analysis recommendations.
+End-to-end (e2e) tests have been successfully implemented for the Claude Code Config Manager application, covering all 5 critical user flows identified in the workflow analysis recommendations.
 
 **Implementation Date:** 2025-10-12
 **Total E2E Tests:** 45

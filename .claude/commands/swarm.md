@@ -14,7 +14,7 @@ Execute the complete SWARM workflow where the main agent coordinates all subagen
 </task>
 
 <context>
-**Project**: Claude Code Manager - Web-based tool for managing Claude Code projects
+**Project**: Claude Code Config Manager - Web-based tool for managing Claude Code projects
 **Tech Stack**: Node.js + Express (backend), Vue 3 + Vite (frontend SPA)
 **Architecture**: Local web server on port 8420, live file system reads
 

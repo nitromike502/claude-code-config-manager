@@ -1,12 +1,12 @@
 # Project Status Check
-# Claude Code Manager Development Assessment & Intelligent Ticket Selection
+# Claude Code Config Manager Development Assessment & Intelligent Ticket Selection
 
 <task>
-Assess the current state of Claude Code Manager development, check for active work in progress, and intelligently recommend next tickets to work on using the ticket manager and project manager.
+Assess the current state of Claude Code Config Manager development, check for active work in progress, and intelligently recommend next tickets to work on using the ticket manager and project manager.
 </task>
 
 <context>
-**Project**: Claude Code Manager - Web-based tool for managing Claude Code projects
+**Project**: Claude Code Config Manager - Web-based tool for managing Claude Code projects
 **Tech Stack**: Node.js + Express (backend), Vue 3 + Vite (frontend SPA)
 **Architecture**: Local web server on port 8420, live file system reads
 
@@ -184,7 +184,7 @@ Format:
 **Always include project health metrics:**
 
 ```
-## Claude Code Manager - Project Health
+## Claude Code Config Manager - Project Health
 
 ### Current Phase
 - **Phase:** Phase 3 - CRUD Operations for Configuration Management

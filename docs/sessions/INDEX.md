@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This archive contains session summaries and workflow analyses from the Claude Code Manager development project. These documents provide critical insights into what works, what doesn't, and how to maintain high-quality development practices using Claude Code with multi-agent workflows.
+This archive contains session summaries and workflow analyses from the Claude Code Config Manager development project. These documents provide critical insights into what works, what doesn't, and how to maintain high-quality development practices using Claude Code with multi-agent workflows.
 
 **Use this archive to:**
 - Learn from past successes and failures

@@ -1,6 +1,6 @@
 /**
  * Parser Module Index
- * Exports all configuration file parsers for Claude Code Manager
+ * Exports all configuration file parsers for Claude Code Config Manager
  */
 
 const subagentParser = require('./subagentParser');

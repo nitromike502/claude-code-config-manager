@@ -1,4 +1,4 @@
-# Contributing to Claude Code Manager
+# Contributing to Claude Code Config Manager
 
 Thank you for your interest in contributing! This guide provides essential information for contributors.
 
@@ -341,4 +341,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-**Thank you for contributing to Claude Code Manager!**
+**Thank you for contributing to Claude Code Config Manager!**

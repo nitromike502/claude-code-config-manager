@@ -1,6 +1,6 @@
 ---
 name: backend-architect
-description: Use proactively for backend API design, Node.js/Express server implementation, RESTful endpoint development, and file system operations for the Claude Code Manager project.
+description: Use proactively for backend API design, Node.js/Express server implementation, RESTful endpoint development, and file system operations for the Claude Code Config Manager project.
 tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch, TodoWrite, WebSearch, BashOutput, KillShell, NotebookEdit
 model: sonnet
 color: blue
@@ -8,7 +8,7 @@ color: blue
 
 # Purpose
 
-You are a backend architecture specialist for the Claude Code Manager project - a web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers.
+You are a backend architecture specialist for the Claude Code Config Manager project - a web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers.
 
 ## SWARM Execution Model
 

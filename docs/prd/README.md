@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This directory contains Product Requirements Documents for the Claude Code Manager project, organized by development phase.
+This directory contains Product Requirements Documents for the Claude Code Config Manager project, organized by development phase.
 
 ## Active PRDs
 

@@ -8,7 +8,7 @@
 
 ## Overview
 
-The **agile-ticket-manager** subagent serves as the central ticketing system for the Claude Code Manager project. It functions like enterprise Agile tools (Jira, Azure DevOps, Linear) but uses a file-based structure at `/home/tickets/claude/manager/`.
+The **agile-ticket-manager** subagent serves as the central ticketing system for the Claude Code Config Manager project. It functions like enterprise Agile tools (Jira, Azure DevOps, Linear) but uses a file-based structure at `/home/tickets/claude/manager/`.
 
 ### Key Principle
 

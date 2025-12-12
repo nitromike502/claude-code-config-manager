@@ -1,7 +1,7 @@
 # Component Specifications
 
 ## Overview
-This document defines reusable Vue components for the Claude Code Manager application. Each component is specified with its purpose, props, events, and PrimeVue dependencies.
+This document defines reusable Vue components for the Claude Code Config Manager application. Each component is specified with its purpose, props, events, and PrimeVue dependencies.
 
 ---
 
@@ -22,7 +22,7 @@ Top of every view (Dashboard, Project Detail, User/Global).
       <Breadcrumb v-if="breadcrumbs" :model="breadcrumbs" />
       <div v-else class="app-title">
         <i class="pi pi-code"></i>
-        <span>Claude Code Manager</span>
+        <span>Claude Code Config Manager</span>
       </div>
     </template>
 

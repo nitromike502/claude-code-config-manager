@@ -1,22 +1,22 @@
 ---
 name: ba
-description: Business Analyst - Solution Claude Code Manager features using ultrathink reasoning and specialized subagents
+description: Business Analyst - Solution Claude Code Config Manager features using ultrathink reasoning and specialized subagents
 color: green
 ---
 
 # Business Analyst Command
-# Feature Solution & Analysis for Claude Code Manager
+# Feature Solution & Analysis for Claude Code Config Manager
 
 <task>
-Analyze and solution Claude Code Manager features using deep reasoning (ultrathink mode) and specialized subagents. Create comprehensive analysis, wireframes, and documentation in dedicated session directories.
+Analyze and solution Claude Code Config Manager features using deep reasoning (ultrathink mode) and specialized subagents. Create comprehensive analysis, wireframes, and documentation in dedicated session directories.
 </task>
 
 <context>
-**Project**: Claude Code Manager - Web-based tool for managing Claude Code projects
+**Project**: Claude Code Config Manager - Web-based tool for managing Claude Code projects
 **Tech Stack**: Node.js + Express (backend), Vue 3 + Vite + PrimeVue (frontend SPA)
 **Current Phase**: Phase 3 - Planning and early development
 
-**This command is for solutioning Claude Code Manager features only.**
+**This command is for solutioning Claude Code Config Manager features only.**
 
 **Available Subagents**:
 - `@claude-code-expert` - Research Claude Code features and capabilities
@@ -42,7 +42,7 @@ This structure allows easy migration to `docs/` when feature moves to developmen
 **User Request:** `$ARGUMENTS`
 
 {If $ARGUMENTS is empty:}
-Ask the user: **"What Claude Code Manager feature or problem would you like me to solution?"**
+Ask the user: **"What Claude Code Config Manager feature or problem would you like me to solution?"**
 
 Wait for their response before proceeding.
 
@@ -62,7 +62,7 @@ ultrathink
 I need to deeply analyze this request to understand:
 - What problem is the user trying to solve?
 - What are the core business objectives?
-- What Claude Code Manager capabilities are relevant?
+- What Claude Code Config Manager capabilities are relevant?
 - What constraints exist (technical, UX, scope)?
 - What alternatives should be evaluated?
 - What questions need clarification?
@@ -360,7 +360,7 @@ Would you like me to:
 3. **Dedicated Sessions** - Each BA session gets its own timestamped directory
 4. **Comprehensive Deliverables** - Produce analysis + PRD + wireframes + guides
 5. **Easy Migration** - Mirror docs/ structure so approved work moves easily
-6. **Claude Code Manager Focus** - Only solution features for this project
+6. **Claude Code Config Manager Focus** - Only solution features for this project
 7. **BA Produces Documentation, PM Produces Tickets** - Clear separation of responsibilities:
    - BA creates PRDs and requirements
    - Project Manager creates Epic/Story/Task tickets from PRDs
@@ -389,7 +389,7 @@ BA Response:
 ```
 User: /ba
 
-BA Response: "What Claude Code Manager feature or problem would you like me to solution?"
+BA Response: "What Claude Code Config Manager feature or problem would you like me to solution?"
 
 User: I want users to be able to search across all projects
 

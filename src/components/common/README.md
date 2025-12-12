@@ -1,6 +1,6 @@
 # Common Utility Components
 
-This directory contains reusable utility components used throughout the Claude Code Manager application.
+This directory contains reusable utility components used throughout the Claude Code Config Manager application.
 
 ## Components
 

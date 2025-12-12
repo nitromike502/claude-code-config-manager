@@ -1,7 +1,7 @@
 # Color System Guide
 
 ## Overview
-This document provides a quick reference for the Claude Code Manager color system and explains how colors are organized across wireframe documents.
+This document provides a quick reference for the Claude Code Config Manager color system and explains how colors are organized across wireframe documents.
 
 ---
 
@@ -402,4 +402,4 @@ All color combinations meet WCAG AA minimum standards:
 
 ## Summary
 
-The Claude Code Manager color system is built on CSS custom properties (variables) for maximum flexibility and maintainability. All wireframe documents reference these variables instead of hardcoded hex values, enabling easy theme switching between dark and light modes while maintaining consistent branding and accessibility standards throughout the application.
+The Claude Code Config Manager color system is built on CSS custom properties (variables) for maximum flexibility and maintainability. All wireframe documents reference these variables instead of hardcoded hex values, enabling easy theme switching between dark and light modes while maintaining consistent branding and accessibility standards throughout the application.

@@ -1,10 +1,10 @@
 # Git Workflow
 
-This guide documents the feature branch workflow used in the Claude Code Manager project. This workflow ensures code quality, enables frequent small commits, and prevents accidental pushes to protected branches.
+This guide documents the feature branch workflow used in the Claude Code Config Manager project. This workflow ensures code quality, enables frequent small commits, and prevents accidental pushes to protected branches.
 
 ## Overview
 
-The Claude Code Manager project enforces a **feature branch workflow** to ensure code quality and enable frequent, small commits. All development work must be done on feature branches, and direct commits to main are blocked by Git hooks.
+The Claude Code Config Manager project enforces a **feature branch workflow** to ensure code quality and enable frequent, small commits. All development work must be done on feature branches, and direct commits to main are blocked by Git hooks.
 
 ## Mandatory Workflow Rules
 

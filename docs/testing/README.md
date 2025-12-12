@@ -1,6 +1,6 @@
 # Testing Documentation
 
-This directory contains all testing infrastructure and documentation for the Claude Code Manager project.
+This directory contains all testing infrastructure and documentation for the Claude Code Config Manager project.
 
 ## Quick Start
 

@@ -212,7 +212,7 @@ PostToolUse Hook
 
 ---
 
-## Claude Code Manager Integration
+## Claude Code Config Manager Integration
 
 ### Backend Status
 

@@ -1,7 +1,7 @@
 # Responsive Design Specifications
 
 ## Overview
-This document defines how the Claude Code Manager UI adapts across different screen sizes. The primary focus is on laptop and desktop screens, with tablet support as secondary priority and mobile as low priority for Phase 1.
+This document defines how the Claude Code Config Manager UI adapts across different screen sizes. The primary focus is on laptop and desktop screens, with tablet support as secondary priority and mobile as low priority for Phase 1.
 
 ---
 

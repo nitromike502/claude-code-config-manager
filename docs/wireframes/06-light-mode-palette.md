@@ -1,7 +1,7 @@
 # Light Mode Color Palette
 
 ## Overview
-This document defines the complete light mode color system for Claude Code Manager. All colors are designed to meet WCAG AA accessibility standards (4.5:1 contrast ratio minimum for normal text, 3:1 for large text and UI components).
+This document defines the complete light mode color system for Claude Code Config Manager. All colors are designed to meet WCAG AA accessibility standards (4.5:1 contrast ratio minimum for normal text, 3:1 for large text and UI components).
 
 ---
 

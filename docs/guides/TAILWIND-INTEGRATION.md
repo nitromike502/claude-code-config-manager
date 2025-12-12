@@ -6,7 +6,7 @@
 
 ## Overview
 
-This guide documents the Tailwind CSS v4 integration with tailwindcss-primeui plugin for the Claude Code Manager. The integration provides utility-first styling while maintaining compatibility with PrimeVue Aura theme components.
+This guide documents the Tailwind CSS v4 integration with tailwindcss-primeui plugin for the Claude Code Config Manager. The integration provides utility-first styling while maintaining compatibility with PrimeVue Aura theme components.
 
 **Achievement:** 63% reduction in custom CSS (from 1,734 lines to 634 lines)
 **Approach:** Incremental migration with backward compatibility

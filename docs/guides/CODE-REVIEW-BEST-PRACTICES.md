@@ -1,6 +1,6 @@
 # Code Review Best Practices
 
-This guide provides checklists and best practices for reviewing code in the Claude Code Manager project, with special emphasis on **UX consistency verification** for feature parity implementations.
+This guide provides checklists and best practices for reviewing code in the Claude Code Config Manager project, with special emphasis on **UX consistency verification** for feature parity implementations.
 
 ## Table of Contents
 

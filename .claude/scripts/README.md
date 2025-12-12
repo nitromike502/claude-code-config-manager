@@ -244,7 +244,7 @@ The script is modular and exports key functions for testing:
 
 ### License
 
-Part of the Claude Code Manager project.
+Part of the Claude Code Config Manager project.
 
 ---
 

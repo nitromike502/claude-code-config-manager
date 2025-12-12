@@ -7,7 +7,7 @@ const parsers = require('./index');
 const os = require('os');
 
 async function testParsers() {
-  console.log('=== Testing Claude Code Manager Parsers ===\n');
+  console.log('=== Testing Claude Code Config Manager Parsers ===\n');
 
   const projectPath = '/home/claude/manager';
   const userHomePath = os.homedir();
