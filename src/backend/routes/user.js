@@ -116,6 +116,207 @@ router.get('/hooks', async (req, res) => {
 });
 
 /**
+ * PUT /api/user/hooks/:hookId
+ * Update a user-level hook
+ *
+ * hookId format: event::matcher::index (URL-encoded)
+ * Examples:
+ * - "PreToolUse::Bash::0" - First hook for PreToolUse with Bash matcher
+ * - "SessionEnd::::0" - First hook for SessionEnd (no matcher)
+ */
+router.put('/hooks/:hookId', async (req, res) => {
+  try {
+    const { hookId } = req.params;
+    const updates = req.body;
+
+    // Import validation and constants
+    const { validateHookUpdate, VALID_HOOK_EVENTS, isMatcherBasedEvent } = require('../services/hookValidation');
+
+    // Decode hookId (URL-encoded)
+    const decodedHookId = decodeURIComponent(hookId);
+
+    // Parse hookId: event::matcher::index
+    const parts = decodedHookId.split('::');
+    if (parts.length !== 3) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid hookId format',
+        details: 'hookId must be in format: event::matcher::index'
+      });
+    }
+
+    const [event, matcher, indexStr] = parts;
+
+    // Validate event
+    if (!VALID_HOOK_EVENTS.includes(event)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid event type',
+        details: `Event must be one of: ${VALID_HOOK_EVENTS.join(', ')}`
+      });
+    }
+
+    // Validate index
+    const index = parseInt(indexStr, 10);
+    if (isNaN(index) || index < 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid hookId format',
+        details: 'Index must be a non-negative integer'
+      });
+    }
+
+    // Get user home directory
+    const userHome = getUserHome();
+    const settingsPath = path.join(userHome, '.claude', 'settings.json');
+
+    // Read current settings
+    let settings = { hooks: {} };
+    try {
+      const content = await fs.readFile(settingsPath, 'utf8');
+      settings = JSON.parse(content);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+      // File doesn't exist - no hooks to update
+      return res.status(404).json({
+        success: false,
+        error: 'Hook not found',
+        details: `No user hooks configured`
+      });
+    }
+
+    // Find the hook
+    const hooks = settings.hooks || {};
+    const eventHooks = hooks[event];
+    if (!Array.isArray(eventHooks) || eventHooks.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Hook not found',
+        details: `No hooks found for event: ${event}`
+      });
+    }
+
+    // For matcher-based events, filter by matcher
+    let hookInfo = null;
+    if (isMatcherBasedEvent(event)) {
+      const matchingHooks = eventHooks.filter(h => (h.matcher || '') === matcher);
+      if (index >= matchingHooks.length) {
+        return res.status(404).json({
+          success: false,
+          error: 'Hook not found',
+          details: `No hook found at index ${index} for ${event}::${matcher}`
+        });
+      }
+
+      // Find the actual array index
+      let matchCount = 0;
+      for (let i = 0; i < eventHooks.length; i++) {
+        if ((eventHooks[i].matcher || '') === matcher) {
+          if (matchCount === index) {
+            hookInfo = { hook: eventHooks[i], arrayIndex: i };
+            break;
+          }
+          matchCount++;
+        }
+      }
+    } else {
+      // Non-matcher events - index directly
+      if (index >= eventHooks.length) {
+        return res.status(404).json({
+          success: false,
+          error: 'Hook not found',
+          details: `No hook found at index ${index} for ${event}`
+        });
+      }
+      hookInfo = { hook: eventHooks[index], arrayIndex: index };
+    }
+
+    if (!hookInfo) {
+      return res.status(404).json({
+        success: false,
+        error: 'Hook not found'
+      });
+    }
+
+    // Validate updates
+    const validation = validateHookUpdate(updates, hookInfo.hook, event);
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: validation.errors
+      });
+    }
+
+    // Apply updates
+    const updatedHook = { ...hookInfo.hook };
+    const allowedFields = ['matcher', 'type', 'command', 'timeout', 'enabled', 'suppressOutput', 'continue'];
+    for (const field of allowedFields) {
+      if (updates[field] !== undefined) {
+        updatedHook[field] = updates[field];
+      }
+    }
+
+    // Check if matcher changed (for matcher-based events)
+    const matcherChanged = isMatcherBasedEvent(event) &&
+                           updates.matcher !== undefined &&
+                           updates.matcher !== matcher;
+
+    if (matcherChanged) {
+      // Remove from current position
+      eventHooks.splice(hookInfo.arrayIndex, 1);
+      // Add to end (new matcher group)
+      eventHooks.push(updatedHook);
+    } else {
+      // Update in place
+      eventHooks[hookInfo.arrayIndex] = updatedHook;
+    }
+
+    // Clean up empty arrays
+    if (eventHooks.length === 0) {
+      delete hooks[event];
+    } else {
+      hooks[event] = eventHooks;
+    }
+
+    settings.hooks = hooks;
+
+    // Write back atomically
+    const tempPath = `${settingsPath}.tmp`;
+    await fs.mkdir(path.dirname(settingsPath), { recursive: true });
+    await fs.writeFile(tempPath, JSON.stringify(settings, null, 2), 'utf8');
+    await fs.rename(tempPath, settingsPath);
+
+    // Calculate new hookId if matcher changed
+    let newHookId = decodedHookId;
+    if (matcherChanged) {
+      const newIndex = eventHooks
+        .filter(h => (h.matcher || '') === (updatedHook.matcher || ''))
+        .indexOf(updatedHook);
+      newHookId = `${event}::${updatedHook.matcher || ''}::${newIndex}`;
+    }
+
+    res.json({
+      success: true,
+      hook: {
+        ...updatedHook,
+        event,
+        hookId: newHookId
+      }
+    });
+  } catch (error) {
+    console.error('Error updating user hook:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update hook',
+      details: error.message
+    });
+  }
+});
+
+/**
  * GET /api/user/mcp
  * Returns user-level MCP servers from ~/.claude/settings.json
  */

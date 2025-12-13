@@ -40,11 +40,13 @@ app.use((req, res, next) => {
 const projectsRouter = require('./routes/projects');
 const userRouter = require('./routes/user');
 const copyRoutes = require('./routes/copy');
+const hooksRouter = require('./routes/hooks');
 
 // API routes
 app.use('/api/projects', projectsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/copy', copyRoutes);
+app.use('/api/projects', hooksRouter);
 
 // Serve static frontend files from built SPA (dist)
 // Fall back to frontend for development if dist is not available

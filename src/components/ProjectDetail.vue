@@ -35,6 +35,7 @@
     :project-id="projectId"
     :enable-agent-crud="true"
     :enable-command-crud="true"
+    :enable-hook-crud="true"
     @retry="retryLoad"
     @toggle-agents="showingAllAgents = !showingAllAgents"
     @toggle-commands="showingAllCommands = !showingAllCommands"
@@ -49,6 +50,8 @@
     @agent-updated="handleAgentUpdated"
     @command-delete="handleCommandDelete"
     @command-updated="handleCommandUpdated"
+    @hook-updated="handleHookUpdated"
+    @hook-delete="handleHookDelete"
   >
     <template #copy-modal>
       <CopyModal
@@ -506,6 +509,18 @@ export default {
       await loadCommands()
     }
 
+    // Hook CRUD handlers
+    const handleHookUpdated = async () => {
+      // Refresh hooks list after sidebar edit
+      await loadHooks()
+    }
+
+    const handleHookDelete = async (hook) => {
+      // Note: Hook delete is not yet implemented in the UI
+      // This handler is a placeholder for future implementation
+      console.log('Hook delete requested:', hook)
+    }
+
     // Copy modal handlers
     const handleCopyClick = (configItem) => {
       // Normalize configType to type and add projectId for CopyModal compatibility
@@ -649,7 +664,10 @@ export default {
       handleCommandUpdated,
       handleCommandDelete,
       handleCommandDeleteConfirm,
-      handleCommandDeleteCancel
+      handleCommandDeleteCancel,
+      // Hook CRUD
+      handleHookUpdated,
+      handleHookDelete
     }
   }
 }

@@ -485,6 +485,41 @@ export async function updateUserSkill(skillName, updates) {
   return response.json()
 }
 
+// ========================================
+// Hook CRUD Operations
+// ========================================
+
+/**
+ * Update a project hook
+ * @param {string} projectId - Project identifier
+ * @param {string} hookId - Hook identifier (format: event::matcher::index)
+ * @param {Object} updates - Properties to update (matcher, type, command, timeout, enabled, etc.)
+ * @returns {Promise<Object>} - { success: boolean, hook: Object }
+ */
+export async function updateProjectHook(projectId, hookId, updates) {
+  const encodedHookId = encodeURIComponent(hookId)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/hooks/${encodedHookId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates)
+  })
+  return response.json()
+}
+
+/**
+ * Update a user-level hook
+ * @param {string} hookId - Hook identifier (format: event::matcher::index)
+ * @param {Object} updates - Properties to update (matcher, type, command, timeout, enabled, etc.)
+ * @returns {Promise<Object>} - { success: boolean, hook: Object }
+ */
+export async function updateUserHook(hookId, updates) {
+  const encodedHookId = encodeURIComponent(hookId)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/user/hooks/${encodedHookId}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates)
+  })
+  return response.json()
+}
+
 // Default export with all API functions
 export default {
   BASE_URL,
@@ -522,5 +557,8 @@ export default {
   getUserCommandReferences,
   // Skill CRUD
   updateProjectSkill,
-  updateUserSkill
+  updateUserSkill,
+  // Hook CRUD
+  updateProjectHook,
+  updateUserHook
 }
