@@ -219,11 +219,98 @@
 
       <!-- Hooks Metadata -->
       <div v-else-if="selectedType === 'hooks'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Event:</strong> {{ selectedItem.event }}</p>
-        <p v-if="selectedItem.type" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Type:</strong> {{ selectedItem.type }}</p>
-        <p v-if="selectedItem.matcher" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Matcher:</strong> {{ selectedItem.matcher }}</p>
-        <p v-if="selectedItem.pattern" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Pattern:</strong> {{ selectedItem.pattern }}</p>
-        <p v-if="selectedItem.command" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Command:</strong> <code class="bg-bg-primary px-1 py-0.5 rounded font-mono text-xs text-primary">{{ selectedItem.command }}</code></p>
+        <!-- Event Field (READONLY - cannot change after creation) -->
+        <p class="my-2 text-sm text-text-secondary leading-relaxed">
+          <strong class="text-text-primary">Event:</strong> {{ selectedItem.event }}
+          <span class="text-text-muted text-xs ml-2">(read-only)</span>
+        </p>
+
+        <!-- Matcher Field (only for PreToolUse/PostToolUse events) -->
+        <LabeledEditField
+          v-if="isMatcherBasedEvent(selectedItem.event)"
+          v-model="hookData.matcher"
+          field-type="text"
+          label="Matcher"
+          placeholder="Bash|Read|Write or *"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'matcher'"
+          :validation="[{ type: 'required' }]"
+          @edit-start="editingField = 'matcher'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('matcher', $event)"
+        />
+
+        <!-- Type Field (command or prompt - prompt only for Stop/SubagentStop) -->
+        <LabeledEditField
+          v-model="hookData.type"
+          field-type="selectbutton"
+          label="Type"
+          :options="supportsPromptType(hookData.event) ? hookTypeOptions : [{ label: 'Command', value: 'command' }]"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'type'"
+          @edit-start="editingField = 'type'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('type', $event)"
+        />
+
+        <!-- Command Field -->
+        <LabeledEditField
+          v-model="hookData.command"
+          field-type="textarea"
+          label="Command"
+          placeholder="Shell command to execute"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'command'"
+          :validation="[{ type: 'required' }]"
+          @edit-start="editingField = 'command'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('command', $event)"
+        />
+
+        <!-- Timeout Field -->
+        <LabeledEditField
+          v-model="hookData.timeout"
+          field-type="number"
+          label="Timeout (ms)"
+          placeholder="30000"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'timeout'"
+          @edit-start="editingField = 'timeout'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('timeout', $event)"
+        />
+
+        <!-- Enabled Field -->
+        <LabeledEditField
+          v-model="hookData.enabled"
+          field-type="selectbutton"
+          label="Enabled"
+          :options="booleanOptions"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'enabled'"
+          @edit-start="editingField = 'enabled'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('enabled', $event)"
+        />
+
+        <!-- Suppress Output Field -->
+        <LabeledEditField
+          v-model="hookData.suppressOutput"
+          field-type="selectbutton"
+          label="Suppress Output"
+          :options="booleanOptions"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'suppressOutput'"
+          @edit-start="editingField = 'suppressOutput'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('suppressOutput', $event)"
+        />
+
+        <!-- Continue Field -->
+        <LabeledEditField
+          v-model="hookData.continue"
+          field-type="selectbutton"
+          label="Continue on Error"
+          :options="booleanOptions"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'continue'"
+          @edit-start="editingField = 'continue'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('continue', $event)"
+        />
       </div>
 
       <!-- MCP Servers Metadata -->
@@ -451,10 +538,12 @@ import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import { useAgentsStore } from '@/stores/agents'
 import { useCommandsStore } from '@/stores/commands'
 import { useSkillsStore } from '@/stores/skills'
+import { useHooksStore } from '@/stores/hooks'
 
 const agentsStore = useAgentsStore()
 const commandsStore = useCommandsStore()
 const skillsStore = useSkillsStore()
+const hooksStore = useHooksStore()
 
 const props = defineProps({
   visible: {
@@ -514,6 +603,10 @@ const emit = defineEmits({
     return item && typeof item === 'object'
   },
   'skill-updated': () => true,
+  'hook-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'hook-updated': () => true,
   'update:visible': (value) => typeof value === 'boolean'
 })
 
@@ -564,6 +657,18 @@ const skillData = ref({
   content: ''
 })
 
+// Hook editing state
+const hookData = ref({
+  event: '',
+  matcher: '',
+  type: 'command',
+  command: '',
+  timeout: 30000,
+  enabled: true,
+  suppressOutput: false,
+  continue: true
+})
+
 const editingField = ref(null)
 
 // Computed: Can edit agents (only if enableCrud is true and not a plugin agent)
@@ -583,6 +688,12 @@ const canEditCommand = computed(() => {
 const canEditSkill = computed(() => {
   return props.enableCrud &&
          props.selectedType === 'skills'
+})
+
+// Computed: Can edit hooks (only if enableCrud is true)
+const canEditHook = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'hooks'
 })
 
 // Model options for agents
@@ -636,6 +747,44 @@ const skillOptions = computed(() => {
   return []
 })
 
+// Hook type options
+const hookTypeOptions = [
+  { label: 'Command', value: 'command' },
+  { label: 'Prompt', value: 'prompt' }
+]
+
+// Boolean options for hook fields
+const booleanOptions = [
+  { label: 'Yes', value: true },
+  { label: 'No', value: false }
+]
+
+// Events that require a matcher field (PreToolUse, PostToolUse)
+const MATCHER_BASED_EVENTS = ['PreToolUse', 'PostToolUse']
+
+// Events that support prompt type (Stop, SubagentStop, UserPromptSubmit, PreToolUse, PermissionRequest)
+const PROMPT_SUPPORTED_EVENTS = ['Stop', 'SubagentStop', 'UserPromptSubmit', 'PreToolUse', 'PermissionRequest']
+
+// Check if event requires matcher
+const isMatcherBasedEvent = (event) => MATCHER_BASED_EVENTS.includes(event)
+
+// Check if event supports prompt type
+const supportsPromptType = (event) => PROMPT_SUPPORTED_EVENTS.includes(event)
+
+// Common tool options for matcher field
+const matcherToolOptions = [
+  { label: 'All Tools (*)', value: '*' },
+  { label: 'Bash', value: 'Bash' },
+  { label: 'Read', value: 'Read' },
+  { label: 'Write', value: 'Write' },
+  { label: 'Edit', value: 'Edit' },
+  { label: 'Glob', value: 'Glob' },
+  { label: 'Grep', value: 'Grep' },
+  { label: 'Task', value: 'Task' },
+  { label: 'WebFetch', value: 'WebFetch' },
+  { label: 'WebSearch', value: 'WebSearch' }
+]
+
 // Watch for selectedItem changes to update agentData
 watch(() => props.selectedItem, (newItem) => {
   if (newItem && props.selectedType === 'agents') {
@@ -675,6 +824,19 @@ watch(() => props.selectedItem, (newItem) => {
       description: newItem.description || '',
       allowedTools: newItem.allowedTools || [],
       content: newItem.content || ''
+    }
+    editingField.value = null
+  } else if (newItem && props.selectedType === 'hooks') {
+    // Update hook data
+    hookData.value = {
+      event: newItem.event || '',
+      matcher: newItem.matcher || '',
+      type: newItem.type || 'command',
+      command: newItem.command || '',
+      timeout: newItem.timeout || 30000,
+      enabled: newItem.enabled !== false, // Default to true
+      suppressOutput: newItem.suppressOutput || false,
+      continue: newItem.continue !== false // Default to true
     }
     editingField.value = null
   }
@@ -774,6 +936,38 @@ const handleSkillFieldUpdate = async (fieldName, newValue) => {
 
       // Notify parent that skill was updated
       emit('skill-updated')
+    }
+  } finally {
+    editingField.value = null
+  }
+}
+
+// Handle hook field update
+const handleHookFieldUpdate = async (fieldName, newValue) => {
+  if (!canEditHook.value) return
+
+  try {
+    // Build updates object with just the changed field
+    const updates = { [fieldName]: newValue }
+
+    // Build hookId from the selected item
+    // Hook items should have: event, matcher (optional), index
+    const hookId = `${props.selectedItem.event}::${props.selectedItem.matcher || ''}::${props.selectedItem.index || 0}`
+
+    // Call API through store
+    const result = await hooksStore.updateHook(
+      props.projectId,
+      hookId,
+      updates,
+      props.scope
+    )
+
+    if (result.success) {
+      // Update local hookData
+      hookData.value[fieldName] = newValue
+
+      // Notify parent that hook was updated
+      emit('hook-updated')
     }
   } finally {
     editingField.value = null

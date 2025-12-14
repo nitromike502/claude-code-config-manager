@@ -40,11 +40,18 @@ app.use((req, res, next) => {
 const projectsRouter = require('./routes/projects');
 const userRouter = require('./routes/user');
 const copyRoutes = require('./routes/copy');
+const hooksRouter = require('./routes/hooks');
 
 // API routes
+// Note: Both projectsRouter and hooksRouter are mounted on '/api/projects' because they handle
+// different sub-paths and HTTP methods:
+//   - projectsRouter: GET /api/projects/:projectId/hooks (read hooks)
+//   - hooksRouter:    PUT /api/projects/:projectId/hooks/:hookId (update specific hook)
+// Express routes requests to the appropriate router based on method and path pattern
 app.use('/api/projects', projectsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/copy', copyRoutes);
+app.use('/api/projects', hooksRouter);
 
 // Serve static frontend files from built SPA (dist)
 // Fall back to frontend for development if dist is not available

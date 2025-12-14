@@ -116,6 +116,242 @@ router.get('/hooks', async (req, res) => {
 });
 
 /**
+ * PUT /api/user/hooks/:hookId
+ * Update a user-level hook
+ *
+ * hookId format: event::matcher::index (URL-encoded)
+ * Examples:
+ * - "PreToolUse::Bash::0" - First hook for PreToolUse with Bash matcher
+ * - "SessionEnd::::0" - First hook for SessionEnd (no matcher)
+ */
+router.put('/hooks/:hookId', async (req, res) => {
+  try {
+    const { hookId } = req.params;
+    const updates = req.body;
+
+    // Import validation and constants
+    const { validateHookUpdate, VALID_HOOK_EVENTS, isMatcherBasedEvent } = require('../services/hookValidation');
+
+    // Decode hookId (URL-encoded)
+    const decodedHookId = decodeURIComponent(hookId);
+
+    // Parse hookId: event::matcher::index
+    const parts = decodedHookId.split('::');
+    if (parts.length !== 3) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid hookId format',
+        details: 'hookId must be in format: event::matcher::index'
+      });
+    }
+
+    const [event, matcher, indexStr] = parts;
+
+    // Validate event
+    if (!VALID_HOOK_EVENTS.includes(event)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid event type',
+        details: `Event must be one of: ${VALID_HOOK_EVENTS.join(', ')}`
+      });
+    }
+
+    // Validate index
+    const index = parseInt(indexStr, 10);
+    if (isNaN(index) || index < 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid hookId format',
+        details: 'Index must be a non-negative integer'
+      });
+    }
+
+    // Get user home directory
+    const userHome = getUserHome();
+    const settingsPath = path.join(userHome, '.claude', 'settings.json');
+
+    // Read current settings
+    let settings = { hooks: {} };
+    try {
+      const content = await fs.readFile(settingsPath, 'utf8');
+      settings = JSON.parse(content);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+      // File doesn't exist - no hooks to update
+      return res.status(404).json({
+        success: false,
+        error: 'Hook not found',
+        details: `No user hooks configured`
+      });
+    }
+
+    // Find the hook in NESTED structure
+    const hooks = settings.hooks || {};
+    const eventEntries = hooks[event];
+    if (!Array.isArray(eventEntries) || eventEntries.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Hook not found',
+        details: `No hooks found for event: ${event}`
+      });
+    }
+
+    // Normalize matcher: treat '*' as equivalent to empty string
+    // Frontend displays missing matcher as '*', but settings.json omits the matcher field
+    const normalizedMatcher = (matcher === '*') ? '' : matcher;
+
+    // Find the matcher entry that contains this hook
+    let hookInfo = null;
+    for (let matcherIdx = 0; matcherIdx < eventEntries.length; matcherIdx++) {
+      const matcherEntry = eventEntries[matcherIdx];
+
+      // Check if matcher matches (empty matcher in hookId = no matcher field in settings)
+      const entryMatcher = matcherEntry.matcher || '';
+      if (entryMatcher !== normalizedMatcher) {
+        continue;
+      }
+
+      // Found the right matcher entry - check if hook exists at index
+      if (!Array.isArray(matcherEntry.hooks)) {
+        continue;
+      }
+
+      if (index >= matcherEntry.hooks.length) {
+        return res.status(404).json({
+          success: false,
+          error: 'Hook not found',
+          details: `No hook found at index ${index}`
+        });
+      }
+
+      hookInfo = {
+        hook: matcherEntry.hooks[index],
+        matcherEntry: matcherEntry,
+        matcherEntryIndex: matcherIdx,
+        hookIndex: index
+      };
+      break;
+    }
+
+    if (!hookInfo) {
+      return res.status(404).json({
+        success: false,
+        error: 'Hook not found',
+        details: `No hook found for ${decodedHookId}`
+      });
+    }
+
+    // Validate updates
+    const validation = validateHookUpdate(updates, hookInfo.hook, event);
+    if (!validation.valid) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation failed',
+        details: validation.errors
+      });
+    }
+
+    // Apply updates to the hook in NESTED structure
+    const { matcherEntry, hookIndex } = hookInfo;
+    const updatedHook = { ...matcherEntry.hooks[hookIndex] };
+
+    // Apply updates (excluding event which is readonly)
+    const allowedFields = ['type', 'command', 'timeout', 'enabled', 'suppressOutput', 'continue'];
+    for (const field of allowedFields) {
+      if (updates[field] !== undefined) {
+        updatedHook[field] = updates[field];
+      }
+    }
+
+    // Check if matcher changed (only relevant for matcher-based events)
+    const matcherChanged = isMatcherBasedEvent(event) &&
+                           updates.matcher !== undefined &&
+                           updates.matcher !== matcher;
+
+    if (matcherChanged) {
+      // Remove hook from current matcher entry
+      matcherEntry.hooks.splice(hookIndex, 1);
+
+      // If matcher entry now has no hooks, remove it
+      if (matcherEntry.hooks.length === 0) {
+        const matcherEntryIndex = eventEntries.indexOf(matcherEntry);
+        if (matcherEntryIndex !== -1) {
+          eventEntries.splice(matcherEntryIndex, 1);
+        }
+      }
+
+      // Find or create matcher entry for new matcher
+      const newMatcher = updates.matcher;
+      let targetMatcherEntry = eventEntries.find(e => (e.matcher || '') === newMatcher);
+
+      if (!targetMatcherEntry) {
+        // Create new matcher entry
+        targetMatcherEntry = {
+          matcher: newMatcher,
+          hooks: []
+        };
+        eventEntries.push(targetMatcherEntry);
+      }
+
+      // Add hook to new matcher entry
+      targetMatcherEntry.hooks.push(updatedHook);
+    } else {
+      // Update in place within the nested structure
+      matcherEntry.hooks[hookIndex] = updatedHook;
+    }
+
+    // Clean up empty event arrays
+    if (eventEntries.length === 0) {
+      delete hooks[event];
+    } else {
+      hooks[event] = eventEntries;
+    }
+
+    settings.hooks = hooks;
+
+    // Write back atomically
+    const tempPath = `${settingsPath}.tmp`;
+    await fs.mkdir(path.dirname(settingsPath), { recursive: true });
+    await fs.writeFile(tempPath, JSON.stringify(settings, null, 2), 'utf8');
+    await fs.rename(tempPath, settingsPath);
+
+    // Calculate new hookId after update (may have changed if matcher changed)
+    const finalMatcher = updates.matcher !== undefined ? updates.matcher : matcher;
+    let newHookIndex = 0;
+
+    // Find the matcher entry and hook index
+    for (const entry of eventEntries) {
+      if ((entry.matcher || '') === finalMatcher) {
+        // Find hook in this matcher entry's hooks array
+        newHookIndex = entry.hooks.indexOf(updatedHook);
+        break;
+      }
+    }
+
+    const newHookId = `${event}::${finalMatcher}::${newHookIndex}`;
+
+    res.json({
+      success: true,
+      hook: {
+        ...updatedHook,
+        event,
+        matcher: finalMatcher || '*',
+        hookId: newHookId
+      }
+    });
+  } catch (error) {
+    console.error('Error updating user hook:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update hook',
+      details: error.message
+    });
+  }
+});
+
+/**
  * GET /api/user/mcp
  * Returns user-level MCP servers from ~/.claude/settings.json
  */

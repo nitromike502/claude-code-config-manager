@@ -372,14 +372,25 @@ async function getProjectHooks(projectPath) {
             // STEP 4: Flatten response structure - create one object per hook command
             // This makes it easier for the UI to consume without nested arrays
             if (validHooks.length > 0) {
-              for (const hook of validHooks) {
+              for (let hookIndex = 0; hookIndex < validHooks.length; hookIndex++) {
+                const hook = validHooks[hookIndex];
+                const matcher = matcherEntry.matcher || '';
+
+                // Generate hookId: event::matcher::index
+                // For matcher-based events, index is per-matcher-group
+                // For non-matcher events, index is global within event
+                const hookId = `${event}::${matcher}::${hookIndex}`;
+
                 hooks.push({
+                  hookId,
                   event,
-                  matcher: matcherEntry.matcher || '*',
+                  matcher: matcher || '*',
                   type: hook.type || 'command',
                   command: hook.command,
                   timeout: hook.timeout || 60,
                   enabled: hook.enabled !== undefined ? hook.enabled : true,
+                  continue: hook.continue,
+                  suppressOutput: hook.suppressOutput,
                   source: 'settings.json'
                 });
               }
@@ -540,14 +551,23 @@ async function getProjectHooks(projectPath) {
             // STEP 4: Flatten response structure - create one object per hook command
             // This makes it easier for the UI to consume without nested arrays
             if (validHooks.length > 0) {
-              for (const hook of validHooks) {
+              for (let hookIndex = 0; hookIndex < validHooks.length; hookIndex++) {
+                const hook = validHooks[hookIndex];
+                const matcher = matcherEntry.matcher || '';
+
+                // Generate hookId: event::matcher::index
+                const hookId = `${event}::${matcher}::${hookIndex}`;
+
                 hooks.push({
+                  hookId,
                   event,
-                  matcher: matcherEntry.matcher || '*',
+                  matcher: matcher || '*',
                   type: hook.type || 'command',
                   command: hook.command,
                   timeout: hook.timeout || 60,
                   enabled: hook.enabled !== undefined ? hook.enabled : true,
+                  continue: hook.continue,
+                  suppressOutput: hook.suppressOutput,
                   source: 'settings.local.json'
                 });
               }
@@ -932,14 +952,23 @@ async function getUserHooks() {
             // STEP 4: Flatten response structure - create one object per hook command
             // This makes it easier for the UI to consume without nested arrays
             if (validHooks.length > 0) {
-              for (const hook of validHooks) {
+              for (let hookIndex = 0; hookIndex < validHooks.length; hookIndex++) {
+                const hook = validHooks[hookIndex];
+                const matcher = matcherEntry.matcher || '';
+
+                // Generate hookId: event::matcher::index
+                const hookId = `${event}::${matcher}::${hookIndex}`;
+
                 hooks.push({
+                  hookId,
                   event,
-                  matcher: matcherEntry.matcher || '*',
+                  matcher: matcher || '*',
                   type: hook.type || 'command',
                   command: hook.command,
                   timeout: hook.timeout || 60,
                   enabled: hook.enabled !== undefined ? hook.enabled : true,
+                  continue: hook.continue,
+                  suppressOutput: hook.suppressOutput,
                   source: '~/.claude/settings.json'
                 });
               }

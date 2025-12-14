@@ -33,6 +33,7 @@
     :selected-index="currentIndex"
     scope="user"
     :enable-agent-crud="true"
+    :enable-hook-crud="true"
     @toggle-agents="showingAllAgents = !showingAllAgents"
     @toggle-commands="showingAllCommands = !showingAllCommands"
     @toggle-hooks="showingAllHooks = !showingAllHooks"
@@ -44,6 +45,7 @@
     @copy-clicked="handleCopyClick"
     @agent-delete="handleAgentDelete"
     @agent-updated="handleAgentUpdated"
+    @hook-updated="handleHookUpdated"
   >
     <template #copy-modal>
       <CopyModal
@@ -333,6 +335,12 @@ export default {
       agentReferences.value = []
     }
 
+    // Hook CRUD handlers
+    const handleHookUpdated = async () => {
+      // Refresh hooks list after sidebar edit
+      await loadHooks()
+    }
+
     // Copy modal event handlers
     const handleCopyClick = (configItem) => {
       // Use type from configItem if already present (added by ConfigItemList)
@@ -472,7 +480,9 @@ export default {
       handleAgentUpdated,
       handleAgentDelete,
       handleAgentDeleteConfirm,
-      handleAgentDeleteCancel
+      handleAgentDeleteCancel,
+      // Hook CRUD
+      handleHookUpdated
     }
   }
 }
