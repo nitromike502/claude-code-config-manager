@@ -1,7 +1,7 @@
 ---
 name: git-workflow-specialist
 description: Use proactively for Git workflow management including stale branch reporting, PR conflict checking, squash-merging approved PRs to develop, and keeping feature branches synchronized.
-tools: Bash, Read, Write, Edit
+tools: Bash, Read, Write, Glob, Grep, WebFetch, TodoWrite, WebSearch, NotebookEdit
 model: sonnet
 color: green
 ---

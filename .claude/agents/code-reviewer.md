@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: Use proactively for reviewing GitHub pull requests. Specialist for providing detailed PR feedback on code quality, security, and best practices before merging to develop.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, WebFetch, TodoWrite, WebSearch
 model: sonnet
 color: blue
 ---
