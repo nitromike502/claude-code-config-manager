@@ -670,7 +670,7 @@ test.describe('110.003: Conditional Field Visibility', () => {
     await typeField.locator('button[aria-label="Cancel editing"]').click()
   })
 
-  test('110.003.004: should only show command type option for non-Stop hooks', async ({ page }) => {
+  test('110.003.004: should show both type options for PreToolUse hooks', async ({ page }) => {
     // Click View on PreToolUse hook (first hook)
     await page.locator('.view-btn').first().click()
 
@@ -684,7 +684,37 @@ test.describe('110.003: Conditional Field Visibility', () => {
     // Wait for edit mode to activate
     await page.waitForTimeout(300)
 
-    // Verify only "Command" option is available (no "Prompt" for PreToolUse)
+    // Verify BOTH "Command" and "Prompt" options are available for PreToolUse
+    // (PreToolUse supports prompt type per official Claude Code spec)
+    const selectButtonGroup = typeField.locator('.p-selectbutton')
+    await expect(selectButtonGroup).toBeVisible()
+    await expect(selectButtonGroup.getByRole('button', { name: 'Command' })).toBeVisible()
+    await expect(selectButtonGroup.getByRole('button', { name: 'Prompt' })).toBeVisible()
+
+    // Verify there are exactly 2 buttons
+    const buttons = selectButtonGroup.getByRole('button')
+    await expect(buttons).toHaveCount(2)
+
+    // Cancel edit
+    await typeField.locator('button[aria-label="Cancel editing"]').click()
+  })
+
+  test('110.003.005: should only show command type option for hooks that do not support prompt', async ({ page }) => {
+    // Click View on SessionEnd hook (second hook - does NOT support prompt type)
+    const viewButtons = page.locator('.view-btn')
+    await viewButtons.nth(1).click()
+
+    const sidebar = page.locator('.p-drawer')
+    await sidebar.waitFor({ state: 'visible' })
+
+    // Find type field and enter edit mode
+    const typeField = sidebar.locator('.labeled-edit-field').filter({ hasText: 'Type:' })
+    await typeField.getByRole('button', { name: 'Edit Type' }).click()
+
+    // Wait for edit mode to activate
+    await page.waitForTimeout(300)
+
+    // Verify only "Command" option is available (SessionEnd does NOT support prompt)
     const selectButtonGroup = typeField.locator('.p-selectbutton')
     await expect(selectButtonGroup).toBeVisible()
     await expect(selectButtonGroup.getByRole('button', { name: 'Command' })).toBeVisible()
