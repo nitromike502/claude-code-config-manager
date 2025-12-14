@@ -312,6 +312,42 @@ describe('Hook CRUD API Routes', () => {
         expect(res.status).toBe(200);
         expect(res.body.hook.matcher).toBe('Read');
       });
+
+      it('should normalize wildcard matcher (*) to empty string in settings', async () => {
+        // Real-world case: settings.json has no matcher field (omitted)
+        // but frontend displays it as '*' and sends hookId with '*'
+        const mockSettings = {
+          hooks: {
+            PreToolUse: [
+              {
+                // No matcher field - this is how settings.json stores wildcards
+                hooks: [{ type: 'command', command: '/path/to/hook.py', enabled: true, timeout: 60 }]
+              }
+            ]
+          }
+        };
+
+        fs.readFile.mockImplementation((filePath) => {
+          if (filePath.includes('.claude.json') && !filePath.includes('/settings.json')) {
+            return Promise.resolve(JSON.stringify(mockClaudeJson));
+          }
+          if (filePath.includes('settings.json')) {
+            return Promise.resolve(JSON.stringify(mockSettings));
+          }
+          return Promise.reject(new Error(`File not found: ${filePath}`));
+        });
+
+        // Frontend sends hookId with '*' because it displays missing matcher as '*'
+        const hookId = encodeURIComponent('PreToolUse::*::0');
+        const res = await request(app)
+          .put(`/api/projects/${TEST_PROJECT_ID}/hooks/${hookId}`)
+          .send({ command: '/new/path/hook.py' });
+
+        expect(res.status).toBe(200);
+        expect(res.body.success).toBe(true);
+        expect(res.body.hook.command).toBe('/new/path/hook.py');
+        expect(res.body.hook.matcher).toBe('*'); // Response shows '*' for display
+      });
     });
 
     describe('Event Type Protection', () => {

@@ -179,6 +179,10 @@ function findHookInSettings(hooks, parsed) {
     return null;
   }
 
+  // Normalize matcher: treat '*' as equivalent to empty string
+  // Frontend displays missing matcher as '*', but settings.json omits the matcher field
+  const normalizedMatcher = (matcher === '*') ? '' : matcher;
+
   // Find the matcher entry that contains this hook
   // Each matcher entry has: { matcher: "...", hooks: [...] }
   for (let matcherIdx = 0; matcherIdx < eventEntries.length; matcherIdx++) {
@@ -186,7 +190,7 @@ function findHookInSettings(hooks, parsed) {
 
     // Check if matcher matches (empty matcher in hookId = no matcher field in settings)
     const entryMatcher = matcherEntry.matcher || '';
-    if (entryMatcher !== matcher) {
+    if (entryMatcher !== normalizedMatcher) {
       continue;
     }
 
