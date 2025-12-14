@@ -21,6 +21,10 @@ The SWARM workflow includes testing as a **mandatory quality gate** in Phase 3.
 
 ### Phase 3: Implementation & Testing
 
+**Important**
+- NEVER test on this project's Agents, Slash Commands, Hooks, Skills, or MCP Servers. 
+- ALWAYS test on `/home/training/test-1` and `/home/training/test-2` test projects.
+
 **Test-Automation-Engineer Role:**
 - Invoked by main agent after each implementation task
 - Runs complete test suite: Backend (276 Jest) + Frontend (603 Playwright)

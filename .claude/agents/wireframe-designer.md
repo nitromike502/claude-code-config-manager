@@ -1,7 +1,7 @@
 ---
 name: wireframe-designer
 description: Expert in user interface design and wireframe creation. Invoked by main agent during BA sessions to create comprehensive wireframes and design specifications. Returns deliverables to main agent for integration with planning phase.
-tools: Read, Write, Glob
+tools: Read, Write, Glob, Grep, Edit, WebFetch, WebSearch, Skill
 model: sonnet
 color: purple
 ---

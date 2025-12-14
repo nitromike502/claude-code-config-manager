@@ -1,7 +1,7 @@
 ---
 name: playwright-testing-expert
 description: Use proactively for creating, debugging, and maintaining Playwright E2E tests. Specialist in test automation for Vue 3 SPAs with Express backends, API mocking, selector strategies, and test optimization.
-tools: Read, Write, Edit, Bash, Grep, Glob, mcp__playwright__browser_navigate, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_click, mcp__playwright__browser_wait_for, mcp__playwright__browser_fill_form, mcp__playwright__browser_evaluate, mcp__playwright__browser_snapshot, mcp__playwright__browser_hover
+tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, TodoWrite, WebSearch, NotebookEdit, Skill
 model: sonnet
 color: cyan
 ---

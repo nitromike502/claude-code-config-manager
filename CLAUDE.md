@@ -390,3 +390,6 @@ This section contains detailed development workflow information for contributors
 - Advanced MCP server management
 
 **See:** `docs/guides/ROADMAP.md` for complete future feature planning
+- For testing, use projects `/home/training/test-1` and `/home/training/test-2`. NEVER test on this project
+- When invoking subagents to debug, don't give them explicit files to review, instead instruct them to review recent commits and investigate.
+- Always create a backup if testing on a production file

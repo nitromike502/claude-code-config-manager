@@ -1,9 +1,9 @@
 ---
 name: project-manager
 description: Use proactively for high-level project decisions, phase gate approvals, timeline management, stakeholder communication, and ensuring project meets success criteria. Creates and writes all tickets, then delegates organization to agile-ticket-manager.
+tools: Read, Write, Glob, Grep, TodoWrite, Edit, NotebookEdit
 model: sonnet
 color: blue
-tools: Read, Write, Glob, Grep, Task, TodoWrite
 ---
 
 # Purpose

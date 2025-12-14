@@ -1,7 +1,7 @@
 ---
 name: integration-tester
 description: Expert in software testing and cross-platform verification. Use proactively when you need to test API endpoints, verify UI functionality, ensure cross-platform compatibility, or validate bug fixes for the Claude Code Config Manager.
-tools: Read, Bash, Grep, Write, mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_take_screenshot, mcp__playwright__browser_click, mcp__playwright__browser_hover, mcp__playwright__browser_fill_form, mcp__playwright__browser_evaluate, mcp__playwright__browser_wait_for, mcp__playwright__browser_console_messages, mcp__playwright__browser_network_requests, Edit, NotebookEdit, Glob, WebFetch, TodoWrite, WebSearch, BashOutput, KillShell, AskUserQuestion, Skill, mcp__playwright__browser_resize, mcp__playwright__browser_close, mcp__playwright__browser_handle_dialog, mcp__playwright__browser_press_key, mcp__playwright__browser_install, mcp__playwright__browser_type, mcp__playwright__browser_navigate_back, mcp__playwright__browser_drag, mcp__playwright__browser_select_option, mcp__playwright__browser_tabs
+tools: Read, Bash, Grep, Write, Edit, NotebookEdit, Glob, WebFetch, TodoWrite, WebSearch, Skill
 model: sonnet
 color: green
 ---
