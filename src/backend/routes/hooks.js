@@ -163,104 +163,122 @@ async function writeSettingsFile(settingsPath, settings) {
 }
 
 /**
- * Find hook in settings by parsed hookId components
+ * Find hook in NESTED settings structure by parsed hookId components
+ * Settings.json uses nested structure: event -> matcher entry -> hooks array -> hook object
  *
- * @param {Object} hooks - Hooks object from settings
+ * @param {Object} hooks - Hooks object from settings (nested structure)
  * @param {Object} parsed - Parsed hookId { event, matcher, index }
- * @returns {{ hook: Object, eventArray: Array, arrayIndex: number } | null} Hook info or null
+ * @returns {{ hook: Object, matcherEntry: Object, matcherEntryIndex: number, hookIndex: number } | null} Hook info or null
  */
 function findHookInSettings(hooks, parsed) {
   const { event, matcher, index } = parsed;
 
-  // Get event array
-  const eventHooks = hooks[event];
-  if (!Array.isArray(eventHooks) || eventHooks.length === 0) {
+  // Get event array (array of matcher entries)
+  const eventEntries = hooks[event];
+  if (!Array.isArray(eventEntries) || eventEntries.length === 0) {
     return null;
   }
 
-  // For matcher-based events, filter by matcher
-  if (isMatcherBasedEvent(event)) {
-    // Find all hooks with matching matcher
-    const matchingHooks = eventHooks.filter(h => (h.matcher || '') === matcher);
-    if (index >= matchingHooks.length) {
+  // Find the matcher entry that contains this hook
+  // Each matcher entry has: { matcher: "...", hooks: [...] }
+  for (let matcherIdx = 0; matcherIdx < eventEntries.length; matcherIdx++) {
+    const matcherEntry = eventEntries[matcherIdx];
+
+    // Check if matcher matches (empty matcher in hookId = no matcher field in settings)
+    const entryMatcher = matcherEntry.matcher || '';
+    if (entryMatcher !== matcher) {
+      continue;
+    }
+
+    // Found the right matcher entry - check if hook exists at index
+    if (!Array.isArray(matcherEntry.hooks)) {
+      continue;
+    }
+
+    if (index >= matcherEntry.hooks.length) {
       return null;
     }
 
-    // Find the actual array index of this hook
-    let matchCount = 0;
-    for (let i = 0; i < eventHooks.length; i++) {
-      if ((eventHooks[i].matcher || '') === matcher) {
-        if (matchCount === index) {
-          return {
-            hook: eventHooks[i],
-            eventArray: eventHooks,
-            arrayIndex: i
-          };
-        }
-        matchCount++;
-      }
-    }
-    return null;
+    return {
+      hook: matcherEntry.hooks[index],
+      matcherEntry: matcherEntry,
+      matcherEntryIndex: matcherIdx,
+      hookIndex: index
+    };
   }
 
-  // For non-matcher events, index directly into array
-  if (index >= eventHooks.length) {
-    return null;
-  }
-
-  return {
-    hook: eventHooks[index],
-    eventArray: eventHooks,
-    arrayIndex: index
-  };
+  return null;
 }
 
 /**
- * Update hook and handle matcher changes
- * When matcher changes, the hook effectively moves to a different "group"
+ * Update hook in NESTED settings structure
+ * Handles matcher changes by moving hook to different matcher entry
  *
  * @param {Object} settings - Full settings object
  * @param {Object} parsed - Parsed hookId
+ * @param {Object} hookInfo - Hook location info from findHookInSettings
  * @param {Object} updates - Update payload
- * @returns {Object} Updated hook
+ * @returns {Object} Updated hook object
  */
 function applyHookUpdates(settings, parsed, hookInfo, updates) {
   const { event, matcher } = parsed;
-  const { arrayIndex } = hookInfo;
+  const { matcherEntry, hookIndex } = hookInfo;
   const hooks = settings.hooks || {};
-  const eventHooks = hooks[event] || [];
+  const eventEntries = hooks[event] || [];
 
-  // Get the hook to update
-  const hook = { ...eventHooks[arrayIndex] };
+  // Get the hook to update from the nested structure
+  const hook = { ...matcherEntry.hooks[hookIndex] };
 
-  // Apply updates (excluding event which is readonly)
-  const allowedFields = ['matcher', 'type', 'command', 'timeout', 'enabled', 'suppressOutput', 'continue'];
+  // Apply updates (excluding event which is readonly, and matcher which is special)
+  const allowedFields = ['type', 'command', 'timeout', 'enabled', 'suppressOutput', 'continue'];
   for (const field of allowedFields) {
     if (updates[field] !== undefined) {
       hook[field] = updates[field];
     }
   }
 
-  // Check if matcher changed (for matcher-based events)
+  // Check if matcher changed (only relevant for matcher-based events)
   const matcherChanged = isMatcherBasedEvent(event) &&
                          updates.matcher !== undefined &&
                          updates.matcher !== matcher;
 
   if (matcherChanged) {
-    // Remove from current position
-    eventHooks.splice(arrayIndex, 1);
-    // Add to end (new matcher group)
-    eventHooks.push(hook);
+    // Remove hook from current matcher entry
+    matcherEntry.hooks.splice(hookIndex, 1);
+
+    // If matcher entry now has no hooks, remove it
+    if (matcherEntry.hooks.length === 0) {
+      const matcherEntryIndex = eventEntries.indexOf(matcherEntry);
+      if (matcherEntryIndex !== -1) {
+        eventEntries.splice(matcherEntryIndex, 1);
+      }
+    }
+
+    // Find or create matcher entry for new matcher
+    const newMatcher = updates.matcher;
+    let targetMatcherEntry = eventEntries.find(e => (e.matcher || '') === newMatcher);
+
+    if (!targetMatcherEntry) {
+      // Create new matcher entry
+      targetMatcherEntry = {
+        matcher: newMatcher,
+        hooks: []
+      };
+      eventEntries.push(targetMatcherEntry);
+    }
+
+    // Add hook to new matcher entry
+    targetMatcherEntry.hooks.push(hook);
   } else {
-    // Update in place
-    eventHooks[arrayIndex] = hook;
+    // Update in place within the nested structure
+    matcherEntry.hooks[hookIndex] = hook;
   }
 
-  // Clean up empty arrays
-  if (eventHooks.length === 0) {
+  // Clean up empty event arrays
+  if (eventEntries.length === 0) {
     delete hooks[event];
   } else {
-    hooks[event] = eventHooks;
+    hooks[event] = eventEntries;
   }
 
   settings.hooks = hooks;
@@ -330,20 +348,29 @@ router.put('/:projectId/hooks/:hookId', async (req, res) => {
     // Write back to file
     await writeSettingsFile(settingsPath, settings);
 
+    // Calculate new hookId after update (may have changed if matcher changed)
+    // Need to find the hook in the nested structure to get its new index
+    const finalMatcher = updates.matcher !== undefined ? updates.matcher : parsed.matcher;
+    const eventEntries = settings.hooks[parsed.event] || [];
+    let newHookIndex = 0;
+
+    // Find the matcher entry and hook index
+    for (const entry of eventEntries) {
+      if ((entry.matcher || '') === finalMatcher) {
+        // Find hook in this matcher entry's hooks array
+        newHookIndex = entry.hooks.indexOf(updatedHook);
+        break;
+      }
+    }
+
     // Return success with updated hook
     res.json({
       success: true,
       hook: {
         ...updatedHook,
         event: parsed.event,
-        hookId: buildHookId(parsed.event, updatedHook.matcher || '',
-          isMatcherBasedEvent(parsed.event) ?
-            // Find new index after potential move
-            (settings.hooks[parsed.event] || [])
-              .filter(h => (h.matcher || '') === (updatedHook.matcher || ''))
-              .indexOf(updatedHook) :
-            (settings.hooks[parsed.event] || []).indexOf(updatedHook)
-        )
+        matcher: finalMatcher || '*',
+        hookId: buildHookId(parsed.event, finalMatcher, newHookIndex)
       }
     });
 

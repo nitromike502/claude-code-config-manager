@@ -187,10 +187,10 @@ router.put('/hooks/:hookId', async (req, res) => {
       });
     }
 
-    // Find the hook
+    // Find the hook in NESTED structure
     const hooks = settings.hooks || {};
-    const eventHooks = hooks[event];
-    if (!Array.isArray(eventHooks) || eventHooks.length === 0) {
+    const eventEntries = hooks[event];
+    if (!Array.isArray(eventEntries) || eventEntries.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Hook not found',
@@ -198,45 +198,44 @@ router.put('/hooks/:hookId', async (req, res) => {
       });
     }
 
-    // For matcher-based events, filter by matcher
+    // Find the matcher entry that contains this hook
     let hookInfo = null;
-    if (isMatcherBasedEvent(event)) {
-      const matchingHooks = eventHooks.filter(h => (h.matcher || '') === matcher);
-      if (index >= matchingHooks.length) {
+    for (let matcherIdx = 0; matcherIdx < eventEntries.length; matcherIdx++) {
+      const matcherEntry = eventEntries[matcherIdx];
+
+      // Check if matcher matches (empty matcher in hookId = no matcher field in settings)
+      const entryMatcher = matcherEntry.matcher || '';
+      if (entryMatcher !== matcher) {
+        continue;
+      }
+
+      // Found the right matcher entry - check if hook exists at index
+      if (!Array.isArray(matcherEntry.hooks)) {
+        continue;
+      }
+
+      if (index >= matcherEntry.hooks.length) {
         return res.status(404).json({
           success: false,
           error: 'Hook not found',
-          details: `No hook found at index ${index} for ${event}::${matcher}`
+          details: `No hook found at index ${index}`
         });
       }
 
-      // Find the actual array index
-      let matchCount = 0;
-      for (let i = 0; i < eventHooks.length; i++) {
-        if ((eventHooks[i].matcher || '') === matcher) {
-          if (matchCount === index) {
-            hookInfo = { hook: eventHooks[i], arrayIndex: i };
-            break;
-          }
-          matchCount++;
-        }
-      }
-    } else {
-      // Non-matcher events - index directly
-      if (index >= eventHooks.length) {
-        return res.status(404).json({
-          success: false,
-          error: 'Hook not found',
-          details: `No hook found at index ${index} for ${event}`
-        });
-      }
-      hookInfo = { hook: eventHooks[index], arrayIndex: index };
+      hookInfo = {
+        hook: matcherEntry.hooks[index],
+        matcherEntry: matcherEntry,
+        matcherEntryIndex: matcherIdx,
+        hookIndex: index
+      };
+      break;
     }
 
     if (!hookInfo) {
       return res.status(404).json({
         success: false,
-        error: 'Hook not found'
+        error: 'Hook not found',
+        details: `No hook found for ${decodedHookId}`
       });
     }
 
@@ -250,35 +249,60 @@ router.put('/hooks/:hookId', async (req, res) => {
       });
     }
 
-    // Apply updates
-    const updatedHook = { ...hookInfo.hook };
-    const allowedFields = ['matcher', 'type', 'command', 'timeout', 'enabled', 'suppressOutput', 'continue'];
+    // Apply updates to the hook in NESTED structure
+    const { matcherEntry, hookIndex } = hookInfo;
+    const updatedHook = { ...matcherEntry.hooks[hookIndex] };
+
+    // Apply updates (excluding event which is readonly)
+    const allowedFields = ['type', 'command', 'timeout', 'enabled', 'suppressOutput', 'continue'];
     for (const field of allowedFields) {
       if (updates[field] !== undefined) {
         updatedHook[field] = updates[field];
       }
     }
 
-    // Check if matcher changed (for matcher-based events)
+    // Check if matcher changed (only relevant for matcher-based events)
     const matcherChanged = isMatcherBasedEvent(event) &&
                            updates.matcher !== undefined &&
                            updates.matcher !== matcher;
 
     if (matcherChanged) {
-      // Remove from current position
-      eventHooks.splice(hookInfo.arrayIndex, 1);
-      // Add to end (new matcher group)
-      eventHooks.push(updatedHook);
+      // Remove hook from current matcher entry
+      matcherEntry.hooks.splice(hookIndex, 1);
+
+      // If matcher entry now has no hooks, remove it
+      if (matcherEntry.hooks.length === 0) {
+        const matcherEntryIndex = eventEntries.indexOf(matcherEntry);
+        if (matcherEntryIndex !== -1) {
+          eventEntries.splice(matcherEntryIndex, 1);
+        }
+      }
+
+      // Find or create matcher entry for new matcher
+      const newMatcher = updates.matcher;
+      let targetMatcherEntry = eventEntries.find(e => (e.matcher || '') === newMatcher);
+
+      if (!targetMatcherEntry) {
+        // Create new matcher entry
+        targetMatcherEntry = {
+          matcher: newMatcher,
+          hooks: []
+        };
+        eventEntries.push(targetMatcherEntry);
+      }
+
+      // Add hook to new matcher entry
+      targetMatcherEntry.hooks.push(updatedHook);
     } else {
-      // Update in place
-      eventHooks[hookInfo.arrayIndex] = updatedHook;
+      // Update in place within the nested structure
+      matcherEntry.hooks[hookIndex] = updatedHook;
     }
 
-    // Clean up empty arrays
-    if (eventHooks.length === 0) {
+    // Clean up empty event arrays
+    if (eventEntries.length === 0) {
       delete hooks[event];
     } else {
-      hooks[event] = eventHooks;
+      hooks[event] = eventEntries;
     }
 
     settings.hooks = hooks;
@@ -289,20 +313,27 @@ router.put('/hooks/:hookId', async (req, res) => {
     await fs.writeFile(tempPath, JSON.stringify(settings, null, 2), 'utf8');
     await fs.rename(tempPath, settingsPath);
 
-    // Calculate new hookId if matcher changed
-    let newHookId = decodedHookId;
-    if (matcherChanged) {
-      const newIndex = eventHooks
-        .filter(h => (h.matcher || '') === (updatedHook.matcher || ''))
-        .indexOf(updatedHook);
-      newHookId = `${event}::${updatedHook.matcher || ''}::${newIndex}`;
+    // Calculate new hookId after update (may have changed if matcher changed)
+    const finalMatcher = updates.matcher !== undefined ? updates.matcher : matcher;
+    let newHookIndex = 0;
+
+    // Find the matcher entry and hook index
+    for (const entry of eventEntries) {
+      if ((entry.matcher || '') === finalMatcher) {
+        // Find hook in this matcher entry's hooks array
+        newHookIndex = entry.hooks.indexOf(updatedHook);
+        break;
+      }
     }
+
+    const newHookId = `${event}::${finalMatcher}::${newHookIndex}`;
 
     res.json({
       success: true,
       hook: {
         ...updatedHook,
         event,
+        matcher: finalMatcher || '*',
         hookId: newHookId
       }
     });

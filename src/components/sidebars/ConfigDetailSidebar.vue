@@ -244,7 +244,7 @@
           v-model="hookData.type"
           field-type="selectbutton"
           label="Type"
-          :options="supportsPromptType(selectedItem.event) ? hookTypeOptions : [{ label: 'Command', value: 'command' }]"
+          :options="supportsPromptType(hookData.event) ? hookTypeOptions : [{ label: 'Command', value: 'command' }]"
           :disabled="!canEditHook || editingField !== null && editingField !== 'type'"
           @edit-start="editingField = 'type'"
           @edit-cancel="editingField = null"

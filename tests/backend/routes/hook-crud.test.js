@@ -98,7 +98,12 @@ describe('Hook CRUD API Routes', () => {
       it('should update a simple hook command', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo done' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo done' }]
+              }
+            ]
           }
         };
 
@@ -125,7 +130,12 @@ describe('Hook CRUD API Routes', () => {
       it('should update a matcher-based hook', async () => {
         const mockSettings = {
           hooks: {
-            PreToolUse: [{ matcher: 'Bash', command: 'echo pre' }]
+            PreToolUse: [
+              {
+                matcher: 'Bash',
+                hooks: [{ type: 'command', command: 'echo pre' }]
+              }
+            ]
           }
         };
 
@@ -153,12 +163,17 @@ describe('Hook CRUD API Routes', () => {
       it('should update multiple hook properties at once', async () => {
         const mockSettings = {
           hooks: {
-            PreToolUse: [{
-              matcher: 'Read',
-              command: 'echo read',
-              enabled: true,
-              timeout: 30000
-            }]
+            PreToolUse: [
+              {
+                matcher: 'Read',
+                hooks: [{
+                  type: 'command',
+                  command: 'echo read',
+                  enabled: true,
+                  timeout: 30000
+                }]
+              }
+            ]
           }
         };
 
@@ -190,7 +205,12 @@ describe('Hook CRUD API Routes', () => {
       it('should handle hooks with pipe-joined matchers', async () => {
         const mockSettings = {
           hooks: {
-            PreToolUse: [{ matcher: 'Read|Write', command: 'echo io' }]
+            PreToolUse: [
+              {
+                matcher: 'Read|Write',
+                hooks: [{ type: 'command', command: 'echo io' }]
+              }
+            ]
           }
         };
 
@@ -219,9 +239,17 @@ describe('Hook CRUD API Routes', () => {
         const mockSettings = {
           hooks: {
             PreToolUse: [
-              { matcher: 'Bash', command: 'echo bash1' },
-              { matcher: 'Bash', command: 'echo bash2' },
-              { matcher: 'Read', command: 'echo read' }
+              {
+                matcher: 'Bash',
+                hooks: [
+                  { type: 'command', command: 'echo bash1' },
+                  { type: 'command', command: 'echo bash2' }
+                ]
+              },
+              {
+                matcher: 'Read',
+                hooks: [{ type: 'command', command: 'echo read' }]
+              }
             ]
           }
         };
@@ -251,9 +279,17 @@ describe('Hook CRUD API Routes', () => {
         const mockSettings = {
           hooks: {
             PreToolUse: [
-              { matcher: 'Bash', command: 'echo bash' },
-              { matcher: 'Read', command: 'echo read1' },
-              { matcher: 'Read', command: 'echo read2' }
+              {
+                matcher: 'Bash',
+                hooks: [{ type: 'command', command: 'echo bash' }]
+              },
+              {
+                matcher: 'Read',
+                hooks: [
+                  { type: 'command', command: 'echo read1' },
+                  { type: 'command', command: 'echo read2' }
+                ]
+              }
             ]
           }
         };
@@ -282,7 +318,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject attempts to change event type', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -313,7 +354,12 @@ describe('Hook CRUD API Routes', () => {
       it('should allow prompt type for Stop event', async () => {
         const mockSettings = {
           hooks: {
-            Stop: [{ type: 'command', command: 'echo stop' }]
+            Stop: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo stop' }]
+              }
+            ]
           }
         };
 
@@ -339,7 +385,12 @@ describe('Hook CRUD API Routes', () => {
       it('should allow prompt type for SubagentStop event', async () => {
         const mockSettings = {
           hooks: {
-            SubagentStop: [{ type: 'command', command: 'echo subagent' }]
+            SubagentStop: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo subagent' }]
+              }
+            ]
           }
         };
 
@@ -365,7 +416,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject prompt type for PreToolUse event', async () => {
         const mockSettings = {
           hooks: {
-            PreToolUse: [{ matcher: 'Bash', type: 'command', command: 'echo pre' }]
+            PreToolUse: [
+              {
+                matcher: 'Bash',
+                hooks: [{ type: 'command', command: 'echo pre' }]
+              }
+            ]
           }
         };
 
@@ -393,7 +449,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject prompt type for SessionEnd event', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -440,7 +501,12 @@ describe('Hook CRUD API Routes', () => {
       it('should return 404 for non-existent hook event', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -483,7 +549,12 @@ describe('Hook CRUD API Routes', () => {
       it('should return 404 for out-of-range index', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -508,7 +579,12 @@ describe('Hook CRUD API Routes', () => {
       it('should return 404 for non-existent matcher group', async () => {
         const mockSettings = {
           hooks: {
-            PreToolUse: [{ matcher: 'Bash', command: 'echo bash' }]
+            PreToolUse: [
+              {
+                matcher: 'Bash',
+                hooks: [{ type: 'command', command: 'echo bash' }]
+              }
+            ]
           }
         };
 
@@ -535,7 +611,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject empty command for command-type hooks', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -563,7 +644,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject invalid timeout (negative)', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -591,7 +677,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject invalid timeout (non-integer)', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -616,7 +707,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject non-boolean enabled value', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -644,7 +740,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject empty matcher for matcher-based events', async () => {
         const mockSettings = {
           hooks: {
-            PreToolUse: [{ matcher: 'Bash', command: 'echo pre' }]
+            PreToolUse: [
+              {
+                matcher: 'Bash',
+                hooks: [{ type: 'command', command: 'echo pre' }]
+              }
+            ]
           }
         };
 
@@ -672,7 +773,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject non-boolean suppressOutput value', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -697,7 +803,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject non-boolean continue value', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -724,7 +835,12 @@ describe('Hook CRUD API Routes', () => {
       it('should update enabled field', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end', enabled: true }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end', enabled: true }]
+              }
+            ]
           }
         };
 
@@ -750,7 +866,12 @@ describe('Hook CRUD API Routes', () => {
       it('should update suppressOutput field', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end', suppressOutput: false }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end', suppressOutput: false }]
+              }
+            ]
           }
         };
 
@@ -776,7 +897,12 @@ describe('Hook CRUD API Routes', () => {
       it('should update continue field', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end', continue: true }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end', continue: true }]
+              }
+            ]
           }
         };
 
@@ -806,7 +932,12 @@ describe('Hook CRUD API Routes', () => {
       it('should update a user-level hook command', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo user done' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo user done' }]
+              }
+            ]
           }
         };
 
@@ -833,7 +964,12 @@ describe('Hook CRUD API Routes', () => {
       it('should update a user-level matcher-based hook', async () => {
         const mockSettings = {
           hooks: {
-            PreToolUse: [{ matcher: 'Write', command: 'echo write' }]
+            PreToolUse: [
+              {
+                matcher: 'Write',
+                hooks: [{ type: 'command', command: 'echo write' }]
+              }
+            ]
           }
         };
 
@@ -860,12 +996,17 @@ describe('Hook CRUD API Routes', () => {
       it('should update multiple user-level hook properties', async () => {
         const mockSettings = {
           hooks: {
-            PostToolUse: [{
-              matcher: 'Bash',
-              command: 'echo post',
-              enabled: true,
-              timeout: 20000
-            }]
+            PostToolUse: [
+              {
+                matcher: 'Bash',
+                hooks: [{
+                  type: 'command',
+                  command: 'echo post',
+                  enabled: true,
+                  timeout: 20000
+                }]
+              }
+            ]
           }
         };
 
@@ -897,8 +1038,14 @@ describe('Hook CRUD API Routes', () => {
         const mockSettings = {
           hooks: {
             PreToolUse: [
-              { matcher: 'Read', command: 'echo read' },
-              { matcher: 'Write', command: 'echo write' }
+              {
+                matcher: 'Read',
+                hooks: [{ type: 'command', command: 'echo read' }]
+              },
+              {
+                matcher: 'Write',
+                hooks: [{ type: 'command', command: 'echo write' }]
+              }
             ]
           }
         };
@@ -938,7 +1085,12 @@ describe('Hook CRUD API Routes', () => {
       it('should return 404 for non-existent hook', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -981,7 +1133,12 @@ describe('Hook CRUD API Routes', () => {
       it('should apply same validation rules as project hooks', async () => {
         const mockSettings = {
           hooks: {
-            PreToolUse: [{ matcher: 'Bash', command: 'echo pre' }]
+            PreToolUse: [
+              {
+                matcher: 'Bash',
+                hooks: [{ type: 'command', command: 'echo pre' }]
+              }
+            ]
           }
         };
 
@@ -1006,7 +1163,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject empty command', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
@@ -1028,7 +1190,12 @@ describe('Hook CRUD API Routes', () => {
       it('should reject invalid timeout', async () => {
         const mockSettings = {
           hooks: {
-            SessionEnd: [{ command: 'echo end' }]
+            SessionEnd: [
+              {
+                matcher: '',
+                hooks: [{ type: 'command', command: 'echo end' }]
+              }
+            ]
           }
         };
 
