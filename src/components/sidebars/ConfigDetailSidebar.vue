@@ -762,8 +762,8 @@ const booleanOptions = [
 // Events that require a matcher field (PreToolUse, PostToolUse)
 const MATCHER_BASED_EVENTS = ['PreToolUse', 'PostToolUse']
 
-// Events that support prompt type (Stop, SubagentStop)
-const PROMPT_SUPPORTED_EVENTS = ['Stop', 'SubagentStop']
+// Events that support prompt type (Stop, SubagentStop, UserPromptSubmit, PreToolUse, PermissionRequest)
+const PROMPT_SUPPORTED_EVENTS = ['Stop', 'SubagentStop', 'UserPromptSubmit', 'PreToolUse', 'PermissionRequest']
 
 // Check if event requires matcher
 const isMatcherBasedEvent = (event) => MATCHER_BASED_EVENTS.includes(event)

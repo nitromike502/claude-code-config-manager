@@ -198,6 +198,10 @@ router.put('/hooks/:hookId', async (req, res) => {
       });
     }
 
+    // Normalize matcher: treat '*' as equivalent to empty string
+    // Frontend displays missing matcher as '*', but settings.json omits the matcher field
+    const normalizedMatcher = (matcher === '*') ? '' : matcher;
+
     // Find the matcher entry that contains this hook
     let hookInfo = null;
     for (let matcherIdx = 0; matcherIdx < eventEntries.length; matcherIdx++) {
@@ -205,7 +209,7 @@ router.put('/hooks/:hookId', async (req, res) => {
 
       // Check if matcher matches (empty matcher in hookId = no matcher field in settings)
       const entryMatcher = matcherEntry.matcher || '';
-      if (entryMatcher !== matcher) {
+      if (entryMatcher !== normalizedMatcher) {
         continue;
       }
 

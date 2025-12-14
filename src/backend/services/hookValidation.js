@@ -20,13 +20,14 @@
  * Valid hook event types as defined by Claude Code specification
  *
  * Matcher-based events (require matcher field):
- * - PreToolUse: Before a tool is executed
+ * - PreToolUse: Before a tool is executed (supports prompt type)
  * - PostToolUse: After a tool completes
  *
  * Simple events (no matcher needed):
  * - Stop: When agent stops (supports prompt type)
  * - SubagentStop: When a subagent stops (supports prompt type)
- * - UserPromptSubmit: When user submits a prompt
+ * - UserPromptSubmit: When user submits a prompt (supports prompt type)
+ * - PermissionRequest: When permission is requested (supports prompt type)
  * - Notification: When a notification occurs
  * - PreCompact: Before context compaction
  * - SessionStart: When session begins
@@ -38,6 +39,7 @@ const VALID_HOOK_EVENTS = [
   'Stop',
   'SubagentStop',
   'UserPromptSubmit',
+  'PermissionRequest',
   'Notification',
   'PreCompact',
   'SessionStart',
@@ -54,8 +56,10 @@ const MATCHER_BASED_EVENTS = ['PreToolUse', 'PostToolUse'];
 /**
  * Events that support the 'prompt' type
  * When type is 'prompt', the hook returns a message to Claude instead of executing a command
+ * Official Claude Code specification supports prompt type for:
+ * - Stop, SubagentStop, UserPromptSubmit, PreToolUse, PermissionRequest
  */
-const PROMPT_SUPPORTED_EVENTS = ['Stop', 'SubagentStop'];
+const PROMPT_SUPPORTED_EVENTS = ['Stop', 'SubagentStop', 'UserPromptSubmit', 'PreToolUse', 'PermissionRequest'];
 
 /**
  * Valid hook type values

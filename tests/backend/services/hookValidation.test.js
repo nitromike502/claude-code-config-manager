@@ -34,9 +34,11 @@ describe('Hook Validation Service', () => {
       expect(VALID_HOOK_EVENTS).toContain('PostToolUse');
       expect(VALID_HOOK_EVENTS).toContain('Stop');
       expect(VALID_HOOK_EVENTS).toContain('SubagentStop');
+      expect(VALID_HOOK_EVENTS).toContain('UserPromptSubmit');
+      expect(VALID_HOOK_EVENTS).toContain('PermissionRequest');
       expect(VALID_HOOK_EVENTS).toContain('SessionStart');
       expect(VALID_HOOK_EVENTS).toContain('SessionEnd');
-      expect(VALID_HOOK_EVENTS.length).toBe(9);
+      expect(VALID_HOOK_EVENTS.length).toBe(10);
     });
 
     it('should export MATCHER_BASED_EVENTS array', () => {
@@ -44,7 +46,7 @@ describe('Hook Validation Service', () => {
     });
 
     it('should export PROMPT_SUPPORTED_EVENTS array', () => {
-      expect(PROMPT_SUPPORTED_EVENTS).toEqual(['Stop', 'SubagentStop']);
+      expect(PROMPT_SUPPORTED_EVENTS).toEqual(['Stop', 'SubagentStop', 'UserPromptSubmit', 'PreToolUse', 'PermissionRequest']);
     });
 
     it('should export VALID_HOOK_TYPES array', () => {
@@ -103,8 +105,8 @@ describe('Hook Validation Service', () => {
       expect(supportsPromptType('SubagentStop')).toBe(true);
     });
 
-    it('should return false for PreToolUse', () => {
-      expect(supportsPromptType('PreToolUse')).toBe(false);
+    it('should return true for PreToolUse', () => {
+      expect(supportsPromptType('PreToolUse')).toBe(true);
     });
 
     it('should return false for PostToolUse', () => {
@@ -119,8 +121,16 @@ describe('Hook Validation Service', () => {
       expect(supportsPromptType('SessionStart')).toBe(false);
     });
 
-    it('should return false for UserPromptSubmit', () => {
-      expect(supportsPromptType('UserPromptSubmit')).toBe(false);
+    it('should return true for UserPromptSubmit', () => {
+      expect(supportsPromptType('UserPromptSubmit')).toBe(true);
+    });
+
+    it('should return true for PermissionRequest', () => {
+      expect(supportsPromptType('PermissionRequest')).toBe(true);
+    });
+
+    it('should return false for Notification', () => {
+      expect(supportsPromptType('Notification')).toBe(false);
     });
 
     it('should return false for invalid event', () => {
@@ -197,6 +207,34 @@ describe('Hook Validation Service', () => {
           command: 'Subagent stopping'
         };
         const result = validateHook(hook, 'SubagentStop');
+        expect(result.valid).toBe(true);
+      });
+
+      it('should validate a prompt-type hook for UserPromptSubmit', () => {
+        const hook = {
+          type: 'prompt',
+          command: 'Processing user prompt'
+        };
+        const result = validateHook(hook, 'UserPromptSubmit');
+        expect(result.valid).toBe(true);
+      });
+
+      it('should validate a prompt-type hook for PreToolUse', () => {
+        const hook = {
+          matcher: 'Bash',
+          type: 'prompt',
+          command: 'About to execute tool'
+        };
+        const result = validateHook(hook, 'PreToolUse');
+        expect(result.valid).toBe(true);
+      });
+
+      it('should validate a prompt-type hook for PermissionRequest', () => {
+        const hook = {
+          type: 'prompt',
+          command: 'Permission requested'
+        };
+        const result = validateHook(hook, 'PermissionRequest');
         expect(result.valid).toBe(true);
       });
 
@@ -299,18 +337,17 @@ describe('Hook Validation Service', () => {
         expect(result.errors[0]).toContain('Invalid hook type');
       });
 
-      it('should reject prompt type for PreToolUse', () => {
+      it('should accept prompt type for PreToolUse (now supported)', () => {
         const hook = {
           matcher: 'Bash',
           command: 'echo pre',
           type: 'prompt'
         };
         const result = validateHook(hook, 'PreToolUse');
-        expect(result.valid).toBe(false);
-        expect(result.errors[0]).toContain('only supported for Stop and SubagentStop');
+        expect(result.valid).toBe(true);
       });
 
-      it('should reject prompt type for PostToolUse', () => {
+      it('should reject prompt type for PostToolUse (not supported)', () => {
         const hook = {
           matcher: 'Bash',
           command: 'echo post',
@@ -318,24 +355,27 @@ describe('Hook Validation Service', () => {
         };
         const result = validateHook(hook, 'PostToolUse');
         expect(result.valid).toBe(false);
+        expect(result.errors[0]).toContain('only supported for');
       });
 
-      it('should reject prompt type for SessionEnd', () => {
+      it('should reject prompt type for SessionEnd (not supported)', () => {
         const hook = {
           command: 'echo end',
           type: 'prompt'
         };
         const result = validateHook(hook, 'SessionEnd');
         expect(result.valid).toBe(false);
+        expect(result.errors[0]).toContain('only supported for');
       });
 
-      it('should reject prompt type for SessionStart', () => {
+      it('should reject prompt type for SessionStart (not supported)', () => {
         const hook = {
           command: 'echo start',
           type: 'prompt'
         };
         const result = validateHook(hook, 'SessionStart');
         expect(result.valid).toBe(false);
+        expect(result.errors[0]).toContain('only supported for');
       });
     });
 
@@ -543,17 +583,24 @@ describe('Hook Validation Service', () => {
         expect(result.errors[0]).toContain('Invalid hook type');
       });
 
-      it('should reject prompt type for non-supported events', () => {
+      it('should accept prompt type for PreToolUse (now supported)', () => {
         const updates = { type: 'prompt' };
         const result = validateHookUpdate(updates, existingHook, 'PreToolUse');
-        expect(result.valid).toBe(false);
-        expect(result.errors[0]).toContain('only supported for Stop and SubagentStop');
+        expect(result.valid).toBe(true);
       });
 
-      it('should reject prompt type for SessionEnd', () => {
+      it('should reject prompt type for PostToolUse (not supported)', () => {
+        const updates = { type: 'prompt' };
+        const result = validateHookUpdate(updates, existingHook, 'PostToolUse');
+        expect(result.valid).toBe(false);
+        expect(result.errors[0]).toContain('only supported for');
+      });
+
+      it('should reject prompt type for SessionEnd (not supported)', () => {
         const updates = { type: 'prompt' };
         const result = validateHookUpdate(updates, existingHook, 'SessionEnd');
         expect(result.valid).toBe(false);
+        expect(result.errors[0]).toContain('only supported for');
       });
 
       it('should reject non-integer timeout', () => {

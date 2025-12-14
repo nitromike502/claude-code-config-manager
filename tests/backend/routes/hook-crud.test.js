@@ -449,13 +449,13 @@ describe('Hook CRUD API Routes', () => {
         expect(res.body.hook.type).toBe('prompt');
       });
 
-      it('should reject prompt type for PreToolUse event', async () => {
+      it('should reject prompt type for PostToolUse event', async () => {
         const mockSettings = {
           hooks: {
-            PreToolUse: [
+            PostToolUse: [
               {
                 matcher: 'Bash',
-                hooks: [{ type: 'command', command: 'echo pre' }]
+                hooks: [{ type: 'command', command: 'echo post' }]
               }
             ]
           }
@@ -471,7 +471,7 @@ describe('Hook CRUD API Routes', () => {
           return Promise.reject(new Error(`File not found: ${filePath}`));
         });
 
-        const hookId = encodeURIComponent('PreToolUse::Bash::0');
+        const hookId = encodeURIComponent('PostToolUse::Bash::0');
         const res = await request(app)
           .put(`/api/projects/${TEST_PROJECT_ID}/hooks/${hookId}`)
           .send({ type: 'prompt' });
@@ -1169,10 +1169,10 @@ describe('Hook CRUD API Routes', () => {
       it('should apply same validation rules as project hooks', async () => {
         const mockSettings = {
           hooks: {
-            PreToolUse: [
+            PostToolUse: [
               {
                 matcher: 'Bash',
-                hooks: [{ type: 'command', command: 'echo pre' }]
+                hooks: [{ type: 'command', command: 'echo post' }]
               }
             ]
           }
@@ -1185,7 +1185,7 @@ describe('Hook CRUD API Routes', () => {
           return Promise.reject(new Error(`File not found: ${filePath}`));
         });
 
-        const hookId = encodeURIComponent('PreToolUse::Bash::0');
+        const hookId = encodeURIComponent('PostToolUse::Bash::0');
         const res = await request(app)
           .put(`/api/user/hooks/${hookId}`)
           .send({ type: 'prompt' });
