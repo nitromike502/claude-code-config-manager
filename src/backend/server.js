@@ -40,8 +40,12 @@ app.use((req, res, next) => {
 const projectsRouter = require('./routes/projects');
 const userRouter = require('./routes/user');
 const copyRoutes = require('./routes/copy');
+const { projectRouter: mcpProjectRouter, userRouter: mcpUserRouter } = require('./routes/mcp');
 
 // API routes
+// Register MCP routes BEFORE projects router to avoid middleware interference
+app.use('/api/projects', mcpProjectRouter);
+app.use('/api/user', mcpUserRouter);
 app.use('/api/projects', projectsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/copy', copyRoutes);
@@ -114,10 +118,12 @@ if (process.env.NODE_ENV !== 'test') {
     console.log('  GET  /api/projects/:id/commands         - Get project commands');
     console.log('  GET  /api/projects/:id/hooks            - Get project hooks');
     console.log('  GET  /api/projects/:id/mcp              - Get project MCP servers');
+    console.log('  PUT  /api/projects/:id/mcp/:name        - Update project MCP server');
     console.log('  GET  /api/user/agents                   - Get user agents');
     console.log('  GET  /api/user/commands                 - Get user commands');
     console.log('  GET  /api/user/hooks                    - Get user hooks');
     console.log('  GET  /api/user/mcp                      - Get user MCP servers');
+    console.log('  PUT  /api/user/mcp/:name                - Update user MCP server');
     console.log('='.repeat(60));
   });
 }

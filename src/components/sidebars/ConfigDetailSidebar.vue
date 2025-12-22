@@ -87,16 +87,115 @@
       </div>
 
       <!-- MCP Servers Metadata -->
-      <div v-else-if="selectedType === 'mcp'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p v-if="selectedItem.transport || selectedItem.transportType" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Transport:</strong> {{ selectedItem.transport || selectedItem.transportType }}
-        </p>
-        <p v-if="selectedItem.command" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Command:</strong> <code class="bg-bg-primary px-1 py-0.5 rounded font-mono text-xs text-primary">{{ selectedItem.command }}</code></p>
-        <p v-if="selectedItem.args && selectedItem.args.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Arguments:</strong> {{ selectedItem.args.join(' ') }}
-        </p>
-        <p v-if="selectedItem.enabled === false" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Status:</strong> Disabled</p>
+      <div v-else-if="selectedType === 'mcp'" class="space-y-3">
+        <!-- Name (editable) -->
+        <LabeledEditField
+          v-model="mcpData.name"
+          field-type="text"
+          label="Name"
+          :disabled="!canEditMcp || (editingField !== null && editingField !== 'mcp-name')"
+          @edit-start="editingField = 'mcp-name'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleMcpFieldUpdate('name', $event)"
+        />
+
+        <!-- Transport Type -->
+        <LabeledEditField
+          v-model="mcpData.type"
+          field-type="selectbutton"
+          label="Transport"
+          :options="transportOptions"
+          :disabled="!canEditMcp || (editingField !== null && editingField !== 'mcp-type')"
+          @edit-start="editingField = 'mcp-type'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleTransportChange($event)"
+        />
+
+        <!-- stdio-specific fields -->
+        <template v-if="mcpData.type === 'stdio'">
+          <LabeledEditField
+            v-model="mcpData.command"
+            field-type="text"
+            label="Command"
+            :disabled="!canEditMcp || (editingField !== null && editingField !== 'mcp-command')"
+            :validation="[{ type: 'required' }]"
+            @edit-start="editingField = 'mcp-command'"
+            @edit-cancel="editingField = null"
+            @edit-accept="handleMcpFieldUpdate('command', $event)"
+          />
+
+          <!-- Args - using ArgsArrayEditor component -->
+          <div class="labeled-field">
+            <div class="text-text-primary font-bold mb-2">Arguments:</div>
+            <ArgsArrayEditor
+              v-model="mcpData.args"
+              :disabled="!canEditMcp"
+              @update:model-value="handleMcpFieldUpdate('args', $event)"
+            />
+          </div>
+
+          <!-- Env - using KeyValueEditor component -->
+          <div class="labeled-field">
+            <div class="text-text-primary font-bold mb-2">Environment:</div>
+            <KeyValueEditor
+              v-model="mcpData.env"
+              :disabled="!canEditMcp"
+              key-placeholder="Variable name"
+              value-placeholder="Value"
+              @update:model-value="handleMcpFieldUpdate('env', $event)"
+            />
+          </div>
+        </template>
+
+        <!-- http/sse-specific fields -->
+        <template v-if="mcpData.type === 'http' || mcpData.type === 'sse'">
+          <LabeledEditField
+            v-model="mcpData.url"
+            field-type="text"
+            label="URL"
+            :disabled="!canEditMcp || (editingField !== null && editingField !== 'mcp-url')"
+            :validation="[{ type: 'required' }]"
+            @edit-start="editingField = 'mcp-url'"
+            @edit-cancel="editingField = null"
+            @edit-accept="handleMcpFieldUpdate('url', $event)"
+          />
+
+          <!-- Headers - using KeyValueEditor component -->
+          <div class="labeled-field">
+            <div class="text-text-primary font-bold mb-2">Headers:</div>
+            <KeyValueEditor
+              v-model="mcpData.headers"
+              :disabled="!canEditMcp"
+              key-placeholder="Header name"
+              value-placeholder="Value"
+              @update:model-value="handleMcpFieldUpdate('headers', $event)"
+            />
+          </div>
+        </template>
+
+        <!-- Common fields -->
+        <LabeledEditField
+          v-model="mcpData.enabled"
+          field-type="selectbutton"
+          label="Status"
+          :options="[{ label: 'Enabled', value: true }, { label: 'Disabled', value: false }]"
+          :disabled="!canEditMcp || (editingField !== null && editingField !== 'mcp-enabled')"
+          @edit-start="editingField = 'mcp-enabled'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleMcpFieldUpdate('enabled', $event)"
+        />
+
+        <LabeledEditField
+          v-model="mcpData.timeout"
+          field-type="number"
+          label="Timeout (ms)"
+          :min="1000"
+          :max="300000"
+          :disabled="!canEditMcp || (editingField !== null && editingField !== 'mcp-timeout')"
+          @edit-start="editingField = 'mcp-timeout'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleMcpFieldUpdate('timeout', $event)"
+        />
       </div>
 
       <!-- Skills Metadata -->
@@ -209,6 +308,12 @@ import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
+import LabeledEditField from '@/components/forms/LabeledEditField.vue'
+import ArgsArrayEditor from '@/components/forms/ArgsArrayEditor.vue'
+import KeyValueEditor from '@/components/forms/KeyValueEditor.vue'
+import { useMcpStore } from '@/stores/mcp'
+
+const mcpStore = useMcpStore()
 
 const props = defineProps({
   visible: {
@@ -231,6 +336,20 @@ const props = defineProps({
   selectedIndex: {
     type: Number,
     default: -1
+  },
+  // CRUD support
+  scope: {
+    type: String,
+    default: null,
+    validator: (value) => value === null || ['project', 'user'].includes(value)
+  },
+  projectId: {
+    type: String,
+    default: null
+  },
+  enableCrud: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -242,6 +361,7 @@ const emit = defineEmits({
   'copy-clicked': (item) => {
     return item && typeof item === 'object'
   },
+  'mcp-updated': () => true,
   'update:visible': (value) => typeof value === 'boolean'
 })
 
@@ -260,6 +380,55 @@ watch(localVisible, (newVal) => {
   }
   emit('update:visible', newVal)
 })
+
+// MCP editing state
+const mcpData = ref({
+  name: '',
+  type: 'stdio',      // stdio, http, or sse
+  command: '',        // stdio only
+  args: [],           // stdio only
+  env: {},            // stdio only
+  url: '',            // http/sse only
+  headers: {},        // http/sse only
+  enabled: true,
+  timeout: 30000,
+  retries: 3
+})
+
+const editingField = ref(null)
+
+// Transport type options
+const transportOptions = [
+  { label: 'stdio', value: 'stdio' },
+  { label: 'http', value: 'http' },
+  { label: 'sse', value: 'sse' }
+]
+
+// Computed: Can edit MCP servers (only if enableCrud is true)
+const canEditMcp = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'mcp'
+})
+
+// Watch for selectedItem changes to populate mcpData
+watch(() => props.selectedItem, (newItem) => {
+  if (newItem && props.selectedType === 'mcp') {
+    // Update MCP data
+    mcpData.value = {
+      name: newItem.name || '',
+      type: newItem.type || newItem.transport || newItem.transportType || 'stdio',
+      command: newItem.command || '',
+      args: newItem.args || [],
+      env: newItem.env || {},
+      url: newItem.url || '',
+      headers: newItem.headers || {},
+      enabled: newItem.enabled !== false,
+      timeout: newItem.timeout || 30000,
+      retries: newItem.retries || 3
+    }
+    editingField.value = null
+  }
+}, { immediate: true })
 
 // Computed: navigation state
 const hasPrev = computed(() => props.selectedIndex > 0)
@@ -313,6 +482,83 @@ const getIndentLevel = (relativePath) => {
   if (!relativePath) return 0
   const depth = (relativePath.match(/\//g) || []).length
   return depth * 1.25 // 1.25rem per level
+}
+
+// Handle MCP field update
+const handleMcpFieldUpdate = async (fieldName, newValue) => {
+  if (!canEditMcp.value) return
+
+  try {
+    // Build updates object with just the changed field
+    const updates = { [fieldName]: newValue }
+    const serverName = props.selectedItem.name
+
+    // Call API through store
+    const result = await mcpStore.updateMcpServer(
+      props.projectId,
+      serverName,
+      updates,
+      props.scope
+    )
+
+    if (result.success) {
+      // Update local mcpData
+      mcpData.value[fieldName] = newValue
+
+      // Notify parent that MCP server was updated
+      emit('mcp-updated')
+    }
+  } finally {
+    editingField.value = null
+  }
+}
+
+// Handle transport type change (clears inapplicable fields)
+const handleTransportChange = async (newType) => {
+  // Build updates object
+  const updates = { type: newType }
+
+  // Clear fields that don't apply to new transport
+  if (newType === 'stdio') {
+    // Clear http/sse fields
+    updates.url = undefined
+    updates.headers = undefined
+  } else {
+    // Clear stdio fields
+    updates.command = undefined
+    updates.args = undefined
+    updates.env = undefined
+  }
+
+  try {
+    const serverName = props.selectedItem.name
+
+    // Call API through store
+    const result = await mcpStore.updateMcpServer(
+      props.projectId,
+      serverName,
+      updates,
+      props.scope
+    )
+
+    if (result.success) {
+      // Update local state
+      mcpData.value.type = newType
+      if (newType === 'stdio') {
+        mcpData.value.url = ''
+        mcpData.value.headers = {}
+      } else {
+        mcpData.value.command = ''
+        mcpData.value.args = []
+        mcpData.value.env = {}
+      }
+
+      // Notify parent that MCP server was updated
+      emit('mcp-updated')
+    }
+  } finally {
+    editingField.value = null
+  }
 }
 
 // Handle copy button click

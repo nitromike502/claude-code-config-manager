@@ -196,6 +196,49 @@ export async function getUserMcp() {
 }
 
 /**
+ * Update a project-level MCP server
+ * @param {string} projectId - Project identifier (path with slashes removed)
+ * @param {string} serverName - MCP server name
+ * @param {Object} updates - Properties to update
+ * @returns {Promise<Object>} - { success: boolean, server?: Object, error?: string }
+ */
+export async function updateProjectMcp(projectId, serverName, updates) {
+  const encodedName = encodeURIComponent(serverName)
+  const response = await fetchWithTimeout(
+    `${BASE_URL}/api/projects/${projectId}/mcp/${encodedName}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updates)
+    }
+  )
+  return response.json()
+}
+
+/**
+ * Update a user-level MCP server
+ * @param {string} serverName - MCP server name
+ * @param {Object} updates - Properties to update
+ * @returns {Promise<Object>} - { success: boolean, server?: Object, error?: string }
+ */
+export async function updateUserMcp(serverName, updates) {
+  const encodedName = encodeURIComponent(serverName)
+  const response = await fetchWithTimeout(
+    `${BASE_URL}/api/user/mcp/${encodedName}`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updates)
+    }
+  )
+  return response.json()
+}
+
+/**
  * Get project skills
  * @param {string} projectId - Project identifier
  * @returns {Promise<Object>} - { skills: [], warnings: [] }
@@ -308,5 +351,7 @@ export default {
   copyCommand,
   copyHook,
   copyMcp,
-  copySkill
+  copySkill,
+  updateProjectMcp,
+  updateUserMcp
 }
