@@ -31,6 +31,9 @@
     :selected-type="selectedType"
     :current-items="currentItems"
     :selected-index="currentIndex"
+    :enable-crud="true"
+    :scope="'project'"
+    :project-id="projectId"
     @retry="retryLoad"
     @toggle-agents="showingAllAgents = !showingAllAgents"
     @toggle-commands="showingAllCommands = !showingAllCommands"
@@ -41,6 +44,7 @@
     @close-sidebar="sidebarVisible = false"
     @navigate="onNavigate"
     @copy-clicked="handleCopyClick"
+    @mcp-updated="handleMcpUpdated"
   >
     <template #copy-modal>
       <CopyModal
@@ -399,6 +403,12 @@ export default {
       })
     }
 
+    // Handle MCP server update from sidebar
+    const handleMcpUpdated = async () => {
+      // Reload MCP servers to reflect changes
+      await loadMCP()
+    }
+
     // Watch for route changes
     watch(() => projectId.value, () => {
       loadProjectData()
@@ -462,7 +472,8 @@ export default {
       handleCopyClick,
       handleCopySuccess,
       handleCopyError,
-      handleCopyCancelled
+      handleCopyCancelled,
+      handleMcpUpdated
     }
   }
 }

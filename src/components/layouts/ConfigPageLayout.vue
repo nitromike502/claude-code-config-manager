@@ -176,9 +176,13 @@
       :selected-type="selectedType"
       :current-items="currentItems"
       :selected-index="selectedIndex"
+      :enable-crud="enableCrud"
+      :scope="scope"
+      :project-id="projectId"
       @close="$emit('close-sidebar')"
       @navigate="(direction) => $emit('navigate', direction)"
       @copy-clicked="(item) => $emit('copy-clicked', item)"
+      @mcp-updated="$emit('mcp-updated')"
     />
 
     <!-- Copy Modal Slot -->
@@ -332,6 +336,21 @@ defineProps({
   selectedIndex: {
     type: Number,
     default: -1
+  },
+
+  // CRUD support
+  enableCrud: {
+    type: Boolean,
+    default: false
+  },
+  scope: {
+    type: String,
+    default: null,
+    validator: (value) => value === null || ['project', 'user'].includes(value)
+  },
+  projectId: {
+    type: String,
+    default: null
   }
 })
 
@@ -345,7 +364,8 @@ defineEmits([
   'show-detail',
   'close-sidebar',
   'navigate',
-  'copy-clicked'
+  'copy-clicked',
+  'mcp-updated'
 ])
 </script>
 

@@ -100,7 +100,7 @@ const props = defineProps({
   cardType: {
     type: String,
     default: '',
-    validator: (value) => ['', 'agents', 'commands', 'hooks', 'mcp'].includes(value)
+    validator: (value) => ['', 'agents', 'commands', 'hooks', 'mcp', 'skills'].includes(value)
   },
   toggleable: {
     type: Boolean,
