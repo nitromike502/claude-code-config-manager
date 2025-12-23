@@ -50,40 +50,267 @@
 
       <!-- Agents Metadata -->
       <div v-if="selectedType === 'agents'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Description:</strong> {{ selectedItem.description }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Color:</strong> {{ selectedItem.color || 'Not specified' }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Model:</strong> {{ selectedItem.model || 'inherit' }}</p>
-        <p v-if="selectedItem.tools && selectedItem.tools.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
-        </p>
-        <p v-else-if="Array.isArray(selectedItem.tools) && selectedItem.tools.length === 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> None specified
-        </p>
+        <!-- Name Field -->
+        <LabeledEditField
+          v-model="agentData.name"
+          field-type="text"
+          label="Name"
+          placeholder="agent-name"
+          :disabled="!canEdit || editingField !== null && editingField !== 'name'"
+          :validation="[{ type: 'required' }, { type: 'agentName' }]"
+          @edit-start="editingField = 'name'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('name', $event)"
+        />
+
+        <!-- Description Field -->
+        <LabeledEditField
+          v-model="agentData.description"
+          field-type="textarea"
+          label="Description"
+          placeholder="Brief description"
+          :disabled="!canEdit || editingField !== null && editingField !== 'description'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Description must be at least 10 characters' }]"
+          @edit-start="editingField = 'description'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('description', $event)"
+        />
+
+        <!-- Color Field -->
+        <LabeledEditField
+          v-model="agentData.color"
+          field-type="colorpalette"
+          label="Color"
+          :disabled="!canEdit || editingField !== null && editingField !== 'color'"
+          @edit-start="editingField = 'color'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('color', $event)"
+        />
+
+        <!-- Model Field -->
+        <LabeledEditField
+          v-model="agentData.model"
+          field-type="selectbutton"
+          label="Model"
+          :options="modelOptions"
+          :disabled="!canEdit || editingField !== null && editingField !== 'model'"
+          @edit-start="editingField = 'model'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('model', $event)"
+        />
+
+        <!-- Permission Mode Field -->
+        <LabeledEditField
+          v-model="agentData.permissionMode"
+          field-type="select"
+          label="Permission Mode"
+          :options="permissionOptions"
+          :disabled="!canEdit || editingField !== null && editingField !== 'permissionMode'"
+          @edit-start="editingField = 'permissionMode'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('permissionMode', $event)"
+        />
+
+        <!-- Tools Field -->
+        <LabeledEditField
+          v-model="agentData.tools"
+          field-type="multiselect"
+          label="Allowed Tools"
+          :options="toolOptions"
+          placeholder="Select allowed tools"
+          :disabled="!canEdit || editingField !== null && editingField !== 'tools'"
+          @edit-start="editingField = 'tools'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('tools', $event)"
+        />
+
+        <!-- Skills Field -->
+        <LabeledEditField
+          v-model="agentData.skills"
+          field-type="multiselect"
+          label="Skills"
+          :options="skillOptions"
+          placeholder="Select skills"
+          :disabled="!canEdit || editingField !== null && editingField !== 'skills'"
+          @edit-start="editingField = 'skills'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('skills', $event)"
+        />
       </div>
 
       <!-- Commands Metadata -->
       <div v-else-if="selectedType === 'commands'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Description:</strong> {{ selectedItem.description }}</p>
-        <p v-if="selectedItem.namespace" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Namespace:</strong> {{ selectedItem.namespace }}</p>
-        <p v-if="selectedItem.color" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Color:</strong> {{ selectedItem.color }}</p>
-        <p v-if="selectedItem.argumentHint" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Argument Hint:</strong> {{ selectedItem.argumentHint }}</p>
-        <p v-if="selectedItem.tools && selectedItem.tools.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
-        </p>
-        <p v-else-if="Array.isArray(selectedItem.tools) && selectedItem.tools.length === 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> None specified
-        </p>
+        <!-- Name Field -->
+        <LabeledEditField
+          v-model="commandData.name"
+          field-type="text"
+          label="Name"
+          placeholder="command-name"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'name'"
+          :validation="[{ type: 'required' }]"
+          @edit-start="editingField = 'name'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('name', $event)"
+        />
+
+        <!-- Description Field -->
+        <LabeledEditField
+          v-model="commandData.description"
+          field-type="textarea"
+          label="Description"
+          placeholder="Brief description"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'description'"
+          @edit-start="editingField = 'description'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('description', $event)"
+        />
+
+        <!-- Model Field -->
+        <LabeledEditField
+          v-model="commandData.model"
+          field-type="selectbutton"
+          label="Model"
+          :options="commandModelOptions"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'model'"
+          @edit-start="editingField = 'model'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('model', $event)"
+        />
+
+        <!-- Allowed Tools Field -->
+        <LabeledEditField
+          v-model="commandData.allowedTools"
+          field-type="multiselect"
+          label="Allowed Tools"
+          :options="toolOptions"
+          placeholder="Select allowed tools"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'allowedTools'"
+          @edit-start="editingField = 'allowedTools'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('allowedTools', $event)"
+        />
+
+        <!-- Argument Hint Field (optional - only show if has value or can edit) -->
+        <LabeledEditField
+          v-if="canEditCommand || commandData.argumentHint"
+          v-model="commandData.argumentHint"
+          field-type="text"
+          label="Argument Hint"
+          placeholder="<query>"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'argumentHint'"
+          @edit-start="editingField = 'argumentHint'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('argumentHint', $event)"
+        />
+
+        <!-- Model Invocation Field (optional - only show if has value or can edit) -->
+        <LabeledEditField
+          v-if="canEditCommand || commandData.disableModelInvocation !== null"
+          v-model="commandData.disableModelInvocation"
+          field-type="selectbutton"
+          label="Model Invocation"
+          :options="modelInvocationOptions"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'disableModelInvocation'"
+          @edit-start="editingField = 'disableModelInvocation'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('disableModelInvocation', $event)"
+        />
       </div>
 
       <!-- Hooks Metadata -->
       <div v-else-if="selectedType === 'hooks'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Event:</strong> {{ selectedItem.event }}</p>
-        <p v-if="selectedItem.type" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Type:</strong> {{ selectedItem.type }}</p>
-        <p v-if="selectedItem.matcher" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Matcher:</strong> {{ selectedItem.matcher }}</p>
-        <p v-if="selectedItem.pattern" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Pattern:</strong> {{ selectedItem.pattern }}</p>
-        <p v-if="selectedItem.command" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Command:</strong> <code class="bg-bg-primary px-1 py-0.5 rounded font-mono text-xs text-primary">{{ selectedItem.command }}</code></p>
+        <!-- Event Field (READONLY - cannot change after creation) -->
+        <p class="my-2 text-sm text-text-secondary leading-relaxed">
+          <strong class="text-text-primary">Event:</strong> {{ selectedItem.event }}
+          <span class="text-text-muted text-xs ml-2">(read-only)</span>
+        </p>
+
+        <!-- Matcher Field (only for PreToolUse/PostToolUse events) -->
+        <LabeledEditField
+          v-if="isMatcherBasedEvent(selectedItem.event)"
+          v-model="hookData.matcher"
+          field-type="text"
+          label="Matcher"
+          placeholder="Bash|Read|Write or *"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'matcher'"
+          :validation="[{ type: 'required' }]"
+          @edit-start="editingField = 'matcher'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('matcher', $event)"
+        />
+
+        <!-- Type Field (command or prompt - prompt only for Stop/SubagentStop) -->
+        <LabeledEditField
+          v-model="hookData.type"
+          field-type="selectbutton"
+          label="Type"
+          :options="supportsPromptType(hookData.event) ? hookTypeOptions : [{ label: 'Command', value: 'command' }]"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'type'"
+          @edit-start="editingField = 'type'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('type', $event)"
+        />
+
+        <!-- Command Field -->
+        <LabeledEditField
+          v-model="hookData.command"
+          field-type="textarea"
+          label="Command"
+          placeholder="Shell command to execute"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'command'"
+          :validation="[{ type: 'required' }]"
+          @edit-start="editingField = 'command'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('command', $event)"
+        />
+
+        <!-- Timeout Field -->
+        <LabeledEditField
+          v-model="hookData.timeout"
+          field-type="number"
+          label="Timeout (ms)"
+          placeholder="30000"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'timeout'"
+          @edit-start="editingField = 'timeout'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('timeout', $event)"
+        />
+
+        <!-- Enabled Field -->
+        <LabeledEditField
+          v-model="hookData.enabled"
+          field-type="selectbutton"
+          label="Enabled"
+          :options="booleanOptions"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'enabled'"
+          @edit-start="editingField = 'enabled'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('enabled', $event)"
+        />
+
+        <!-- Suppress Output Field -->
+        <LabeledEditField
+          v-model="hookData.suppressOutput"
+          field-type="selectbutton"
+          label="Suppress Output"
+          :options="booleanOptions"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'suppressOutput'"
+          @edit-start="editingField = 'suppressOutput'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('suppressOutput', $event)"
+        />
+
+        <!-- Continue Field -->
+        <LabeledEditField
+          v-model="hookData.continue"
+          field-type="selectbutton"
+          label="Continue on Error"
+          :options="booleanOptions"
+          :disabled="!canEditHook || editingField !== null && editingField !== 'continue'"
+          @edit-start="editingField = 'continue'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleHookFieldUpdate('continue', $event)"
+        />
       </div>
 
       <!-- MCP Servers Metadata -->
@@ -200,27 +427,46 @@
 
       <!-- Skills Metadata -->
       <div v-else-if="selectedType === 'skills'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Description:</strong> {{ selectedItem.description || 'No description' }}</p>
-        <p v-if="selectedItem.allowedTools && selectedItem.allowedTools.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong>
-          <span v-for="(tool, index) in selectedItem.allowedTools" :key="index" class="inline-block bg-bg-tertiary px-2 py-1 rounded text-xs mr-1 mt-1">{{ tool }}</span>
-        </p>
-        <p v-else-if="Array.isArray(selectedItem.allowedTools) && selectedItem.allowedTools.length === 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> None specified
-        </p>
-        <p v-if="selectedItem.directoryPath" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Directory Path:</strong> <code class="bg-bg-primary px-1 py-0.5 rounded font-mono text-xs text-text-secondary">{{ selectedItem.directoryPath }}</code>
+        <!-- Skill Name (Read-Only - directory name cannot be changed) -->
+        <p class="my-2 text-sm text-text-secondary leading-relaxed">
+          <strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}
         </p>
 
-        <!-- Structure Information with Collapsible File Tree -->
+        <!-- Skill Description Field -->
+        <LabeledEditField
+          v-model="skillData.description"
+          field-type="textarea"
+          label="Description"
+          placeholder="Brief description of what this skill does"
+          :disabled="!canEditSkill || editingField !== null && editingField !== 'description'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Description must be at least 10 characters' }]"
+          @edit-start="editingField = 'description'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleSkillFieldUpdate('description', $event)"
+        />
+
+        <!-- Allowed Tools Field -->
+        <LabeledEditField
+          v-model="skillData.allowedTools"
+          field-type="multiselect"
+          label="Allowed Tools"
+          :options="toolOptions"
+          placeholder="Select allowed tools"
+          :disabled="!canEditSkill || editingField !== null && editingField !== 'allowedTools'"
+          @edit-start="editingField = 'allowedTools'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleSkillFieldUpdate('allowedTools', $event)"
+        />
+
+        <!-- Supporting Files (Read-Only Display) -->
         <div v-if="selectedItem.fileCount || selectedItem.files" class="my-3">
+          <div class="text-text-primary font-bold text-sm mb-2">Supporting Files (Read-Only)</div>
           <Accordion :value="null" class="skill-structure-accordion">
             <AccordionPanel value="files">
               <AccordionHeader>
                 <div class="flex items-center gap-2">
                   <i class="pi pi-folder text-color-skills"></i>
-                  <span class="font-semibold">Structure</span>
+                  <span class="font-semibold">File Tree</span>
                   <span class="text-text-muted text-xs ml-1">({{ selectedItem.fileCount }} files)</span>
                 </div>
               </AccordionHeader>
@@ -246,14 +492,26 @@
         <!-- External References Warning -->
         <div v-if="selectedItem.externalReferences && selectedItem.externalReferences.length > 0" class="my-3 p-3 bg-color-warning-bg rounded border border-color-warning">
           <div class="flex items-start gap-2">
-            <i class="pi pi-exclamation-triangle text-color-warning mt-0.5"></i>
+            <i class="pi pi-exclamation-triangle text-color-warning mt-0.5 text-lg"></i>
             <div class="flex-1">
-              <p class="text-sm font-semibold text-color-warning mb-2">External References Detected</p>
-              <div v-for="(ref, index) in selectedItem.externalReferences" :key="index" class="mb-2">
-                <p class="text-xs text-text-secondary">
-                  <code class="bg-bg-primary px-1 py-0.5 rounded font-mono">{{ ref.reference }}</code>
-                </p>
-                <p class="text-xs text-text-muted">{{ ref.file }}, line {{ ref.line }}</p>
+              <p class="text-sm font-semibold text-color-warning mb-1">External References Detected</p>
+              <p class="text-xs text-text-secondary mb-3">
+                This skill contains {{ selectedItem.externalReferences.length }}
+                reference{{ selectedItem.externalReferences.length > 1 ? 's' : '' }} to files outside the skill directory, which may affect portability when copying to other projects.
+              </p>
+              <div class="space-y-2">
+                <div v-for="(ref, index) in selectedItem.externalReferences" :key="index" class="bg-bg-primary p-2 rounded text-xs">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-text-muted">Line {{ ref.line }}:</span>
+                    <Tag
+                      :severity="ref.severity === 'error' ? 'danger' : 'warning'"
+                      :value="ref.type?.toUpperCase() || 'REFERENCE'"
+                      class="text-[10px] px-1.5 py-0.5"
+                    />
+                  </div>
+                  <code class="block bg-bg-secondary px-2 py-1 rounded font-mono text-text-secondary break-all">{{ ref.reference }}</code>
+                  <p class="text-text-muted mt-1">in {{ ref.file }}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -274,26 +532,92 @@
 
     <!-- Content Section -->
     <div v-if="selectedItem?.content" class="mb-6">
-      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Content</h4>
-      <pre class="bg-bg-primary p-4 rounded border border-border-primary font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[400px] overflow-y-auto text-text-primary">{{ selectedItem.content }}</pre>
+      <!-- For agents and commands, show section header -->
+      <h4 v-if="selectedType === 'agents' || selectedType === 'commands'" class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">
+        {{ selectedType === 'agents' ? 'System Prompt' : 'Content' }}
+      </h4>
+
+      <!-- For agents, use inline editing -->
+      <div v-if="selectedType === 'agents'">
+        <LabeledEditField
+          v-model="agentData.systemPrompt"
+          field-type="textarea"
+          label="System Prompt"
+          placeholder="The agent's system prompt (instructions)"
+          :disabled="!canEdit || editingField !== null && editingField !== 'systemPrompt'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 20, message: 'System prompt must be at least 20 characters' }]"
+          @edit-start="editingField = 'systemPrompt'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleFieldUpdate('systemPrompt', $event)"
+        />
+      </div>
+
+      <!-- For commands, use inline editing -->
+      <div v-else-if="selectedType === 'commands'">
+        <LabeledEditField
+          v-model="commandData.content"
+          field-type="textarea"
+          label="Content"
+          placeholder="The command's content (instructions)"
+          :disabled="!canEditCommand || editingField !== null && editingField !== 'content'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Content must be at least 10 characters' }]"
+          @edit-start="editingField = 'content'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleCommandFieldUpdate('content', $event)"
+        />
+      </div>
+
+      <!-- For skills, use inline editing with label on the field (no section header) -->
+      <div v-else-if="selectedType === 'skills'">
+        <LabeledEditField
+          v-model="skillData.content"
+          field-type="textarea"
+          label="Content"
+          placeholder="The skill's markdown content (instructions, examples, etc.)"
+          :disabled="!canEditSkill || editingField !== null && editingField !== 'content'"
+          :validation="[{ type: 'required' }, { type: 'minLength', param: 10, message: 'Content must be at least 10 characters' }]"
+          @edit-start="editingField = 'content'"
+          @edit-cancel="editingField = null"
+          @edit-accept="handleSkillFieldUpdate('content', $event)"
+        />
+      </div>
+
+      <!-- For other types, show as read-only -->
+      <pre v-else class="bg-bg-primary p-4 rounded border border-border-primary font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[400px] overflow-y-auto text-text-primary">{{ selectedItem.content }}</pre>
     </div>
 
-    <!-- Footer with Actions -->
+    <!-- Footer with Actions (inline icon buttons) -->
     <template #footer>
-      <div class="flex gap-3 w-full">
+      <div class="flex items-center justify-end gap-2">
+        <!-- Delete Button (for agents, commands, and hooks with edit enabled - skills delete in separate story) -->
+        <Button
+          v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand) || (selectedType === 'hooks' && canEditHook)"
+          @click="handleDelete"
+          :disabled="!selectedItem"
+          icon="pi pi-trash"
+          outlined
+          severity="danger"
+          aria-label="Delete"
+          v-tooltip.top="'Delete'"
+          class="sidebar-action-btn delete-action-btn"
+        />
+
         <Button
           @click="handleCopy"
           :disabled="!selectedItem"
-          label="Copy"
           icon="pi pi-copy"
-          class="copy-action-btn flex-1"
+          outlined
+          aria-label="Copy"
+          v-tooltip.top="'Copy'"
+          class="sidebar-action-btn copy-action-btn"
         />
         <Button
           @click="localVisible = false"
-          label="Close"
           icon="pi pi-times"
           outlined
-          class="close-action-btn flex-1"
+          aria-label="Close"
+          v-tooltip.top="'Close'"
+          class="sidebar-action-btn close-action-btn"
         />
       </div>
     </template>
@@ -308,11 +632,20 @@ import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
+import Tag from 'primevue/tag'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import ArgsArrayEditor from '@/components/forms/ArgsArrayEditor.vue'
 import KeyValueEditor from '@/components/forms/KeyValueEditor.vue'
+import { useAgentsStore } from '@/stores/agents'
+import { useCommandsStore } from '@/stores/commands'
+import { useSkillsStore } from '@/stores/skills'
+import { useHooksStore } from '@/stores/hooks'
 import { useMcpStore } from '@/stores/mcp'
 
+const agentsStore = useAgentsStore()
+const commandsStore = useCommandsStore()
+const skillsStore = useSkillsStore()
+const hooksStore = useHooksStore()
 const mcpStore = useMcpStore()
 
 const props = defineProps({
@@ -337,7 +670,7 @@ const props = defineProps({
     type: Number,
     default: -1
   },
-  // CRUD support
+  // CRUD support (for agents, commands, skills, hooks, mcp)
   scope: {
     type: String,
     default: null,
@@ -361,6 +694,22 @@ const emit = defineEmits({
   'copy-clicked': (item) => {
     return item && typeof item === 'object'
   },
+  'agent-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'agent-updated': () => true,
+  'command-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'command-updated': () => true,
+  'skill-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'skill-updated': () => true,
+  'hook-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'hook-updated': () => true,
   'mcp-updated': () => true,
   'update:visible': (value) => typeof value === 'boolean'
 })
@@ -381,6 +730,49 @@ watch(localVisible, (newVal) => {
   emit('update:visible', newVal)
 })
 
+// Agent editing state
+const agentData = ref({
+  name: '',
+  description: '',
+  color: '',
+  model: 'inherit',
+  permissionMode: 'default',
+  tools: [],
+  skills: [],
+  systemPrompt: ''
+})
+
+// Command editing state
+const commandData = ref({
+  name: '',
+  description: '',
+  model: 'inherit',
+  allowedTools: [],
+  argumentHint: '',
+  disableModelInvocation: false,
+  content: ''
+})
+
+// Skill editing state
+const skillData = ref({
+  name: '',
+  description: '',
+  allowedTools: [],
+  content: ''
+})
+
+// Hook editing state
+const hookData = ref({
+  event: '',
+  matcher: '',
+  type: 'command',
+  command: '',
+  timeout: 30000,
+  enabled: true,
+  suppressOutput: false,
+  continue: true
+})
+
 // MCP editing state
 const mcpData = ref({
   name: '',
@@ -397,18 +789,187 @@ const mcpData = ref({
 
 const editingField = ref(null)
 
-// Transport type options
-const transportOptions = [
-  { label: 'stdio', value: 'stdio' },
-  { label: 'http', value: 'http' },
-  { label: 'sse', value: 'sse' }
-]
+// Computed: Can edit agents (only if enableCrud is true and not a plugin agent)
+const canEdit = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'agents' &&
+         props.selectedItem?.location !== 'plugin'
+})
+
+// Computed: Can edit commands (only if enableCrud is true)
+const canEditCommand = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'commands'
+})
+
+// Computed: Can edit skills (only if enableCrud is true)
+const canEditSkill = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'skills'
+})
+
+// Computed: Can edit hooks (only if enableCrud is true)
+const canEditHook = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'hooks'
+})
 
 // Computed: Can edit MCP servers (only if enableCrud is true)
 const canEditMcp = computed(() => {
   return props.enableCrud &&
          props.selectedType === 'mcp'
 })
+
+// Model options for agents
+const modelOptions = [
+  { label: 'Inherit', value: 'inherit' },
+  { label: 'Sonnet', value: 'sonnet' },
+  { label: 'Opus', value: 'opus' },
+  { label: 'Haiku', value: 'haiku' }
+]
+
+// Model options for commands (same as agents)
+const commandModelOptions = [
+  { label: 'Inherit', value: 'inherit' },
+  { label: 'Sonnet', value: 'sonnet' },
+  { label: 'Opus', value: 'opus' },
+  { label: 'Haiku', value: 'haiku' }
+]
+
+// Model invocation options for commands
+const modelInvocationOptions = [
+  { label: 'Allow Model', value: false },
+  { label: 'Skip Model', value: true }
+]
+
+// Permission mode options for agents
+const permissionOptions = [
+  { label: 'Default', value: 'default' },
+  { label: 'Accept Edits', value: 'acceptEdits' },
+  { label: 'Bypass Permissions', value: 'bypassPermissions' },
+  { label: 'Plan', value: 'plan' },
+  { label: 'Ignore', value: 'ignore' }
+]
+
+// Tool options for agents and commands
+const toolOptions = [
+  { label: 'Bash', value: 'Bash' },
+  { label: 'Read', value: 'Read' },
+  { label: 'Write', value: 'Write' },
+  { label: 'Edit', value: 'Edit' },
+  { label: 'Glob', value: 'Glob' },
+  { label: 'Grep', value: 'Grep' },
+  { label: 'WebFetch', value: 'WebFetch' },
+  { label: 'TodoRead', value: 'TodoRead' },
+  { label: 'TodoWrite', value: 'TodoWrite' }
+]
+
+// Skill options for agents (TODO: populate from available skills)
+const skillOptions = computed(() => {
+  // For now, return empty array
+  // TODO: Get actual skills from store/API
+  return []
+})
+
+// Hook type options
+const hookTypeOptions = [
+  { label: 'Command', value: 'command' },
+  { label: 'Prompt', value: 'prompt' }
+]
+
+// Boolean options for hook fields
+const booleanOptions = [
+  { label: 'Yes', value: true },
+  { label: 'No', value: false }
+]
+
+// Transport type options for MCP servers
+const transportOptions = [
+  { label: 'stdio', value: 'stdio' },
+  { label: 'http', value: 'http' },
+  { label: 'sse', value: 'sse' }
+]
+
+// Events that require a matcher field (PreToolUse, PostToolUse)
+const MATCHER_BASED_EVENTS = ['PreToolUse', 'PostToolUse']
+
+// Events that support prompt type (Stop, SubagentStop, UserPromptSubmit, PreToolUse, PermissionRequest)
+const PROMPT_SUPPORTED_EVENTS = ['Stop', 'SubagentStop', 'UserPromptSubmit', 'PreToolUse', 'PermissionRequest']
+
+// Check if event requires matcher
+const isMatcherBasedEvent = (event) => MATCHER_BASED_EVENTS.includes(event)
+
+// Check if event supports prompt type
+const supportsPromptType = (event) => PROMPT_SUPPORTED_EVENTS.includes(event)
+
+// Watch for selectedItem changes to update agentData
+watch(() => props.selectedItem, (newItem) => {
+  if (newItem && props.selectedType === 'agents') {
+    // Trim leading newline from systemPrompt for display (it's just formatting for the file)
+    let displaySystemPrompt = newItem.content || ''
+    if (displaySystemPrompt.startsWith('\n')) {
+      displaySystemPrompt = displaySystemPrompt.substring(1)
+    }
+
+    agentData.value = {
+      name: newItem.name || '',
+      description: newItem.description || '',
+      color: newItem.color || '',
+      model: newItem.model || 'inherit',
+      permissionMode: newItem.permissionMode || 'default',
+      tools: newItem.tools || [],
+      skills: newItem.skills || [],
+      systemPrompt: displaySystemPrompt
+    }
+    editingField.value = null
+  }
+}, { immediate: true })
+
+// Watch for selectedItem changes to update commandData
+watch(() => props.selectedItem, (newItem) => {
+  if (newItem && props.selectedType === 'commands') {
+    commandData.value = {
+      name: newItem.name || '',
+      description: newItem.description || '',
+      model: newItem.model || 'inherit',
+      allowedTools: newItem.tools || [],
+      argumentHint: newItem.argumentHint || '',
+      disableModelInvocation: newItem.disableModelInvocation || false,
+      content: newItem.content || ''
+    }
+    editingField.value = null
+  }
+}, { immediate: true })
+
+// Watch for selectedItem changes to update skillData
+watch(() => props.selectedItem, (newItem) => {
+  if (newItem && props.selectedType === 'skills') {
+    skillData.value = {
+      name: newItem.name || '',
+      description: newItem.description || '',
+      allowedTools: newItem.allowedTools || [],
+      content: newItem.content || ''
+    }
+    editingField.value = null
+  }
+}, { immediate: true })
+
+// Watch for selectedItem changes to update hookData
+watch(() => props.selectedItem, (newItem) => {
+  if (newItem && props.selectedType === 'hooks') {
+    hookData.value = {
+      event: newItem.event || '',
+      matcher: newItem.matcher || '',
+      type: newItem.type || 'command',
+      command: newItem.command || '',
+      timeout: newItem.timeout || 30000,
+      enabled: newItem.enabled !== false,
+      suppressOutput: newItem.suppressOutput || false,
+      continue: newItem.continue !== false
+    }
+    editingField.value = null
+  }
+}, { immediate: true })
 
 // Watch for selectedItem changes to populate mcpData
 watch(() => props.selectedItem, (newItem) => {
@@ -482,6 +1043,130 @@ const getIndentLevel = (relativePath) => {
   if (!relativePath) return 0
   const depth = (relativePath.match(/\//g) || []).length
   return depth * 1.25 // 1.25rem per level
+}
+
+// Handle agent field update
+const handleFieldUpdate = async (fieldName, newValue) => {
+  if (!canEdit.value) return
+
+  try {
+    // Special handling for systemPrompt - add back the leading newline for file format
+    let valueToSave = newValue
+    if (fieldName === 'systemPrompt') {
+      valueToSave = '\n' + newValue
+    }
+
+    // Build updates object with just the changed field
+    const updates = { [fieldName]: valueToSave }
+    const agentName = props.selectedItem.name
+
+    // Call API through store
+    const result = await agentsStore.updateAgent(
+      props.projectId,
+      agentName,
+      updates,
+      props.scope
+    )
+
+    if (result.success) {
+      // Update local agentData (keep without leading newline for display)
+      agentData.value[fieldName] = newValue
+
+      // Notify parent that agent was updated
+      emit('agent-updated')
+    }
+  } finally {
+    editingField.value = null
+  }
+}
+
+// Handle command field update
+const handleCommandFieldUpdate = async (fieldName, newValue) => {
+  if (!canEditCommand.value) return
+
+  try {
+    // Build updates object with just the changed field
+    const updates = { [fieldName]: newValue }
+    const commandName = props.selectedItem.name
+
+    // Call API through store
+    const result = await commandsStore.updateCommand(
+      props.projectId,
+      commandName,
+      updates,
+      props.scope
+    )
+
+    if (result.success) {
+      // Update local commandData
+      commandData.value[fieldName] = newValue
+
+      // Notify parent that command was updated
+      emit('command-updated')
+    }
+  } finally {
+    editingField.value = null
+  }
+}
+
+// Handle skill field update
+const handleSkillFieldUpdate = async (fieldName, newValue) => {
+  if (!canEditSkill.value) return
+
+  try {
+    // Build updates object with just the changed field
+    const updates = { [fieldName]: newValue }
+    const skillName = props.selectedItem.name
+
+    // Call API through store
+    const result = await skillsStore.updateSkill(
+      props.projectId,
+      skillName,
+      updates,
+      props.scope
+    )
+
+    if (result.success) {
+      // Update local skillData
+      skillData.value[fieldName] = newValue
+
+      // Notify parent that skill was updated
+      emit('skill-updated')
+    }
+  } finally {
+    editingField.value = null
+  }
+}
+
+// Handle hook field update
+const handleHookFieldUpdate = async (fieldName, newValue) => {
+  if (!canEditHook.value) return
+
+  try {
+    // Build updates object with just the changed field
+    const updates = { [fieldName]: newValue }
+    const hookEvent = props.selectedItem.event
+    const hookMatcher = props.selectedItem.matcher
+
+    // Call API through store
+    const result = await hooksStore.updateHook(
+      props.projectId,
+      hookEvent,
+      hookMatcher,
+      updates,
+      props.scope
+    )
+
+    if (result.success) {
+      // Update local hookData
+      hookData.value[fieldName] = newValue
+
+      // Notify parent that hook was updated
+      emit('hook-updated')
+    }
+  } finally {
+    editingField.value = null
+  }
 }
 
 // Handle MCP field update
@@ -558,6 +1243,19 @@ const handleTransportChange = async (newType) => {
     }
   } finally {
     editingField.value = null
+  }
+}
+
+// Handle delete button click
+const handleDelete = () => {
+  if (props.selectedItem) {
+    if (props.selectedType === 'agents') {
+      emit('agent-delete', props.selectedItem)
+    } else if (props.selectedType === 'commands') {
+      emit('command-delete', props.selectedItem)
+    } else if (props.selectedType === 'hooks') {
+      emit('hook-delete', props.selectedItem)
+    }
   }
 }
 
@@ -654,39 +1352,63 @@ const handleCopy = () => {
   cursor: not-allowed !important;
 }
 
-/* Copy action button */
-.copy-action-btn {
-  background: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-  color: white !important;
-  padding: 0.75rem 1rem !important;
-  font-weight: 500 !important;
+/* Sidebar action buttons (icon-only buttons in footer) */
+.sidebar-action-btn {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   transition: all 0.2s !important;
 }
 
+/* Copy action button */
+.copy-action-btn {
+  background: transparent !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
 .copy-action-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover) !important;
-  border-color: var(--color-primary-hover) !important;
+  background: var(--color-primary) !important;
+  color: white !important;
   transform: translateY(-1px);
   box-shadow: var(--shadow-card);
 }
 
 .copy-action-btn:disabled {
-  opacity: 0.6 !important;
+  opacity: 0.4 !important;
   cursor: not-allowed !important;
-  background: var(--bg-tertiary) !important;
-  border-color: var(--bg-tertiary) !important;
+  background: transparent !important;
   color: var(--text-disabled) !important;
+  border-color: var(--text-disabled) !important;
+}
+
+/* Delete action button */
+.delete-action-btn {
+  background: transparent !important;
+  color: var(--color-error) !important;
+  border-color: var(--color-error) !important;
+}
+
+.delete-action-btn:hover:not(:disabled) {
+  background: var(--color-error) !important;
+  color: white !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+.delete-action-btn:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
 }
 
 /* Close action button (outlined) */
 .close-action-btn {
-  background: var(--bg-secondary) !important;
+  background: transparent !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border-primary) !important;
-  padding: 0.75rem 1rem !important;
-  font-weight: 500 !important;
-  transition: all 0.2s !important;
 }
 
 .close-action-btn:hover {

@@ -526,6 +526,30 @@
    16. PRIMEVUE COMPONENT OVERRIDES
    ============================================ */
 
+/* PrimeVue InputText and Textarea - Fix visibility in dark mode */
+.p-inputtext,
+.p-textarea {
+  color: var(--text-primary) !important;
+  background-color: var(--bg-primary) !important;
+  border-color: var(--border-primary) !important;
+}
+
+.p-inputtext:enabled:hover,
+.p-textarea:enabled:hover {
+  border-color: var(--border-focus) !important;
+}
+
+.p-inputtext:enabled:focus,
+.p-textarea:enabled:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 1px var(--color-primary) !important;
+}
+
+.p-inputtext::placeholder,
+.p-textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
 /* PrimeVue Button - Secondary Outlined variant theme fixes */
 .p-button-secondary.p-button-outlined {
   color: var(--text-primary);
