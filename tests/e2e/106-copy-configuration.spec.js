@@ -129,7 +129,7 @@ test.describe('106.001: Copy Configuration - Success Flows', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -143,7 +143,7 @@ test.describe('106.001: Copy Configuration - Success Flows', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -296,7 +296,7 @@ test.describe('106.001: Copy Configuration - Success Flows', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -446,7 +446,7 @@ test.describe('106.002: Copy Configuration - Conflict Resolution', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -460,7 +460,7 @@ test.describe('106.002: Copy Configuration - Conflict Resolution', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -622,7 +622,7 @@ test.describe('106.002: Copy Configuration - Conflict Resolution', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -636,7 +636,7 @@ test.describe('106.002: Copy Configuration - Conflict Resolution', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -797,7 +797,7 @@ test.describe('106.002: Copy Configuration - Conflict Resolution', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -811,7 +811,7 @@ test.describe('106.002: Copy Configuration - Conflict Resolution', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -946,7 +946,7 @@ test.describe('106.003: Copy Configuration - MCP Servers', () => {
       route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ success: true, mcpServers: [] })
+        body: JSON.stringify({ success: true, mcp: [] })
       });
     });
 
@@ -991,7 +991,7 @@ test.describe('106.003: Copy Configuration - MCP Servers', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -1145,7 +1145,7 @@ test.describe('106.004: Copy Configuration - Error Handling', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -1159,7 +1159,7 @@ test.describe('106.004: Copy Configuration - Error Handling', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });
@@ -1302,7 +1302,7 @@ test.describe('106.005: Copy Configuration - Edge Cases', () => {
           contentType: 'application/json',
           body: JSON.stringify({
             success: true,
-            [endpoint === 'mcp' ? 'mcpServers' : endpoint]: []
+            [endpoint === 'mcp' ? 'mcp' : endpoint]: []
           })
         });
       });

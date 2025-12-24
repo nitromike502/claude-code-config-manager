@@ -103,9 +103,9 @@ export const useMcpStore = defineStore('mcp', () => {
     try {
       const result = await api.getProjectMcp(projectId)
 
-      if (result.mcpServers) {
-        projectMcpServers.value.set(projectId, result.mcpServers)
-        return { success: true, mcpServers: result.mcpServers }
+      if (result.mcp) {
+        projectMcpServers.value.set(projectId, result.mcp)
+        return { success: true, mcpServers: result.mcp }
       } else {
         throw new Error('No MCP servers data in response')
       }
@@ -133,9 +133,9 @@ export const useMcpStore = defineStore('mcp', () => {
     try {
       const result = await api.getUserMcp()
 
-      if (result.mcpServers) {
-        userMcpServers.value = result.mcpServers
-        return { success: true, mcpServers: result.mcpServers }
+      if (result.mcp !== undefined) {
+        userMcpServers.value = result.mcp
+        return { success: true, mcpServers: result.mcp }
       } else {
         throw new Error('No MCP servers data in response')
       }
