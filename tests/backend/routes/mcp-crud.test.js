@@ -38,9 +38,24 @@ const TEST_PROJECT_ID = TEST_PROJECT_PATH.replace(/\//g, '');
 const TEST_HOME_DIR = '/home/user';
 
 // Mock data
+// Note: User-level MCP servers are stored in ~/.claude.json (root-level mcpServers key)
 const mockClaudeJson = {
   projects: {
     [TEST_PROJECT_PATH]: { name: 'Test Project' }
+  },
+  // User-level MCP servers (in ~/.claude.json)
+  mcpServers: {
+    'user-stdio-server': {
+      type: 'stdio',
+      command: 'node',
+      args: ['server.js'],
+      enabled: true
+    },
+    'user-http-server': {
+      type: 'http',
+      url: 'https://user-api.example.com',
+      enabled: true
+    }
   }
 };
 
@@ -67,19 +82,12 @@ const mockMcpJson = {
   }
 };
 
+// User settings (in ~/.claude/settings.json) - contains permissions, hooks, etc.
+// Note: MCP servers are NOT stored here; they're in ~/.claude.json
 const mockUserSettings = {
-  mcpServers: {
-    'user-stdio-server': {
-      type: 'stdio',
-      command: 'node',
-      args: ['server.js'],
-      enabled: true
-    },
-    'user-http-server': {
-      type: 'http',
-      url: 'https://user-api.example.com',
-      enabled: true
-    }
+  permissions: {
+    allow: [],
+    deny: []
   }
 };
 
@@ -666,7 +674,7 @@ describe('MCP Server Update API', () => {
     });
 
     describe('Atomic writes', () => {
-      it('should use atomic write for user settings', async () => {
+      it('should use atomic write for user config (claude.json)', async () => {
         const res = await request(app)
           .put('/api/user/mcp/user-stdio-server')
           .send({ enabled: false });
@@ -677,12 +685,13 @@ describe('MCP Server Update API', () => {
         expect(fs.writeFile).toHaveBeenCalled();
         expect(fs.rename).toHaveBeenCalled();
 
+        // User MCP servers are stored in ~/.claude.json, not settings.json
         const writeCall = fs.writeFile.mock.calls[0];
-        expect(writeCall[0]).toContain('settings.json.tmp');
+        expect(writeCall[0]).toContain('.claude.json.tmp');
 
         const renameCall = fs.rename.mock.calls[0];
-        expect(renameCall[0]).toContain('settings.json.tmp');
-        expect(renameCall[1]).toContain('settings.json');
+        expect(renameCall[0]).toContain('.claude.json.tmp');
+        expect(renameCall[1]).toContain('.claude.json');
         expect(renameCall[1]).not.toContain('.tmp');
       });
     });

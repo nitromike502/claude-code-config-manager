@@ -1004,32 +1004,34 @@ async function getUserHooks() {
 }
 
 /**
- * Gets user-level MCP servers from ~/.claude/settings.json
+ * Gets user-level MCP servers from ~/.claude.json
+ * Note: User-level MCP servers are stored in ~/.claude.json (root-level mcpServers key),
+ * NOT in ~/.claude/settings.json (which stores permissions and hooks)
  * @returns {Promise<Object>} Object with mcp array and warnings array
  */
 async function getUserMCP() {
-  const settingsPath = expandHome('~/.claude/settings.json');
+  const claudeJsonPath = expandHome('~/.claude.json');
 
   const mcp = [];
   const warnings = [];
 
   try {
-    const settings = await readJSON(settingsPath);
+    const claudeJson = await readJSON(claudeJsonPath);
 
-    if (settings && settings.mcpServers) {
+    if (claudeJson && claudeJson.mcpServers) {
       // Type check before Object.entries()
-      if (typeof settings.mcpServers === 'object' && !Array.isArray(settings.mcpServers)) {
-        mcp.push(...Object.entries(settings.mcpServers).map(([name, serverConfig]) => ({
+      if (typeof claudeJson.mcpServers === 'object' && !Array.isArray(claudeJson.mcpServers)) {
+        mcp.push(...Object.entries(claudeJson.mcpServers).map(([name, serverConfig]) => ({
           name,
           ...serverConfig,
-          source: '~/.claude/settings.json'
+          source: '~/.claude.json'
         })));
       } else {
         // Unexpected type
-        const actualType = Array.isArray(settings.mcpServers) ? 'array' : typeof settings.mcpServers;
-        console.warn(`Unexpected mcpServers format in ${settingsPath}: ${actualType}`);
+        const actualType = Array.isArray(claudeJson.mcpServers) ? 'array' : typeof claudeJson.mcpServers;
+        console.warn(`Unexpected mcpServers format in ${claudeJsonPath}: ${actualType}`);
         warnings.push({
-          file: settingsPath,
+          file: claudeJsonPath,
           error: `mcpServers is ${actualType}, expected object`,
           skipped: true
         });
@@ -1038,9 +1040,9 @@ async function getUserMCP() {
   } catch (error) {
     if (error.code !== 'ENOENT') {
       // Log non-ENOENT errors (malformed JSON, etc.)
-      console.warn(`Failed to parse ${settingsPath}: ${error.message}`);
+      console.warn(`Failed to parse ${claudeJsonPath}: ${error.message}`);
       warnings.push({
-        file: settingsPath,
+        file: claudeJsonPath,
         error: error.message,
         skipped: true
       });

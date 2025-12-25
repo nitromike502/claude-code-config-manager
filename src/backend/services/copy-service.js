@@ -93,7 +93,8 @@ class CopyService {
    * - Agent (project scope): /path/to/project/.claude/agents/agent-name.md
    * - Command (user scope): ~/.claude/commands/command-name.md
    * - Hook (project scope): /path/to/project/.claude/settings.json (merged)
-   * - MCP server (user scope): ~/.claude/settings.json (merged)
+   * - MCP server (user scope): ~/.claude.json (merged)
+   * - MCP server (project scope): /path/to/project/.mcp.json (merged)
    *
    * @param {string} configType - Type of config ('agent', 'command', 'hook', 'mcp')
    * @param {string} targetScope - Target scope ('project' or 'user')
@@ -195,12 +196,14 @@ class CopyService {
         break;
 
       case 'mcp':
-        // MCP servers: For user scope -> ~/.claude/settings.json
-        //              For project scope -> .mcp.json (primary) or .claude/settings.json (fallback)
+        // MCP servers: For user scope -> ~/.claude.json (root level)
+        //              For project scope -> .mcp.json in project root
+        // NOTE: copyMcp() has its own path logic and doesn't use buildTargetPath
         if (targetScope === 'user') {
-          targetPath = path.join(basePath, 'settings.json');
+          // User MCP servers are stored in ~/.claude.json, not ~/.claude/settings.json
+          targetPath = path.join(os.homedir(), '.claude.json');
         } else {
-          // For project scope, prefer .mcp.json
+          // For project scope, use .mcp.json
           targetPath = path.join(basePath.replace(path.sep + '.claude', ''), '.mcp.json');
         }
         break;
@@ -781,12 +784,12 @@ class CopyService {
   }
 
   /**
-   * Copies an MCP server configuration by merging it into target settings.json or .mcp.json
+   * Copies an MCP server configuration by merging it into target config file
    *
    * Unlike agents and commands, MCP servers are not copied as separate files.
    * Instead, they are merged into either:
-   * - User scope: ~/.claude/settings.json (under mcpServers key)
-   * - Project scope: .mcp.json (preferred) or .claude/settings.json (fallback)
+   * - User scope: ~/.claude.json (root-level mcpServers key)
+   * - Project scope: .mcp.json in project root
    *
    * The method detects conflicts by checking if a server with the same name already exists.
    * Conflict strategies supported: 'skip' (cancel), 'overwrite' (replace existing).
@@ -833,8 +836,9 @@ class CopyService {
       let targetPath;
 
       if (targetScope === 'user') {
-        // User scope: ~/.claude/settings.json
-        targetPath = path.join(os.homedir(), '.claude', 'settings.json');
+        // User scope: ~/.claude.json (root-level mcpServers key)
+        // Note: User MCP servers are stored in ~/.claude.json, NOT ~/.claude/settings.json
+        targetPath = path.join(os.homedir(), '.claude.json');
       } else if (targetScope === 'project') {
         // Project scope: Always use .mcp.json (create if doesn't exist)
         if (!targetProjectId) {

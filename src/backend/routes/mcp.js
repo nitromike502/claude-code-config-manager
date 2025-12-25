@@ -197,6 +197,8 @@ const userRouter = express.Router();
 /**
  * PUT /api/user/mcp/:serverName
  * Updates an MCP server configuration at user level
+ * Note: User-level MCP servers are stored in ~/.claude.json (root-level mcpServers key),
+ * NOT in ~/.claude/settings.json (which stores permissions and hooks)
  */
 userRouter.put('/mcp/:serverName', async (req, res) => {
   try {
@@ -206,12 +208,12 @@ userRouter.put('/mcp/:serverName', async (req, res) => {
     // 1. URL-decode serverName
     const decodedName = decodeURIComponent(serverName);
 
-    // 2. User settings path
+    // 2. User config path - MCP servers are in ~/.claude.json, not settings.json
     const homeDir = os.homedir();
-    const settingsPath = path.join(homeDir, '.claude', 'settings.json');
+    const claudeJsonPath = path.join(homeDir, '.claude.json');
 
-    // 3. Read settings file
-    const settings = await readSettingsFile(settingsPath);
+    // 3. Read claude.json file
+    const settings = await readSettingsFile(claudeJsonPath);
 
     // 4. Initialize mcpServers if not present
     if (!settings.mcpServers) {
@@ -273,7 +275,7 @@ userRouter.put('/mcp/:serverName', async (req, res) => {
 
     // 10. Save
     settings.mcpServers[finalName] = updatedServer;
-    await writeSettingsFile(settingsPath, settings);
+    await writeSettingsFile(claudeJsonPath, settings);
 
     // 11. Return success
     res.json({
