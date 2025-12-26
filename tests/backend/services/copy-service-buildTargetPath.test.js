@@ -168,9 +168,10 @@ describe('CopyService - buildTargetPath()', () => {
   });
 
   describe('MCP Server Target Paths', () => {
-    test('should build user MCP path (settings.json)', async () => {
+    test('should build user MCP path (~/.claude.json)', async () => {
+      // User MCP servers are stored in ~/.claude.json, not ~/.claude/settings.json
       const result = await copyService.buildTargetPath('mcp', 'user', null, '/source/server-config.json');
-      const expected = path.join(os.homedir(), '.claude', 'settings.json');
+      const expected = path.join(os.homedir(), '.claude.json');
       expect(result).toBe(expected);
     });
 

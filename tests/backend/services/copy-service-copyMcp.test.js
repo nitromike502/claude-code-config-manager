@@ -59,9 +59,9 @@ describe('CopyService.copyMcp()', () => {
   });
 
   describe('Success cases', () => {
-    test('merges MCP server to user scope (settings.json)', async () => {
-      const userClaudeDir = path.join(tempDir, '.claude');
-      await fs.mkdir(userClaudeDir, { recursive: true });
+    test('merges MCP server to user scope (~/.claude.json)', async () => {
+      // Note: User MCP servers are stored in ~/.claude.json, not ~/.claude/settings.json
+      const claudeJsonPath = path.join(tempDir, '.claude.json');
 
       const request = {
         sourceServerName: 'github',
@@ -73,7 +73,7 @@ describe('CopyService.copyMcp()', () => {
       const result = await copyService.copyMcp(request);
 
       expect(result.success).toBe(true);
-      expect(result.mergedInto).toBe(path.join(userClaudeDir, 'settings.json'));
+      expect(result.mergedInto).toBe(claudeJsonPath);
       expect(result.serverName).toBe('github');
 
       // Verify file was created with correct structure
@@ -127,8 +127,8 @@ describe('CopyService.copyMcp()', () => {
     });
 
     test('creates new file if target does not exist', async () => {
-      const userClaudeDir = path.join(tempDir, '.claude');
-      await fs.mkdir(userClaudeDir, { recursive: true });
+      // User MCP servers are stored in ~/.claude.json
+      const claudeJsonPath = path.join(tempDir, '.claude.json');
 
       const request = {
         sourceServerName: 'new-server',
@@ -142,17 +142,15 @@ describe('CopyService.copyMcp()', () => {
       expect(result.success).toBe(true);
 
       // Verify file was created
-      const settingsPath = path.join(userClaudeDir, 'settings.json');
-      await expect(fs.access(settingsPath)).resolves.not.toThrow();
+      await expect(fs.access(claudeJsonPath)).resolves.not.toThrow();
 
-      const settings = JSON.parse(await fs.readFile(settingsPath, 'utf8'));
+      const settings = JSON.parse(await fs.readFile(claudeJsonPath, 'utf8'));
       expect(settings.mcpServers['new-server']).toEqual(validMcpConfig);
     });
 
     test('preserves other MCP servers in target file', async () => {
-      const userClaudeDir = path.join(tempDir, '.claude');
-      await fs.mkdir(userClaudeDir, { recursive: true });
-      const settingsPath = path.join(userClaudeDir, 'settings.json');
+      // User MCP servers are stored in ~/.claude.json
+      const claudeJsonPath = path.join(tempDir, '.claude.json');
 
       const existingSettings = {
         mcpServers: {
@@ -162,7 +160,7 @@ describe('CopyService.copyMcp()', () => {
           }
         }
       };
-      await fs.writeFile(settingsPath, JSON.stringify(existingSettings, null, 2), 'utf8');
+      await fs.writeFile(claudeJsonPath, JSON.stringify(existingSettings, null, 2), 'utf8');
 
       const request = {
         sourceServerName: 'new-server',
@@ -176,7 +174,7 @@ describe('CopyService.copyMcp()', () => {
       expect(result.success).toBe(true);
 
       // Verify both servers exist
-      const settings = JSON.parse(await fs.readFile(settingsPath, 'utf8'));
+      const settings = JSON.parse(await fs.readFile(claudeJsonPath, 'utf8'));
       expect(settings.mcpServers['existing-server']).toEqual(existingSettings.mcpServers['existing-server']);
       expect(settings.mcpServers['new-server']).toEqual(validMcpConfig);
     });

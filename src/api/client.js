@@ -520,6 +520,41 @@ export async function updateUserHook(hookId, updates) {
   return response.json()
 }
 
+// ========================================
+// MCP CRUD Operations
+// ========================================
+
+/**
+ * Update a project MCP server
+ * @param {string} projectId - Project identifier
+ * @param {string} serverName - MCP server name (current name)
+ * @param {Object} updates - Properties to update (type, command, args, env, url, headers, enabled, etc.)
+ * @returns {Promise<Object>} - { success: boolean, server: Object }
+ */
+export async function updateProjectMcp(projectId, serverName, updates) {
+  const encodedName = encodeURIComponent(serverName)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/mcp/${encodedName}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates)
+  })
+  return response.json()
+}
+
+/**
+ * Update a user-level MCP server
+ * @param {string} serverName - MCP server name (current name)
+ * @param {Object} updates - Properties to update (type, command, args, env, url, headers, enabled, etc.)
+ * @returns {Promise<Object>} - { success: boolean, server: Object }
+ */
+export async function updateUserMcp(serverName, updates) {
+  const encodedName = encodeURIComponent(serverName)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/user/mcp/${encodedName}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates)
+  })
+  return response.json()
+}
+
 // Default export with all API functions
 export default {
   BASE_URL,
@@ -560,5 +595,8 @@ export default {
   updateUserSkill,
   // Hook CRUD
   updateProjectHook,
-  updateUserHook
+  updateUserHook,
+  // MCP CRUD
+  updateProjectMcp,
+  updateUserMcp
 }
