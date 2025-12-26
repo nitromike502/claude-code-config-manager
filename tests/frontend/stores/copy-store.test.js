@@ -420,7 +420,7 @@ describe('Copy Store', () => {
       }
 
       await expect(store.copyConfiguration(request)).rejects.toThrow(
-        'sourceConfig.type is required'
+        'Copy failed - sourceConfig must have type or configType field'
       )
 
       expect(store.copying).toBe(false)
