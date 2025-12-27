@@ -485,6 +485,31 @@ export async function updateUserSkill(skillName, updates) {
   return response.json()
 }
 
+/**
+ * Delete a project skill
+ * @param {string} projectId - Project identifier
+ * @param {string} skillName - Skill name (directory name)
+ * @returns {Promise<Object>} - { success: boolean, message: string }
+ */
+export async function deleteProjectSkill(projectId, skillName) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/skills/${skillName}`, {
+    method: 'DELETE'
+  })
+  return response.json()
+}
+
+/**
+ * Delete a user-level skill
+ * @param {string} skillName - Skill name (directory name)
+ * @returns {Promise<Object>} - { success: boolean, message: string }
+ */
+export async function deleteUserSkill(skillName) {
+  const response = await fetchWithTimeout(`${BASE_URL}/api/user/skills/${skillName}`, {
+    method: 'DELETE'
+  })
+  return response.json()
+}
+
 // ========================================
 // Hook CRUD Operations
 // ========================================
@@ -593,6 +618,8 @@ export default {
   // Skill CRUD
   updateProjectSkill,
   updateUserSkill,
+  deleteProjectSkill,
+  deleteUserSkill,
   // Hook CRUD
   updateProjectHook,
   updateUserHook,

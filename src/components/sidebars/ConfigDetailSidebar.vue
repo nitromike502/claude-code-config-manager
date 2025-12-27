@@ -606,9 +606,9 @@
     <!-- Footer with Actions (inline icon buttons) -->
     <template #footer>
       <div class="flex items-center justify-end gap-2">
-        <!-- Delete Button (for agents and commands with edit enabled - skills delete in separate story) -->
+        <!-- Delete Button (for agents, commands, and skills with edit enabled) -->
         <Button
-          v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand)"
+          v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand) || (selectedType === 'skills' && canEditSkill)"
           @click="handleDelete"
           :disabled="!selectedItem"
           icon="pi pi-trash"

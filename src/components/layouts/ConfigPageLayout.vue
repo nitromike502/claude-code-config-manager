@@ -112,6 +112,7 @@
                 item-type="skills"
                 @item-selected="(item) => $emit('show-detail', item, 'skills', skills)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('skill-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -190,6 +191,7 @@
       @agent-updated="$emit('agent-updated')"
       @command-delete="(item) => $emit('command-delete', item)"
       @command-updated="$emit('command-updated')"
+      @skill-delete="(item) => $emit('skill-delete', item)"
       @hook-updated="$emit('hook-updated')"
       @hook-delete="(item) => $emit('hook-delete', item)"
     />
@@ -386,6 +388,7 @@ defineEmits([
   'agent-updated',
   'command-delete',
   'command-updated',
+  'skill-delete',
   'hook-updated',
   'hook-delete'
 ])

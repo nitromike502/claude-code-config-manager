@@ -13,7 +13,7 @@ const {
 } = require('../services/projectDiscovery');
 const { projectIdToPath } = require('../utils/pathUtils');
 const { updateYamlFrontmatter, updateFile } = require('../services/updateService');
-const { deleteFile } = require('../services/deleteService');
+const { deleteFile, deleteDirectory } = require('../services/deleteService');
 const { findReferences } = require('../services/referenceChecker');
 const { parseSubagent } = require('../parsers/subagentParser');
 const { parseSkill } = require('../parsers/skillParser');
@@ -1285,6 +1285,52 @@ router.get('/:projectId/commands/:commandPath(.*)/references', validateProjectId
     });
   } catch (error) {
     console.error('Error checking command references:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/projects/:projectId/skills/:skillName
+ * Delete a skill directory
+ *
+ * Note: Skills are DIRECTORIES (containing SKILL.md and supporting files),
+ * not single files. This endpoint uses deleteDirectory() to recursively
+ * remove the entire skill directory.
+ */
+router.delete('/:projectId/skills/:skillName', validateProjectId, validateSkillName, async (req, res) => {
+  try {
+    const { projectId, skillName } = req.params;
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Construct skill directory path
+    const skillDirPath = path.join(projectPath, '.claude', 'skills', skillName);
+
+    // Delete the directory (deleteDirectory will validate it exists and is a directory)
+    await deleteDirectory(skillDirPath);
+
+    res.json({
+      success: true,
+      message: `Skill "${skillName}" deleted successfully`,
+      deleted: skillDirPath
+    });
+  } catch (error) {
+    // Handle directory not found specifically
+    if (error.message.includes('Directory not found')) {
+      return res.status(404).json({
+        success: false,
+        error: `Skill not found: ${req.params.skillName}`
+      });
+    }
+
+    console.error('Error deleting skill:', error);
     res.status(500).json({
       success: false,
       error: error.message

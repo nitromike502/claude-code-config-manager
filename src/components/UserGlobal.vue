@@ -46,6 +46,7 @@
     @agent-delete="handleAgentDelete"
     @agent-updated="handleAgentUpdated"
     @hook-updated="handleHookUpdated"
+    @skill-delete="handleSkillDelete"
   >
     <template #copy-modal>
       <CopyModal
@@ -69,6 +70,18 @@
     @confirm="handleAgentDeleteConfirm"
     @cancel="handleAgentDeleteCancel"
   />
+
+  <!-- Skill Delete Confirmation Dialog -->
+  <DeleteConfirmationModal
+    v-model:visible="showSkillDeleteDialog"
+    item-type="skill"
+    :item-name="deletingSkill?.name || ''"
+    :dependent-items="[]"
+    :loading="skillDeleteLoading"
+    warning-message="This will permanently delete the skill directory and all its files. This action cannot be undone."
+    @confirm="handleSkillDeleteConfirm"
+    @cancel="handleSkillDeleteCancel"
+  />
 </template>
 
 <script>
@@ -81,6 +94,7 @@ import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal
 import { useCopyStore } from '@/stores/copy-store'
 import { useProjectsStore } from '@/stores/projects'
 import { useAgentsStore } from '@/stores/agents'
+import { useSkillsStore } from '@/stores/skills'
 
 export default {
   name: 'UserGlobal',
@@ -95,6 +109,7 @@ export default {
     const copyStore = useCopyStore()
     const projectsStore = useProjectsStore()
     const agentsStore = useAgentsStore()
+    const skillsStore = useSkillsStore()
 
     const breadcrumbItems = [
       { label: 'Dashboard', route: '/', icon: 'pi pi-home' },
@@ -136,6 +151,11 @@ export default {
     const deletingAgent = ref(null)
     const agentDeleteLoading = ref(false)
     const agentReferences = ref([])
+
+    // Skill CRUD state
+    const showSkillDeleteDialog = ref(false)
+    const deletingSkill = ref(null)
+    const skillDeleteLoading = ref(false)
 
     // Load user data
     const loadUserData = async () => {
@@ -341,6 +361,70 @@ export default {
       await loadHooks()
     }
 
+    // Skill CRUD handlers
+    const handleSkillDelete = async (skill) => {
+      // Extract skill name (directory name) from the skill object
+      const skillName = skill.directoryPath
+        ? skill.directoryPath.split('/').pop()
+        : skill.name
+
+      deletingSkill.value = { ...skill, name: skillName }
+      showSkillDeleteDialog.value = true
+    }
+
+    const handleSkillDeleteConfirm = async () => {
+      skillDeleteLoading.value = true
+      const skillName = deletingSkill.value.name
+
+      try {
+        const result = await skillsStore.deleteSkill(
+          null, // no projectId for user scope
+          skillName,
+          'user'
+        )
+
+        if (result.success) {
+          showSkillDeleteDialog.value = false
+          await loadSkills() // Refresh skills list
+
+          // Close sidebar if the deleted skill was being viewed
+          if (selectedItem.value?.name === skillName) {
+            sidebarVisible.value = false
+          }
+
+          toast.add({
+            severity: 'success',
+            summary: 'Skill Deleted',
+            detail: `Skill "${skillName}" has been deleted successfully`,
+            life: 5000
+          })
+        } else {
+          toast.add({
+            severity: 'error',
+            summary: 'Delete Failed',
+            detail: result.error || 'Failed to delete skill',
+            life: 0
+          })
+          showSkillDeleteDialog.value = false
+        }
+      } catch (err) {
+        toast.add({
+          severity: 'error',
+          summary: 'Delete Failed',
+          detail: err.message || 'An unexpected error occurred',
+          life: 0
+        })
+        showSkillDeleteDialog.value = false
+      } finally {
+        skillDeleteLoading.value = false
+      }
+    }
+
+    const handleSkillDeleteCancel = () => {
+      showSkillDeleteDialog.value = false
+      deletingSkill.value = null
+    }
+
     // Copy modal event handlers
     const handleCopyClick = (configItem) => {
       // Use type from configItem if already present (added by ConfigItemList)
@@ -482,7 +566,14 @@ export default {
       handleAgentDeleteConfirm,
       handleAgentDeleteCancel,
       // Hook CRUD
-      handleHookUpdated
+      handleHookUpdated,
+      // Skill CRUD
+      showSkillDeleteDialog,
+      deletingSkill,
+      skillDeleteLoading,
+      handleSkillDelete,
+      handleSkillDeleteConfirm,
+      handleSkillDeleteCancel
     }
   }
 }

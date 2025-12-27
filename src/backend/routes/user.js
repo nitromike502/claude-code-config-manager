@@ -11,7 +11,7 @@ const {
   getUserSkills
 } = require('../services/projectDiscovery');
 const { updateYamlFrontmatter, updateFile } = require('../services/updateService');
-const { deleteFile } = require('../services/deleteService');
+const { deleteFile, deleteDirectory } = require('../services/deleteService');
 const { findReferences } = require('../services/referenceChecker');
 const { parseSubagent } = require('../parsers/subagentParser');
 const { parseSkill } = require('../parsers/skillParser');
@@ -1163,6 +1163,46 @@ router.put('/skills/:skillName', validateSkillName, async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating user skill:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/user/skills/:skillName
+ * Delete a user-level skill directory
+ *
+ * Note: Skills are DIRECTORIES (containing SKILL.md and supporting files),
+ * not single files. This endpoint uses deleteDirectory() to recursively
+ * remove the entire skill directory.
+ */
+router.delete('/skills/:skillName', validateSkillName, async (req, res) => {
+  try {
+    const { skillName } = req.params;
+
+    const userHome = getUserHome();
+    const skillDirPath = path.join(userHome, '.claude', 'skills', skillName);
+
+    // Delete the directory (deleteDirectory will validate it exists and is a directory)
+    await deleteDirectory(skillDirPath);
+
+    res.json({
+      success: true,
+      message: `User skill "${skillName}" deleted successfully`,
+      deleted: skillDirPath
+    });
+  } catch (error) {
+    // Handle directory not found specifically
+    if (error.message.includes('Directory not found')) {
+      return res.status(404).json({
+        success: false,
+        error: `User skill not found: ${req.params.skillName}`
+      });
+    }
+
+    console.error('Error deleting user skill:', error);
     res.status(500).json({
       success: false,
       error: error.message
