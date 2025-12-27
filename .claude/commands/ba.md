@@ -307,8 +307,8 @@ All deliverables saved to: `docs/ba-sessions/[session-dir]/`
 - Request any refinements needed
 
 ### 2. Migrate PRD (Optional)
-- Move PRD to `/home/tickets/claude/manager/prds/features/[feature-name]/`
-- This makes it available to project-manager for ticket creation
+- Keep PRD in BA session directory (`docs/ba-sessions/[timestamp]/`)
+- Project manager reads PRD directly from BA session directory for ticket creation
 
 ### 3. Create Tickets
 **IMPORTANT: The project-manager creates tickets, NOT the BA.**
@@ -316,9 +316,9 @@ All deliverables saved to: `docs/ba-sessions/[session-dir]/`
 When ready to begin development:
 - User invokes `project-manager` subagent (or main agent invokes on user's behalf)
 - Project manager will read the PRD from BA session directory
-- Project manager will create Epic/Story/Task ticket files
-- Project manager will invoke `agile-ticket-manager` to organize tickets
-- Tickets will be stored in `/home/tickets/claude/manager/`
+- Project manager will prepare Epic/Story/Task ticket content (markdown with frontmatter)
+- Project manager will invoke `agile-ticket-manager` to add tickets to SQLite database
+- Tickets stored in database (project: `claude-manager`)
 
 ### 4. Begin Development
 - Use `/swarm` command to start working on tickets
@@ -343,12 +343,11 @@ When ready to begin development:
 - Invoke subagents for implementation (only main agent can invoke subagents)
 
 **Workflow Integration:**
-BA creates PRD → PM creates tickets → Ticket Manager organizes → /swarm executes → Main agent coordinates all subagent invocations
+BA creates PRD → PM creates tickets → Ticket Manager adds to database → /swarm executes → Main agent coordinates all subagent invocations
 
 Would you like me to:
 - Refine any of the analysis or designs?
-- Migrate the PRD to the ticketing system PRD directory?
-- Have me invoke project-manager to create tickets from this PRD?
+- Have project-manager invoked to create tickets from this PRD (tickets will be added to database)?
 ```
 
 </execution>

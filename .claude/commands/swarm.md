@@ -22,9 +22,10 @@ Execute the complete SWARM workflow where the main agent coordinates all subagen
 **Development Method**: SWARM (Specialized Workflow with Autonomous Resource Management)
 **Team Structure**: See `.claude/agents/` for subagent definitions
 
-**Ticket Storage**: `/home/tickets/claude/manager/`
-- Managed by `agile-ticket-manager` subagent
-- Hierarchical directory structure: Epics → Stories → Tasks
+**Ticket Storage**: SQLite database (project: `claude-manager`)
+- Managed by `agile-ticket-manager` subagent (acts as database API)
+- Accessed via `ticket-system` user-level skill scripts
+- Hierarchical relationships: Epics → Stories → Tasks
 - Status workflow: backlog → todo → in-progress → review → done
 
 **Key Workflow Documents**:
@@ -99,11 +100,12 @@ This command implements the complete SWARM workflow across 7 phases:
 - Orchestrator analyzes and creates execution plan
 
 **If NO ticket ID provided:**
-- Main agent invokes `agile-ticket-manager` to retrieve available tickets (backlog, todo)
-- Main agent invokes `project-manager` to analyze and recommend tickets
+- Main agent invokes `agile-ticket-manager` to query database for available tickets (backlog, todo statuses)
+- Ticket manager executes filter_by_status.js scripts and returns results from database
+- Main agent invokes `project-manager` to analyze tickets and recommend options
 - Present ticket options to user (see Phase 0 in SWARM-WORKFLOW.md)
 - User selects ticket
-- Main agent invokes `agile-ticket-manager` to fetch selected ticket
+- Main agent invokes `agile-ticket-manager` to fetch selected ticket from database
 - Main agent invokes `subagent-orchestrator` with ticket content
 
 **Orchestrator Deliverable:**
@@ -117,8 +119,9 @@ This command implements the complete SWARM workflow across 7 phases:
 
 **Main agent invokes `agile-ticket-manager`:**
 - Request: Move ticket from `todo` to `in-progress`
+- Ticket manager executes move_ticket.js script to update database
 - Document start timestamp
-- Confirm ticket status updated
+- Confirm ticket status updated in database
 
 **Main agent presents orchestrator's plan to user:**
 
@@ -309,8 +312,8 @@ After each milestone:
 ### Step 2: Main Agent Invokes Ticket Manager
 
 **Update ticket status:**
-- Move from `in-progress` to `review`
-- Document PR number in ticket
+- Move from `in-progress` to `review` (via move_ticket.js script)
+- Update database with PR metadata
 
 ### Step 3: Main Agent Invokes Code Reviewer
 
@@ -328,8 +331,8 @@ After each milestone:
 ### Step 4: Ticket Status Update
 
 **If approved, main agent invokes ticket manager:**
-- Move to `approved` status (sub-status of `review`)
-- Document reviewer approval
+- Update status in database to `approved` (sub-status of `review`)
+- Document reviewer approval via move_ticket.js script
 
 ---
 
@@ -364,8 +367,8 @@ Request user decision:
 - Pull latest changes
 
 **Main agent invokes agile-ticket-manager:**
-- Move ticket from `review` to `done`
-- Update completion timestamp
+- Execute move_ticket.js script to update status from `review` to `done`
+- Update completion timestamp in database
 - Document merge commit hash
 
 ### Step 3: Main Agent Presents Final Summary
@@ -409,7 +412,7 @@ Show:
 | ❌ Edit code files (Edit tool on src/, tests/) | `frontend-developer` or `backend-architect` |
 | ❌ Run tests (Bash npm test, npx jest, etc.) | `playwright-testing-expert` or `test-automation-engineer` |
 | ❌ Execute git commands (git add, commit, push, etc.) | `git-workflow-specialist` |
-| ❌ Move/create/update ticket files | `agile-ticket-manager` |
+| ❌ Query/update tickets in database | `agile-ticket-manager` |
 | ❌ Update documentation files | `documentation-engineer` |
 
 ### The "One Line Change" Rule

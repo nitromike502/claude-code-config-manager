@@ -172,9 +172,9 @@ See subagent proposals in project `.claude/agents/` directory.
 
 ## Ticketing Workflow
 
-**Agile Ticketing System:** `/home/tickets/claude/manager/`
+**Agile Ticketing System:** SQLite Database at `/home/tickets/databases/claude-manager.db`
 
-The project uses a file-based Agile ticketing system managed by the `agile-ticket-manager` subagent. This system functions like enterprise tools (Jira, Azure DevOps, Linear) but uses a hierarchical directory structure.
+The project uses a SQLite-based Agile ticketing system managed by the `agile-ticket-manager` subagent. This system functions like enterprise tools (Jira, Azure DevOps, Linear) but stores tickets in a relational database accessed through the `ticket-system` user-level skill.
 
 ### Ticket Hierarchy
 ```
@@ -198,15 +198,16 @@ backlog → todo → in-progress → review → done
 
 **Project Manager (`project-manager` subagent):**
 - **Creates ALL tickets** (Epics, Stories, Tasks, Bugs)
-- Writes ticket files with frontmatter
-- Invokes `agile-ticket-manager` to organize tickets
+- Uses `agile-ticket-manager` to add tickets to the database
 - Sets priorities and dependencies
+- Defines ticket relationships and metadata
 
 **Ticket Manager (`agile-ticket-manager` subagent):**
-- Organizes ticket files into directory structure
-- Provides ticket retrieval and querying
-- Manages status transitions
+- Executes database operations via `ticket-system` skill scripts
+- Provides ticket retrieval and querying from SQLite database
+- Manages status transitions in the database
 - Maintains Epic/Story/Task relationships
+- Acts as API interface to the ticketing system
 
 **Orchestrator (`subagent-orchestrator` subagent):**
 - Queries ticket manager for available work
@@ -219,13 +220,13 @@ backlog → todo → in-progress → review → done
 1. **Feature Request** → User runs `/ba` command
 2. **Analysis** → BA creates PRD in `docs/ba-sessions/`
 3. **Planning** → User invokes `project-manager` to create tickets from PRD
-4. **Organization** → Project manager invokes `agile-ticket-manager` to organize tickets
+4. **Database Storage** → Project manager invokes `agile-ticket-manager` to add tickets to SQLite database
 5. **Execution** → User runs `/swarm <ticket-id>`
    - See `docs/guides/SWARM-WORKFLOW.md` for complete execution workflow
    - Main agent coordinates all subagents (orchestrator creates plans only)
    - Session tracking document maintained at `docs/sessions/tracking/`
-6. **Coordination** → Orchestrator queries ticket manager, assigns work, updates statuses
-7. **Completion** → Tickets moved to `done` after PR merge
+6. **Coordination** → Orchestrator queries ticket manager (via database scripts), assigns work, updates statuses
+7. **Completion** → Tickets marked as `done` in database after PR merge
 
 **See:** `docs/guides/TICKET-MANAGER-INTEGRATION.md` for complete integration patterns
 

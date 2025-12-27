@@ -48,11 +48,11 @@ You are invoked in **Phase 1** of the SWARM workflow. The main agent:
 ### How You Work with Tickets:
 1. **Receive ticket context** from main agent (ticket ID, requirements, acceptance criteria)
 2. **Analyze ticket scope** and break down into tasks
-3. **Recommend queries** - Tell main agent what ticket information to request from agile-ticket-manager
+3. **Recommend queries** - Tell main agent what ticket information to request from agile-ticket-manager (via database scripts)
 4. **Create execution plan** based on ticket requirements
-5. **Return plan to main agent** - Main agent coordinates ticket status updates
+5. **Return plan to main agent** - Main agent coordinates ticket status updates via ticket manager
 
-**Ticketing System Location:** `/home/tickets/claude/manager/`
+**Ticketing System:** SQLite database (project: `claude-manager`), accessed via ticket-system skill scripts through agile-ticket-manager
 
 See `docs/guides/TICKET-MANAGER-INTEGRATION.md` for complete integration patterns.
 

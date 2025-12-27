@@ -8,48 +8,43 @@
 
 ## Overview
 
-The **agile-ticket-manager** subagent serves as the central ticketing system for the Claude Code Config Manager project. It functions like enterprise Agile tools (Jira, Azure DevOps, Linear) but uses a file-based structure at `/home/tickets/claude/manager/`.
+The **agile-ticket-manager** subagent serves as the central ticketing system for the Claude Code Config Manager project. It functions like enterprise Agile tools (Jira, Azure DevOps, Linear) but uses a **SQLite database** at `/home/tickets/databases/claude-manager.db`.
 
 ### Key Principle
 
-> **The ticket manager is NOT a project planner - it's a ticketing system.**
-> - **Project Manager** creates and writes tickets (defines what needs to be done)
-> - **Ticket Manager** organizes, retrieves, and manages ticket files (the filing system)
-> - **Other Agents** communicate with ticket manager to fetch/update tickets
+> **The ticket manager is NOT a project planner - it's a database API.**
+> - **Project Manager** creates tickets (defines what needs to be done)
+> - **Ticket Manager** executes database operations via `ticket-system` skill scripts
+> - **Other Agents** communicate with ticket manager to fetch/update tickets from the database
+> - **NO DIRECT FILE ACCESS** - All operations use Node.js scripts from the `ticket-system` skill
 
 ---
 
 ## Ticket System Architecture
 
 ### Ticket Storage Location
-**Base Directory:** `/home/tickets/claude/manager/`
+**Database:** `/home/tickets/databases/claude-manager.db` (SQLite)
+**Skill Location:** `/home/meckert/.claude/skills/ticket-system/` (user-level skill)
 
-### Directory Structure
-```
-/home/tickets/claude/manager/
-├── epics/[epic-id]-[epic-name]/
-│   ├── epic.md
-│   └── stories/[story-id]-[story-name]/
-│       ├── story.md
-│       └── tasks/
-│           ├── backlog/
-│           ├── todo/
-│           ├── in-progress/
-│           ├── review/
-│           └── done/
-├── bugs/
-│   ├── backlog/
-│   ├── todo/
-│   ├── in-progress/
-│   ├── review/
-│   └── done/
-└── standalone-tasks/
-    ├── backlog/
-    ├── todo/
-    ├── in-progress/
-    ├── review/
-    └── done/
-```
+### Database Schema
+Tickets are stored in a relational database with the following structure:
+- **tickets** table: id, type, title, status, priority, created, updated, assignee, parent, tags, estimate, content
+- **Hierarchical relationships:** Tasks → Stories → Epics
+- **Status workflow:** backlog → todo → in-progress → review → done | closed
+
+### Available Scripts
+All ticket operations use Node.js scripts in the `ticket-system` skill:
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `list_databases.js` | List available project databases | `node scripts/list_databases.js` |
+| `show_status.js` | Get status summary | `node scripts/show_status.js claude-manager` |
+| `show_backlog.js` | Query backlog tickets | `node scripts/show_backlog.js claude-manager [type] [priority]` |
+| `filter_by_status.js` | Filter tickets by status | `node scripts/filter_by_status.js claude-manager <status> [type]` |
+| `show_epic.js` | Show epic hierarchy | `node scripts/show_epic.js claude-manager <epic-id>` |
+| `add_ticket.js` | Create new ticket | `node scripts/add_ticket.js claude-manager <ticket-id> <status> "<content>"` |
+| `move_ticket.js` | Change ticket status | `node scripts/move_ticket.js claude-manager <ticket-id> <new-status>` |
+| `copy_ticket.js` | Duplicate a ticket | `node scripts/copy_ticket.js claude-manager <source-id> <new-id>` |
 
 ### Status Workflow
 1. **backlog** → Not prioritized, ticket exists but not scheduled
@@ -79,29 +74,30 @@ The **agile-ticket-manager** subagent serves as the central ticketing system for
 - Write detailed Task tickets with acceptance criteria
 - Set priorities (P0-P3) based on business value
 - Define dependencies and relationships
-- Write ticket content directly to filesystem
+- Invoke agile-ticket-manager to add tickets to the database
 
 **Workflow:**
 1. **Planning:** Analyze PRD and create comprehensive Epic/Story/Task breakdown
-2. **Ticket Creation:** Write ticket files directly to working directory or appropriate location
-3. **Ticket Organization:** Invoke agile-ticket-manager to organize newly created tickets
-4. **Status Updates:** Request agile-ticket-manager to move tickets between statuses
+2. **Ticket Creation:** Invoke agile-ticket-manager with ticket content (markdown with frontmatter)
+3. **Database Storage:** Agile-ticket-manager executes `add_ticket.js` script to insert into database
+4. **Status Updates:** Request agile-ticket-manager to update ticket status via `move_ticket.js`
 
 **Example Interaction:**
 ```markdown
-Project Manager creates ticket file:
-→ Writes: /home/claude/manager/new-task.md
+Project Manager prepares ticket content (markdown with frontmatter)
 
 Project Manager invokes agile-ticket-manager:
-→ "I've created TASK-3.2.1-implement-agent-card.md in the working directory"
-→ agile-ticket-manager validates and moves to proper location
-→ agile-ticket-manager responds with confirmation and location
+→ "Add ticket TASK-3.2.1 with the following content: [markdown content]"
+
+Agile-ticket-manager executes:
+→ node /home/meckert/.claude/skills/ticket-system/scripts/add_ticket.js claude-manager TASK-3.2.1 backlog "[content]"
+→ Returns confirmation: "Ticket TASK-3.2.1 created in database with status: backlog"
 ```
 
 **Never Does:**
-- Move ticket files manually (delegates to ticket manager)
-- Query ticket locations directly (asks ticket manager)
-- Organize directory structure (ticket manager handles this)
+- Access database directly (uses ticket manager as API)
+- Execute ticket-system scripts directly (delegates to ticket manager)
+- Query tickets without ticket manager (no direct database access)
 
 ---
 
@@ -130,20 +126,22 @@ Project Manager invokes agile-ticket-manager:
 Orchestrator to agile-ticket-manager:
 → "Show me all P0 and P1 tickets in `todo` status"
 
-agile-ticket-manager responds:
-→ Returns list with ticket IDs, titles, priorities, descriptions
+agile-ticket-manager executes:
+→ node /home/meckert/.claude/skills/ticket-system/scripts/filter_by_status.js claude-manager todo
+→ Returns list with ticket IDs, titles, priorities, descriptions from database
 
 Orchestrator to agile-ticket-manager (after work starts):
 → "Move TASK-3.2.1 to in-progress status"
 
-agile-ticket-manager responds:
-→ "Moved TASK-3.2.1-implement-agent-card.md to in-progress/"
+agile-ticket-manager executes:
+→ node /home/meckert/.claude/skills/ticket-system/scripts/move_ticket.js claude-manager TASK-3.2.1 in-progress
+→ Returns confirmation: "Moved TASK-3.2.1 from todo to in-progress"
 ```
 
 **Never Does:**
 - Create tickets (project manager does this)
 - Write ticket content (project manager does this)
-- Move files manually (asks ticket manager)
+- Access database directly (uses ticket manager as API)
 
 ---
 
@@ -246,18 +244,22 @@ User Request
     ↓
 Project Manager (analyzes requirements)
     ↓
-Project Manager (creates ticket files)
+Project Manager (prepares ticket content with frontmatter)
     ↓
-agile-ticket-manager (organizes tickets into proper directories)
+Project Manager invokes agile-ticket-manager (adds ticket to database)
     ↓
-Tickets available in ticketing system
+agile-ticket-manager executes add_ticket.js script
+    ↓
+Ticket stored in SQLite database (/home/tickets/databases/claude-manager.db)
 ```
 
 ### 2. Ticket Execution Flow
 ```
 Orchestrator queries ticket manager ("Show todo tickets")
     ↓
-agile-ticket-manager (returns available tickets)
+agile-ticket-manager executes filter_by_status.js script
+    ↓
+agile-ticket-manager returns tickets from database
     ↓
 Orchestrator (presents options to user)
     ↓
@@ -265,7 +267,7 @@ User selects ticket
     ↓
 Orchestrator requests ticket manager ("Move ticket to in-progress")
     ↓
-agile-ticket-manager (moves ticket: todo → in-progress)
+agile-ticket-manager executes move_ticket.js script (todo → in-progress)
     ↓
 Orchestrator assigns to developer
     ↓
@@ -275,18 +277,18 @@ Developer reports completion
     ↓
 Orchestrator requests ticket manager ("Move to review")
     ↓
-agile-ticket-manager (moves ticket: in-progress → review)
+agile-ticket-manager executes move_ticket.js script (in-progress → review)
     ↓
 User reviews code
     ↓
 IF User approves:
     Orchestrator requests ticket manager ("Move to done")
-    agile-ticket-manager (moves ticket: review → done)
+    agile-ticket-manager executes move_ticket.js script (review → done)
     PR merged, ticket complete
     ↓
 IF User requests changes:
     Orchestrator requests ticket manager ("Move back to in-progress")
-    agile-ticket-manager (moves ticket: review → in-progress)
+    agile-ticket-manager executes move_ticket.js script (review → in-progress)
     Developer makes changes, cycle repeats
 ```
 
@@ -302,9 +304,13 @@ User reviews and approves
     ↓
 Project Manager reads PRD
     ↓
-Project Manager creates Epic/Story/Task tickets
+Project Manager prepares Epic/Story/Task ticket content
     ↓
-agile-ticket-manager organizes tickets
+Project Manager invokes agile-ticket-manager for each ticket
+    ↓
+agile-ticket-manager executes add_ticket.js for each ticket
+    ↓
+All tickets stored in SQLite database
 ```
 
 ---
@@ -313,36 +319,31 @@ agile-ticket-manager organizes tickets
 
 ### `/swarm` Command Integration
 
-**Current Behavior:**
-- Presents ticket options from `docs/tickets/phase-*/` (old location)
-
-**Updated Behavior:**
+**Behavior:**
 1. **Step 2: Check for Existing Tickets**
-   - Query agile-ticket-manager for tickets in `todo` and `backlog` status
-   - Review ticket metadata (ID, title, priority, dependencies)
+   - Main agent invokes agile-ticket-manager
+   - Ticket manager executes `filter_by_status.js` for `todo` and `backlog` statuses
+   - Returns ticket metadata (ID, title, priority, dependencies) from database
 
 2. **Step 4: Ticket Selection & Dependency Analysis**
    - Invoke project-manager agent to analyze tickets from agile-ticket-manager
-   - Project manager queries ticket manager for:
-     - All pending tickets across all statuses
-     - Epic/Story relationships
-     - Ticket dependencies
+   - Project manager invokes ticket manager with queries:
+     - All pending tickets across all statuses (via `show_status.js`)
+     - Epic/Story relationships (via `show_epic.js`)
+     - Ticket dependencies (from database parent/child relationships)
    - Present 2-4 ticket options based on analysis
 
 3. **Step 5: Execute Development Workflow**
-   - Before starting work: Request ticket manager to move ticket to `in-progress`
-   - After testing complete: Request ticket manager to move ticket to `review`
-   - After PR merged: Request ticket manager to move ticket to `done`
+   - Before starting work: Ticket manager executes `move_ticket.js` (status → in-progress)
+   - After testing complete: Ticket manager executes `move_ticket.js` (in-progress → review)
+   - After PR merged: Ticket manager executes `move_ticket.js` (review → done)
 
 ### `/ba` Command Integration
 
-**Current Behavior:**
-- Creates PRD in BA session directory
-
-**Updated Behavior:**
+**Behavior:**
 - No changes to BA workflow
 - BA creates PRDs, project manager creates tickets from PRDs
-- Clear handoff: BA produces documentation, PM produces tickets
+- Clear handoff: BA produces documentation, PM invokes ticket manager to add tickets to database
 
 ---
 
@@ -352,19 +353,20 @@ agile-ticket-manager organizes tickets
 ```markdown
 # Project Manager Workflow
 1. Analyze requirements (from PRD or user request)
-2. Create ticket file(s) in working directory or appropriate location
-3. Invoke agile-ticket-manager with ticket details
-4. Ticket manager validates, assigns ID, organizes into directory structure
-5. Ticket manager confirms location and status
+2. Prepare ticket content (markdown with YAML frontmatter)
+3. Invoke agile-ticket-manager: "Add ticket TASK-3.2.1 with content: [markdown]"
+4. Ticket manager executes: node scripts/add_ticket.js claude-manager TASK-3.2.1 backlog "[content]"
+5. Ticket manager confirms: "Ticket TASK-3.2.1 created in database with status: backlog"
 ```
 
 ### Pattern 2: Querying Available Tickets
 ```markdown
 # Orchestrator Workflow
 1. Invoke agile-ticket-manager: "Show all tickets in `todo` status with priority P0 or P1"
-2. Ticket manager searches directory structure
-3. Ticket manager returns list with metadata (ID, title, priority, parent, etc.)
-4. Orchestrator presents options to user
+2. Ticket manager executes: node scripts/filter_by_status.js claude-manager todo
+3. Ticket manager filters results by priority in-memory
+4. Ticket manager returns list with metadata (ID, title, priority, parent, etc.) from database
+5. Orchestrator presents options to user
 ```
 
 ### Pattern 3: Updating Ticket Status
@@ -372,61 +374,62 @@ agile-ticket-manager organizes tickets
 # Orchestrator Workflow
 1. Developer reports task completion
 2. Orchestrator invokes agile-ticket-manager: "Move TASK-3.2.1 to review status"
-3. Ticket manager moves file to review/ directory
-4. Ticket manager updates frontmatter `status` field
-5. Ticket manager updates `updated` timestamp
-6. Ticket manager confirms new location
+3. Ticket manager executes: node scripts/move_ticket.js claude-manager TASK-3.2.1 review
+4. Ticket manager updates status field in database
+5. Ticket manager updates `updated` timestamp in database
+6. Ticket manager confirms: "Moved TASK-3.2.1 from in-progress to review"
 ```
 
 ### Pattern 4: Finding Related Tickets
 ```markdown
 # Orchestrator Workflow
 1. Invoke agile-ticket-manager: "Show all tasks under STORY-3.2"
-2. Ticket manager traverses directory hierarchy
-3. Ticket manager returns all tasks with parent: STORY-3.2
-4. Orchestrator uses for dependency planning
+2. Ticket manager executes: node scripts/show_epic.js claude-manager STORY-3.2
+3. Ticket manager queries database for all tickets with parent: STORY-3.2
+4. Ticket manager returns hierarchical list
+5. Orchestrator uses for dependency planning
 ```
 
 ---
 
 ## Migration Notes
 
-### Old System (DEPRECATED)
-- Tickets stored in `/home/claude/manager/docs/tickets/phase-*/`
-- No status workflow
-- Manual file organization
-- No agent responsible for organization
+### Old System (DEPRECATED - Pre-December 2025)
+- Tickets stored as files in `/home/tickets/claude/manager/` directory hierarchy
+- File-based organization with status directories (backlog/, todo/, in-progress/, review/, done/)
+- Manual file moves for status transitions
+- Direct filesystem access by agents
 
-### New System (CURRENT)
-- Tickets in `/home/tickets/claude/manager/`
-- Status-based workflow (backlog → todo → in-progress → review → done)
-- agile-ticket-manager handles all organization
-- Project manager creates tickets, ticket manager organizes them
+### Current System (December 2025+)
+- **SQLite database** at `/home/tickets/databases/claude-manager.db`
+- **Script-based operations** via `ticket-system` user-level skill
+- **No direct file access** - all operations through ticket-system scripts
+- **Database API pattern** - agile-ticket-manager acts as API interface
+- Status-based workflow maintained (backlog → todo → in-progress → review → done)
 
-### Transition Plan
-1. Update subagent documentation to reference ticket manager
-2. Update /swarm command to query ticket manager
-3. Update /ba command to clarify handoff to project manager
-4. Update CLAUDE.md to document ticketing workflow
-5. All agents must use ticket manager for ticket operations
+### Key Changes
+1. **Storage:** Files → SQLite database
+2. **Access:** Direct filesystem reads → Node.js scripts (ticket-system skill)
+3. **Agent behavior:** File manipulation → Database API calls via ticket manager
+4. **Location:** `/home/tickets/claude/manager/` (legacy files may exist) vs `/home/tickets/databases/claude-manager.db` (authoritative)
 
 ---
 
 ## Best Practices
 
 ### For All Agents
-1. **Never move ticket files directly** - Always request from ticket manager
-2. **Never query filesystem directly** - Always ask ticket manager for ticket information
+1. **Never access database directly** - Always invoke ticket manager as API interface
+2. **Never execute ticket-system scripts directly** - Always request operations from ticket manager
 3. **Always use ticket IDs** - Reference tickets by ID (TASK-3.2.1, BUG-027, etc.)
-4. **Track status accurately** - Request status updates at appropriate workflow steps
+4. **Track status accurately** - Request status updates at appropriate workflow steps via ticket manager
 5. **Maintain relationships** - Preserve parent-child relationships (Epic → Story → Task)
 
 ### For Project Manager
-1. **Write complete tickets** - Include all frontmatter fields
+1. **Write complete tickets** - Include all frontmatter fields (id, type, title, status, priority, created, updated, assignee, parent, tags, estimate)
 2. **Define clear acceptance criteria** - Make success measurable
 3. **Set appropriate priorities** - P0 for critical, P1 for important, P2-P3 for nice-to-have
 4. **Document dependencies** - Identify blockers and relationships
-5. **Hand off to ticket manager** - Let ticket manager handle file organization
+5. **Invoke ticket manager for storage** - Provide complete ticket content for database insertion
 
 ### For Orchestrator
 1. **Query ticket manager frequently** - Stay updated on ticket status
@@ -475,18 +478,16 @@ Enable users to search across all projects for subagents, commands, hooks, and M
 - STORY-4.2: Frontend search UI
 - STORY-4.3: Search performance optimization
 
-3. Creates story and task files similarly
-4. Invokes agile-ticket-manager:
-   "I've created EPIC-004-global-search.md, STORY-4.1-backend-search-api.md,
-   and 3 task files in the working directory"
+3. Prepares story and task content similarly
+4. Invokes agile-ticket-manager for each ticket:
+   "Add ticket EPIC-004 with content: [epic markdown]"
+   "Add ticket STORY-4.1 with content: [story markdown]"
+   "Add ticket TASK-4.1.1 with content: [task markdown]" (repeat for each task)
 
 agile-ticket-manager:
-1. Validates ticket files
-2. Creates directory structure:
-   /home/tickets/claude/manager/epics/EPIC-004-global-search/
-   /home/tickets/claude/manager/epics/EPIC-004-global-search/stories/STORY-4.1-backend-search-api/
-3. Moves files to appropriate locations
-4. Confirms: "Organized EPIC-004 with 2 stories and 6 tasks. All tickets in `todo` status."
+1. Executes add_ticket.js for each ticket
+2. Inserts into SQLite database with proper relationships
+3. Confirms: "Created EPIC-004, 2 stories, and 6 tasks in database. All tickets in `backlog` status."
 ```
 
 ### Example 2: Working on a Task
@@ -498,9 +499,9 @@ Orchestrator to agile-ticket-manager:
 "Move TASK-4.1.1 to in-progress status"
 
 agile-ticket-manager:
-- Moves file from tasks/todo/ to tasks/in-progress/
-- Updates status field in frontmatter
-- Responds: "TASK-4.1.1-create-search-endpoint.md moved to in-progress"
+- Executes: node scripts/move_ticket.js claude-manager TASK-4.1.1 in-progress
+- Updates status field in database
+- Responds: "TASK-4.1.1 moved from todo to in-progress"
 
 Orchestrator to backend-architect:
 "Implement TASK-4.1.1: Create search endpoint"
@@ -514,9 +515,9 @@ Orchestrator to agile-ticket-manager:
 "Move TASK-4.1.1 to review status"
 
 agile-ticket-manager:
-- Moves file from tasks/in-progress/ to tasks/review/
-- Updates status and timestamp
-- Responds: "TASK-4.1.1 moved to review. Awaiting code review."
+- Executes: node scripts/move_ticket.js claude-manager TASK-4.1.1 review
+- Updates status and timestamp in database
+- Responds: "TASK-4.1.1 moved from in-progress to review. Awaiting code review."
 
 After code review and PR merge:
 
@@ -524,9 +525,9 @@ Orchestrator to agile-ticket-manager:
 "Move TASK-4.1.1 to done status"
 
 agile-ticket-manager:
-- Moves file to tasks/done/
-- Updates status and timestamp
-- Responds: "TASK-4.1.1 completed and archived in done/"
+- Executes: node scripts/move_ticket.js claude-manager TASK-4.1.1 done
+- Updates status and timestamp in database
+- Responds: "TASK-4.1.1 moved from review to done. Ticket complete."
 ```
 
 ### Example 3: Finding Tickets for Next Sprint
@@ -540,11 +541,15 @@ Orchestrator invokes project-manager:
 Project Manager queries agile-ticket-manager:
 "Show all tickets in `todo` and `backlog` status with priorities P0, P1, P2"
 
-agile-ticket-manager responds:
-- TASK-4.1.1 (P1, todo) - Create search endpoint
-- TASK-4.1.2 (P1, todo) - Add search filters
-- BUG-038 (P0, todo) - Fix hooks display parsing
-- TASK-4.2.1 (P2, backlog) - Design search UI
+agile-ticket-manager:
+- Executes: node scripts/filter_by_status.js claude-manager todo
+- Executes: node scripts/filter_by_status.js claude-manager backlog
+- Filters by priority (P0, P1, P2)
+- Returns from database:
+  - TASK-4.1.1 (P1, todo) - Create search endpoint
+  - TASK-4.1.2 (P1, todo) - Add search filters
+  - BUG-038 (P0, todo) - Fix hooks display parsing
+  - TASK-4.2.1 (P2, backlog) - Design search UI
 
 Project Manager analyzes dependencies:
 - BUG-038 has no dependencies → Can start immediately
@@ -559,9 +564,9 @@ Project Manager presents to user:
 
 User selects Option C
 
-Orchestrator:
-- Moves BUG-038 to in-progress (via ticket manager)
-- Moves TASK-4.1.1 to in-progress (via ticket manager)
+Orchestrator invokes agile-ticket-manager:
+- "Move BUG-038 to in-progress" (executes move_ticket.js)
+- "Move TASK-4.1.1 to in-progress" (executes move_ticket.js)
 - Assigns to appropriate agents
 ```
 
@@ -569,25 +574,25 @@ Orchestrator:
 
 ## Summary
 
-The **agile-ticket-manager** is the central filing system for all project tickets. It:
-- Organizes tickets created by project-manager
-- Provides ticket retrieval and querying
-- Manages status transitions
+The **agile-ticket-manager** is the database API interface for all project tickets. It:
+- Executes database operations via ticket-system skill scripts
+- Provides ticket retrieval and querying from SQLite database
+- Manages status transitions in the database
 - Maintains Epic/Story/Task relationships
-- Acts like Jira/Azure DevOps but file-based
+- Acts like Jira/Azure DevOps but SQLite-based
 
-All agents must interact with the ticket manager rather than accessing ticket files directly. This ensures:
-- Consistent ticket organization
+All agents must interact with the ticket manager as a database API - no direct database or filesystem access. This ensures:
+- Consistent database operations
 - Accurate status tracking
 - Proper relationship maintenance
-- Audit trail of all ticket operations
+- Query abstraction layer
 - Single source of truth for ticket information
 
 ---
 
-**Next Steps:**
-1. Update subagent definitions with ticket manager interaction patterns
-2. Update /swarm command to query ticket manager
-3. Update /ba command to clarify ticket creation handoff
-4. Update CLAUDE.md with ticketing workflow documentation
-5. Test integration with real workflow scenarios
+**Implementation Complete (December 2025):**
+1. ✅ SQLite database at `/home/tickets/databases/claude-manager.db`
+2. ✅ ticket-system user-level skill with Node.js scripts
+3. ✅ agile-ticket-manager subagent acts as database API
+4. ✅ All agents use ticket manager instead of direct file/database access
+5. ✅ Documentation updated to reflect database-based system
