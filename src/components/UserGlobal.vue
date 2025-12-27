@@ -33,6 +33,7 @@
     :selected-index="currentIndex"
     scope="user"
     :enable-agent-crud="true"
+    :enable-skill-crud="true"
     :enable-hook-crud="true"
     @toggle-agents="showingAllAgents = !showingAllAgents"
     @toggle-commands="showingAllCommands = !showingAllCommands"

@@ -35,6 +35,7 @@
     :project-id="projectId"
     :enable-agent-crud="true"
     :enable-command-crud="true"
+    :enable-skill-crud="true"
     :enable-hook-crud="true"
     @retry="retryLoad"
     @toggle-agents="showingAllAgents = !showingAllAgents"

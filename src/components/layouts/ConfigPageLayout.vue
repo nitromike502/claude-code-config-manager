@@ -110,6 +110,7 @@
               <ConfigItemList
                 :items="items"
                 item-type="skills"
+                :enable-crud="enableSkillCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'skills', skills)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
                 @delete-clicked="(item) => $emit('skill-delete', item)"
@@ -183,7 +184,7 @@
       :selected-index="selectedIndex"
       :scope="scope"
       :project-id="projectId"
-      :enable-crud="enableAgentCrud || enableCommandCrud || enableHookCrud"
+      :enable-crud="enableAgentCrud || enableCommandCrud || enableSkillCrud || enableHookCrud"
       @close="$emit('close-sidebar')"
       @navigate="(direction) => $emit('navigate', direction)"
       @copy-clicked="(item) => $emit('copy-clicked', item)"
@@ -364,6 +365,10 @@ defineProps({
     default: false
   },
   enableCommandCrud: {
+    type: Boolean,
+    default: false
+  },
+  enableSkillCrud: {
     type: Boolean,
     default: false
   },
