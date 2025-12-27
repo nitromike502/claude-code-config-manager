@@ -99,6 +99,74 @@ export const useSkillsStore = defineStore('skills', () => {
   }
 
   /**
+   * Delete a skill (project or user scope)
+   * @param {string} projectId - Project identifier (required for project scope, null for user scope)
+   * @param {string} skillName - Skill name (directory name) to delete
+   * @param {string} scope - 'project' or 'user'
+   * @returns {Promise<Object>} - { success: boolean, error?: string }
+   */
+  async function deleteSkill(projectId, skillName, scope) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      // Validate scope
+      if (!['project', 'user'].includes(scope)) {
+        throw new Error('Invalid scope: must be "project" or "user"')
+      }
+
+      // Validate projectId for project scope
+      if (scope === 'project' && !projectId) {
+        throw new Error('projectId is required for project scope')
+      }
+
+      // Call appropriate API method based on scope
+      const result = scope === 'project'
+        ? await api.deleteProjectSkill(projectId, skillName)
+        : await api.deleteUserSkill(skillName)
+
+      if (result.success) {
+        // Remove from local state
+        if (scope === 'project') {
+          const skills = projectSkills.value.get(projectId) || []
+          // Skills are identified by directory name, which is the last segment of directoryPath
+          const filtered = skills.filter(s => {
+            const dirName = s.directoryPath ? s.directoryPath.split('/').pop() : s.name
+            return dirName !== skillName
+          })
+          projectSkills.value.set(projectId, filtered)
+        } else {
+          // User scope
+          // Skills are identified by directory name, which is the last segment of directoryPath
+          userSkills.value = userSkills.value.filter(s => {
+            const dirName = s.directoryPath ? s.directoryPath.split('/').pop() : s.name
+            return dirName !== skillName
+          })
+        }
+
+        // Show success notification
+        notifications.success(`Skill "${skillName}" deleted successfully`)
+
+        return { success: true }
+      } else {
+        throw new Error(result.message || 'Failed to delete skill')
+      }
+    } catch (err) {
+      error.value = err.message
+      notifications.error(`Failed to delete skill: ${err.message}`)
+
+      // Only log unexpected errors to console
+      if (!err.isExpected) {
+        console.error('Error deleting skill:', err)
+      }
+
+      return { success: false, error: err.message }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
    * Load project skills into store cache
    * @param {string} projectId - Project identifier
    * @returns {Promise<Object>} - { success: boolean, skills?: Array, error?: string }
@@ -186,6 +254,7 @@ export const useSkillsStore = defineStore('skills', () => {
 
     // Actions
     updateSkill,
+    deleteSkill,
     loadProjectSkills,
     loadUserSkills,
     getProjectSkillsCache,

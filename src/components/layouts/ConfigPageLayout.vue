@@ -110,8 +110,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="skills"
+                :enable-crud="enableSkillCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'skills', skills)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('skill-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -182,7 +184,7 @@
       :selected-index="selectedIndex"
       :scope="scope"
       :project-id="projectId"
-      :enable-crud="enableAgentCrud || enableCommandCrud || enableHookCrud"
+      :enable-crud="enableAgentCrud || enableCommandCrud || enableSkillCrud || enableHookCrud"
       @close="$emit('close-sidebar')"
       @navigate="(direction) => $emit('navigate', direction)"
       @copy-clicked="(item) => $emit('copy-clicked', item)"
@@ -190,6 +192,7 @@
       @agent-updated="$emit('agent-updated')"
       @command-delete="(item) => $emit('command-delete', item)"
       @command-updated="$emit('command-updated')"
+      @skill-delete="(item) => $emit('skill-delete', item)"
       @hook-updated="$emit('hook-updated')"
       @hook-delete="(item) => $emit('hook-delete', item)"
     />
@@ -365,6 +368,10 @@ defineProps({
     type: Boolean,
     default: false
   },
+  enableSkillCrud: {
+    type: Boolean,
+    default: false
+  },
   enableHookCrud: {
     type: Boolean,
     default: false
@@ -386,6 +393,7 @@ defineEmits([
   'agent-updated',
   'command-delete',
   'command-updated',
+  'skill-delete',
   'hook-updated',
   'hook-delete'
 ])

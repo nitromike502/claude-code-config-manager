@@ -20,7 +20,10 @@
       <p class="text-surface-700 dark:text-surface-200">
         Are you sure you want to delete <strong>"{{ itemName }}"</strong>?
       </p>
-      <p class="text-sm text-surface-500 dark:text-surface-400 mt-1">
+      <p v-if="warningMessage" class="text-sm text-orange-600 dark:text-orange-400 mt-2">
+        {{ warningMessage }}
+      </p>
+      <p v-else class="text-sm text-surface-500 dark:text-surface-400 mt-1">
         This action cannot be undone.
       </p>
     </div>
@@ -103,6 +106,10 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  warningMessage: {
+    type: String,
+    default: ''
   }
 })
 
