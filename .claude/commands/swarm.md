@@ -115,6 +115,8 @@ This command implements the complete SWARM workflow across 7 phases:
 - Risk assessment and mitigations
 - Time estimates
 
+**⚠️ TRUST SUBAGENT OUTPUT:** Present the orchestrator's plan directly to the user without additional research. Subagents run in isolated contexts specifically to do analysis work - duplicating that work wastes main agent context.
+
 ### Step 3: Invoke Ticket Manager
 
 **Main agent invokes `agile-ticket-manager`:**
@@ -387,15 +389,16 @@ Show:
 **Mandatory Practices:**
 
 1. **Only Main Agent Invokes Subagents** - Orchestrator creates plans but does NOT invoke
-2. **One Commit Per Task (Sequential)** - Each task completion triggers immediate commit
-3. **Batch Commit for Parallel Work** - Single commit when tasks truly execute simultaneously
-4. **Test Immediately After Each Task** - Developers test before declaring complete
-5. **Ticket Status Must Be Current** - Update at ALL key transitions
-6. **Git Operations via git-workflow-specialist** - Developers NEVER do git operations
-7. **User Approval is Mandatory Gate** - Tickets cannot move to `done` without user review
-8. **Session Tracking is Main Agent's Job** - NOT delegated to documentation-engineer
-9. **Documentation Updates After Implementation** - Committed separately from code
-10. **TodoWrite Mirrors Session Tracking** - Updated after each milestone
+2. **Trust Subagent Output** - Present subagent results directly; do NOT duplicate their analysis with your own file reads
+3. **One Commit Per Task (Sequential)** - Each task completion triggers immediate commit
+4. **Batch Commit for Parallel Work** - Single commit when tasks truly execute simultaneously
+5. **Test Immediately After Each Task** - Developers test before declaring complete
+6. **Ticket Status Must Be Current** - Update at ALL key transitions
+7. **Git Operations via git-workflow-specialist** - Developers NEVER do git operations
+8. **User Approval is Mandatory Gate** - Tickets cannot move to `done` without user review
+9. **Session Tracking is Main Agent's Job** - NOT delegated to documentation-engineer
+10. **Documentation Updates After Implementation** - Committed separately from code
+11. **TodoWrite Mirrors Session Tracking** - Updated after each milestone
 
 **See:** `docs/guides/SWARM-WORKFLOW.md` for complete workflow details and best practices.
 

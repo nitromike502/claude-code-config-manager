@@ -6,11 +6,12 @@
 
 ### Architecture Philosophy
 
-The SWARM workflow is built on three foundational principles:
+The SWARM workflow is built on four foundational principles:
 
 1. **Centralized Coordination:** Only the main agent invokes subagents - this prevents chaos and maintains clear command structure
-2. **Specialized Expertise:** Each subagent has a specific domain of expertise and does not perform operations outside their scope
-3. **Systematic Progress:** Work flows through defined phases with clear gates, handoffs, and quality checkpoints
+2. **Trust Subagent Output:** Present subagent results directly without duplicating their analysis - subagents run in isolated contexts specifically to do analysis work
+3. **Specialized Expertise:** Each subagent has a specific domain of expertise and does not perform operations outside their scope
+4. **Systematic Progress:** Work flows through defined phases with clear gates, handoffs, and quality checkpoints
 
 ### Core Components
 
@@ -726,7 +727,13 @@ Reply with "approved" to merge, or provide feedback for changes.
    - Orchestrator creates plans but does NOT invoke other agents
    - This prevents chaos and maintains clear command structure
 
-2. **One Commit Per Task (Sequential Work)**
+2. **Trust Subagent Output**
+   - Present subagent results directly to user without additional research
+   - Do NOT read source files to "verify" or "validate" subagent analysis
+   - Subagents run in isolated contexts specifically to do analysis work
+   - Duplicating that analysis wastes main agent context
+
+3. **One Commit Per Task (Sequential Work)**
    - Each task completion triggers immediate commit
    - Commit message MUST reference ticket ID
    - Never bundle multiple sequential tasks into one commit
@@ -1080,8 +1087,9 @@ PHASE 7: User Approval & Merge
 
 ---
 
-**Last Updated:** December 7, 2025
-**Version:** 1.2
+**Last Updated:** December 28, 2025
+**Version:** 1.3
 **Status:** Official Workflow Standard
-**Key Changes in v1.2:** Added Phase 0 (Comparative Analysis) for feature parity work to prevent costly debugging by ensuring thorough understanding of existing patterns before implementation
+**Key Changes in v1.3:** Added "Trust Subagent Output" as foundational principle (#2) - main agent must present subagent results directly without duplicating their analysis
+**Previous Changes in v1.2:** Added Phase 0 (Comparative Analysis) for feature parity work to prevent costly debugging by ensuring thorough understanding of existing patterns before implementation
 **Previous Changes in v1.1:** Implemented targeted testing strategy (defer comprehensive testing to Phase 4, avoid per-task test bottleneck)
