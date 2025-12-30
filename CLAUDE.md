@@ -77,6 +77,7 @@ manager/
 
 ### Configuration Management
 - **Copy Configuration** - Copy agents, commands, skills, hooks, and MCP servers between projects
+- **Delete Configuration** - Delete agents, commands, skills, and hooks from projects or user-level
 - **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
 - **Cross-Scope Copy** - Copy between user-level and project-level configurations
 - **Smart Merging** - Intelligent merge for hooks and MCP configurations
@@ -122,23 +123,31 @@ manager/
 ## API Endpoints
 
 ```
-GET  /api/projects                   - List all projects from ~/.claude.json
-GET  /api/projects/:projectId/agents - Get project subagents
-GET  /api/projects/:projectId/commands - Get project commands
-GET  /api/projects/:projectId/skills - Get project skills
-GET  /api/projects/:projectId/hooks  - Get project hooks
-GET  /api/projects/:projectId/mcp    - Get project MCP servers
-GET  /api/user/agents                - Get user subagents
-GET  /api/user/commands              - Get user commands
-GET  /api/user/skills                - Get user skills
-GET  /api/user/hooks                 - Get user hooks
-GET  /api/user/mcp                   - Get user MCP servers
-POST /api/projects/scan              - Trigger project list refresh
-POST /api/copy/agent                 - Copy agent between projects
-POST /api/copy/command               - Copy command between projects
-POST /api/copy/skill                 - Copy skill directory between projects
-POST /api/copy/hook                  - Copy hook between projects
-POST /api/copy/mcp                   - Copy MCP server between projects
+GET    /api/projects                         - List all projects from ~/.claude.json
+GET    /api/projects/:projectId/agents       - Get project subagents
+GET    /api/projects/:projectId/commands     - Get project commands
+GET    /api/projects/:projectId/skills       - Get project skills
+GET    /api/projects/:projectId/hooks        - Get project hooks
+GET    /api/projects/:projectId/mcp          - Get project MCP servers
+GET    /api/user/agents                      - Get user subagents
+GET    /api/user/commands                    - Get user commands
+GET    /api/user/skills                      - Get user skills
+GET    /api/user/hooks                       - Get user hooks
+GET    /api/user/mcp                         - Get user MCP servers
+POST   /api/projects/scan                    - Trigger project list refresh
+POST   /api/copy/agent                       - Copy agent between projects
+POST   /api/copy/command                     - Copy command between projects
+POST   /api/copy/skill                       - Copy skill directory between projects
+POST   /api/copy/hook                        - Copy hook between projects
+POST   /api/copy/mcp                         - Copy MCP server between projects
+DELETE /api/projects/:projectId/agents/:name - Delete project agent
+DELETE /api/projects/:projectId/commands/:path - Delete project command
+DELETE /api/projects/:projectId/skills/:name - Delete project skill
+DELETE /api/projects/:projectId/hooks/:id   - Delete project hook (id: event::matcher::index)
+DELETE /api/user/agents/:name               - Delete user agent
+DELETE /api/user/commands/:path             - Delete user command
+DELETE /api/user/skills/:name               - Delete user skill
+DELETE /api/user/hooks/:id                  - Delete user hook (id: event::matcher::index)
 ```
 
 **Note:** `projectId` = project path with slashes removed (e.g., `/home/user/projects/myapp` → `homeuserprojectsmyapp`)
