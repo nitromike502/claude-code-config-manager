@@ -135,8 +135,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="hooks"
+                :enable-crud="enableHookCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'hooks', hooks)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('hook-delete', item)"
               />
             </template>
           </ConfigPanel>

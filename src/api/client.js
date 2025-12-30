@@ -545,6 +545,33 @@ export async function updateUserHook(hookId, updates) {
   return response.json()
 }
 
+/**
+ * Delete a project hook
+ * @param {string} projectId - Project identifier
+ * @param {string} hookId - Hook identifier (format: event::matcher::index)
+ * @returns {Promise<Object>} - { success: boolean, message?: string }
+ */
+export async function deleteProjectHook(projectId, hookId) {
+  const encodedHookId = encodeURIComponent(hookId)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/hooks/${encodedHookId}`, {
+    method: 'DELETE'
+  })
+  return response.json()
+}
+
+/**
+ * Delete a user-level hook
+ * @param {string} hookId - Hook identifier (format: event::matcher::index)
+ * @returns {Promise<Object>} - { success: boolean, message?: string }
+ */
+export async function deleteUserHook(hookId) {
+  const encodedHookId = encodeURIComponent(hookId)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/user/hooks/${encodedHookId}`, {
+    method: 'DELETE'
+  })
+  return response.json()
+}
+
 // ========================================
 // MCP CRUD Operations
 // ========================================
@@ -623,6 +650,8 @@ export default {
   // Hook CRUD
   updateProjectHook,
   updateUserHook,
+  deleteProjectHook,
+  deleteUserHook,
   // MCP CRUD
   updateProjectMcp,
   updateUserMcp
