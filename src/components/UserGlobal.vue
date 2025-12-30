@@ -47,6 +47,7 @@
     @agent-delete="handleAgentDelete"
     @agent-updated="handleAgentUpdated"
     @hook-updated="handleHookUpdated"
+    @hook-delete="handleHookDelete"
     @skill-delete="handleSkillDelete"
   >
     <template #copy-modal>
