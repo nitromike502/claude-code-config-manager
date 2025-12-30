@@ -219,8 +219,165 @@ async function deleteJsonProperty(filePath, propertyPath) {
   }
 }
 
+/**
+ * Deletes a hook from settings.json using hookId format
+ *
+ * Process:
+ * 1. Parse hookId to extract event, matcher, index
+ * 2. Load settings.json from project's .claude/ directory
+ * 3. Navigate to hooks[event] → find matcher entry → hooks[index]
+ * 4. Remove hook at specified index
+ * 5. Clean up empty structures (hooks array, matcher entry, event key, hooks object)
+ * 6. Write back atomically (temp file + rename)
+ *
+ * Hook ID Format: event::matcher::index
+ * - "PreToolUse::Bash::0" - First hook for PreToolUse with Bash matcher
+ * - "SessionEnd::::0" - First hook for SessionEnd (no matcher, empty string between ::)
+ *
+ * Hook Structure in settings.json (3-level nested):
+ * {
+ *   "hooks": {
+ *     "PreToolUse": [                    // Event level
+ *       {
+ *         "matcher": "Bash",              // Matcher entry level (optional field)
+ *         "hooks": [                      // Hooks array
+ *           { "type": "command", "command": "echo hello" }
+ *         ]
+ *       }
+ *     ]
+ *   }
+ * }
+ *
+ * @param {string} hookId - Hook identifier (event::matcher::index)
+ * @param {string} settingsPath - Absolute path to settings.json
+ * @returns {Promise<{success: boolean, deleted: string}>} Success indicator and deleted hookId
+ * @throws {Error} If hook not found, invalid format, or write fails
+ */
+async function deleteHook(hookId, settingsPath) {
+  // Step 1: Parse hookId
+  if (!hookId || typeof hookId !== 'string') {
+    throw new Error('Invalid hookId: must be a non-empty string');
+  }
+
+  const parts = hookId.split('::');
+  if (parts.length !== 3) {
+    throw new Error('Invalid hookId format: must be event::matcher::index');
+  }
+
+  const [event, matcher, indexStr] = parts;
+
+  // Validate event
+  if (!event) {
+    throw new Error('Invalid hookId: event cannot be empty');
+  }
+
+  // Validate index
+  const index = parseInt(indexStr, 10);
+  if (isNaN(index) || index < 0) {
+    throw new Error('Invalid hookId: index must be a non-negative integer');
+  }
+
+  // Step 2: Validate settings path
+  const validatedPath = validatePath(settingsPath);
+
+  try {
+    // Step 3: Read settings.json
+    const content = await fs.readFile(validatedPath, 'utf8');
+    let settings;
+    try {
+      settings = JSON.parse(content);
+    } catch (jsonError) {
+      throw new Error(`Failed to parse settings.json: ${jsonError.message}`);
+    }
+
+    // Verify hooks structure exists
+    if (!settings.hooks || typeof settings.hooks !== 'object') {
+      throw new Error(`Hook not found: ${hookId}`);
+    }
+
+    // Step 4: Navigate to event
+    const eventEntries = settings.hooks[event];
+    if (!Array.isArray(eventEntries) || eventEntries.length === 0) {
+      throw new Error(`Hook not found: no hooks configured for event "${event}"`);
+    }
+
+    // Step 5: Find the matcher entry that contains this hook
+    let matcherEntryIndex = -1;
+    let hooksArray = null;
+
+    // Normalize matcher for comparison
+    // Both '*' and empty string/missing field represent "match all"
+    // Settings.json may store it as '*' or omit the field entirely
+    const normalizeMatcher = (m) => (m === '*' || m === '' || m === undefined) ? '' : m;
+    const normalizedMatcher = normalizeMatcher(matcher);
+
+    for (let i = 0; i < eventEntries.length; i++) {
+      const matcherEntry = eventEntries[i];
+      const entryMatcher = normalizeMatcher(matcherEntry.matcher);
+
+      if (entryMatcher === normalizedMatcher) {
+        // Found the right matcher entry
+        if (!Array.isArray(matcherEntry.hooks)) {
+          throw new Error(`Hook not found: ${hookId} (matcher entry has no hooks array)`);
+        }
+
+        if (index >= matcherEntry.hooks.length) {
+          throw new Error(`Hook not found: index ${index} out of range (only ${matcherEntry.hooks.length} hook(s) in this matcher group)`);
+        }
+
+        matcherEntryIndex = i;
+        hooksArray = matcherEntry.hooks;
+        break;
+      }
+    }
+
+    if (matcherEntryIndex === -1) {
+      const matcherDisplay = normalizedMatcher || '(no matcher)';
+      throw new Error(`Hook not found: no matcher entry for "${matcherDisplay}" in event "${event}"`);
+    }
+
+    // Step 6: Remove the hook at the specified index
+    hooksArray.splice(index, 1);
+
+    // Step 7: Clean up empty structures
+    // If hooks array is now empty, remove the matcher entry
+    if (hooksArray.length === 0) {
+      eventEntries.splice(matcherEntryIndex, 1);
+    }
+
+    // If event has no more matcher entries, remove the event key
+    if (eventEntries.length === 0) {
+      delete settings.hooks[event];
+    }
+
+    // If hooks object is now empty, remove it entirely
+    if (Object.keys(settings.hooks).length === 0) {
+      delete settings.hooks;
+    }
+
+    // Step 8: Write back atomically (temp file + rename for safety)
+    const tempPath = `${validatedPath}.tmp`;
+    const jsonString = JSON.stringify(settings, null, 2);
+    await fs.writeFile(tempPath, jsonString, 'utf8');
+    await fs.rename(tempPath, validatedPath);
+
+    return { success: true, deleted: hookId };
+  } catch (error) {
+    // Handle specific error codes
+    if (error.code === 'ENOENT') {
+      throw new Error(`Settings file not found: ${validatedPath}`);
+    }
+    if (error.code === 'EACCES') {
+      throw new Error(`Permission denied: cannot access ${validatedPath}`);
+    }
+
+    throw error;
+  }
+}
+
 module.exports = {
   deleteFile,
   deleteDirectory,
-  deleteJsonProperty
+  deleteJsonProperty,
+  deleteHook
 };
