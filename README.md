@@ -46,6 +46,7 @@ Claude Code Config Manager provides a centralized dashboard to browse all your C
 
 **Configuration Management:**
 - **Copy Configuration** - Copy agents, commands, skills, hooks, and MCP servers between projects
+- **Delete Configuration** - Delete agents, commands, skills, and hooks from projects or user-level
 - **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
 - **Single-Click Copy** - Streamlined UX for quick configuration duplication
 - **Cross-Scope Copy** - Copy between user-level and project-level configurations

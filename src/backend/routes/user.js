@@ -11,7 +11,7 @@ const {
   getUserSkills
 } = require('../services/projectDiscovery');
 const { updateYamlFrontmatter, updateFile } = require('../services/updateService');
-const { deleteFile, deleteDirectory } = require('../services/deleteService');
+const { deleteFile, deleteDirectory, deleteHook } = require('../services/deleteService');
 const { findReferences } = require('../services/referenceChecker');
 const { parseSubagent } = require('../parsers/subagentParser');
 const { parseSkill } = require('../parsers/skillParser');
@@ -346,6 +346,65 @@ router.put('/hooks/:hookId', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to update hook',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/user/hooks/:hookId
+ * Delete a user-level hook
+ *
+ * hookId format: event::matcher::index (URL-encoded)
+ * Examples:
+ * - "PreToolUse::Bash::0" - First hook for PreToolUse with Bash matcher
+ * - "SessionEnd::::0" - First hook for SessionEnd (no matcher)
+ *
+ * Note: Hooks are self-contained and have no references, so no reference checking is needed
+ */
+router.delete('/hooks/:hookId', async (req, res) => {
+  try {
+    const { hookId } = req.params;
+
+    // Decode hookId (URL-encoded, contains :: separator)
+    const decodedHookId = decodeURIComponent(hookId);
+
+    // Get user home directory
+    const userHome = getUserHome();
+    const settingsPath = path.join(userHome, '.claude', 'settings.json');
+
+    // Delete the hook using deleteService
+    await deleteHook(decodedHookId, settingsPath);
+
+    res.json({
+      success: true,
+      message: 'Hook deleted successfully'
+    });
+  } catch (error) {
+    // Handle hook not found specifically
+    if (error.message.includes('Hook not found') ||
+        error.message.includes('Settings file not found') ||
+        error.message.includes('no hooks configured')) {
+      return res.status(404).json({
+        success: false,
+        error: 'Hook not found',
+        details: error.message
+      });
+    }
+
+    // Handle invalid format
+    if (error.message.includes('Invalid hookId')) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid hookId format',
+        details: error.message
+      });
+    }
+
+    console.error('Error deleting user hook:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete hook',
       details: error.message
     });
   }

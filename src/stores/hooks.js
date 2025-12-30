@@ -164,6 +164,64 @@ export const useHooksStore = defineStore('hooks', () => {
   }
 
   /**
+   * Delete a hook (project or user scope)
+   * @param {string} projectId - Project identifier (required for project scope, null for user scope)
+   * @param {string} hookId - Hook identifier (event::matcher::index)
+   * @param {string} scope - 'project' or 'user'
+   * @returns {Promise<Object>} - { success: boolean, error?: string }
+   */
+  async function deleteHook(projectId, hookId, scope = 'project') {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      // Validate scope
+      if (!['project', 'user'].includes(scope)) {
+        throw new Error('Invalid scope: must be "project" or "user"')
+      }
+
+      // Validate projectId for project scope
+      if (scope === 'project' && !projectId) {
+        throw new Error('projectId is required for project scope')
+      }
+
+      // Call appropriate API method based on scope
+      const result = scope === 'project'
+        ? await api.deleteProjectHook(projectId, hookId)
+        : await api.deleteUserHook(hookId)
+
+      if (result.success) {
+        // Refresh hooks from API since indexes may have changed after deletion
+        if (scope === 'project') {
+          await loadProjectHooks(projectId)
+        } else {
+          await loadUserHooks()
+        }
+
+        // Show success notification
+        const eventType = hookId.split('::')[0]
+        notifications.success(`${eventType} hook deleted successfully`)
+
+        return { success: true }
+      } else {
+        throw new Error(result.error || result.message || 'Failed to delete hook')
+      }
+    } catch (err) {
+      error.value = err.message
+      notifications.error(`Failed to delete hook: ${err.message}`)
+
+      // Only log unexpected errors to console
+      if (!err.isExpected) {
+        console.error('Error deleting hook:', err)
+      }
+
+      return { success: false, error: err.message }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
    * Get cached project hooks
    * @param {string} projectId - Project identifier
    * @returns {Array} - Hooks array (empty if not loaded)
@@ -191,6 +249,7 @@ export const useHooksStore = defineStore('hooks', () => {
     // Actions
     buildHookId,
     updateHook,
+    deleteHook,
     loadProjectHooks,
     loadUserHooks,
     getProjectHooksCache,

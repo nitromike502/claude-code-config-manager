@@ -100,6 +100,16 @@
     @confirm="handleSkillDeleteConfirm"
     @cancel="handleSkillDeleteCancel"
   />
+
+  <!-- Hook Delete Confirmation Dialog -->
+  <DeleteConfirmationModal
+    v-model:visible="showHookDeleteDialog"
+    item-type="hook"
+    :item-name="getHookDisplayName(deletingHook)"
+    :loading="hookDeleteLoading"
+    @confirm="handleHookDeleteConfirm"
+    @cancel="handleHookDeleteCancel"
+  />
 </template>
 
 <script>
@@ -115,6 +125,7 @@ import { useProjectsStore } from '@/stores/projects'
 import { useAgentsStore } from '@/stores/agents'
 import { useCommandsStore } from '@/stores/commands'
 import { useSkillsStore } from '@/stores/skills'
+import { useHooksStore } from '@/stores/hooks'
 
 export default {
   name: 'ProjectDetail',
@@ -128,6 +139,7 @@ export default {
     const agentsStore = useAgentsStore()
     const commandsStore = useCommandsStore()
     const skillsStore = useSkillsStore()
+    const hooksStore = useHooksStore()
 
     const projectId = computed(() => props.id || route.params.id)
     const projectName = ref('Loading...')
@@ -164,6 +176,11 @@ export default {
     const showSkillDeleteDialog = ref(false)
     const deletingSkill = ref(null)
     const skillDeleteLoading = ref(false)
+
+    // Hook CRUD state
+    const showHookDeleteDialog = ref(false)
+    const deletingHook = ref(null)
+    const hookDeleteLoading = ref(false)
 
     const loading = ref(true)
     const loadingAgents = ref(false)
@@ -536,10 +553,52 @@ export default {
       await loadHooks()
     }
 
-    const handleHookDelete = async (hook) => {
-      // Note: Hook delete is not yet implemented in the UI
-      // This handler is a placeholder for future implementation
-      console.log('Hook delete requested:', hook)
+    const handleHookDelete = (hook) => {
+      deletingHook.value = hook
+      showHookDeleteDialog.value = true
+    }
+
+    const handleHookDeleteConfirm = async () => {
+      hookDeleteLoading.value = true
+
+      try {
+        // Build hookId from hook object
+        const hookId = hooksStore.buildHookId(deletingHook.value)
+
+        // Call store to delete hook
+        const result = await hooksStore.deleteHook(projectId.value, hookId, 'project')
+
+        if (result.success) {
+          showHookDeleteDialog.value = false
+          await loadHooks() // Refresh hooks list
+
+          // Close sidebar if the deleted hook was being viewed
+          if (selectedItem.value && hooksStore.buildHookId(selectedItem.value) === hookId) {
+            sidebarVisible.value = false
+          }
+        }
+      } finally {
+        hookDeleteLoading.value = false
+      }
+    }
+
+    const handleHookDeleteCancel = () => {
+      showHookDeleteDialog.value = false
+      deletingHook.value = null
+    }
+
+    /**
+     * Get display name for hook in delete modal
+     * Shows event type and command preview
+     */
+    const getHookDisplayName = (hook) => {
+      if (!hook) return ''
+
+      const event = hook.event || 'Unknown'
+      const command = hook.command || hook.shell || ''
+      const commandPreview = command.length > 50 ? command.substring(0, 50) + '...' : command
+
+      return `${event}${commandPreview ? ': ' + commandPreview : ''}`
     }
 
     // Skill CRUD handlers
@@ -751,8 +810,14 @@ export default {
       handleCommandDeleteConfirm,
       handleCommandDeleteCancel,
       // Hook CRUD
+      showHookDeleteDialog,
+      deletingHook,
+      hookDeleteLoading,
       handleHookUpdated,
       handleHookDelete,
+      handleHookDeleteConfirm,
+      handleHookDeleteCancel,
+      getHookDisplayName,
       // Skill CRUD
       showSkillDeleteDialog,
       deletingSkill,
