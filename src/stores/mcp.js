@@ -151,6 +151,70 @@ export const useMcpStore = defineStore('mcp', () => {
   }
 
   /**
+   * Delete an MCP server (project or user scope)
+   * @param {string} projectId - Project identifier (required for project scope, null for user scope)
+   * @param {string} serverName - MCP server name to delete
+   * @param {string} scope - 'project' or 'user'
+   * @returns {Promise<Object>} - { success: boolean, message?: string, references?: Array, error?: string }
+   */
+  async function deleteMcpServer(projectId, serverName, scope) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      // Validate scope
+      if (!['project', 'user'].includes(scope)) {
+        throw new Error('Invalid scope: must be "project" or "user"')
+      }
+
+      // Validate projectId for project scope
+      if (scope === 'project' && !projectId) {
+        throw new Error('projectId is required for project scope')
+      }
+
+      // Call appropriate API method based on scope
+      const result = scope === 'project'
+        ? await api.deleteProjectMcpServer(projectId, serverName)
+        : await api.deleteUserMcpServer(serverName)
+
+      if (result.success) {
+        // Remove from local state
+        if (scope === 'project') {
+          const servers = projectMcpServers.value.get(projectId) || []
+          const filtered = servers.filter(s => s.name !== serverName)
+          projectMcpServers.value.set(projectId, filtered)
+        } else {
+          // User scope
+          userMcpServers.value = userMcpServers.value.filter(s => s.name !== serverName)
+        }
+
+        // Show success notification
+        notifications.success(`MCP server "${serverName}" deleted successfully`)
+
+        return {
+          success: true,
+          message: result.message,
+          references: result.references
+        }
+      } else {
+        throw new Error(result.message || 'Failed to delete MCP server')
+      }
+    } catch (err) {
+      error.value = err.message
+      notifications.error(`Failed to delete MCP server: ${err.message}`)
+
+      // Only log unexpected errors to console
+      if (!err.isExpected) {
+        console.error('Error deleting MCP server:', err)
+      }
+
+      return { success: false, error: err.message }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
    * Get cached project MCP servers
    * @param {string} projectId - Project identifier
    * @returns {Array} - MCP servers array (empty if not loaded)
@@ -177,6 +241,7 @@ export const useMcpStore = defineStore('mcp', () => {
 
     // Actions
     updateMcpServer,
+    deleteMcpServer,
     loadProjectMcp,
     loadUserMcp,
     getProjectMcpCache,

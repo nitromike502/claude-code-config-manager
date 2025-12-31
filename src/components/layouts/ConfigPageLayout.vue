@@ -160,8 +160,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="mcp"
+                :enable-crud="enableMcpCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'mcp', mcpServers)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('mcp-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -186,7 +188,7 @@
       :selected-index="selectedIndex"
       :scope="scope"
       :project-id="projectId"
-      :enable-crud="enableAgentCrud || enableCommandCrud || enableSkillCrud || enableHookCrud"
+      :enable-crud="enableAgentCrud || enableCommandCrud || enableSkillCrud || enableHookCrud || enableMcpCrud"
       @close="$emit('close-sidebar')"
       @navigate="(direction) => $emit('navigate', direction)"
       @copy-clicked="(item) => $emit('copy-clicked', item)"
@@ -197,6 +199,7 @@
       @skill-delete="(item) => $emit('skill-delete', item)"
       @hook-updated="$emit('hook-updated')"
       @hook-delete="(item) => $emit('hook-delete', item)"
+      @mcp-delete="(item) => $emit('mcp-delete', item)"
     />
 
     <!-- Copy Modal Slot -->
@@ -377,6 +380,10 @@ defineProps({
   enableHookCrud: {
     type: Boolean,
     default: false
+  },
+  enableMcpCrud: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -397,7 +404,8 @@ defineEmits([
   'command-updated',
   'skill-delete',
   'hook-updated',
-  'hook-delete'
+  'hook-delete',
+  'mcp-delete'
 ])
 </script>
 

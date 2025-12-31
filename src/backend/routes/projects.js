@@ -14,6 +14,7 @@ const {
 const { projectIdToPath } = require('../utils/pathUtils');
 const { updateYamlFrontmatter, updateFile } = require('../services/updateService');
 const { deleteFile, deleteDirectory, deleteHook } = require('../services/deleteService');
+const { deleteProjectMcpServer } = require('../services/deleteMcpService');
 const { findReferences } = require('../services/referenceChecker');
 const { parseSubagent } = require('../parsers/subagentParser');
 const { parseSkill } = require('../parsers/skillParser');
@@ -1409,6 +1410,70 @@ router.delete('/:projectId/hooks/:hookId', validateProjectId, async (req, res) =
     res.status(500).json({
       success: false,
       error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/projects/:projectId/mcp/:serverName
+ * Delete a project-level MCP server
+ *
+ * MCP servers can be stored in multiple locations:
+ * - .mcp.json (project root)
+ * - .claude/settings.json
+ * - .claude/settings.local.json
+ *
+ * This endpoint searches all locations and deletes from the file where found.
+ */
+router.delete('/:projectId/mcp/:serverName', validateProjectId, async (req, res) => {
+  try {
+    const { projectId, serverName } = req.params;
+
+    // URL-decode server name (may contain special characters)
+    const decodedName = decodeURIComponent(serverName);
+
+    // Validate server name format
+    if (!decodedName || decodedName.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid server name: cannot be empty'
+      });
+    }
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Delete MCP server using deleteMcpService
+    const result = await deleteProjectMcpServer(projectPath, decodedName);
+
+    const response = {
+      success: true,
+      message: result.message
+    };
+
+    // Include references if any found (soft warning)
+    if (result.references && result.references.length > 0) {
+      response.references = result.references;
+    }
+
+    res.json(response);
+  } catch (error) {
+    // Handle server not found specifically
+    if (error.message.includes('MCP server not found')) {
+      return res.status(404).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    console.error('Error deleting MCP server:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete MCP server',
+      details: error.message
     });
   }
 });

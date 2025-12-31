@@ -37,6 +37,7 @@
     :enable-command-crud="true"
     :enable-skill-crud="true"
     :enable-hook-crud="true"
+    :enable-mcp-crud="true"
     @retry="retryLoad"
     @toggle-agents="showingAllAgents = !showingAllAgents"
     @toggle-commands="showingAllCommands = !showingAllCommands"
@@ -54,6 +55,7 @@
     @hook-updated="handleHookUpdated"
     @hook-delete="handleHookDelete"
     @skill-delete="handleSkillDelete"
+    @mcp-delete="handleMcpDelete"
   >
     <template #copy-modal>
       <CopyModal
@@ -110,6 +112,16 @@
     @confirm="handleHookDeleteConfirm"
     @cancel="handleHookDeleteCancel"
   />
+
+  <!-- MCP Delete Confirmation Dialog -->
+  <DeleteConfirmationModal
+    v-model:visible="showMcpDeleteDialog"
+    item-type="mcp"
+    :item-name="deletingMcp?.name || ''"
+    :loading="mcpDeleteLoading"
+    @confirm="handleMcpDeleteConfirm"
+    @cancel="handleMcpDeleteCancel"
+  />
 </template>
 
 <script>
@@ -126,6 +138,7 @@ import { useAgentsStore } from '@/stores/agents'
 import { useCommandsStore } from '@/stores/commands'
 import { useSkillsStore } from '@/stores/skills'
 import { useHooksStore } from '@/stores/hooks'
+import { useMcpStore } from '@/stores/mcp'
 
 export default {
   name: 'ProjectDetail',
@@ -140,6 +153,7 @@ export default {
     const commandsStore = useCommandsStore()
     const skillsStore = useSkillsStore()
     const hooksStore = useHooksStore()
+    const mcpStore = useMcpStore()
 
     const projectId = computed(() => props.id || route.params.id)
     const projectName = ref('Loading...')
@@ -181,6 +195,11 @@ export default {
     const showHookDeleteDialog = ref(false)
     const deletingHook = ref(null)
     const hookDeleteLoading = ref(false)
+
+    // MCP CRUD state
+    const showMcpDeleteDialog = ref(false)
+    const deletingMcp = ref(null)
+    const mcpDeleteLoading = ref(false)
 
     const loading = ref(true)
     const loadingAgents = ref(false)
@@ -665,6 +684,64 @@ export default {
       deletingSkill.value = null
     }
 
+    // MCP CRUD handlers
+    const handleMcpDelete = (mcp) => {
+      deletingMcp.value = mcp
+      showMcpDeleteDialog.value = true
+    }
+
+    const handleMcpDeleteConfirm = async () => {
+      mcpDeleteLoading.value = true
+
+      try {
+        const result = await mcpStore.deleteMcpServer(
+          projectId.value,
+          deletingMcp.value.name,
+          'project'
+        )
+
+        if (result.success) {
+          showMcpDeleteDialog.value = false
+          await loadMCP() // Refresh MCP servers list
+
+          // Close sidebar if the deleted MCP server was being viewed
+          if (selectedItem.value?.name === deletingMcp.value.name) {
+            sidebarVisible.value = false
+          }
+
+          toast.add({
+            severity: 'success',
+            summary: 'MCP Server Deleted',
+            detail: `MCP server "${deletingMcp.value.name}" has been deleted successfully`,
+            life: 5000
+          })
+        } else {
+          toast.add({
+            severity: 'error',
+            summary: 'Delete Failed',
+            detail: result.error || 'Failed to delete MCP server',
+            life: 0
+          })
+          showMcpDeleteDialog.value = false
+        }
+      } catch (err) {
+        toast.add({
+          severity: 'error',
+          summary: 'Delete Failed',
+          detail: err.message || 'An unexpected error occurred',
+          life: 0
+        })
+        showMcpDeleteDialog.value = false
+      } finally {
+        mcpDeleteLoading.value = false
+      }
+    }
+
+    const handleMcpDeleteCancel = () => {
+      showMcpDeleteDialog.value = false
+      deletingMcp.value = null
+    }
+
     // Copy modal handlers
     const handleCopyClick = (configItem) => {
       // Normalize configType to type and add projectId for CopyModal compatibility
@@ -824,7 +901,14 @@ export default {
       skillDeleteLoading,
       handleSkillDelete,
       handleSkillDeleteConfirm,
-      handleSkillDeleteCancel
+      handleSkillDeleteCancel,
+      // MCP CRUD
+      showMcpDeleteDialog,
+      deletingMcp,
+      mcpDeleteLoading,
+      handleMcpDelete,
+      handleMcpDeleteConfirm,
+      handleMcpDeleteCancel
     }
   }
 }

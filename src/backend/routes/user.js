@@ -12,6 +12,7 @@ const {
 } = require('../services/projectDiscovery');
 const { updateYamlFrontmatter, updateFile } = require('../services/updateService');
 const { deleteFile, deleteDirectory, deleteHook } = require('../services/deleteService');
+const { deleteUserMcpServer } = require('../services/deleteMcpService');
 const { findReferences } = require('../services/referenceChecker');
 const { parseSubagent } = require('../parsers/subagentParser');
 const { parseSkill } = require('../parsers/skillParser');
@@ -1265,6 +1266,62 @@ router.delete('/skills/:skillName', validateSkillName, async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/user/mcp/:serverName
+ * Delete a user-level MCP server
+ *
+ * User MCP servers are stored in ~/.claude/settings.json mcpServers object
+ */
+router.delete('/mcp/:serverName', async (req, res) => {
+  try {
+    const { serverName } = req.params;
+
+    // URL-decode server name (may contain special characters)
+    const decodedName = decodeURIComponent(serverName);
+
+    // Validate server name format
+    if (!decodedName || decodedName.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid server name: cannot be empty'
+      });
+    }
+
+    // Get user home directory
+    const userHome = getUserHome();
+
+    // Delete MCP server using deleteMcpService
+    const result = await deleteUserMcpServer(userHome, decodedName);
+
+    const response = {
+      success: true,
+      message: result.message
+    };
+
+    // Include references if any found (soft warning)
+    if (result.references && result.references.length > 0) {
+      response.references = result.references;
+    }
+
+    res.json(response);
+  } catch (error) {
+    // Handle server not found specifically
+    if (error.message.includes('MCP server not found')) {
+      return res.status(404).json({
+        success: false,
+        error: error.message
+      });
+    }
+
+    console.error('Error deleting user MCP server:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete MCP server',
+      details: error.message
     });
   }
 });
