@@ -12,7 +12,7 @@
         <div class="flex items-center justify-between gap-3 px-4 py-3">
           <span class="font-semibold text-[0.95rem] text-text-primary truncate">{{ getItemName(item) }}</span>
           <div class="flex items-center gap-2 shrink-0" @click.stop>
-            <!-- Delete Button (agents, commands, skills) -->
+            <!-- Delete Button (agents, commands, skills, hooks, MCP) -->
             <Button
               v-if="canDelete(item)"
               icon="pi pi-trash"
@@ -117,11 +117,11 @@ const emit = defineEmits({
 
 /**
  * Check if delete button should be shown for an item
- * Show for agents, commands, skills, and hooks that are not plugins
+ * Show for agents, commands, skills, hooks, and MCP that are not plugins
  */
 const canDelete = (item) => {
   return props.enableCrud &&
-         (props.itemType === 'agents' || props.itemType === 'commands' || props.itemType === 'skills' || props.itemType === 'hooks') &&
+         (props.itemType === 'agents' || props.itemType === 'commands' || props.itemType === 'skills' || props.itemType === 'hooks' || props.itemType === 'mcp') &&
          item.location !== 'plugin';
 };
 

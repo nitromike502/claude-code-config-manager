@@ -607,6 +607,33 @@ export async function updateUserMcp(serverName, updates) {
   return response.json()
 }
 
+/**
+ * Delete a project MCP server
+ * @param {string} projectId - Project identifier
+ * @param {string} serverName - MCP server name
+ * @returns {Promise<Object>} - { success: boolean, message: string, references?: string[] }
+ */
+export async function deleteProjectMcpServer(projectId, serverName) {
+  const encodedName = encodeURIComponent(serverName)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/mcp/${encodedName}`, {
+    method: 'DELETE'
+  })
+  return response.json()
+}
+
+/**
+ * Delete a user-level MCP server
+ * @param {string} serverName - MCP server name
+ * @returns {Promise<Object>} - { success: boolean, message: string, references?: string[] }
+ */
+export async function deleteUserMcpServer(serverName) {
+  const encodedName = encodeURIComponent(serverName)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/user/mcp/${encodedName}`, {
+    method: 'DELETE'
+  })
+  return response.json()
+}
+
 // Default export with all API functions
 export default {
   BASE_URL,
@@ -654,5 +681,7 @@ export default {
   deleteUserHook,
   // MCP CRUD
   updateProjectMcp,
-  updateUserMcp
+  updateUserMcp,
+  deleteProjectMcpServer,
+  deleteUserMcpServer
 }

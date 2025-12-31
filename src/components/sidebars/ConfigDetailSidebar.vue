@@ -606,9 +606,9 @@
     <!-- Footer with Actions (inline icon buttons) -->
     <template #footer>
       <div class="flex items-center justify-end gap-2">
-        <!-- Delete Button (for agents, commands, skills, and hooks with edit enabled) -->
+        <!-- Delete Button (for agents, commands, skills, hooks, and mcp with edit enabled) -->
         <Button
-          v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand) || (selectedType === 'skills' && canEditSkill) || (selectedType === 'hooks' && canEditHook)"
+          v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand) || (selectedType === 'skills' && canEditSkill) || (selectedType === 'hooks' && canEditHook) || (selectedType === 'mcp' && canEditMcp)"
           @click="handleDelete"
           :disabled="!selectedItem"
           icon="pi pi-trash"
@@ -1178,6 +1178,8 @@ const handleDelete = () => {
     emit('skill-delete', props.selectedItem)
   } else if (canEditHook.value && props.selectedItem) {
     emit('hook-delete', props.selectedItem)
+  } else if (canEditMcp.value && props.selectedItem) {
+    emit('mcp-delete', props.selectedItem)
   }
 }
 
