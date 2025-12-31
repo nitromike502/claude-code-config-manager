@@ -9,13 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- MCP server delete operations with confirmation modal (STORY-7.10)
-- Reference checking for MCP servers (warns about hooks and permissions dependencies)
-- 107 new tests for MCP delete functionality (62 backend, 45 frontend)
-
 ---
-
 
 ## [2.3.1] - 2025-11-28
 
