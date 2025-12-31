@@ -33,6 +33,7 @@
     :selected-index="currentIndex"
     scope="user"
     :enable-agent-crud="true"
+    :enable-command-crud="true"
     :enable-skill-crud="true"
     :enable-hook-crud="true"
     :enable-mcp-crud="true"
@@ -47,6 +48,8 @@
     @copy-clicked="handleCopyClick"
     @agent-delete="handleAgentDelete"
     @agent-updated="handleAgentUpdated"
+    @command-delete="handleCommandDelete"
+    @command-updated="handleCommandUpdated"
     @hook-updated="handleHookUpdated"
     @hook-delete="handleHookDelete"
     @skill-delete="handleSkillDelete"
@@ -73,6 +76,17 @@
     :loading="agentDeleteLoading"
     @confirm="handleAgentDeleteConfirm"
     @cancel="handleAgentDeleteCancel"
+  />
+
+  <!-- Command Delete Confirmation Dialog -->
+  <DeleteConfirmationModal
+    v-model:visible="showCommandDeleteDialog"
+    item-type="command"
+    :item-name="deletingCommand?.name || ''"
+    :dependent-items="commandReferences"
+    :loading="commandDeleteLoading"
+    @confirm="handleCommandDeleteConfirm"
+    @cancel="handleCommandDeleteCancel"
   />
 
   <!-- Skill Delete Confirmation Dialog -->
@@ -118,6 +132,7 @@ import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal
 import { useCopyStore } from '@/stores/copy-store'
 import { useProjectsStore } from '@/stores/projects'
 import { useAgentsStore } from '@/stores/agents'
+import { useCommandsStore } from '@/stores/commands'
 import { useSkillsStore } from '@/stores/skills'
 import { useHooksStore } from '@/stores/hooks'
 import { useMcpStore } from '@/stores/mcp'
@@ -135,6 +150,7 @@ export default {
     const copyStore = useCopyStore()
     const projectsStore = useProjectsStore()
     const agentsStore = useAgentsStore()
+    const commandsStore = useCommandsStore()
     const skillsStore = useSkillsStore()
     const hooksStore = useHooksStore()
     const mcpStore = useMcpStore()
@@ -179,6 +195,12 @@ export default {
     const deletingAgent = ref(null)
     const agentDeleteLoading = ref(false)
     const agentReferences = ref([])
+
+    // Command CRUD state
+    const showCommandDeleteDialog = ref(false)
+    const deletingCommand = ref(null)
+    const commandDeleteLoading = ref(false)
+    const commandReferences = ref([])
 
     // Skill CRUD state
     const showSkillDeleteDialog = ref(false)
@@ -391,6 +413,71 @@ export default {
       showDeleteDialog.value = false
       deletingAgent.value = null
       agentReferences.value = []
+    }
+
+    // Command CRUD handlers
+    const handleCommandDelete = async (command) => {
+      deletingCommand.value = command
+      commandDeleteLoading.value = true
+
+      try {
+        // Get command path for API calls (construct from namespace + name + .md)
+        const commandPath = command.namespace
+          ? `${command.namespace}/${command.name}.md`
+          : `${command.name}.md`
+
+        // Check for references before showing the modal
+        const references = await commandsStore.getCommandReferences(
+          'user',
+          null, // no projectId for user scope
+          commandPath
+        )
+
+        commandReferences.value = references || []
+        showCommandDeleteDialog.value = true
+      } finally {
+        commandDeleteLoading.value = false
+      }
+    }
+
+    const handleCommandDeleteConfirm = async () => {
+      commandDeleteLoading.value = true
+
+      try {
+        // Get command path for API calls (construct from namespace + name + .md)
+        const commandPath = deletingCommand.value.namespace
+          ? `${deletingCommand.value.namespace}/${deletingCommand.value.name}.md`
+          : `${deletingCommand.value.name}.md`
+
+        const result = await commandsStore.deleteCommand(
+          'user',
+          null, // no projectId for user scope
+          commandPath
+        )
+
+        if (result.success) {
+          showCommandDeleteDialog.value = false
+          await loadCommands() // Refresh command list
+
+          // Close sidebar if the deleted command was being viewed
+          if (selectedItem.value?.path === commandPath || selectedItem.value?.name === commandPath) {
+            sidebarVisible.value = false
+          }
+        }
+      } finally {
+        commandDeleteLoading.value = false
+      }
+    }
+
+    const handleCommandDeleteCancel = () => {
+      showCommandDeleteDialog.value = false
+      deletingCommand.value = null
+      commandReferences.value = []
+    }
+
+    const handleCommandUpdated = async () => {
+      // Refresh commands list after update
+      await loadCommands()
     }
 
     // Hook CRUD handlers
@@ -709,6 +796,15 @@ export default {
       handleAgentDelete,
       handleAgentDeleteConfirm,
       handleAgentDeleteCancel,
+      // Command CRUD
+      showCommandDeleteDialog,
+      deletingCommand,
+      commandDeleteLoading,
+      commandReferences,
+      handleCommandUpdated,
+      handleCommandDelete,
+      handleCommandDeleteConfirm,
+      handleCommandDeleteCancel,
       // Hook CRUD
       showHookDeleteDialog,
       deletingHook,
