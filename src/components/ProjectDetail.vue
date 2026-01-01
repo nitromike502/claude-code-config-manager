@@ -595,7 +595,34 @@ export default {
           if (selectedItem.value && hooksStore.buildHookId(selectedItem.value) === hookId) {
             sidebarVisible.value = false
           }
+
+          // Show success toast
+          const eventType = hookId.split('::')[0]
+          toast.add({
+            severity: 'success',
+            summary: 'Hook Deleted',
+            detail: `${eventType} hook has been deleted successfully`,
+            life: 5000
+          })
+        } else {
+          // Handle delete failure
+          toast.add({
+            severity: 'error',
+            summary: 'Delete Failed',
+            detail: result.error || 'Failed to delete hook',
+            life: 0
+          })
+          showHookDeleteDialog.value = false
         }
+      } catch (err) {
+        // Handle unexpected errors
+        toast.add({
+          severity: 'error',
+          summary: 'Delete Failed',
+          detail: err.message || 'An unexpected error occurred',
+          life: 0
+        })
+        showHookDeleteDialog.value = false
       } finally {
         hookDeleteLoading.value = false
       }

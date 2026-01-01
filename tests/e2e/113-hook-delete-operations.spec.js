@@ -706,11 +706,32 @@ test.describe('113.004: Hook Type Variations', () => {
         body: JSON.stringify({ success: true, hooks: mockHooks })
       })
     })
-    await page.route('**/api/projects/testproject/**', async (route) => {
+    await page.route('**/api/projects/testproject/agents', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ success: true, agents: [], commands: [], mcp: [], skills: [] })
+        body: JSON.stringify({ success: true, agents: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/commands', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, commands: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/skills', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/mcp', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, mcp: [] })
       })
     })
 
