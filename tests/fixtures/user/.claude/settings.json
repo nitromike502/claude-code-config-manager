@@ -11,12 +11,27 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git fetch",
+            "enabled": true,
+            "timeout": 60
+          }
+        ]
+      }
     ]
   },
   "mcpServers": {
     "sqlite": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sqlite"],
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sqlite"
+      ],
       "enabled": true
     }
   }

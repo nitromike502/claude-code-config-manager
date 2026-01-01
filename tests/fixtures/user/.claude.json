@@ -9,5 +9,25 @@
     "/home/claude/manager/tests/fixtures/projects/malformed-project": {
       "lastAccessed": "2025-10-10T00:00:00.000Z"
     }
+  },
+  "mcpServers": {
+    "github": {
+      "command": "node",
+      "args": [
+        "server.js"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
+    "new-server": {
+      "command": "node",
+      "args": [
+        "server.js"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
   }
 }

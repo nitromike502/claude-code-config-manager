@@ -19,6 +19,7 @@ describe('CopyService.copySkill()', () => {
   let sourceSkillPath;
   let testProjectPath;
   let testProjectId;
+  let originalHome;
 
   // Valid skill content
   const validSkillContent = `---
@@ -58,6 +59,10 @@ python ~/scripts/helper.py
     // Create temporary directory for test files
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'copy-service-skill-test-'));
 
+    // Save and set HOME environment variable for config module
+    originalHome = process.env.HOME;
+    process.env.HOME = tempDir;
+
     // Create source skill directory
     const sourceDir = path.join(tempDir, 'source', '.claude', 'skills', 'test-skill');
     await fs.mkdir(sourceDir, { recursive: true });
@@ -87,6 +92,8 @@ python ~/scripts/helper.py
   afterEach(async () => {
     // Clean up temp directory
     await fs.rm(tempDir, { recursive: true, force: true });
+    // Restore HOME environment variable
+    process.env.HOME = originalHome;
     jest.clearAllMocks();
     os.homedir.mockRestore();
   });

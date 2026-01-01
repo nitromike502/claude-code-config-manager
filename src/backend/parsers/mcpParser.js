@@ -5,6 +5,7 @@
 
 const fs = require('fs').promises;
 const path = require('path');
+const config = require('../config/config');
 
 /**
  * Parse MCP servers from .mcp.json file
@@ -135,9 +136,9 @@ function detectTransportType(config) {
  * @returns {Promise<Array>} Array of MCP server objects
  */
 async function parseProjectMcpServers(projectPath) {
-  const mcpJsonPath = path.join(projectPath, '.mcp.json');
-  const settingsPath = path.join(projectPath, '.claude', 'settings.json');
-  const localSettingsPath = path.join(projectPath, '.claude', 'settings.local.json');
+  const mcpJsonPath = config.paths.getProjectMcpPath(projectPath);
+  const settingsPath = config.paths.getProjectSettingsPath(projectPath);
+  const localSettingsPath = config.paths.getProjectLocalSettingsPath(projectPath);
 
   const [mcpServers, settingsServers, localServers] = await Promise.all([
     parseMcpJson(mcpJsonPath),
@@ -154,7 +155,7 @@ async function parseProjectMcpServers(projectPath) {
  * @returns {Promise<Array>} Array of MCP server objects
  */
 async function parseUserMcpServers(userHomePath) {
-  const settingsPath = path.join(userHomePath, '.claude', 'settings.json');
+  const settingsPath = config.paths.getUserSettingsPath();
   return parseMcpFromSettings(settingsPath, 'user');
 }
 

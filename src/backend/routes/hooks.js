@@ -28,7 +28,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs').promises;
-const os = require('os');
+const config = require('../config/config.js');
 const { validateHookUpdate, VALID_HOOK_EVENTS, isMatcherBasedEvent } = require('../services/hookValidation');
 
 /**
@@ -90,8 +90,7 @@ function buildHookId(event, matcher, index) {
  * @returns {Promise<string|null>} Project path or null if not found
  */
 async function resolveProjectPath(projectId) {
-  const homeDir = os.homedir();
-  const claudeJsonPath = path.join(homeDir, '.claude.json');
+  const claudeJsonPath = config.paths.getUserClaudeJsonPath();
 
   try {
     const content = await fs.readFile(claudeJsonPath, 'utf8');
@@ -321,7 +320,7 @@ router.put('/:projectId/hooks/:hookId', async (req, res) => {
     }
 
     // Build settings path
-    const settingsPath = path.join(projectPath, '.claude', 'settings.json');
+    const settingsPath = config.paths.getProjectSettingsPath(projectPath);
 
     // Read current settings
     const settings = await readSettingsFile(settingsPath);

@@ -17,6 +17,7 @@
 
 const fs = require('fs').promises;
 const path = require('path');
+const config = require('../config/config');
 
 /**
  * Check for references to an MCP server in configuration files
@@ -144,15 +145,15 @@ async function findAllMcpServerReferences(serverName, configPaths) {
 async function deleteProjectMcpServer(projectPath, serverName) {
   // Define all possible locations (in order of precedence)
   const locations = [
-    path.join(projectPath, '.mcp.json'),
-    path.join(projectPath, '.claude', 'settings.json'),
-    path.join(projectPath, '.claude', 'settings.local.json')
+    config.paths.getProjectMcpPath(projectPath),
+    config.paths.getProjectSettingsPath(projectPath),
+    config.paths.getProjectLocalSettingsPath(projectPath)
   ];
 
   // Check for references in settings files
   const referenceCheckPaths = [
-    path.join(projectPath, '.claude', 'settings.json'),
-    path.join(projectPath, '.claude', 'settings.local.json')
+    config.paths.getProjectSettingsPath(projectPath),
+    config.paths.getProjectLocalSettingsPath(projectPath)
   ];
   const references = await findAllMcpServerReferences(serverName, referenceCheckPaths);
 
@@ -223,7 +224,7 @@ async function deleteProjectMcpServer(projectPath, serverName) {
  * @throws {Error} If server not found or file doesn't exist
  */
 async function deleteUserMcpServer(userHome, serverName) {
-  const claudeJsonPath = path.join(userHome, '.claude.json');
+  const claudeJsonPath = config.paths.getUserClaudeJsonPath();
 
   try {
     // Check if file exists
@@ -236,7 +237,7 @@ async function deleteUserMcpServer(userHome, serverName) {
   }
 
   // Check for references in user settings
-  const userSettingsPath = path.join(userHome, '.claude', 'settings.json');
+  const userSettingsPath = config.paths.getUserSettingsPath();
   const references = await findAllMcpServerReferences(serverName, [userSettingsPath]);
 
   // Read .claude.json file

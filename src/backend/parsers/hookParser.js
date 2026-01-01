@@ -6,6 +6,7 @@
 
 const fs = require('fs').promises;
 const path = require('path');
+const config = require('../config/config');
 
 /**
  * Parse hooks from a settings.json file
@@ -69,8 +70,8 @@ async function parseHooksFromFile(filePath, scope) {
  * @returns {Promise<Array>} Array of hook objects
  */
 async function parseProjectHooks(projectPath) {
-  const settingsPath = path.join(projectPath, '.claude', 'settings.json');
-  const localSettingsPath = path.join(projectPath, '.claude', 'settings.local.json');
+  const settingsPath = config.paths.getProjectSettingsPath(projectPath);
+  const localSettingsPath = config.paths.getProjectLocalSettingsPath(projectPath);
 
   const [projectHooks, localHooks] = await Promise.all([
     parseHooksFromFile(settingsPath, 'project'),
@@ -86,7 +87,7 @@ async function parseProjectHooks(projectPath) {
  * @returns {Promise<Array>} Array of hook objects
  */
 async function parseUserHooks(userHomePath) {
-  const settingsPath = path.join(userHomePath, '.claude', 'settings.json');
+  const settingsPath = config.paths.getUserSettingsPath();
   return parseHooksFromFile(settingsPath, 'user');
 }
 

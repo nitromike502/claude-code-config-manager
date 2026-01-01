@@ -89,8 +89,16 @@ const mockProjectsCache = {
 };
 
 describe('Hook DELETE API Routes', () => {
+  let originalHome;
+
   beforeEach(async () => {
     jest.clearAllMocks();
+
+    // Store original HOME for cleanup
+    originalHome = process.env.HOME;
+
+    // Set HOME for config module to use correct paths
+    process.env.HOME = TEST_HOME_DIR;
 
     // Default mock for os.homedir
     os.homedir.mockReturnValue(TEST_HOME_DIR);
@@ -114,6 +122,11 @@ describe('Hook DELETE API Routes', () => {
       success: true,
       deleted: 'PreToolUse::Bash::0'
     });
+  });
+
+  afterEach(() => {
+    // Restore original HOME
+    process.env.HOME = originalHome;
   });
 
   describe('DELETE /api/projects/:projectId/hooks/:hookId', () => {
@@ -377,6 +390,8 @@ describe('Hook DELETE API Routes', () => {
       });
 
       test('should handle user home directory correctly', async () => {
+        // Set both process.env.HOME and os.homedir mock for config module
+        process.env.HOME = '/custom/home';
         os.homedir.mockReturnValue('/custom/home');
 
         const hookId = encodeURIComponent('SessionEnd::::0');

@@ -18,6 +18,7 @@ describe('CopyService.copyMcp()', () => {
   let tempDir;
   let testProjectPath;
   let testProjectId;
+  let originalHome;
 
   // Valid MCP server configuration
   const validMcpConfig = {
@@ -31,6 +32,10 @@ describe('CopyService.copyMcp()', () => {
   beforeEach(async () => {
     // Create temporary directory for test files
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'copy-service-mcp-test-'));
+
+    // Save and set HOME environment variable for config module
+    originalHome = process.env.HOME;
+    process.env.HOME = tempDir;
 
     // Create test project
     testProjectPath = path.join(tempDir, 'test-project');
@@ -54,6 +59,8 @@ describe('CopyService.copyMcp()', () => {
   afterEach(async () => {
     // Clean up temp directory
     await fs.rm(tempDir, { recursive: true, force: true });
+    // Restore HOME environment variable
+    process.env.HOME = originalHome;
     jest.clearAllMocks();
     os.homedir.mockRestore();
   });

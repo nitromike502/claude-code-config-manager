@@ -3,6 +3,7 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
+const config = require('../config/config.js');
 const {
   getUserAgents,
   getUserCommands,
@@ -167,9 +168,8 @@ router.put('/hooks/:hookId', async (req, res) => {
       });
     }
 
-    // Get user home directory
-    const userHome = getUserHome();
-    const settingsPath = path.join(userHome, '.claude', 'settings.json');
+    // Get user settings path
+    const settingsPath = config.paths.getUserSettingsPath();
 
     // Read current settings
     let settings = { hooks: {} };
@@ -370,9 +370,8 @@ router.delete('/hooks/:hookId', async (req, res) => {
     // Decode hookId (URL-encoded, contains :: separator)
     const decodedHookId = decodeURIComponent(hookId);
 
-    // Get user home directory
-    const userHome = getUserHome();
-    const settingsPath = path.join(userHome, '.claude', 'settings.json');
+    // Get user settings path
+    const settingsPath = config.paths.getUserSettingsPath();
 
     // Delete the hook using deleteService
     await deleteHook(decodedHookId, settingsPath);
@@ -462,9 +461,8 @@ router.put('/agents/:agentName', validateAgentName, async (req, res) => {
     const { agentName } = req.params;
     const updates = req.body;
 
-    // Get user home directory
-    const userHome = getUserHome();
-    const agentFilePath = path.join(userHome, '.claude', 'agents', `${agentName}.md`);
+    // Get user agent file path
+    const agentFilePath = path.join(config.paths.getUserAgentsDir(), `${agentName}.md`);
 
     // Check if agent file exists
     try {
@@ -602,7 +600,7 @@ router.put('/agents/:agentName', validateAgentName, async (req, res) => {
 
     // Handle rename if name changed
     if (updates.name && updates.name !== agentName) {
-      const newFilePath = path.join(userHome, '.claude', 'agents', `${updates.name}.md`);
+      const newFilePath = path.join(config.paths.getUserAgentsDir(), `${updates.name}.md`);
 
       try {
         await fs.access(newFilePath);
@@ -620,7 +618,7 @@ router.put('/agents/:agentName', validateAgentName, async (req, res) => {
 
     // Re-read the updated agent to return
     const finalPath = updates.name && updates.name !== agentName
-      ? path.join(userHome, '.claude', 'agents', `${updates.name}.md`)
+      ? path.join(config.paths.getUserAgentsDir(), `${updates.name}.md`)
       : agentFilePath;
 
     const updatedAgent = await parseSubagent(finalPath, 'user');
@@ -647,8 +645,7 @@ router.delete('/agents/:agentName', validateAgentName, async (req, res) => {
   try {
     const { agentName } = req.params;
 
-    const userHome = getUserHome();
-    const agentFilePath = path.join(userHome, '.claude', 'agents', `${agentName}.md`);
+    const agentFilePath = path.join(config.paths.getUserAgentsDir(), `${agentName}.md`);
 
     await deleteFile(agentFilePath);
 
@@ -680,12 +677,12 @@ router.delete('/agents/:agentName', validateAgentName, async (req, res) => {
 router.get('/agents/:agentName/references', validateAgentName, async (req, res) => {
   try {
     const { agentName } = req.params;
-    const userHome = getUserHome();
 
     // For user agents, we check references in the user's .claude directory
-    const userClaudeDir = path.join(userHome, '.claude');
+    const userClaudeDir = config.paths.getUserClaudeDir();
 
     // findReferences expects a project path, but for user-level, we pass the parent of .claude
+    const userHome = getUserHome();
     const references = await findReferences('agent', agentName, userHome);
 
     res.json({
@@ -757,9 +754,8 @@ router.put('/commands/:commandPath', validateCommandPath, async (req, res) => {
     const commandPath = req.decodedCommandPath; // Use decoded path from middleware
     const updates = req.body;
 
-    // Get user home directory
-    const userHome = getUserHome();
-    const commandFilePath = path.join(userHome, '.claude', 'commands', commandPath);
+    // Get user command file path
+    const commandFilePath = path.join(config.paths.getUserCommandsDir(), commandPath);
 
     // Check if command file exists
     try {
@@ -917,7 +913,7 @@ router.put('/commands/:commandPath', validateCommandPath, async (req, res) => {
 
     // Handle rename if name changed
     if (updates.name && updates.name !== commandPath) {
-      const newFilePath = path.join(userHome, '.claude', 'commands', updates.name);
+      const newFilePath = path.join(config.paths.getUserCommandsDir(), updates.name);
       const newDir = path.dirname(newFilePath);
 
       // Create directory if it doesn't exist (for nested paths)
@@ -939,11 +935,11 @@ router.put('/commands/:commandPath', validateCommandPath, async (req, res) => {
 
     // Re-read the updated command to return
     const finalPath = updates.name && updates.name !== commandPath
-      ? path.join(userHome, '.claude', 'commands', updates.name)
+      ? path.join(config.paths.getUserCommandsDir(), updates.name)
       : commandFilePath;
 
     const { parseCommand } = require('../parsers/commandParser');
-    const baseDir = path.join(userHome, '.claude', 'commands');
+    const baseDir = config.paths.getUserCommandsDir();
     const updatedCommand = await parseCommand(finalPath, baseDir, 'user');
 
     res.json({
@@ -968,8 +964,7 @@ router.delete('/commands/:commandPath', validateCommandPath, async (req, res) =>
   try {
     const commandPath = req.decodedCommandPath; // Use decoded path from middleware
 
-    const userHome = getUserHome();
-    const commandFilePath = path.join(userHome, '.claude', 'commands', commandPath);
+    const commandFilePath = path.join(config.paths.getUserCommandsDir(), commandPath);
 
     await deleteFile(commandFilePath);
 
@@ -1001,13 +996,13 @@ router.delete('/commands/:commandPath', validateCommandPath, async (req, res) =>
 router.get('/commands/:commandPath/references', validateCommandPath, async (req, res) => {
   try {
     const commandPath = req.decodedCommandPath; // Use decoded path from middleware
-    const userHome = getUserHome();
 
     // Extract command name (without .md extension) for reference checking
     const commandName = path.basename(commandPath, '.md');
 
     // For user commands, we check references in the user's .claude directory
     // findReferences expects a project path, but for user-level, we pass the parent of .claude
+    const userHome = getUserHome();
     const references = await findReferences('command', commandName, userHome);
 
     res.json({
@@ -1072,11 +1067,8 @@ router.put('/skills/:skillName', validateSkillName, async (req, res) => {
     const { skillName } = req.params;
     const updates = req.body;
 
-    // Get user home directory
-    const userHome = getUserHome();
-
     // Construct SKILL.md file path
-    const skillDirPath = path.join(userHome, '.claude', 'skills', skillName);
+    const skillDirPath = path.join(config.paths.getUserSkillsDir(), skillName);
     const skillFilePath = path.join(skillDirPath, 'SKILL.md');
 
     // Check if SKILL.md exists
@@ -1242,8 +1234,7 @@ router.delete('/skills/:skillName', validateSkillName, async (req, res) => {
   try {
     const { skillName } = req.params;
 
-    const userHome = getUserHome();
-    const skillDirPath = path.join(userHome, '.claude', 'skills', skillName);
+    const skillDirPath = path.join(config.paths.getUserSkillsDir(), skillName);
 
     // Delete the directory (deleteDirectory will validate it exists and is a directory)
     await deleteDirectory(skillDirPath);
@@ -1291,10 +1282,8 @@ router.delete('/mcp/:serverName', async (req, res) => {
       });
     }
 
-    // Get user home directory
+    // Delete MCP server using deleteMcpService (service handles path construction)
     const userHome = getUserHome();
-
-    // Delete MCP server using deleteMcpService
     const result = await deleteUserMcpServer(userHome, decodedName);
 
     const response = {

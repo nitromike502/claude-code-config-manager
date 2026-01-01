@@ -19,7 +19,13 @@ const { discoverProjects } = require('../../../src/backend/services/projectDisco
 const copyService = require('../../../src/backend/services/copy-service');
 
 describe('CopyService - buildTargetPath()', () => {
+  let originalHome;
+
   beforeEach(() => {
+    // Save and mock HOME environment variable for config module
+    originalHome = process.env.HOME;
+    process.env.HOME = os.homedir();
+
     // Mock discoverProjects for project scope tests
     discoverProjects.mockResolvedValue({
       projects: {
@@ -43,6 +49,11 @@ describe('CopyService - buildTargetPath()', () => {
 
     // Reset all mocks
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    // Restore HOME environment variable
+    process.env.HOME = originalHome;
   });
 
   describe('Parameter Validation', () => {

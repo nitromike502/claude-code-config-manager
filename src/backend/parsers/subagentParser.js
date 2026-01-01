@@ -6,6 +6,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const matter = require('gray-matter');
+const config = require('../config/config');
 
 /**
  * Parse a single subagent markdown file
@@ -112,8 +113,8 @@ async function parseAllSubagents(directoryPath, scope = 'project') {
  * @returns {Promise<Object>} Object with project and user subagent arrays
  */
 async function getAllSubagents(projectPath, userHomePath) {
-  const projectAgentsPath = path.join(projectPath, '.claude', 'agents');
-  const userAgentsPath = path.join(userHomePath, '.claude', 'agents');
+  const projectAgentsPath = config.paths.getProjectAgentsDir(projectPath);
+  const userAgentsPath = config.paths.getUserAgentsDir();
 
   const [projectAgents, userAgents] = await Promise.all([
     parseAllSubagents(projectAgentsPath, 'project'),

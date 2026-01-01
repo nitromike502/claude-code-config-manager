@@ -27,8 +27,12 @@ const {
 
 describe('deleteMcpService', () => {
   let accessSpy, readFileSpy, writeFileSpy, renameSpy;
+  let originalHome;
 
   beforeEach(() => {
+    // Store original HOME for cleanup
+    originalHome = process.env.HOME;
+
     accessSpy = jest.spyOn(fs, 'access');
     readFileSpy = jest.spyOn(fs, 'readFile');
     writeFileSpy = jest.spyOn(fs, 'writeFile');
@@ -36,6 +40,9 @@ describe('deleteMcpService', () => {
   });
 
   afterEach(() => {
+    // Restore original HOME
+    process.env.HOME = originalHome;
+
     accessSpy.mockRestore();
     readFileSpy.mockRestore();
     writeFileSpy.mockRestore();
@@ -649,6 +656,11 @@ describe('deleteMcpService', () => {
     const userHome = '/home/user';
     const claudeJsonPath = '/home/user/.claude.json';
     const userSettingsPath = '/home/user/.claude/settings.json';
+
+    beforeEach(() => {
+      // Set HOME for config module to use correct paths
+      process.env.HOME = userHome;
+    });
 
     describe('Success Cases', () => {
       test('should delete MCP server from ~/.claude.json', async () => {

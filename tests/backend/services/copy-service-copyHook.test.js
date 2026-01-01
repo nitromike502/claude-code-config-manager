@@ -18,10 +18,16 @@ describe('CopyService.copyHook()', () => {
   let tempDir;
   let testProjectPath;
   let testProjectId;
+  let originalHome;
 
   beforeEach(async () => {
     // Create temporary directory for test files
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'copy-service-hook-test-'));
+
+    // Save and set HOME environment variable for config module
+    originalHome = process.env.HOME;
+    process.env.HOME = tempDir;
+
     testProjectPath = path.join(tempDir, 'test-project');
     testProjectId = 'testproject';
 
@@ -42,6 +48,8 @@ describe('CopyService.copyHook()', () => {
   afterEach(async () => {
     // Clean up temp directory
     await fs.rm(tempDir, { recursive: true, force: true });
+    // Restore HOME environment variable
+    process.env.HOME = originalHome;
     jest.clearAllMocks();
   });
 

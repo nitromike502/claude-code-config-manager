@@ -7,6 +7,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const matter = require('gray-matter');
+const config = require('../config/config');
 
 /**
  * Parse a single command markdown file
@@ -163,8 +164,8 @@ async function parseAllCommands(directoryPath, scope = 'project') {
  * @returns {Promise<Object>} Object with project and user command arrays
  */
 async function getAllCommands(projectPath, userHomePath) {
-  const projectCommandsPath = path.join(projectPath, '.claude', 'commands');
-  const userCommandsPath = path.join(userHomePath, '.claude', 'commands');
+  const projectCommandsPath = config.paths.getProjectCommandsDir(projectPath);
+  const userCommandsPath = config.paths.getUserCommandsDir();
 
   const [projectCommands, userCommands] = await Promise.all([
     parseAllCommands(projectCommandsPath, 'project'),
