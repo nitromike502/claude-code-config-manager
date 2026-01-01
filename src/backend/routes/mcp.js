@@ -7,7 +7,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs').promises;
-const os = require('os');
+const config = require('../config/config.js');
 const { validateMcpUpdate, VALID_TRANSPORT_TYPES } = require('../services/mcpValidation');
 const { discoverProjects } = require('../services/projectDiscovery');
 
@@ -115,15 +115,15 @@ router.put('/:projectId/mcp/:serverName', async (req, res) => {
     }
 
     // 3. Read .mcp.json
-    const mcpPath = path.join(projectPath, '.mcp.json');
-    const config = await readMcpFile(mcpPath);
+    const mcpPath = config.paths.getProjectMcpPath(projectPath);
+    const mcpConfig = await readMcpFile(mcpPath);
 
     // 4. Find server
-    if (!config.mcpServers || !config.mcpServers[decodedName]) {
+    if (!mcpConfig.mcpServers || !mcpConfig.mcpServers[decodedName]) {
       return res.status(404).json({ success: false, error: 'MCP server not found' });
     }
 
-    const existingServer = config.mcpServers[decodedName];
+    const existingServer = mcpConfig.mcpServers[decodedName];
 
     // 5. Validate updates
     const validation = validateMcpUpdate(updates, existingServer);
@@ -139,14 +139,14 @@ router.put('/:projectId/mcp/:serverName', async (req, res) => {
     let finalName = decodedName;
     if (updates.name && updates.name !== decodedName) {
       // Check if new name already exists
-      if (config.mcpServers[updates.name]) {
+      if (mcpConfig.mcpServers[updates.name]) {
         return res.status(409).json({
           success: false,
           error: 'Server name already exists'
         });
       }
       // Remove old key, will add with new name
-      delete config.mcpServers[decodedName];
+      delete mcpConfig.mcpServers[decodedName];
       finalName = updates.name;
     }
 
@@ -172,8 +172,8 @@ router.put('/:projectId/mcp/:serverName', async (req, res) => {
     }
 
     // 9. Save
-    config.mcpServers[finalName] = updatedServer;
-    await writeMcpFile(mcpPath, config);
+    mcpConfig.mcpServers[finalName] = updatedServer;
+    await writeMcpFile(mcpPath, mcpConfig);
 
     // 10. Return success
     res.json({
@@ -209,8 +209,7 @@ userRouter.put('/mcp/:serverName', async (req, res) => {
     const decodedName = decodeURIComponent(serverName);
 
     // 2. User config path - MCP servers are in ~/.claude.json, not settings.json
-    const homeDir = os.homedir();
-    const claudeJsonPath = path.join(homeDir, '.claude.json');
+    const claudeJsonPath = config.paths.getUserClaudeJsonPath();
 
     // 3. Read claude.json file
     const settings = await readSettingsFile(claudeJsonPath);

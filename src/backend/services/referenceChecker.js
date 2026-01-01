@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs').promises;
+const config = require('../config/config');
 
 /**
  * ReferenceChecker - Finds references to configuration items across project
@@ -123,12 +124,12 @@ async function findReferences(itemType, itemName, projectPath) {
   }
 
   // Define scan locations
-  const claudeDir = path.join(projectPath, '.claude');
+  const claudeDir = config.paths.getProjectClaudeDir(projectPath);
   const scanTasks = [];
   const references = [];
 
-  // Timeout protection (5 seconds)
-  const timeout = 5000;
+  // Timeout protection (use config timeout)
+  const timeout = config.timeouts.REFERENCE_CHECK_TIMEOUT;
   let timedOut = false;
 
   const timeoutPromise = new Promise((resolve) => {
@@ -145,7 +146,7 @@ async function findReferences(itemType, itemName, projectPath) {
 
   try {
     // Scan .claude/agents/*.md
-    const agentFiles = await scanDirectory(path.join(claudeDir, 'agents'), '.md');
+    const agentFiles = await scanDirectory(config.paths.getProjectAgentsDir(projectPath), '.md');
     for (const filePath of agentFiles) {
       // Skip self-reference for agents
       if (itemType === 'agent' && path.basename(filePath) === selfFileName) {
@@ -167,7 +168,7 @@ async function findReferences(itemType, itemName, projectPath) {
     }
 
     // Scan .claude/commands/**/*.md (recursive)
-    const commandFiles = await scanDirectory(path.join(claudeDir, 'commands'), '.md');
+    const commandFiles = await scanDirectory(config.paths.getProjectCommandsDir(projectPath), '.md');
     for (const filePath of commandFiles) {
       scanTasks.push(
         searchFileForReferences(filePath, itemName).then(lines => {
@@ -184,7 +185,7 @@ async function findReferences(itemType, itemName, projectPath) {
     }
 
     // Scan .claude/skills/*/SKILL.md
-    const skillsDir = path.join(claudeDir, 'skills');
+    const skillsDir = config.paths.getProjectSkillsDir(projectPath);
     try {
       await fs.access(skillsDir, fs.constants.F_OK);
       const skillDirs = await fs.readdir(skillsDir, { withFileTypes: true });
@@ -211,7 +212,7 @@ async function findReferences(itemType, itemName, projectPath) {
     }
 
     // Scan .claude/settings.json (hooks)
-    const settingsPath = path.join(claudeDir, 'settings.json');
+    const settingsPath = config.paths.getProjectSettingsPath(projectPath);
     scanTasks.push(
       searchFileForReferences(settingsPath, itemName).then(lines => {
         if (lines.length > 0) {
@@ -226,7 +227,7 @@ async function findReferences(itemType, itemName, projectPath) {
     );
 
     // Scan .mcp.json (MCP servers)
-    const mcpPath = path.join(projectPath, '.mcp.json');
+    const mcpPath = config.paths.getProjectMcpPath(projectPath);
     scanTasks.push(
       searchFileForReferences(mcpPath, itemName).then(lines => {
         if (lines.length > 0) {

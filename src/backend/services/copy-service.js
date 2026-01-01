@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs').promises;
-const os = require('os');
+const config = require('../config/config.js');
 const { discoverProjects } = require('./projectDiscovery');
 
 /**
@@ -142,7 +142,7 @@ class CopyService {
 
     if (targetScope === 'user') {
       // User scope: ~/.claude/
-      basePath = path.join(os.homedir(), '.claude');
+      basePath = config.paths.getUserClaudeDir();
     } else {
       // Project scope: need to resolve projectId to project path
       const projectsResult = await discoverProjects();
@@ -156,7 +156,7 @@ class CopyService {
         throw new Error(`Project directory does not exist: ${projectData.path}`);
       }
 
-      basePath = path.join(projectData.path, '.claude');
+      basePath = config.paths.getProjectClaudeDir(projectData.path);
     }
 
     // Build target path based on config type
@@ -201,10 +201,12 @@ class CopyService {
         // NOTE: copyMcp() has its own path logic and doesn't use buildTargetPath
         if (targetScope === 'user') {
           // User MCP servers are stored in ~/.claude.json, not ~/.claude/settings.json
-          targetPath = path.join(os.homedir(), '.claude.json');
+          targetPath = config.paths.getUserClaudeJsonPath();
         } else {
           // For project scope, use .mcp.json
-          targetPath = path.join(basePath.replace(path.sep + '.claude', ''), '.mcp.json');
+          // Extract project path from basePath
+          const projectPath = path.dirname(basePath);
+          targetPath = config.paths.getProjectMcpPath(projectPath);
         }
         break;
 
@@ -838,7 +840,7 @@ class CopyService {
       if (targetScope === 'user') {
         // User scope: ~/.claude.json (root-level mcpServers key)
         // Note: User MCP servers are stored in ~/.claude.json, NOT ~/.claude/settings.json
-        targetPath = path.join(os.homedir(), '.claude.json');
+        targetPath = config.paths.getUserClaudeJsonPath();
       } else if (targetScope === 'project') {
         // Project scope: Always use .mcp.json (create if doesn't exist)
         if (!targetProjectId) {
@@ -846,7 +848,7 @@ class CopyService {
         }
 
         const projectPath = await this.getProjectPath(targetProjectId);
-        targetPath = path.join(projectPath, '.mcp.json');
+        targetPath = config.paths.getProjectMcpPath(projectPath);
       } else {
         throw new Error(`Invalid targetScope: must be 'project' or 'user'`);
       }
@@ -1085,11 +1087,11 @@ class CopyService {
       let targetSkillDir;
 
       if (request.targetScope === 'user') {
-        targetSkillDir = path.join(os.homedir(), '.claude', 'skills', skillName);
+        targetSkillDir = path.join(config.paths.getUserSkillsDir(), skillName);
       } else {
         // Project scope
         const projectPath = await this.getProjectPath(request.targetProjectId);
-        targetSkillDir = path.join(projectPath, '.claude', 'skills', skillName);
+        targetSkillDir = path.join(config.paths.getProjectSkillsDir(projectPath), skillName);
       }
 
       // 7. Detect conflict (target directory already exists)

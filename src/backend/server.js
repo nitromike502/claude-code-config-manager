@@ -1,10 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const config = require('./config/config');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 8420;
+const PORT = config.server.getBackendPort();
 
 // Global security middleware: Prevent path traversal attacks
 // Note: Express normalizes paths before middleware runs, so this catches encoded traversal (%2F)

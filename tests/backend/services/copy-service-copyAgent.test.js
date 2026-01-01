@@ -19,6 +19,7 @@ describe('CopyService.copyAgent()', () => {
   let sourceAgentPath;
   let testProjectPath;
   let testProjectId;
+  let originalHome;
 
   // Valid agent content
   const validAgentContent = `---
@@ -37,6 +38,10 @@ This is a test agent for copy service testing.
   beforeEach(async () => {
     // Create temporary directory for test files
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'copy-service-agent-test-'));
+
+    // Save and set HOME environment variable for config module
+    originalHome = process.env.HOME;
+    process.env.HOME = tempDir;
 
     // Create source agent file
     const sourceDir = path.join(tempDir, 'source', '.claude', 'agents');
@@ -66,6 +71,8 @@ This is a test agent for copy service testing.
   afterEach(async () => {
     // Clean up temp directory
     await fs.rm(tempDir, { recursive: true, force: true });
+    // Restore HOME environment variable
+    process.env.HOME = originalHome;
     jest.clearAllMocks();
     os.homedir.mockRestore();
   });

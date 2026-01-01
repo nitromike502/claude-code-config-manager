@@ -18,6 +18,7 @@ const { deleteProjectMcpServer } = require('../services/deleteMcpService');
 const { findReferences } = require('../services/referenceChecker');
 const { parseSubagent } = require('../parsers/subagentParser');
 const { parseSkill } = require('../parsers/skillParser');
+const config = require('../config/config.js');
 
 // Cache for projects (refreshed on scan)
 let projectsCache = null;
@@ -417,7 +418,7 @@ router.put('/:projectId/skills/:skillName', validateProjectId, validateSkillName
     }
 
     // Construct SKILL.md file path
-    const skillDirPath = path.join(projectPath, '.claude', 'skills', skillName);
+    const skillDirPath = path.join(config.paths.getProjectSkillsDir(projectPath), skillName);
     const skillFilePath = path.join(skillDirPath, 'SKILL.md');
 
     // Check if SKILL.md exists
@@ -678,7 +679,7 @@ router.put('/:projectId/agents/:agentName', validateProjectId, validateAgentName
     }
 
     // Construct agent file path
-    const agentFilePath = path.join(projectPath, '.claude', 'agents', `${agentName}.md`);
+    const agentFilePath = path.join(config.paths.getProjectAgentsDir(projectPath), `${agentName}.md`);
 
     // Check if agent file exists
     try {
@@ -821,7 +822,7 @@ router.put('/:projectId/agents/:agentName', validateProjectId, validateAgentName
 
     // Handle rename if name changed
     if (updates.name && updates.name !== agentName) {
-      const newFilePath = path.join(projectPath, '.claude', 'agents', `${updates.name}.md`);
+      const newFilePath = path.join(config.paths.getProjectAgentsDir(projectPath), `${updates.name}.md`);
 
       // Check if new name already exists
       try {
@@ -840,7 +841,7 @@ router.put('/:projectId/agents/:agentName', validateProjectId, validateAgentName
 
     // Re-read the updated agent to return
     const finalPath = updates.name && updates.name !== agentName
-      ? path.join(projectPath, '.claude', 'agents', `${updates.name}.md`)
+      ? path.join(config.paths.getProjectAgentsDir(projectPath), `${updates.name}.md`)
       : agentFilePath;
 
     const updatedAgent = await parseSubagent(finalPath, 'project');
@@ -874,7 +875,7 @@ router.delete('/:projectId/agents/:agentName', validateProjectId, validateAgentN
     }
 
     // Construct agent file path
-    const agentFilePath = path.join(projectPath, '.claude', 'agents', `${agentName}.md`);
+    const agentFilePath = path.join(config.paths.getProjectAgentsDir(projectPath), `${agentName}.md`);
 
     // Delete the file
     await deleteFile(agentFilePath);
@@ -1005,7 +1006,7 @@ router.put('/:projectId/commands/:commandPath(.*)', validateProjectId, validateC
     }
 
     // Construct command file path
-    const commandFilePath = path.join(projectPath, '.claude', 'commands', commandPath);
+    const commandFilePath = path.join(config.paths.getProjectCommandsDir(projectPath), commandPath);
 
     // Check if command file exists
     try {
@@ -1168,7 +1169,7 @@ router.put('/:projectId/commands/:commandPath(.*)', validateProjectId, validateC
 
     // Handle rename if name changed
     if (updates.name && updates.name !== commandPath) {
-      const newFilePath = path.join(projectPath, '.claude', 'commands', updates.name);
+      const newFilePath = path.join(config.paths.getProjectCommandsDir(projectPath), updates.name);
       const newDir = path.dirname(newFilePath);
 
       // Create directory if it doesn't exist (for nested paths)
@@ -1191,11 +1192,11 @@ router.put('/:projectId/commands/:commandPath(.*)', validateProjectId, validateC
 
     // Re-read the updated command to return
     const finalPath = updates.name && updates.name !== commandPath
-      ? path.join(projectPath, '.claude', 'commands', updates.name)
+      ? path.join(config.paths.getProjectCommandsDir(projectPath), updates.name)
       : commandFilePath;
 
     const { parseCommand } = require('../parsers/commandParser');
-    const baseDir = path.join(projectPath, '.claude', 'commands');
+    const baseDir = config.paths.getProjectCommandsDir(projectPath);
     const updatedCommand = await parseCommand(finalPath, baseDir, 'project');
 
     res.json({
@@ -1228,7 +1229,7 @@ router.delete('/:projectId/commands/:commandPath(.*)', validateProjectId, valida
     }
 
     // Construct command file path
-    const commandFilePath = path.join(projectPath, '.claude', 'commands', commandPath);
+    const commandFilePath = path.join(config.paths.getProjectCommandsDir(projectPath), commandPath);
 
     // Delete the file
     await deleteFile(commandFilePath);
@@ -1312,7 +1313,7 @@ router.delete('/:projectId/skills/:skillName', validateProjectId, validateSkillN
     }
 
     // Construct skill directory path
-    const skillDirPath = path.join(projectPath, '.claude', 'skills', skillName);
+    const skillDirPath = path.join(config.paths.getProjectSkillsDir(projectPath), skillName);
 
     // Delete the directory (deleteDirectory will validate it exists and is a directory)
     await deleteDirectory(skillDirPath);
@@ -1372,7 +1373,7 @@ router.delete('/:projectId/hooks/:hookId', validateProjectId, async (req, res) =
     }
 
     // Construct settings.json path
-    const settingsPath = path.join(projectPath, '.claude', 'settings.json');
+    const settingsPath = config.paths.getProjectSettingsPath(projectPath);
 
     // Delete the hook using deleteService
     await deleteHook(decodedHookId, settingsPath);

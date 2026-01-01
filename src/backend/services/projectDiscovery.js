@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs').promises;
-const { expandHome, pathToProjectId, isValidDirectory } = require('../utils/pathUtils');
+const config = require('../config/config.js');
+const { pathToProjectId, isValidDirectory } = require('../utils/pathUtils');
 const { readJSON, exists, listFiles, listFilesRecursive, readMarkdownWithFrontmatter } = require('./fileReader');
 
 /**
@@ -8,12 +9,12 @@ const { readJSON, exists, listFiles, listFilesRecursive, readMarkdownWithFrontma
  * @returns {Promise<Object>} Map of projectId -> projectData
  */
 async function discoverProjects() {
-  const claudeJsonPath = expandHome('~/.claude.json');
+  const claudeJsonPath = config.paths.getUserClaudeJsonPath();
 
   try {
-    const config = await readJSON(claudeJsonPath);
+    const claudeConfig = await readJSON(claudeJsonPath);
 
-    if (!config || !config.projects) {
+    if (!claudeConfig || !claudeConfig.projects) {
       return {
         projects: {},
         error: null
@@ -23,8 +24,8 @@ async function discoverProjects() {
     // Build projects map with validation
     const projects = {};
 
-    for (const projectPath of Object.keys(config.projects)) {
-      const expandedPath = expandHome(projectPath);
+    for (const projectPath of Object.keys(claudeConfig.projects)) {
+      const expandedPath = config.paths.expandHome(projectPath);
       const isValid = await isValidDirectory(expandedPath);
       const projectId = pathToProjectId(expandedPath);
 
@@ -33,7 +34,7 @@ async function discoverProjects() {
         path: expandedPath,
         name: path.basename(expandedPath),
         exists: isValid,
-        config: config.projects[projectPath]
+        config: claudeConfig.projects[projectPath]
       };
     }
 
@@ -55,7 +56,7 @@ async function discoverProjects() {
  * @returns {Promise<Object>} Object with agents array and warnings array
  */
 async function getProjectAgents(projectPath) {
-  const agentsDir = path.join(projectPath, '.claude', 'agents');
+  const agentsDir = config.paths.getProjectAgentsDir(projectPath);
 
   try {
     const files = await listFiles(agentsDir);
@@ -131,7 +132,7 @@ async function getProjectAgents(projectPath) {
  * @returns {Promise<Object>} Object with commands array and warnings array
  */
 async function getProjectCommands(projectPath) {
-  const commandsDir = path.join(projectPath, '.claude', 'commands');
+  const commandsDir = config.paths.getProjectCommandsDir(projectPath);
 
   try {
     const files = await listFilesRecursive(commandsDir);
@@ -211,8 +212,8 @@ async function getProjectCommands(projectPath) {
 
 /**
  * Valid Claude Code hook events per official specification
- * @see https://docs.claude.com/en/docs/claude-code/hooks
- * @see https://json.schemastore.org/claude-code-settings.json
+ * @see config.urls.DOCS_HOOKS
+ * @see config.urls.SCHEMA_SETTINGS
  */
 const VALID_HOOK_EVENTS = [
   'PreToolUse', 'PostToolUse', 'UserPromptSubmit',
@@ -223,8 +224,8 @@ const VALID_HOOK_EVENTS = [
 /**
  * Hook events that support matchers (can filter by tool name)
  * Only PreToolUse and PostToolUse support the matcher field per official specification
- * @see https://docs.claude.com/en/docs/claude-code/hooks
- * @see https://json.schemastore.org/claude-code-settings.json
+ * @see config.urls.DOCS_HOOKS
+ * @see config.urls.SCHEMA_SETTINGS
  */
 const MATCHER_EVENTS = ['PreToolUse', 'PostToolUse'];
 
@@ -234,8 +235,8 @@ const MATCHER_EVENTS = ['PreToolUse', 'PostToolUse'];
  * @returns {Promise<Object>} Object with hooks array and warnings array
  */
 async function getProjectHooks(projectPath) {
-  const settingsPath = path.join(projectPath, '.claude', 'settings.json');
-  const localSettingsPath = path.join(projectPath, '.claude', 'settings.local.json');
+  const settingsPath = config.paths.getProjectSettingsPath(projectPath);
+  const localSettingsPath = config.paths.getProjectLocalSettingsPath(projectPath);
 
   const hooks = [];
   const warnings = [];
@@ -261,7 +262,7 @@ async function getProjectHooks(projectPath) {
               error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://docs.claude.com/en/docs/claude-code/hooks for valid event names'
+              helpText: `See ${config.urls.DOCS_HOOKS} for valid event names`
             });
             continue;
           }
@@ -276,7 +277,7 @@ async function getProjectHooks(projectPath) {
               error: `Hook event "${event}" must be an array of hook objects, got ${typeof matchers}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://json.schemastore.org/claude-code-settings.json for valid format'
+              helpText: `See ${config.urls.SCHEMA_SETTINGS} for valid format`
             });
             continue;
           }
@@ -440,7 +441,7 @@ async function getProjectHooks(projectPath) {
               error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://docs.claude.com/en/docs/claude-code/hooks for valid event names'
+              helpText: `See ${config.urls.DOCS_HOOKS} for valid event names`
             });
             continue;
           }
@@ -455,7 +456,7 @@ async function getProjectHooks(projectPath) {
               error: `Hook event "${event}" must be an array of hook objects, got ${typeof matchers}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://json.schemastore.org/claude-code-settings.json for valid format'
+              helpText: `See ${config.urls.SCHEMA_SETTINGS} for valid format`
             });
             continue;
           }
@@ -610,7 +611,7 @@ async function getProjectHooks(projectPath) {
  * @returns {Promise<Object>} Object with mcp array and warnings array
  */
 async function getProjectMCP(projectPath) {
-  const mcpPath = path.join(projectPath, '.mcp.json');
+  const mcpPath = config.paths.getProjectMcpPath(projectPath);
 
   const mcp = [];
   const warnings = [];
@@ -658,7 +659,7 @@ async function getProjectMCP(projectPath) {
  * @returns {Promise<Object>} Object with agents array and warnings array
  */
 async function getUserAgents() {
-  const agentsDir = expandHome('~/.claude/agents');
+  const agentsDir = config.paths.getUserAgentsDir();
 
   try {
     const files = await listFiles(agentsDir);
@@ -733,7 +734,7 @@ async function getUserAgents() {
  * @returns {Promise<Object>} Object with commands array and warnings array
  */
 async function getUserCommands() {
-  const commandsDir = expandHome('~/.claude/commands');
+  const commandsDir = config.paths.getUserCommandsDir();
 
   try {
     const files = await listFilesRecursive(commandsDir);
@@ -815,7 +816,7 @@ async function getUserCommands() {
  * @returns {Promise<Object>} Object with hooks array and warnings array
  */
 async function getUserHooks() {
-  const settingsPath = expandHome('~/.claude/settings.json');
+  const settingsPath = config.paths.getUserSettingsPath();
 
   const hooks = [];
   const warnings = [];
@@ -841,7 +842,7 @@ async function getUserHooks() {
               error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://docs.claude.com/en/docs/claude-code/hooks for valid event names'
+              helpText: `See ${config.urls.DOCS_HOOKS} for valid event names`
             });
             continue;
           }
@@ -856,7 +857,7 @@ async function getUserHooks() {
               error: `Hook event "${event}" must be an array of hook objects, got ${typeof matchers}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://json.schemastore.org/claude-code-settings.json for valid format'
+              helpText: `See ${config.urls.SCHEMA_SETTINGS} for valid format`
             });
             continue;
           }
@@ -1010,7 +1011,7 @@ async function getUserHooks() {
  * @returns {Promise<Object>} Object with mcp array and warnings array
  */
 async function getUserMCP() {
-  const claudeJsonPath = expandHome('~/.claude.json');
+  const claudeJsonPath = config.paths.getUserClaudeJsonPath();
 
   const mcp = [];
   const warnings = [];
@@ -1077,7 +1078,7 @@ function deduplicateHooks(hooks) {
  * @returns {Promise<Object>} Object with skills array and warnings array
  */
 async function getProjectSkills(projectPath) {
-  const skillsDir = path.join(projectPath, '.claude', 'skills');
+  const skillsDir = config.paths.getProjectSkillsDir(projectPath);
 
   try {
     // Check if directory exists
@@ -1212,7 +1213,7 @@ async function getProjectSkills(projectPath) {
  * @returns {Promise<Object>} Object with skills array and warnings array
  */
 async function getUserSkills() {
-  const skillsDir = expandHome('~/.claude/skills');
+  const skillsDir = config.paths.getUserSkillsDir();
 
   try {
     // Check if directory exists

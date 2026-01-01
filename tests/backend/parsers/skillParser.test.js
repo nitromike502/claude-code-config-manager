@@ -207,8 +207,12 @@ And http://localhost:3000/api/test
 
   describe('getAllSkills()', () => {
     let tempDir;
+    let originalHome;
 
     beforeEach(async () => {
+      // Store original HOME for cleanup
+      originalHome = process.env.HOME;
+
       // Create temp directory structure for testing
       tempDir = path.join(__dirname, '../../temp-skills-test');
       const projectSkillsPath = path.join(tempDir, 'project', '.claude', 'skills', 'test-skill');
@@ -228,12 +232,17 @@ And http://localhost:3000/api/test
     });
 
     afterEach(async () => {
+      // Restore original HOME
+      process.env.HOME = originalHome;
       await fs.rm(tempDir, { recursive: true, force: true });
     });
 
     test('should get both project and user skills', async () => {
       const projectPath = path.join(tempDir, 'project');
       const userPath = path.join(tempDir, 'user');
+
+      // Set HOME to test fixture path for config module
+      process.env.HOME = userPath;
 
       const result = await skillParser.getAllSkills(projectPath, userPath);
 
@@ -252,6 +261,9 @@ And http://localhost:3000/api/test
       const emptyUser = path.join(tempDir, 'empty-user');
       await fs.mkdir(emptyProject, { recursive: true });
       await fs.mkdir(emptyUser, { recursive: true });
+
+      // Set HOME to test fixture path for config module
+      process.env.HOME = emptyUser;
 
       const result = await skillParser.getAllSkills(emptyProject, emptyUser);
 
