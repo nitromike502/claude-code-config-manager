@@ -642,7 +642,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
 import Accordion from 'primevue/accordion'
@@ -658,6 +658,7 @@ import { useCommandsStore } from '@/stores/commands'
 import { useSkillsStore } from '@/stores/skills'
 import { useHooksStore } from '@/stores/hooks'
 import { useMcpStore } from '@/stores/mcp'
+import api from '@/api/client'
 
 const agentsStore = useAgentsStore()
 const commandsStore = useCommandsStore()
@@ -910,17 +911,39 @@ const transportTypeOptions = [
   { label: 'sse', value: 'sse' }
 ]
 
-// Events that require a matcher field (PreToolUse, PostToolUse)
-const MATCHER_BASED_EVENTS = ['PreToolUse', 'PostToolUse']
+// Hook event metadata - fetched from API on mount, with fallback values
+const hookEventMetadata = ref({
+  matcherBasedEvents: ['PreToolUse', 'PostToolUse', 'PermissionRequest', 'Notification'],
+  promptSupportedEvents: ['PreToolUse', 'PermissionRequest', 'UserPromptSubmit', 'Stop', 'SubagentStop']
+})
 
-// Events that support prompt type (Stop, SubagentStop, UserPromptSubmit, PreToolUse, PermissionRequest)
-const PROMPT_SUPPORTED_EVENTS = ['Stop', 'SubagentStop', 'UserPromptSubmit', 'PreToolUse', 'PermissionRequest']
+// Fetch hook event metadata from API
+onMounted(async () => {
+  try {
+    const response = await fetch(`${api.BASE_URL}/api/hooks/events`)
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    const data = await response.json()
+
+    // Update metadata with API response
+    if (data.matcherBasedEvents && data.promptSupportedEvents) {
+      hookEventMetadata.value = {
+        matcherBasedEvents: data.matcherBasedEvents,
+        promptSupportedEvents: data.promptSupportedEvents
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to fetch hook event metadata, using fallbacks:', error)
+    // Keep fallback values already set in hookEventMetadata.value
+  }
+})
 
 // Check if event requires matcher
-const isMatcherBasedEvent = (event) => MATCHER_BASED_EVENTS.includes(event)
+const isMatcherBasedEvent = (event) => hookEventMetadata.value.matcherBasedEvents.includes(event)
 
 // Check if event supports prompt type
-const supportsPromptType = (event) => PROMPT_SUPPORTED_EVENTS.includes(event)
+const supportsPromptType = (event) => hookEventMetadata.value.promptSupportedEvents.includes(event)
 
 // Common tool options for matcher field
 const matcherToolOptions = [

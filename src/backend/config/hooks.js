@@ -29,7 +29,7 @@ const HOOK_EVENTS = {
     supportsPrompt: true
   },
   Notification: {
-    hasMatcher: true,
+    hasMatcher: false,
     supportsPrompt: false
   },
   UserPromptSubmit: {

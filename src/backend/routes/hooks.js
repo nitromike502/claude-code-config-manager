@@ -30,6 +30,12 @@ const path = require('path');
 const fs = require('fs').promises;
 const config = require('../config/config.js');
 const { validateHookUpdate, VALID_HOOK_EVENTS, isMatcherBasedEvent } = require('../services/hookValidation');
+const {
+  getValidEvents,
+  getMatcherBasedEvents,
+  getPromptSupportedEvents,
+  getHookEventOptions
+} = require('../config/hooks');
 
 /**
  * Parse hookId into its components
@@ -287,6 +293,34 @@ function applyHookUpdates(settings, parsed, hookInfo, updates) {
   settings.hooks = hooks;
   return hook;
 }
+
+/**
+ * GET /api/hooks/events
+ * Get hook event metadata for all valid events
+ *
+ * Returns:
+ * - validEvents: Array of all valid event names
+ * - matcherBasedEvents: Events that support matchers
+ * - promptSupportedEvents: Events that support custom prompts
+ * - eventOptions: UI-friendly array for dropdowns with metadata
+ */
+router.get('/events', async (req, res) => {
+  try {
+    res.json({
+      validEvents: getValidEvents(),
+      matcherBasedEvents: getMatcherBasedEvents(),
+      promptSupportedEvents: getPromptSupportedEvents(),
+      eventOptions: getHookEventOptions()
+    });
+  } catch (error) {
+    console.error('Error fetching hook event metadata:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch hook event metadata',
+      details: error.message
+    });
+  }
+});
 
 /**
  * PUT /api/projects/:projectId/hooks/:hookId

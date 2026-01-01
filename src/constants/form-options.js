@@ -6,6 +6,10 @@
  * and multi-select components.
  *
  * @see docs/ba-sessions/20251128-phase5-crud-discovery/component-specs/form-field-types.md
+ *
+ * NOTE: HOOK_EVENT_OPTIONS is defined here for frontend use.
+ * The authoritative source is src/backend/config/hooks.js
+ * Frontend components should fetch from GET /api/hooks/events for dynamic data.
  */
 
 // Model selection options (for agents)
@@ -42,11 +46,12 @@ export const TRANSPORT_OPTIONS = [
 ]
 
 // Hook event type options with matcher support flag
+// Synced with src/backend/config/hooks.js - frontend components should fetch from API for dynamic data
 export const HOOK_EVENT_OPTIONS = [
   { label: 'PreToolUse', value: 'PreToolUse', hasMatcher: true },
   { label: 'PostToolUse', value: 'PostToolUse', hasMatcher: true },
   { label: 'PermissionRequest', value: 'PermissionRequest', hasMatcher: true },
-  { label: 'Notification', value: 'Notification', hasMatcher: true },
+  { label: 'Notification', value: 'Notification', hasMatcher: false },
   { label: 'UserPromptSubmit', value: 'UserPromptSubmit', hasMatcher: false },
   { label: 'Stop', value: 'Stop', hasMatcher: false },
   { label: 'SubagentStop', value: 'SubagentStop', hasMatcher: false },

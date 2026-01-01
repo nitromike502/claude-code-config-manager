@@ -63,6 +63,96 @@ const mockProjectsCache = {
 };
 
 describe('Hook CRUD API Routes', () => {
+  describe('GET /api/hooks/events', () => {
+    it('should return all hook event metadata', async () => {
+      const res = await request(app)
+        .get('/api/hooks/events');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('validEvents');
+      expect(res.body).toHaveProperty('matcherBasedEvents');
+      expect(res.body).toHaveProperty('promptSupportedEvents');
+      expect(res.body).toHaveProperty('eventOptions');
+    });
+
+    it('should return correct validEvents array', async () => {
+      const res = await request(app)
+        .get('/api/hooks/events');
+
+      expect(res.body.validEvents).toEqual([
+        'PreToolUse',
+        'PostToolUse',
+        'PermissionRequest',
+        'Notification',
+        'UserPromptSubmit',
+        'Stop',
+        'SubagentStop',
+        'PreCompact',
+        'SessionStart',
+        'SessionEnd'
+      ]);
+    });
+
+    it('should return correct matcherBasedEvents array', async () => {
+      const res = await request(app)
+        .get('/api/hooks/events');
+
+      expect(res.body.matcherBasedEvents).toEqual([
+        'PreToolUse',
+        'PostToolUse',
+        'PermissionRequest'
+      ]);
+    });
+
+    it('should return correct promptSupportedEvents array', async () => {
+      const res = await request(app)
+        .get('/api/hooks/events');
+
+      expect(res.body.promptSupportedEvents).toEqual([
+        'PreToolUse',
+        'PermissionRequest',
+        'UserPromptSubmit',
+        'Stop',
+        'SubagentStop'
+      ]);
+    });
+
+    it('should return eventOptions with correct structure', async () => {
+      const res = await request(app)
+        .get('/api/hooks/events');
+
+      expect(Array.isArray(res.body.eventOptions)).toBe(true);
+      expect(res.body.eventOptions.length).toBe(10);
+
+      // Check first event option structure
+      const firstOption = res.body.eventOptions[0];
+      expect(firstOption).toHaveProperty('value');
+      expect(firstOption).toHaveProperty('label');
+      expect(firstOption).toHaveProperty('hasMatcher');
+      expect(typeof firstOption.value).toBe('string');
+      expect(typeof firstOption.label).toBe('string');
+      expect(typeof firstOption.hasMatcher).toBe('boolean');
+    });
+
+    it('should return PreToolUse with hasMatcher true in eventOptions', async () => {
+      const res = await request(app)
+        .get('/api/hooks/events');
+
+      const preToolUse = res.body.eventOptions.find(opt => opt.value === 'PreToolUse');
+      expect(preToolUse).toBeDefined();
+      expect(preToolUse.hasMatcher).toBe(true);
+    });
+
+    it('should return SessionEnd with hasMatcher false in eventOptions', async () => {
+      const res = await request(app)
+        .get('/api/hooks/events');
+
+      const sessionEnd = res.body.eventOptions.find(opt => opt.value === 'SessionEnd');
+      expect(sessionEnd).toBeDefined();
+      expect(sessionEnd.hasMatcher).toBe(false);
+    });
+  });
+
   beforeEach(async () => {
     jest.clearAllMocks();
 

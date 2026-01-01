@@ -16,6 +16,9 @@
  * }
  */
 
+// Import centralized hook events configuration
+const { getValidEvents, getMatcherBasedEvents, getPromptSupportedEvents } = require('../config/hooks');
+
 /**
  * Valid hook event types as defined by Claude Code specification
  *
@@ -33,25 +36,14 @@
  * - SessionStart: When session begins
  * - SessionEnd: When session ends
  */
-const VALID_HOOK_EVENTS = [
-  'PreToolUse',
-  'PostToolUse',
-  'Stop',
-  'SubagentStop',
-  'UserPromptSubmit',
-  'PermissionRequest',
-  'Notification',
-  'PreCompact',
-  'SessionStart',
-  'SessionEnd'
-];
+const VALID_HOOK_EVENTS = getValidEvents();
 
 /**
  * Events that require a matcher field
  * Matcher specifies which tool(s) the hook applies to using pipe-separated values
  * Example: "Bash|Read|Write" or "*" for all tools
  */
-const MATCHER_BASED_EVENTS = ['PreToolUse', 'PostToolUse'];
+const MATCHER_BASED_EVENTS = getMatcherBasedEvents();
 
 /**
  * Events that support the 'prompt' type
@@ -59,7 +51,7 @@ const MATCHER_BASED_EVENTS = ['PreToolUse', 'PostToolUse'];
  * Official Claude Code specification supports prompt type for:
  * - Stop, SubagentStop, UserPromptSubmit, PreToolUse, PermissionRequest
  */
-const PROMPT_SUPPORTED_EVENTS = ['Stop', 'SubagentStop', 'UserPromptSubmit', 'PreToolUse', 'PermissionRequest'];
+const PROMPT_SUPPORTED_EVENTS = getPromptSupportedEvents();
 
 /**
  * Valid hook type values
