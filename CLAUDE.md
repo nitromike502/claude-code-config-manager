@@ -40,7 +40,12 @@ manager/
 │   ├── sessions/                     # Development history & lessons learned
 │   └── testing/                      # Test reports and documentation
 ├── src/
-│   ├── backend/                      # Express server & API
+│   ├── backend/
+│   │   ├── config/config.js          # Centralized configuration module
+│   │   ├── parsers/                  # File parsers (agents, commands, skills, etc.)
+│   │   ├── routes/                   # API route handlers
+│   │   ├── services/                 # Business logic services
+│   │   └── server.js                 # Express server entry point
 │   ├── main.js, App.vue              # Vue app entry points
 │   ├── router/, stores/, components/ # Vue 3 SPA architecture
 │   ├── api/client.js                 # Centralized API client
@@ -119,6 +124,52 @@ manager/
 - `~/.claude/commands/**/*.md` - User commands
 - `~/.claude/skills/*/SKILL.md` - User skills
 - `~/.claude/settings.json` - User settings including hooks and MCP servers
+
+## Backend Configuration Module
+
+The backend uses a centralized configuration module at `src/backend/config/config.js` that provides:
+
+### Configuration Sections
+
+- **`config.server`** - Server settings (port, host, protocol, URL)
+- **`config.paths`** - File path getters for user and project configurations
+- **`config.timeouts`** - Timeout values (API requests, reference checks, hooks)
+- **`config.urls`** - External URLs (documentation, schemas)
+
+### Development Mode
+
+Set `USE_DEV_PATHS=true` to use development paths:
+- `.claude` becomes `.claude-dev`
+- `.claude.json` becomes `.claude-dev.json`
+- `.mcp.json` becomes `.mcp-dev.json`
+
+This prevents accidental modification of production Claude Code configuration during development.
+
+### Path Getter Functions
+
+```javascript
+const { paths } = require('./config/config');
+
+// User-level paths
+paths.getUserClaudeJsonPath()     // ~/.claude.json or ~/.claude-dev.json
+paths.getUserSettingsPath()        // ~/.claude/settings.json
+paths.getUserAgentsDir()           // ~/.claude/agents
+paths.getUserCommandsDir()         // ~/.claude/commands
+paths.getUserSkillsDir()           // ~/.claude/skills
+
+// Project-level paths (require projectPath argument)
+paths.getProjectClaudeDir(projectPath)         // {project}/.claude
+paths.getProjectSettingsPath(projectPath)      // {project}/.claude/settings.json
+paths.getProjectLocalSettingsPath(projectPath) // {project}/.claude/settings.local.json
+paths.getProjectMcpPath(projectPath)           // {project}/.mcp.json
+paths.getProjectAgentsDir(projectPath)         // {project}/.claude/agents
+paths.getProjectCommandsDir(projectPath)       // {project}/.claude/commands
+paths.getProjectSkillsDir(projectPath)         // {project}/.claude/skills
+
+// Utility
+paths.expandHome('~/path')         // Expands ~ to home directory
+paths.isDevelopmentMode()          // Returns true if USE_DEV_PATHS=true
+```
 
 ## API Endpoints
 
