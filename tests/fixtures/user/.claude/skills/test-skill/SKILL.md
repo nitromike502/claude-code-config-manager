@@ -1,10 +1,7 @@
 ---
 name: test-skill
 description: Test skill for copy testing
-allowed-tools:
-  - Read
-  - Write
-  - Bash
+allowed-tools: "Read, Write, Bash"
 ---
 
 # Test Skill
