@@ -61,13 +61,6 @@ describe('Hook Events Configuration', () => {
           supportsPrompt: true
         });
       });
-
-      it('Notification should support matchers but not prompts', () => {
-        expect(HOOK_EVENTS.Notification).toEqual({
-          hasMatcher: true,
-          supportsPrompt: false
-        });
-      });
     });
 
     describe('non-matcher events', () => {
@@ -89,6 +82,13 @@ describe('Hook Events Configuration', () => {
         expect(HOOK_EVENTS.SubagentStop).toEqual({
           hasMatcher: false,
           supportsPrompt: true
+        });
+      });
+
+      it('Notification should support neither matchers nor prompts', () => {
+        expect(HOOK_EVENTS.Notification).toEqual({
+          hasMatcher: false,
+          supportsPrompt: false
         });
       });
 
@@ -150,7 +150,7 @@ describe('Hook Events Configuration', () => {
     it('should return array of events that support matchers', () => {
       const events = getMatcherBasedEvents();
       expect(Array.isArray(events)).toBe(true);
-      expect(events).toHaveLength(4);
+      expect(events).toHaveLength(3);
     });
 
     it('should return only matcher-based events', () => {
@@ -158,13 +158,13 @@ describe('Hook Events Configuration', () => {
       expect(events).toEqual([
         'PreToolUse',
         'PostToolUse',
-        'PermissionRequest',
-        'Notification'
+        'PermissionRequest'
       ]);
     });
 
     it('should not include non-matcher events', () => {
       const events = getMatcherBasedEvents();
+      expect(events).not.toContain('Notification');
       expect(events).not.toContain('UserPromptSubmit');
       expect(events).not.toContain('Stop');
       expect(events).not.toContain('SubagentStop');
@@ -282,10 +282,10 @@ describe('Hook Events Configuration', () => {
       expect(eventHasMatcher('PreToolUse')).toBe(true);
       expect(eventHasMatcher('PostToolUse')).toBe(true);
       expect(eventHasMatcher('PermissionRequest')).toBe(true);
-      expect(eventHasMatcher('Notification')).toBe(true);
     });
 
     it('should return false for non-matcher events', () => {
+      expect(eventHasMatcher('Notification')).toBe(false);
       expect(eventHasMatcher('UserPromptSubmit')).toBe(false);
       expect(eventHasMatcher('Stop')).toBe(false);
       expect(eventHasMatcher('SubagentStop')).toBe(false);
@@ -447,19 +447,19 @@ describe('Hook Events Configuration', () => {
   });
 
   describe('count verification', () => {
-    it('should have exactly 4 matcher-based events', () => {
-      expect(getMatcherBasedEvents()).toHaveLength(4);
+    it('should have exactly 3 matcher-based events', () => {
+      expect(getMatcherBasedEvents()).toHaveLength(3);
     });
 
     it('should have exactly 5 prompt-supported events', () => {
       expect(getPromptSupportedEvents()).toHaveLength(5);
     });
 
-    it('should have exactly 6 non-matcher events', () => {
+    it('should have exactly 7 non-matcher events', () => {
       const allEvents = getValidEvents();
       const matcherEvents = getMatcherBasedEvents();
       const nonMatcherEvents = allEvents.filter(e => !matcherEvents.includes(e));
-      expect(nonMatcherEvents).toHaveLength(6);
+      expect(nonMatcherEvents).toHaveLength(7);
     });
 
     it('should have exactly 5 non-prompt events', () => {

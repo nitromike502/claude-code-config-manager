@@ -3,6 +3,7 @@ const fs = require('fs').promises;
 const config = require('../config/config.js');
 const { pathToProjectId, isValidDirectory } = require('../utils/pathUtils');
 const { readJSON, exists, listFiles, listFilesRecursive, readMarkdownWithFrontmatter } = require('./fileReader');
+const { getValidEvents, getMatcherBasedEvents } = require('../config/hooks');
 
 /**
  * Reads and parses ~/.claude.json to get all Claude Code projects
@@ -211,25 +212,6 @@ async function getProjectCommands(projectPath) {
 }
 
 /**
- * Valid Claude Code hook events per official specification
- * @see config.urls.DOCS_HOOKS
- * @see config.urls.SCHEMA_SETTINGS
- */
-const VALID_HOOK_EVENTS = [
-  'PreToolUse', 'PostToolUse', 'UserPromptSubmit',
-  'Notification', 'Stop', 'SubagentStop',
-  'PreCompact', 'SessionStart', 'SessionEnd'
-];
-
-/**
- * Hook events that support matchers (can filter by tool name)
- * Only PreToolUse and PostToolUse support the matcher field per official specification
- * @see config.urls.DOCS_HOOKS
- * @see config.urls.SCHEMA_SETTINGS
- */
-const MATCHER_EVENTS = ['PreToolUse', 'PostToolUse'];
-
-/**
  * Gets hooks for a specific project (from settings.json and settings.local.json)
  * @param {string} projectPath - Absolute project path
  * @returns {Promise<Object>} Object with hooks array and warnings array
@@ -256,10 +238,10 @@ async function getProjectHooks(projectPath) {
         // Each event maps to an array of matcher configs
         for (const [event, matchers] of Object.entries(settings.hooks)) {
           // STEP 2: Validate event name against Claude Code specification
-          if (!VALID_HOOK_EVENTS.includes(event)) {
+          if (!getValidEvents().includes(event)) {
             warnings.push({
               file: settingsPath,
-              error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
+              error: `Invalid hook event: "${event}". Valid events are: ${getValidEvents().join(', ')}`,
               severity: 'error',
               skipped: true,
               helpText: `See ${config.urls.DOCS_HOOKS} for valid event names`
@@ -268,7 +250,7 @@ async function getProjectHooks(projectPath) {
           }
 
           // Check if event supports matchers
-          const supportsMatchers = MATCHER_EVENTS.includes(event);
+          const supportsMatchers = getMatcherBasedEvents().includes(event);
 
           // STEP 3: Validate top-level structure (must be array)
           if (!Array.isArray(matchers)) {
@@ -435,10 +417,10 @@ async function getProjectHooks(projectPath) {
         // Each event maps to an array of matcher configs
         for (const [event, matchers] of Object.entries(localSettings.hooks)) {
           // STEP 2: Validate event name against Claude Code specification
-          if (!VALID_HOOK_EVENTS.includes(event)) {
+          if (!getValidEvents().includes(event)) {
             warnings.push({
               file: localSettingsPath,
-              error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
+              error: `Invalid hook event: "${event}". Valid events are: ${getValidEvents().join(', ')}`,
               severity: 'error',
               skipped: true,
               helpText: `See ${config.urls.DOCS_HOOKS} for valid event names`
@@ -447,7 +429,7 @@ async function getProjectHooks(projectPath) {
           }
 
           // Check if event supports matchers
-          const supportsMatchers = MATCHER_EVENTS.includes(event);
+          const supportsMatchers = getMatcherBasedEvents().includes(event);
 
           // STEP 3: Validate top-level structure (must be array)
           if (!Array.isArray(matchers)) {
@@ -836,10 +818,10 @@ async function getUserHooks() {
         // Each event maps to an array of matcher configs
         for (const [event, matchers] of Object.entries(settings.hooks)) {
           // STEP 2: Validate event name against Claude Code specification
-          if (!VALID_HOOK_EVENTS.includes(event)) {
+          if (!getValidEvents().includes(event)) {
             warnings.push({
               file: settingsPath,
-              error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
+              error: `Invalid hook event: "${event}". Valid events are: ${getValidEvents().join(', ')}`,
               severity: 'error',
               skipped: true,
               helpText: `See ${config.urls.DOCS_HOOKS} for valid event names`
@@ -848,7 +830,7 @@ async function getUserHooks() {
           }
 
           // Check if event supports matchers
-          const supportsMatchers = MATCHER_EVENTS.includes(event);
+          const supportsMatchers = getMatcherBasedEvents().includes(event);
 
           // STEP 3: Validate top-level structure (must be array)
           if (!Array.isArray(matchers)) {

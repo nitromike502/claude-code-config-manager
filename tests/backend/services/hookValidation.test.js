@@ -42,11 +42,11 @@ describe('Hook Validation Service', () => {
     });
 
     it('should export MATCHER_BASED_EVENTS array', () => {
-      expect(MATCHER_BASED_EVENTS).toEqual(['PreToolUse', 'PostToolUse']);
+      expect(MATCHER_BASED_EVENTS).toEqual(['PreToolUse', 'PostToolUse', 'PermissionRequest']);
     });
 
     it('should export PROMPT_SUPPORTED_EVENTS array', () => {
-      expect(PROMPT_SUPPORTED_EVENTS).toEqual(['Stop', 'SubagentStop', 'UserPromptSubmit', 'PreToolUse', 'PermissionRequest']);
+      expect(PROMPT_SUPPORTED_EVENTS).toEqual(['PreToolUse', 'PermissionRequest', 'UserPromptSubmit', 'Stop', 'SubagentStop']);
     });
 
     it('should export VALID_HOOK_TYPES array', () => {
@@ -231,6 +231,7 @@ describe('Hook Validation Service', () => {
 
       it('should validate a prompt-type hook for PermissionRequest', () => {
         const hook = {
+          matcher: 'Bash',
           type: 'prompt',
           command: 'Permission requested'
         };

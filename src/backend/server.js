@@ -49,11 +49,13 @@ const { projectRouter: mcpProjectRouter, userRouter: mcpUserRouter } = require('
 // different sub-paths and HTTP methods:
 //   - projectsRouter: GET /api/projects/:projectId/hooks (read hooks)
 //   - hooksRouter:    PUT /api/projects/:projectId/hooks/:hookId (update specific hook)
+//   - hooksRouter:    GET /api/hooks/events (get hook event metadata)
 //   - mcpProjectRouter: PUT /api/projects/:projectId/mcp/:serverName (update MCP server)
 // Express routes requests to the appropriate router based on method and path pattern
 app.use('/api/projects', projectsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/copy', copyRoutes);
+app.use('/api/hooks', hooksRouter);
 app.use('/api/projects', hooksRouter);
 app.use('/api/projects', mcpProjectRouter);
 app.use('/api/user', mcpUserRouter);
