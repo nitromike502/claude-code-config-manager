@@ -69,63 +69,21 @@
     </template>
   </ConfigPageLayout>
 
-  <!-- Agent Delete Confirmation Dialog -->
+  <!-- Unified Delete Confirmation Dialog -->
   <DeleteConfirmationModal
-    v-model:visible="showDeleteDialog"
-    item-type="agent"
-    :item-name="deletingAgent?.name || ''"
-    :dependent-items="agentReferences"
-    :loading="agentDeleteLoading"
-    @confirm="handleAgentDeleteConfirm"
-    @cancel="handleAgentDeleteCancel"
-  />
-
-  <!-- Command Delete Confirmation Dialog -->
-  <DeleteConfirmationModal
-    v-model:visible="showCommandDeleteDialog"
-    item-type="command"
-    :item-name="deletingCommand?.name || ''"
-    :dependent-items="commandReferences"
-    :loading="commandDeleteLoading"
-    @confirm="handleCommandDeleteConfirm"
-    @cancel="handleCommandDeleteCancel"
-  />
-
-  <!-- Skill Delete Confirmation Dialog -->
-  <DeleteConfirmationModal
-    v-model:visible="showSkillDeleteDialog"
-    item-type="skill"
-    :item-name="deletingSkill?.name || ''"
-    :dependent-items="[]"
-    :loading="skillDeleteLoading"
-    warning-message="This will permanently delete the skill directory and all its files. This action cannot be undone."
-    @confirm="handleSkillDeleteConfirm"
-    @cancel="handleSkillDeleteCancel"
-  />
-
-  <!-- Hook Delete Confirmation Dialog -->
-  <DeleteConfirmationModal
-    v-model:visible="showHookDeleteDialog"
-    item-type="hook"
-    :item-name="getHookDisplayName(deletingHook)"
-    :loading="hookDeleteLoading"
-    @confirm="handleHookDeleteConfirm"
-    @cancel="handleHookDeleteCancel"
-  />
-
-  <!-- MCP Delete Confirmation Dialog -->
-  <DeleteConfirmationModal
-    v-model:visible="showMcpDeleteDialog"
-    item-type="mcp"
-    :item-name="deletingMcp?.name || ''"
-    :loading="mcpDeleteLoading"
-    @confirm="handleMcpDeleteConfirm"
-    @cancel="handleMcpDeleteCancel"
+    v-model:visible="deleteModal.visible"
+    :item-type="deleteModal.itemType || 'agent'"
+    :item-name="getDeleteItemName()"
+    :dependent-items="deleteModal.references"
+    :loading="deleteModal.loading"
+    :warning-message="deleteModal.warningMessage"
+    @confirm="handleDeleteConfirm"
+    @cancel="handleDeleteCancel"
   />
 </template>
 
 <script>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import * as api from '@/api/client'
 import ConfigPageLayout from '@/components/layouts/ConfigPageLayout.vue'
@@ -139,6 +97,7 @@ import { useSkillsStore } from '@/stores/skills'
 import { useHooksStore } from '@/stores/hooks'
 import { useMcpStore } from '@/stores/mcp'
 import { useConfigToast } from '@/composables/useConfigToast'
+import { formatType } from '@/utils/typeMapping'
 
 export default {
   name: 'ProjectDetail',
@@ -174,32 +133,15 @@ export default {
     const showCopyModal = ref(false)
     const selectedConfig = ref(null)
 
-    // Agent CRUD state
-    const showDeleteDialog = ref(false)
-    const deletingAgent = ref(null)
-    const agentDeleteLoading = ref(false)
-    const agentReferences = ref([])
-
-    // Command CRUD state
-    const showCommandDeleteDialog = ref(false)
-    const deletingCommand = ref(null)
-    const commandDeleteLoading = ref(false)
-    const commandReferences = ref([])
-
-    // Skill CRUD state
-    const showSkillDeleteDialog = ref(false)
-    const deletingSkill = ref(null)
-    const skillDeleteLoading = ref(false)
-
-    // Hook CRUD state
-    const showHookDeleteDialog = ref(false)
-    const deletingHook = ref(null)
-    const hookDeleteLoading = ref(false)
-
-    // MCP CRUD state
-    const showMcpDeleteDialog = ref(false)
-    const deletingMcp = ref(null)
-    const mcpDeleteLoading = ref(false)
+    // Consolidated delete modal state
+    const deleteModal = reactive({
+      visible: false,
+      itemType: null,      // 'agent' | 'command' | 'skill' | 'hook' | 'mcp'
+      item: null,          // The item being deleted
+      loading: false,
+      references: [],      // For agents/commands
+      warningMessage: ''   // For skills
+    })
 
     const loading = ref(true)
     const loadingAgents = ref(false)
@@ -444,121 +386,181 @@ export default {
       }
     }
 
-    // Agent CRUD handlers
+    // Unified delete modal handlers
+    const openDeleteModal = (itemType, item) => {
+      deleteModal.itemType = itemType
+      deleteModal.item = item
+      deleteModal.loading = false
+      deleteModal.references = []
+      deleteModal.warningMessage = ''
+
+      // Set type-specific properties
+      if (itemType === 'skill') {
+        deleteModal.warningMessage = 'This will permanently delete the skill directory and all its files. This action cannot be undone.'
+      }
+
+      deleteModal.visible = true
+
+      // Load references for agents/commands asynchronously
+      if (itemType === 'agent') {
+        loadAgentReferences(item)
+      } else if (itemType === 'command') {
+        loadCommandReferences(item)
+      }
+    }
+
+    const loadAgentReferences = async (agent) => {
+      deleteModal.loading = true
+      try {
+        const result = await agentsStore.checkAgentReferences(
+          projectId.value,
+          agent.name,
+          'project'
+        )
+        if (result.success) {
+          deleteModal.references = result.references || []
+        }
+      } finally {
+        deleteModal.loading = false
+      }
+    }
+
+    const loadCommandReferences = async (command) => {
+      deleteModal.loading = true
+      try {
+        const commandPath = command.namespace
+          ? `${command.namespace}/${command.name}.md`
+          : `${command.name}.md`
+
+        const references = await commandsStore.getCommandReferences(
+          'project',
+          projectId.value,
+          commandPath
+        )
+        deleteModal.references = references || []
+      } finally {
+        deleteModal.loading = false
+      }
+    }
+
+    const handleDeleteConfirm = async () => {
+      deleteModal.loading = true
+
+      try {
+        let result
+        const itemType = deleteModal.itemType
+        const item = deleteModal.item
+
+        // Route to appropriate store delete method
+        if (itemType === 'agent') {
+          result = await agentsStore.deleteAgent(
+            projectId.value,
+            item.name,
+            'project'
+          )
+        } else if (itemType === 'command') {
+          const commandPath = item.namespace
+            ? `${item.namespace}/${item.name}.md`
+            : `${item.name}.md`
+
+          result = await commandsStore.deleteCommand(
+            'project',
+            projectId.value,
+            commandPath
+          )
+        } else if (itemType === 'skill') {
+          const skillName = item.directoryPath
+            ? item.directoryPath.split('/').pop()
+            : item.name
+
+          result = await skillsStore.deleteSkill(
+            projectId.value,
+            skillName,
+            'project'
+          )
+        } else if (itemType === 'hook') {
+          const hookId = hooksStore.buildHookId(item)
+          result = await hooksStore.deleteHook(projectId.value, hookId, 'project')
+        } else if (itemType === 'mcp') {
+          result = await mcpStore.deleteMcpServer(
+            projectId.value,
+            item.name,
+            'project'
+          )
+        }
+
+        if (result?.success) {
+          deleteModal.visible = false
+
+          // Refresh the appropriate list
+          if (itemType === 'agent') {
+            await loadAgents()
+            if (selectedItem.value?.name === item.name) {
+              sidebarVisible.value = false
+            }
+          } else if (itemType === 'command') {
+            await loadCommands()
+            const commandPath = item.namespace
+              ? `${item.namespace}/${item.name}.md`
+              : `${item.name}.md`
+            if (selectedItem.value?.path === commandPath || selectedItem.value?.name === commandPath) {
+              sidebarVisible.value = false
+            }
+          } else if (itemType === 'skill') {
+            await loadSkills()
+            const skillName = item.directoryPath ? item.directoryPath.split('/').pop() : item.name
+            if (selectedItem.value?.name === skillName) {
+              sidebarVisible.value = false
+            }
+            configToast.deleteSuccess('Skill', `Skill "${skillName}"`)
+          } else if (itemType === 'hook') {
+            await loadHooks()
+            const hookId = hooksStore.buildHookId(item)
+            if (selectedItem.value && hooksStore.buildHookId(selectedItem.value) === hookId) {
+              sidebarVisible.value = false
+            }
+            const eventType = hookId.split('::')[0]
+            configToast.deleteSuccess('Hook', `${eventType} hook`)
+          } else if (itemType === 'mcp') {
+            await loadMCP()
+            if (selectedItem.value?.name === item.name) {
+              sidebarVisible.value = false
+            }
+            configToast.deleteSuccess('MCP Server', `MCP server "${item.name}"`)
+          }
+        } else {
+          configToast.deleteError({ error: result?.error || 'Failed to delete configuration' })
+          deleteModal.visible = false
+        }
+      } catch (err) {
+        configToast.deleteError(err)
+        deleteModal.visible = false
+      } finally {
+        deleteModal.loading = false
+      }
+    }
+
+    const handleDeleteCancel = () => {
+      deleteModal.visible = false
+      deleteModal.itemType = null
+      deleteModal.item = null
+      deleteModal.loading = false
+      deleteModal.references = []
+      deleteModal.warningMessage = ''
+    }
+
+    // Individual type-specific delete handlers (now just call openDeleteModal)
     const handleAgentUpdated = async () => {
       // Refresh agent list after sidebar edit
       await loadAgents()
     }
 
     const handleAgentDelete = async (agent) => {
-      deletingAgent.value = agent
-      agentDeleteLoading.value = true
-
-      try {
-        // Check for references before showing the modal
-        const result = await agentsStore.checkAgentReferences(
-          projectId.value,
-          agent.name,
-          'project'
-        )
-
-        if (result.success) {
-          agentReferences.value = result.references || []
-          showDeleteDialog.value = true
-        }
-      } finally {
-        agentDeleteLoading.value = false
-      }
+      openDeleteModal('agent', agent)
     }
 
-    const handleAgentDeleteConfirm = async () => {
-      agentDeleteLoading.value = true
-
-      try {
-        const result = await agentsStore.deleteAgent(
-          projectId.value,
-          deletingAgent.value.name,
-          'project'
-        )
-
-        if (result.success) {
-          showDeleteDialog.value = false
-          await loadAgents() // Refresh agent list
-
-          // Close sidebar if the deleted agent was being viewed
-          if (selectedItem.value?.name === deletingAgent.value.name) {
-            sidebarVisible.value = false
-          }
-        }
-      } finally {
-        agentDeleteLoading.value = false
-      }
-    }
-
-    const handleAgentDeleteCancel = () => {
-      showDeleteDialog.value = false
-      deletingAgent.value = null
-      agentReferences.value = []
-    }
-
-    // Command CRUD handlers
     const handleCommandDelete = async (command) => {
-      deletingCommand.value = command
-      commandDeleteLoading.value = true
-
-      try {
-        // Get command path for API calls (construct from namespace + name + .md)
-        const commandPath = command.namespace
-          ? `${command.namespace}/${command.name}.md`
-          : `${command.name}.md`
-
-        // Check for references before showing the modal
-        const references = await commandsStore.getCommandReferences(
-          'project',
-          projectId.value,
-          commandPath
-        )
-
-        commandReferences.value = references || []
-        showCommandDeleteDialog.value = true
-      } finally {
-        commandDeleteLoading.value = false
-      }
-    }
-
-    const handleCommandDeleteConfirm = async () => {
-      commandDeleteLoading.value = true
-
-      try {
-        // Get command path for API calls (construct from namespace + name + .md)
-        const commandPath = deletingCommand.value.namespace
-          ? `${deletingCommand.value.namespace}/${deletingCommand.value.name}.md`
-          : `${deletingCommand.value.name}.md`
-
-        const result = await commandsStore.deleteCommand(
-          'project',
-          projectId.value,
-          commandPath
-        )
-
-        if (result.success) {
-          showCommandDeleteDialog.value = false
-          await loadCommands() // Refresh command list
-
-          // Close sidebar if the deleted command was being viewed
-          if (selectedItem.value?.path === commandPath || selectedItem.value?.name === commandPath) {
-            sidebarVisible.value = false
-          }
-        }
-      } finally {
-        commandDeleteLoading.value = false
-      }
-    }
-
-    const handleCommandDeleteCancel = () => {
-      showCommandDeleteDialog.value = false
-      deletingCommand.value = null
-      commandReferences.value = []
+      openDeleteModal('command', command)
     }
 
     const handleCommandUpdated = async () => {
@@ -566,56 +568,21 @@ export default {
       await loadCommands()
     }
 
-    // Hook CRUD handlers
     const handleHookUpdated = async () => {
       // Refresh hooks list after sidebar edit
       await loadHooks()
     }
 
     const handleHookDelete = (hook) => {
-      deletingHook.value = hook
-      showHookDeleteDialog.value = true
+      openDeleteModal('hook', hook)
     }
 
-    const handleHookDeleteConfirm = async () => {
-      hookDeleteLoading.value = true
-
-      try {
-        // Build hookId from hook object
-        const hookId = hooksStore.buildHookId(deletingHook.value)
-
-        // Call store to delete hook
-        const result = await hooksStore.deleteHook(projectId.value, hookId, 'project')
-
-        if (result.success) {
-          showHookDeleteDialog.value = false
-          await loadHooks() // Refresh hooks list
-
-          // Close sidebar if the deleted hook was being viewed
-          if (selectedItem.value && hooksStore.buildHookId(selectedItem.value) === hookId) {
-            sidebarVisible.value = false
-          }
-
-          // Show success toast
-          const eventType = hookId.split('::')[0]
-          configToast.deleteSuccess('Hook', `${eventType} hook`)
-        } else {
-          // Handle delete failure
-          configToast.deleteError({ error: result.error || 'Failed to delete hook' })
-          showHookDeleteDialog.value = false
-        }
-      } catch (err) {
-        // Handle unexpected errors
-        configToast.deleteError(err)
-        showHookDeleteDialog.value = false
-      } finally {
-        hookDeleteLoading.value = false
-      }
+    const handleSkillDelete = async (skill) => {
+      openDeleteModal('skill', skill)
     }
 
-    const handleHookDeleteCancel = () => {
-      showHookDeleteDialog.value = false
-      deletingHook.value = null
+    const handleMcpDelete = (mcp) => {
+      openDeleteModal('mcp', mcp)
     }
 
     /**
@@ -632,96 +599,23 @@ export default {
       return `${event}${commandPreview ? ': ' + commandPreview : ''}`
     }
 
-    // Skill CRUD handlers
-    const handleSkillDelete = async (skill) => {
-      // Extract skill name (directory name) from the skill object
-      const skillName = skill.directoryPath
-        ? skill.directoryPath.split('/').pop()
-        : skill.name
+    /**
+     * Get display name for the item being deleted in the modal
+     * Handles type-specific name extraction
+     */
+    const getDeleteItemName = () => {
+      const item = deleteModal.item
+      const itemType = deleteModal.itemType
 
-      deletingSkill.value = { ...skill, name: skillName }
-      showSkillDeleteDialog.value = true
-    }
+      if (!item) return ''
 
-    const handleSkillDeleteConfirm = async () => {
-      skillDeleteLoading.value = true
-      const skillName = deletingSkill.value.name
-
-      try {
-        const result = await skillsStore.deleteSkill(
-          projectId.value,
-          skillName,
-          'project'
-        )
-
-        if (result.success) {
-          showSkillDeleteDialog.value = false
-          await loadSkills() // Refresh skills list
-
-          // Close sidebar if the deleted skill was being viewed
-          if (selectedItem.value?.name === skillName) {
-            sidebarVisible.value = false
-          }
-
-          configToast.deleteSuccess('Skill', `Skill "${skillName}"`)
-        } else {
-          configToast.deleteError({ error: result.error || 'Failed to delete skill' })
-          showSkillDeleteDialog.value = false
-        }
-      } catch (err) {
-        configToast.deleteError(err)
-        showSkillDeleteDialog.value = false
-      } finally {
-        skillDeleteLoading.value = false
+      if (itemType === 'hook') {
+        return getHookDisplayName(item)
+      } else if (itemType === 'skill') {
+        return item.directoryPath ? item.directoryPath.split('/').pop() : item.name
+      } else {
+        return item.name || ''
       }
-    }
-
-    const handleSkillDeleteCancel = () => {
-      showSkillDeleteDialog.value = false
-      deletingSkill.value = null
-    }
-
-    // MCP CRUD handlers
-    const handleMcpDelete = (mcp) => {
-      deletingMcp.value = mcp
-      showMcpDeleteDialog.value = true
-    }
-
-    const handleMcpDeleteConfirm = async () => {
-      mcpDeleteLoading.value = true
-
-      try {
-        const result = await mcpStore.deleteMcpServer(
-          projectId.value,
-          deletingMcp.value.name,
-          'project'
-        )
-
-        if (result.success) {
-          showMcpDeleteDialog.value = false
-          await loadMCP() // Refresh MCP servers list
-
-          // Close sidebar if the deleted MCP server was being viewed
-          if (selectedItem.value?.name === deletingMcp.value.name) {
-            sidebarVisible.value = false
-          }
-
-          configToast.deleteSuccess('MCP Server', `MCP server "${deletingMcp.value.name}"`)
-        } else {
-          configToast.deleteError({ error: result.error || 'Failed to delete MCP server' })
-          showMcpDeleteDialog.value = false
-        }
-      } catch (err) {
-        configToast.deleteError(err)
-        showMcpDeleteDialog.value = false
-      } finally {
-        mcpDeleteLoading.value = false
-      }
-    }
-
-    const handleMcpDeleteCancel = () => {
-      showMcpDeleteDialog.value = false
-      deletingMcp.value = null
     }
 
     // Copy modal handlers
@@ -835,47 +729,20 @@ export default {
       handleCopySuccess,
       handleCopyError,
       handleCopyCancelled,
-      // Agent CRUD
-      showDeleteDialog,
-      deletingAgent,
-      agentDeleteLoading,
-      agentReferences,
+      // Unified delete modal
+      deleteModal,
+      handleDeleteConfirm,
+      handleDeleteCancel,
+      getDeleteItemName,
+      // CRUD handlers
       handleAgentUpdated,
       handleAgentDelete,
-      handleAgentDeleteConfirm,
-      handleAgentDeleteCancel,
-      // Command CRUD
-      showCommandDeleteDialog,
-      deletingCommand,
-      commandDeleteLoading,
-      commandReferences,
       handleCommandUpdated,
       handleCommandDelete,
-      handleCommandDeleteConfirm,
-      handleCommandDeleteCancel,
-      // Hook CRUD
-      showHookDeleteDialog,
-      deletingHook,
-      hookDeleteLoading,
       handleHookUpdated,
       handleHookDelete,
-      handleHookDeleteConfirm,
-      handleHookDeleteCancel,
-      getHookDisplayName,
-      // Skill CRUD
-      showSkillDeleteDialog,
-      deletingSkill,
-      skillDeleteLoading,
       handleSkillDelete,
-      handleSkillDeleteConfirm,
-      handleSkillDeleteCancel,
-      // MCP CRUD
-      showMcpDeleteDialog,
-      deletingMcp,
-      mcpDeleteLoading,
-      handleMcpDelete,
-      handleMcpDeleteConfirm,
-      handleMcpDeleteCancel
+      handleMcpDelete
     }
   }
 }
