@@ -127,7 +127,6 @@
 <script>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
 import * as api from '@/api/client'
 import ConfigPageLayout from '@/components/layouts/ConfigPageLayout.vue'
 import CopyModal from '@/components/copy/CopyModal.vue'
@@ -139,6 +138,7 @@ import { useCommandsStore } from '@/stores/commands'
 import { useSkillsStore } from '@/stores/skills'
 import { useHooksStore } from '@/stores/hooks'
 import { useMcpStore } from '@/stores/mcp'
+import { useConfigToast } from '@/composables/useConfigToast'
 
 export default {
   name: 'ProjectDetail',
@@ -146,7 +146,7 @@ export default {
   props: ['id'],
   setup(props) {
     const route = useRoute()
-    const toast = useToast()
+    const configToast = useConfigToast()
     const copyStore = useCopyStore()
     const projectsStore = useProjectsStore()
     const agentsStore = useAgentsStore()
@@ -598,30 +598,15 @@ export default {
 
           // Show success toast
           const eventType = hookId.split('::')[0]
-          toast.add({
-            severity: 'success',
-            summary: 'Hook Deleted',
-            detail: `${eventType} hook has been deleted successfully`,
-            life: 5000
-          })
+          configToast.deleteSuccess('Hook', `${eventType} hook`)
         } else {
           // Handle delete failure
-          toast.add({
-            severity: 'error',
-            summary: 'Delete Failed',
-            detail: result.error || 'Failed to delete hook',
-            life: 0
-          })
+          configToast.deleteError({ error: result.error || 'Failed to delete hook' })
           showHookDeleteDialog.value = false
         }
       } catch (err) {
         // Handle unexpected errors
-        toast.add({
-          severity: 'error',
-          summary: 'Delete Failed',
-          detail: err.message || 'An unexpected error occurred',
-          life: 0
-        })
+        configToast.deleteError(err)
         showHookDeleteDialog.value = false
       } finally {
         hookDeleteLoading.value = false
@@ -678,28 +663,13 @@ export default {
             sidebarVisible.value = false
           }
 
-          toast.add({
-            severity: 'success',
-            summary: 'Skill Deleted',
-            detail: `Skill "${skillName}" has been deleted successfully`,
-            life: 5000
-          })
+          configToast.deleteSuccess('Skill', `Skill "${skillName}"`)
         } else {
-          toast.add({
-            severity: 'error',
-            summary: 'Delete Failed',
-            detail: result.error || 'Failed to delete skill',
-            life: 0
-          })
+          configToast.deleteError({ error: result.error || 'Failed to delete skill' })
           showSkillDeleteDialog.value = false
         }
       } catch (err) {
-        toast.add({
-          severity: 'error',
-          summary: 'Delete Failed',
-          detail: err.message || 'An unexpected error occurred',
-          life: 0
-        })
+        configToast.deleteError(err)
         showSkillDeleteDialog.value = false
       } finally {
         skillDeleteLoading.value = false
@@ -736,28 +706,13 @@ export default {
             sidebarVisible.value = false
           }
 
-          toast.add({
-            severity: 'success',
-            summary: 'MCP Server Deleted',
-            detail: `MCP server "${deletingMcp.value.name}" has been deleted successfully`,
-            life: 5000
-          })
+          configToast.deleteSuccess('MCP Server', `MCP server "${deletingMcp.value.name}"`)
         } else {
-          toast.add({
-            severity: 'error',
-            summary: 'Delete Failed',
-            detail: result.error || 'Failed to delete MCP server',
-            life: 0
-          })
+          configToast.deleteError({ error: result.error || 'Failed to delete MCP server' })
           showMcpDeleteDialog.value = false
         }
       } catch (err) {
-        toast.add({
-          severity: 'error',
-          summary: 'Delete Failed',
-          detail: err.message || 'An unexpected error occurred',
-          life: 0
-        })
+        configToast.deleteError(err)
         showMcpDeleteDialog.value = false
       } finally {
         mcpDeleteLoading.value = false
@@ -786,12 +741,7 @@ export default {
 
       // Show toast
       const filename = result.filename || result.source?.name || 'Configuration'
-      toast.add({
-        severity: 'success',
-        summary: 'Configuration Copied',
-        detail: `${filename} has been copied successfully`,
-        life: 5000
-      })
+      configToast.copySuccess(filename)
 
       // Refresh data if copied to current project
       const currentProjectId = route.params.id || props.id
@@ -813,22 +763,12 @@ export default {
 
     const handleCopyError = (error) => {
       showCopyModal.value = false
-      toast.add({
-        severity: 'error',
-        summary: 'Copy Failed',
-        detail: error.message || 'An error occurred during the copy operation',
-        life: 0  // Manual dismiss
-      })
+      configToast.copyError(error)
     }
 
     const handleCopyCancelled = () => {
       showCopyModal.value = false
-      toast.add({
-        severity: 'info',
-        summary: 'Copy operation cancelled',
-        detail: '',
-        life: 3000
-      })
+      configToast.copyCancelled()
     }
 
     // Watch for route changes
