@@ -179,19 +179,6 @@ const toolOptions = [
   { label: 'TodoWrite', value: 'TodoWrite' }
 ]
 
-// Watch for changes to selectedItem
-watch(() => props.selectedItem, (newItem) => {
-  if (newItem) {
-    skillData.value = {
-      name: newItem.name || '',
-      description: newItem.description || '',
-      allowedTools: newItem.allowedTools || [],
-      content: newItem.content || ''
-    }
-    updateEditingField(null)
-  }
-}, { immediate: true })
-
 // Update editing field (emit to parent)
 const updateEditingField = (fieldName) => {
   emit('update:editing-field', fieldName)
@@ -230,6 +217,19 @@ const handleSkillFieldUpdate = async (fieldName, newValue) => {
     updateEditingField(null)
   }
 }
+
+// Watch for changes to selectedItem
+watch(() => props.selectedItem, (newItem) => {
+  if (newItem) {
+    skillData.value = {
+      name: newItem.name || '',
+      description: newItem.description || '',
+      allowedTools: newItem.allowedTools || [],
+      content: newItem.content || ''
+    }
+    updateEditingField(null)
+  }
+}, { immediate: true })
 
 // Helper: Calculate indent level for file tree
 const getIndentLevel = (relativePath) => {
