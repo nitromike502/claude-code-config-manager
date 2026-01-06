@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import * as api from '@/api/client'
+import * as api from '@/api'
 import { useNotificationsStore } from './notifications'
 
 /**

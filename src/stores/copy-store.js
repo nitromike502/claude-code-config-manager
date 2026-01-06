@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import api from '@/api/client.js'
+import api from '@/api'
 
 /**
  * Copy Store - Manages state for copy configuration operations

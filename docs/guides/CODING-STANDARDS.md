@@ -137,7 +137,7 @@ const { parseSubagent } = require('../../../src/backend/parsers/subagentParser')
 // ✅ Correct - Frontend uses @ aliases
 import { useProjectStore } from '@/stores/projectStore';
 import ConfigCard from '@/components/ConfigCard.vue';
-import { apiClient } from '@/api/client';
+import { getProjects, copyAgent } from '@/api';
 ```
 
 **Rationale:**

@@ -85,7 +85,7 @@
 <script>
 import { ref, computed, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import * as api from '@/api/client'
+import * as api from '@/api'
 import ConfigPageLayout from '@/components/layouts/ConfigPageLayout.vue'
 import CopyModal from '@/components/copy/CopyModal.vue'
 import DeleteConfirmationModal from '@/components/modals/DeleteConfirmationModal.vue'
