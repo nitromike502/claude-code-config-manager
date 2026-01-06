@@ -658,7 +658,7 @@ import { useCommandsStore } from '@/stores/commands'
 import { useSkillsStore } from '@/stores/skills'
 import { useHooksStore } from '@/stores/hooks'
 import { useMcpStore } from '@/stores/mcp'
-import api from '@/api/client'
+import api from '@/api'
 
 const agentsStore = useAgentsStore()
 const commandsStore = useCommandsStore()

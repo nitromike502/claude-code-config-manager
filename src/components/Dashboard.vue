@@ -110,7 +110,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
-import * as api from '@/api/client'
+import * as api from '@/api'
 import Button from 'primevue/button'
 import Card from 'primevue/card'
 import Select from 'primevue/select'
