@@ -1,7 +1,11 @@
 <template>
   <div>
-    <!-- Name Field -->
-    <LabeledEditField
+    <!-- Metadata Section -->
+    <div class="mb-6">
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Metadata</h4>
+
+      <!-- Name Field -->
+      <LabeledEditField
       v-model="mcpData.name"
       field-type="text"
       label="Name"
@@ -125,6 +129,7 @@
       @edit-cancel="handleEditCancel"
       @edit-accept="handleMcpFieldUpdate('retries', $event)"
     />
+    </div>
   </div>
 </template>
 

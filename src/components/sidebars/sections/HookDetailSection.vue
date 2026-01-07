@@ -1,10 +1,14 @@
 <template>
   <div>
-    <!-- Event Field (READONLY - cannot change after creation) -->
-    <p class="my-2 text-sm text-text-secondary leading-relaxed">
-      <strong class="text-text-primary">Event:</strong> {{ selectedItem.event }}
-      <span class="text-text-muted text-xs ml-2">(read-only)</span>
-    </p>
+    <!-- Metadata Section -->
+    <div class="mb-6">
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Metadata</h4>
+
+      <!-- Event Field (READONLY - cannot change after creation) -->
+      <p class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Event:</strong> {{ selectedItem.event }}
+        <span class="text-text-muted text-xs ml-2">(read-only)</span>
+      </p>
 
     <!-- Matcher Field (only for PreToolUse/PostToolUse/PermissionRequest/Notification events) -->
     <LabeledEditField
@@ -92,6 +96,7 @@
       @edit-cancel="handleEditCancel"
       @edit-accept="handleHookFieldUpdate('continue', $event)"
     />
+    </div>
   </div>
 </template>
 
