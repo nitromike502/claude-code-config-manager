@@ -125,6 +125,7 @@
 import { ref, computed, watch } from 'vue'
 import { useSkillsStore } from '@/stores/skills'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
+import { TOOL_OPTIONS } from '@/constants/form-options'
 import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
@@ -166,18 +167,8 @@ const skillData = ref({
   content: ''
 })
 
-// Tool options for skills
-const toolOptions = [
-  { label: 'Bash', value: 'Bash' },
-  { label: 'Read', value: 'Read' },
-  { label: 'Write', value: 'Write' },
-  { label: 'Edit', value: 'Edit' },
-  { label: 'Glob', value: 'Glob' },
-  { label: 'Grep', value: 'Grep' },
-  { label: 'WebFetch', value: 'WebFetch' },
-  { label: 'TodoRead', value: 'TodoRead' },
-  { label: 'TodoWrite', value: 'TodoWrite' }
-]
+// Use constants from form-options
+const toolOptions = TOOL_OPTIONS
 
 // Update editing field (emit to parent)
 const updateEditingField = (fieldName) => {

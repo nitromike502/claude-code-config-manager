@@ -139,6 +139,7 @@ import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import ArgsArrayEditor from '@/components/forms/ArgsArrayEditor.vue'
 import KeyValueEditor from '@/components/forms/KeyValueEditor.vue'
 import { useMcpStore } from '@/stores/mcp'
+import { YES_NO_OPTIONS } from '@/constants/form-options'
 
 const props = defineProps({
   selectedItem: {
@@ -184,11 +185,8 @@ const mcpData = ref({
   retries: null
 })
 
-// Boolean options for selectbutton
-const booleanOptions = [
-  { label: 'Yes', value: true },
-  { label: 'No', value: false }
-]
+// Use constants from form-options
+const booleanOptions = YES_NO_OPTIONS
 
 // Watch selectedItem and update mcpData
 watch(() => props.selectedItem, (newItem) => {

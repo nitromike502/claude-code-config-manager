@@ -104,6 +104,7 @@
 import { ref, watch } from 'vue'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import { useCommandsStore } from '@/stores/commands'
+import { MODEL_OPTIONS, TOOL_OPTIONS, MODEL_INVOCATION_OPTIONS } from '@/constants/form-options'
 
 const commandsStore = useCommandsStore()
 
@@ -143,32 +144,10 @@ const commandData = ref({
   content: ''
 })
 
-// Model options for commands
-const commandModelOptions = [
-  { label: 'Inherit', value: 'inherit' },
-  { label: 'Sonnet', value: 'sonnet' },
-  { label: 'Opus', value: 'opus' },
-  { label: 'Haiku', value: 'haiku' }
-]
-
-// Model invocation options
-const modelInvocationOptions = [
-  { label: 'Allow Model', value: false },
-  { label: 'Skip Model', value: true }
-]
-
-// Tool options
-const toolOptions = [
-  { label: 'Bash', value: 'Bash' },
-  { label: 'Read', value: 'Read' },
-  { label: 'Write', value: 'Write' },
-  { label: 'Edit', value: 'Edit' },
-  { label: 'Glob', value: 'Glob' },
-  { label: 'Grep', value: 'Grep' },
-  { label: 'WebFetch', value: 'WebFetch' },
-  { label: 'TodoRead', value: 'TodoRead' },
-  { label: 'TodoWrite', value: 'TodoWrite' }
-]
+// Use constants from form-options
+const commandModelOptions = MODEL_OPTIONS
+const modelInvocationOptions = MODEL_INVOCATION_OPTIONS
+const toolOptions = TOOL_OPTIONS
 
 // Watch for selectedItem changes to update commandData
 watch(() => props.selectedItem, (newItem) => {

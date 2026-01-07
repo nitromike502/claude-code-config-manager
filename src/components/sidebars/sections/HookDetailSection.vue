@@ -104,6 +104,7 @@
 import { ref, watch, onMounted } from 'vue'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import { useHooksStore } from '@/stores/hooks'
+import { HOOK_TYPE_OPTIONS, YES_NO_OPTIONS } from '@/constants/form-options'
 import api from '@/api'
 
 // Props
@@ -150,17 +151,9 @@ const hookData = ref({
 
 const editingField = ref(null)
 
-// Hook type options
-const hookTypeOptions = [
-  { label: 'Command', value: 'command' },
-  { label: 'Prompt', value: 'prompt' }
-]
-
-// Boolean options for hook fields
-const booleanOptions = [
-  { label: 'Yes', value: true },
-  { label: 'No', value: false }
-]
+// Use constants from form-options
+const hookTypeOptions = HOOK_TYPE_OPTIONS
+const booleanOptions = YES_NO_OPTIONS
 
 // Hook event metadata - fetched from API on mount, with fallback values
 const hookEventMetadata = ref({

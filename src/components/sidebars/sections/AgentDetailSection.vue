@@ -115,6 +115,7 @@
 import { ref, watch } from 'vue'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import { useAgentsStore } from '@/stores/agents'
+import { MODEL_OPTIONS, TOOL_OPTIONS, PERMISSION_MODE_OPTIONS } from '@/constants/form-options'
 
 const agentsStore = useAgentsStore()
 
@@ -158,35 +159,10 @@ const agentData = ref({
 // Local editing field state
 const editingField = ref(null)
 
-// Model options for agents
-const modelOptions = [
-  { label: 'Inherit', value: 'inherit' },
-  { label: 'Sonnet', value: 'sonnet' },
-  { label: 'Opus', value: 'opus' },
-  { label: 'Haiku', value: 'haiku' }
-]
-
-// Permission mode options for agents
-const permissionOptions = [
-  { label: 'Default', value: 'default' },
-  { label: 'Accept Edits', value: 'acceptEdits' },
-  { label: 'Bypass Permissions', value: 'bypassPermissions' },
-  { label: 'Plan', value: 'plan' },
-  { label: 'Ignore', value: 'ignore' }
-]
-
-// Tool options for agents
-const toolOptions = [
-  { label: 'Bash', value: 'Bash' },
-  { label: 'Read', value: 'Read' },
-  { label: 'Write', value: 'Write' },
-  { label: 'Edit', value: 'Edit' },
-  { label: 'Glob', value: 'Glob' },
-  { label: 'Grep', value: 'Grep' },
-  { label: 'WebFetch', value: 'WebFetch' },
-  { label: 'TodoRead', value: 'TodoRead' },
-  { label: 'TodoWrite', value: 'TodoWrite' }
-]
+// Use constants from form-options
+const modelOptions = MODEL_OPTIONS
+const permissionOptions = PERMISSION_MODE_OPTIONS
+const toolOptions = TOOL_OPTIONS
 
 // Skill options for agents (TODO: populate from available skills)
 const skillOptions = []
