@@ -233,12 +233,12 @@ const getIndentLevel = (relativePath) => {
 <style scoped>
 .skill-structure-accordion {
   background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
 }
 
 .file-tree {
-  background: var(--bg-tertiary);
+  background: var(--bg-primary);
   border-radius: 4px;
   padding: 0.5rem;
 }
