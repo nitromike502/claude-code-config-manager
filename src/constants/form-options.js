@@ -102,6 +102,12 @@ export const PERMISSION_MODE_OPTIONS = [
   { label: 'Ignore', value: 'ignore' }
 ]
 
+// Model invocation options (for commands)
+export const MODEL_INVOCATION_OPTIONS = [
+  { label: 'Allow Model', value: false },
+  { label: 'Skip Model', value: true }
+]
+
 // Official Claude Code colors
 export const CLAUDE_CODE_COLORS = [
   'blue',

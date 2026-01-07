@@ -96,6 +96,13 @@
   --p-message-warn-color: var(--p-yellow-200);  /* Warning message text */
   --p-form-field-color: var(--text-primary);  /* Form field text - matches body text #e0e0e0 */
 
+  /* Accordion - fix dark mode visibility */
+  --p-accordion-header-background: var(--bg-tertiary);  /* Dark background for accordion headers */
+  --p-accordion-header-hover-background: var(--bg-hover);  /* Hover state for accordion headers */
+  --p-accordion-header-active-background: var(--bg-tertiary);  /* Expanded state for accordion headers */
+  --p-accordion-header-active-hover-background: var(--bg-tertiary);  /* No hover effect when expanded */
+  --p-accordion-content-background: var(--bg-tertiary);  /* Content area matches header */
+
   /* ========== Backgrounds ========== */
   /* Primary: Page background
      Secondary: Card/panel backgrounds

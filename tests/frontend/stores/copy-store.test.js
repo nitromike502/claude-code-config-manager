@@ -3,8 +3,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useCopyStore } from '@/stores/copy-store'
 
 // Mock API client
-vi.mock('@/api/client.js', () => ({
+vi.mock('@/api', () => ({
   default: {
+    BASE_URL: 'http://localhost:8420',
     copyAgent: vi.fn(),
     copyCommand: vi.fn(),
     copyHook: vi.fn(),
@@ -12,7 +13,7 @@ vi.mock('@/api/client.js', () => ({
   }
 }))
 
-import api from '@/api/client.js'
+import api from '@/api'
 
 describe('Copy Store', () => {
   beforeEach(() => {

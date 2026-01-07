@@ -4,12 +4,13 @@ import { useSkillsStore } from '@/stores/skills'
 import { useNotificationsStore } from '@/stores/notifications'
 
 // Mock API client
-vi.mock('@/api/client.js', () => ({
+vi.mock('@/api', () => ({
+  BASE_URL: 'http://localhost:8420',
   deleteProjectSkill: vi.fn(),
   deleteUserSkill: vi.fn()
 }))
 
-import * as api from '@/api/client.js'
+import * as api from '@/api'
 
 describe('Skills Store - deleteSkill()', () => {
   let store
