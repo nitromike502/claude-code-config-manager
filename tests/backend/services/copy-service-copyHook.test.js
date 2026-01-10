@@ -224,9 +224,10 @@ describe('CopyService.copyHook()', () => {
       // PreToolUse should still exist
       expect(settings.hooks.PreToolUse).toEqual(existingSettings.hooks.PreToolUse);
 
-      // PostToolUse should be added (matcher field omitted since it's "*")
+      // PostToolUse should be added (matcher field MUST be present for matcher-supporting events)
       expect(settings.hooks.PostToolUse).toEqual([
         {
+          matcher: '*', // MUST be present for matcher-supporting events
           hooks: [
             {
               type: 'command',
@@ -562,6 +563,66 @@ describe('CopyService.copyHook()', () => {
 
       // Matcher field should be present when value is not "*"
       expect(settings.hooks.PreToolUse[0].matcher).toBe('*.ts');
+    });
+
+    test('adds matcher field to existing entry that lacks it (BUG-043)', async () => {
+      // Regression test for BUG-043: When merging into an existing matcher entry
+      // that doesn't have a matcher field (e.g., from old code), ensure the field is added
+
+      // 1. Create settings with a malformed hook entry (no matcher field)
+      const malformedSettings = {
+        hooks: {
+          PreToolUse: [
+            {
+              hooks: [
+                {
+                  type: 'command',
+                  command: 'existing command',
+                  enabled: true,
+                  timeout: 60
+                }
+              ]
+              // NOTE: Missing 'matcher' field - this should be fixed when adding new hook
+            }
+          ]
+        }
+      };
+
+      const settingsPath = path.join(testProjectPath, '.claude', 'settings.json');
+      await fs.mkdir(path.dirname(settingsPath), { recursive: true });
+      await fs.writeFile(settingsPath, JSON.stringify(malformedSettings, null, 2));
+
+      // 2. Copy a new hook with matcher='*' to the same event
+      const request = {
+        sourceHook: {
+          event: 'PreToolUse',
+          matcher: '*',
+          type: 'command',
+          command: 'new command',
+          enabled: true,
+          timeout: 60
+        },
+        targetScope: 'project',
+        targetProjectId: testProjectId
+      };
+
+      const result = await copyService.copyHook(request);
+      expect(result.success).toBe(true);
+
+      // 3. Verify the matcher field was added to the existing entry
+      const settings = JSON.parse(await fs.readFile(result.mergedInto, 'utf8'));
+
+      // Should have 1 matcher entry with 2 hooks (existing + new)
+      expect(settings.hooks.PreToolUse).toHaveLength(1);
+      expect(settings.hooks.PreToolUse[0].hooks).toHaveLength(2);
+
+      // CRITICAL: Matcher field should now exist (BUG-043 fix)
+      expect(settings.hooks.PreToolUse[0]).toHaveProperty('matcher');
+      expect(settings.hooks.PreToolUse[0].matcher).toBe('*');
+
+      // Both hooks should be present
+      expect(settings.hooks.PreToolUse[0].hooks[0].command).toBe('existing command');
+      expect(settings.hooks.PreToolUse[0].hooks[1].command).toBe('new command');
     });
   });
 
