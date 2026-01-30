@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs').promises;
 const config = require('../config/config.js');
+const { eventHasMatcher } = require('../config/hooks.js');
 const { discoverProjects } = require('./projectDiscovery');
 
 /**
@@ -568,6 +569,12 @@ class CopyService {
    * Level 2: Find or create matcher entry in event array
    * Level 3: Add hook command to matcher's hooks array (if not duplicate)
    *
+   * Per Claude Code specification:
+   * - Matcher-supporting events (PreToolUse, PostToolUse, PermissionRequest):
+   *   MUST always include the `matcher` field, even when value is "*"
+   * - Non-matcher events (UserPromptSubmit, PreCompact, SessionStart, SessionEnd,
+   *   Notification, Stop, SubagentStop): MUST NOT include the `matcher` field
+   *
    * @param {Object} settings - Settings object to merge into
    * @param {string} event - Event name (e.g., 'PreToolUse')
    * @param {string} matcher - Matcher pattern (e.g., '*.ts')
@@ -575,6 +582,9 @@ class CopyService {
    * @returns {Object} Updated settings object
    */
   mergeHookIntoSettings(settings, event, matcher, hookCommand) {
+    // Check if this event supports the matcher field (per Claude Code spec)
+    const supportsMatchers = eventHasMatcher(event);
+
     // Ensure hooks object exists (Level 0)
     if (!settings.hooks) {
       settings.hooks = {};
@@ -601,12 +611,20 @@ class CopyService {
         hooks: []
       };
 
-      // Only add matcher field if not default "*"
-      if (matcher && matcher !== '*') {
-        matcherEntry.matcher = matcher;
+      // Add matcher field based on event type
+      if (supportsMatchers) {
+        // Matcher-supporting events: ALWAYS include matcher field (even if "*")
+        matcherEntry.matcher = matcher || '*';
       }
+      // Non-matcher events: NEVER include matcher field
 
       eventArray.push(matcherEntry);
+    } else {
+      // Existing matcher entry found - ensure matcher field exists for matcher-supporting events
+      // This handles cases where entry was created without matcher field (e.g., from old code)
+      if (supportsMatchers && !('matcher' in matcherEntry)) {
+        matcherEntry.matcher = matcher || '*';
+      }
     }
 
     // Level 3: Add hook command (if not duplicate)
