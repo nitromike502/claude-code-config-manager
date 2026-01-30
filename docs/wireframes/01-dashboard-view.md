@@ -9,7 +9,7 @@ The Dashboard View is the entry point of the application. It displays all discov
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ HEADER                                                                       │
 │ ┌─────────────────────────────────────────────────────────────────────────┐ │
-│ │ [Claude Icon] Claude Code Manager          [🔍 Search]  [Rescan] [User] │ │
+│ │ [Claude Icon] Claude Code Config Manager          [🔍 Search]  [Rescan] [User] │ │
 │ └─────────────────────────────────────────────────────────────────────────┘ │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
@@ -51,7 +51,7 @@ The Dashboard View is the entry point of the application. It displays all discov
 ### Header (Toolbar Component)
 - **Component:** PrimeVue `Toolbar`
 - **Content:**
-  - Left: Application logo/icon + "Claude Code Manager" title
+  - Left: Application logo/icon + "Claude Code Config Manager" title
   - Center: Global search bar (PrimeVue `InputText` with icon)
   - Right:
     - Rescan button (PrimeVue `Button` - icon only with tooltip)

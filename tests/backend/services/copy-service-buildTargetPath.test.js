@@ -19,7 +19,13 @@ const { discoverProjects } = require('../../../src/backend/services/projectDisco
 const copyService = require('../../../src/backend/services/copy-service');
 
 describe('CopyService - buildTargetPath()', () => {
+  let originalHome;
+
   beforeEach(() => {
+    // Save and mock HOME environment variable for config module
+    originalHome = process.env.HOME;
+    process.env.HOME = os.homedir();
+
     // Mock discoverProjects for project scope tests
     discoverProjects.mockResolvedValue({
       projects: {
@@ -43,6 +49,11 @@ describe('CopyService - buildTargetPath()', () => {
 
     // Reset all mocks
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    // Restore HOME environment variable
+    process.env.HOME = originalHome;
   });
 
   describe('Parameter Validation', () => {
@@ -168,9 +179,10 @@ describe('CopyService - buildTargetPath()', () => {
   });
 
   describe('MCP Server Target Paths', () => {
-    test('should build user MCP path (settings.json)', async () => {
+    test('should build user MCP path (~/.claude.json)', async () => {
+      // User MCP servers are stored in ~/.claude.json, not ~/.claude/settings.json
       const result = await copyService.buildTargetPath('mcp', 'user', null, '/source/server-config.json');
-      const expected = path.join(os.homedir(), '.claude', 'settings.json');
+      const expected = path.join(os.homedir(), '.claude.json');
       expect(result).toBe(expected);
     });
 

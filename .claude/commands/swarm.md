@@ -14,7 +14,7 @@ Execute the complete SWARM workflow where the main agent coordinates all subagen
 </task>
 
 <context>
-**Project**: Claude Code Manager - Web-based tool for managing Claude Code projects
+**Project**: Claude Code Config Manager - Web-based tool for managing Claude Code projects
 **Tech Stack**: Node.js + Express (backend), Vue 3 + Vite (frontend SPA)
 **Architecture**: Local web server on port 8420, live file system reads
 
@@ -22,9 +22,10 @@ Execute the complete SWARM workflow where the main agent coordinates all subagen
 **Development Method**: SWARM (Specialized Workflow with Autonomous Resource Management)
 **Team Structure**: See `.claude/agents/` for subagent definitions
 
-**Ticket Storage**: `/home/tickets/claude/manager/`
-- Managed by `agile-ticket-manager` subagent
-- Hierarchical directory structure: Epics → Stories → Tasks
+**Ticket Storage**: SQLite database (project: `claude-manager`)
+- Managed by `agile-ticket-manager` subagent (acts as database API)
+- Accessed via `ticket-system` user-level skill scripts
+- Hierarchical relationships: Epics → Stories → Tasks
 - Status workflow: backlog → todo → in-progress → review → done
 
 **Key Workflow Documents**:
@@ -99,11 +100,12 @@ This command implements the complete SWARM workflow across 7 phases:
 - Orchestrator analyzes and creates execution plan
 
 **If NO ticket ID provided:**
-- Main agent invokes `agile-ticket-manager` to retrieve available tickets (backlog, todo)
-- Main agent invokes `project-manager` to analyze and recommend tickets
+- Main agent invokes `agile-ticket-manager` to query database for available tickets (backlog, todo statuses)
+- Ticket manager executes filter_by_status.js scripts and returns results from database
+- Main agent invokes `project-manager` to analyze tickets and recommend options
 - Present ticket options to user (see Phase 0 in SWARM-WORKFLOW.md)
 - User selects ticket
-- Main agent invokes `agile-ticket-manager` to fetch selected ticket
+- Main agent invokes `agile-ticket-manager` to fetch selected ticket from database
 - Main agent invokes `subagent-orchestrator` with ticket content
 
 **Orchestrator Deliverable:**
@@ -113,12 +115,15 @@ This command implements the complete SWARM workflow across 7 phases:
 - Risk assessment and mitigations
 - Time estimates
 
+**⚠️ TRUST SUBAGENT OUTPUT:** Present the orchestrator's plan directly to the user without additional research. Subagents run in isolated contexts specifically to do analysis work - duplicating that work wastes main agent context.
+
 ### Step 3: Invoke Ticket Manager
 
 **Main agent invokes `agile-ticket-manager`:**
 - Request: Move ticket from `todo` to `in-progress`
+- Ticket manager executes move_ticket.js script to update database
 - Document start timestamp
-- Confirm ticket status updated
+- Confirm ticket status updated in database
 
 **Main agent presents orchestrator's plan to user:**
 
@@ -309,8 +314,8 @@ After each milestone:
 ### Step 2: Main Agent Invokes Ticket Manager
 
 **Update ticket status:**
-- Move from `in-progress` to `review`
-- Document PR number in ticket
+- Move from `in-progress` to `review` (via move_ticket.js script)
+- Update database with PR metadata
 
 ### Step 3: Main Agent Invokes Code Reviewer
 
@@ -328,8 +333,8 @@ After each milestone:
 ### Step 4: Ticket Status Update
 
 **If approved, main agent invokes ticket manager:**
-- Move to `approved` status (sub-status of `review`)
-- Document reviewer approval
+- Update status in database to `approved` (sub-status of `review`)
+- Document reviewer approval via move_ticket.js script
 
 ---
 
@@ -364,8 +369,8 @@ Request user decision:
 - Pull latest changes
 
 **Main agent invokes agile-ticket-manager:**
-- Move ticket from `review` to `done`
-- Update completion timestamp
+- Execute move_ticket.js script to update status from `review` to `done`
+- Update completion timestamp in database
 - Document merge commit hash
 
 ### Step 3: Main Agent Presents Final Summary
@@ -384,17 +389,71 @@ Show:
 **Mandatory Practices:**
 
 1. **Only Main Agent Invokes Subagents** - Orchestrator creates plans but does NOT invoke
-2. **One Commit Per Task (Sequential)** - Each task completion triggers immediate commit
-3. **Batch Commit for Parallel Work** - Single commit when tasks truly execute simultaneously
-4. **Test Immediately After Each Task** - Developers test before declaring complete
-5. **Ticket Status Must Be Current** - Update at ALL key transitions
-6. **Git Operations via git-workflow-specialist** - Developers NEVER do git operations
-7. **User Approval is Mandatory Gate** - Tickets cannot move to `done` without user review
-8. **Session Tracking is Main Agent's Job** - NOT delegated to documentation-engineer
-9. **Documentation Updates After Implementation** - Committed separately from code
-10. **TodoWrite Mirrors Session Tracking** - Updated after each milestone
+2. **Trust Subagent Output** - Present subagent results directly; do NOT duplicate their analysis with your own file reads
+3. **One Commit Per Task (Sequential)** - Each task completion triggers immediate commit
+4. **Batch Commit for Parallel Work** - Single commit when tasks truly execute simultaneously
+5. **Test Immediately After Each Task** - Developers test before declaring complete
+6. **Ticket Status Must Be Current** - Update at ALL key transitions
+7. **Git Operations via git-workflow-specialist** - Developers NEVER do git operations
+8. **User Approval is Mandatory Gate** - Tickets cannot move to `done` without user review
+9. **Session Tracking is Main Agent's Job** - NOT delegated to documentation-engineer
+10. **Documentation Updates After Implementation** - Committed separately from code
+11. **TodoWrite Mirrors Session Tracking** - Updated after each milestone
 
 **See:** `docs/guides/SWARM-WORKFLOW.md` for complete workflow details and best practices.
+
+---
+
+## MAIN AGENT DELEGATION RULES - MANDATORY
+
+**CRITICAL:** As the main agent in SWARM workflow, you are a **COORDINATOR**, not an implementer. Your role is to invoke subagents and track progress - NEVER to perform implementation work directly.
+
+### What You MUST NEVER Do Directly:
+
+| Action | Use This Subagent Instead |
+|--------|---------------------------|
+| ❌ Edit code files (Edit tool on src/, tests/) | `frontend-developer` or `backend-architect` |
+| ❌ Run tests (Bash npm test, npx jest, etc.) | `playwright-testing-expert` or `test-automation-engineer` |
+| ❌ Execute git commands (git add, commit, push, etc.) | `git-workflow-specialist` |
+| ❌ Query/update tickets in database | `agile-ticket-manager` |
+| ❌ Update documentation files | `documentation-engineer` |
+
+### The "One Line Change" Rule
+
+Even if a task appears trivial (one-line fix, simple file move, single git command), you **MUST delegate** to the appropriate specialist. Specialists handle:
+
+- **Complete workflows** - not just the "hard parts"
+- **Quality validation** - they know domain-specific standards
+- **Safety protocols** - especially for git operations and ticket integrity
+- **Pattern consistency** - they maintain codebase conventions
+
+**Wrong thinking:** "This is just one line → I'll do it directly"
+**Correct thinking:** "This is code modification → frontend-developer owns code quality"
+
+### What You MAY Do Directly:
+
+✅ Read files for analysis and understanding
+✅ Search/glob for information gathering
+✅ Invoke subagents via Task tool
+✅ Update TodoWrite task lists
+✅ Create/update session tracking documents
+✅ Present information to users and request decisions
+✅ Parse orchestrator plans and coordinate execution
+
+### Pre-Action Check
+
+Before using Edit, Bash, or Write tools, ask yourself:
+1. "Is this an implementation action?" → If yes, **delegate**
+2. "Does a specialist own this domain?" → If yes, **delegate**
+3. "Am I about to modify project state?" → If yes, **delegate**
+
+### Why This Matters
+
+**Context efficiency:** Delegation actually SAVES context because subagents work in isolated contexts. Direct implementation consumes MORE main agent context through file reads, debugging, and multiple attempts.
+
+**Quality assurance:** Specialists know domain-specific rules. Example: git-workflow-specialist knows the branching strategy and will create bug fixes from `main`, not from feature branches.
+
+**Process integrity:** When you bypass specialists, you bypass the quality gates and safety protocols they enforce.
 
 </execution>
 

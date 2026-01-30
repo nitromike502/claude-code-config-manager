@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the end-to-end (e2e) test suite for the Claude Code Manager application. These tests validate complete user workflows from start to finish, ensuring all parts of the application work together correctly.
+This document describes the end-to-end (e2e) test suite for the Claude Code Config Manager application. These tests validate complete user workflows from start to finish, ensuring all parts of the application work together correctly.
 
 ## Test Organization
 

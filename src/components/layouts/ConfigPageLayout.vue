@@ -60,8 +60,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="agents"
+                :enable-crud="enableAgentCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'agents', agents)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('agent-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -83,8 +85,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="commands"
+                :enable-crud="enableCommandCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'commands', commands)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('command-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -106,8 +110,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="skills"
+                :enable-crud="enableSkillCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'skills', skills)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('skill-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -129,8 +135,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="hooks"
+                :enable-crud="enableHookCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'hooks', hooks)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('hook-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -152,8 +160,10 @@
               <ConfigItemList
                 :items="items"
                 item-type="mcp"
+                :enable-crud="enableMcpCrud"
                 @item-selected="(item) => $emit('show-detail', item, 'mcp', mcpServers)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('mcp-delete', item)"
               />
             </template>
           </ConfigPanel>
@@ -176,9 +186,20 @@
       :selected-type="selectedType"
       :current-items="currentItems"
       :selected-index="selectedIndex"
+      :scope="scope"
+      :project-id="projectId"
+      :enable-crud="enableAgentCrud || enableCommandCrud || enableSkillCrud || enableHookCrud || enableMcpCrud"
       @close="$emit('close-sidebar')"
       @navigate="(direction) => $emit('navigate', direction)"
       @copy-clicked="(item) => $emit('copy-clicked', item)"
+      @agent-delete="(item) => $emit('agent-delete', item)"
+      @agent-updated="$emit('agent-updated')"
+      @command-delete="(item) => $emit('command-delete', item)"
+      @command-updated="$emit('command-updated')"
+      @skill-delete="(item) => $emit('skill-delete', item)"
+      @hook-updated="$emit('hook-updated')"
+      @hook-delete="(item) => $emit('hook-delete', item)"
+      @mcp-delete="(item) => $emit('mcp-delete', item)"
     />
 
     <!-- Copy Modal Slot -->
@@ -332,6 +353,37 @@ defineProps({
   selectedIndex: {
     type: Number,
     default: -1
+  },
+
+  // CRUD support (for agents and commands)
+  scope: {
+    type: String,
+    default: null,
+    validator: (value) => value === null || ['project', 'user'].includes(value)
+  },
+  projectId: {
+    type: String,
+    default: null
+  },
+  enableAgentCrud: {
+    type: Boolean,
+    default: false
+  },
+  enableCommandCrud: {
+    type: Boolean,
+    default: false
+  },
+  enableSkillCrud: {
+    type: Boolean,
+    default: false
+  },
+  enableHookCrud: {
+    type: Boolean,
+    default: false
+  },
+  enableMcpCrud: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -345,7 +397,15 @@ defineEmits([
   'show-detail',
   'close-sidebar',
   'navigate',
-  'copy-clicked'
+  'copy-clicked',
+  'agent-delete',
+  'agent-updated',
+  'command-delete',
+  'command-updated',
+  'skill-delete',
+  'hook-updated',
+  'hook-delete',
+  'mcp-delete'
 ])
 </script>
 

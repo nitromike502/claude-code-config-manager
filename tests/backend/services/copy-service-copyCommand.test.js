@@ -19,6 +19,7 @@ describe('CopyService.copyCommand()', () => {
   let sourceCommandPath;
   let testProjectPath;
   let testProjectId;
+  let originalHome;
 
   // Valid command content
   const validCommandContent = `---
@@ -38,6 +39,10 @@ This is a test command for copy service testing.
   beforeEach(async () => {
     // Create temporary directory for test files
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'copy-service-command-test-'));
+
+    // Save and set HOME environment variable for config module
+    originalHome = process.env.HOME;
+    process.env.HOME = tempDir;
 
     // Create source command file
     const sourceDir = path.join(tempDir, 'source', '.claude', 'commands');
@@ -67,6 +72,8 @@ This is a test command for copy service testing.
   afterEach(async () => {
     // Clean up temp directory
     await fs.rm(tempDir, { recursive: true, force: true });
+    // Restore HOME environment variable
+    process.env.HOME = originalHome;
     jest.clearAllMocks();
     os.homedir.mockRestore();
   });

@@ -10,6 +10,9 @@ const fs = require('fs').promises;
 describe('commandParser', () => {
   const fixturesPath = path.join(__dirname, '../../fixtures/samples/commands');
 
+  // Store original HOME for cleanup
+  let originalHome;
+
   describe('Valid Command Parsing', () => {
     test('should parse command with complete frontmatter', async () => {
       const filePath = path.join(fixturesPath, 'valid-complete.md');
@@ -281,10 +284,21 @@ describe('commandParser', () => {
   });
 
   describe('getAllCommands', () => {
+    beforeEach(() => {
+      originalHome = process.env.HOME;
+    });
+
+    afterEach(() => {
+      process.env.HOME = originalHome;
+    });
+
     test('should return object with project and user arrays', async () => {
       // Use fixtures path as mock project path
       const projectPath = path.join(__dirname, '../../fixtures/mock-project');
       const userHomePath = path.join(__dirname, '../../fixtures/mock-home');
+
+      // Set HOME to test fixture path for config module
+      process.env.HOME = userHomePath;
 
       const result = await commandParser.getAllCommands(projectPath, userHomePath);
 
@@ -295,6 +309,9 @@ describe('commandParser', () => {
     });
 
     test('should handle missing project and user directories', async () => {
+      // Set HOME to nonexistent path for config module
+      process.env.HOME = '/nonexistent/home';
+
       const result = await commandParser.getAllCommands('/nonexistent/project', '/nonexistent/home');
 
       expect(result.project).toEqual([]);

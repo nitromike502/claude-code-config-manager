@@ -44,157 +44,89 @@
       </div>
     </template>
 
-    <!-- Main Content -->
-    <div class="mb-6">
-      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Metadata</h4>
+    <!-- Main Content - Entity-specific sections -->
+    <AgentDetailSection
+      v-if="selectedType === 'agents'"
+      :selected-item="selectedItem"
+      :can-edit="canEdit"
+      :project-id="projectId"
+      :scope="scope"
+      @agent-updated="$emit('agent-updated')"
+    />
 
-      <!-- Agents Metadata -->
-      <div v-if="selectedType === 'agents'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Description:</strong> {{ selectedItem.description }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Color:</strong> {{ selectedItem.color || 'Not specified' }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Model:</strong> {{ selectedItem.model || 'inherit' }}</p>
-        <p v-if="selectedItem.tools && selectedItem.tools.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
-        </p>
-        <p v-else-if="Array.isArray(selectedItem.tools) && selectedItem.tools.length === 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> None specified
-        </p>
-      </div>
+    <CommandDetailSection
+      v-else-if="selectedType === 'commands'"
+      :selected-item="selectedItem"
+      :can-edit="canEditCommand"
+      :project-id="projectId"
+      :scope="scope"
+      @command-updated="$emit('command-updated')"
+    />
 
-      <!-- Commands Metadata -->
-      <div v-else-if="selectedType === 'commands'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Description:</strong> {{ selectedItem.description }}</p>
-        <p v-if="selectedItem.namespace" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Namespace:</strong> {{ selectedItem.namespace }}</p>
-        <p v-if="selectedItem.color" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Color:</strong> {{ selectedItem.color }}</p>
-        <p v-if="selectedItem.argumentHint" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Argument Hint:</strong> {{ selectedItem.argumentHint }}</p>
-        <p v-if="selectedItem.tools && selectedItem.tools.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> {{ selectedItem.tools.join(', ') }}
-        </p>
-        <p v-else-if="Array.isArray(selectedItem.tools) && selectedItem.tools.length === 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> None specified
-        </p>
-      </div>
+    <HookDetailSection
+      v-else-if="selectedType === 'hooks'"
+      :selected-item="selectedItem"
+      :can-edit="canEditHook"
+      :project-id="projectId"
+      :scope="scope"
+      @hook-updated="$emit('hook-updated')"
+    />
 
-      <!-- Hooks Metadata -->
-      <div v-else-if="selectedType === 'hooks'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Event:</strong> {{ selectedItem.event }}</p>
-        <p v-if="selectedItem.type" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Type:</strong> {{ selectedItem.type }}</p>
-        <p v-if="selectedItem.matcher" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Matcher:</strong> {{ selectedItem.matcher }}</p>
-        <p v-if="selectedItem.pattern" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Pattern:</strong> {{ selectedItem.pattern }}</p>
-        <p v-if="selectedItem.command" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Command:</strong> <code class="bg-bg-primary px-1 py-0.5 rounded font-mono text-xs text-primary">{{ selectedItem.command }}</code></p>
-      </div>
+    <McpDetailSection
+      v-else-if="selectedType === 'mcp'"
+      :selected-item="selectedItem"
+      :can-edit="canEditMcp"
+      :project-id="projectId"
+      :scope="scope"
+      @mcp-updated="$emit('mcp-updated')"
+    />
 
-      <!-- MCP Servers Metadata -->
-      <div v-else-if="selectedType === 'mcp'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p v-if="selectedItem.transport || selectedItem.transportType" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Transport:</strong> {{ selectedItem.transport || selectedItem.transportType }}
-        </p>
-        <p v-if="selectedItem.command" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Command:</strong> <code class="bg-bg-primary px-1 py-0.5 rounded font-mono text-xs text-primary">{{ selectedItem.command }}</code></p>
-        <p v-if="selectedItem.args && selectedItem.args.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Arguments:</strong> {{ selectedItem.args.join(' ') }}
-        </p>
-        <p v-if="selectedItem.enabled === false" class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Status:</strong> Disabled</p>
-      </div>
+    <SkillDetailSection
+      v-else-if="selectedType === 'skills'"
+      :selected-item="selectedItem"
+      :can-edit="canEditSkill"
+      :project-id="projectId"
+      :scope="scope"
+      @skill-updated="$emit('skill-updated')"
+    />
 
-      <!-- Skills Metadata -->
-      <div v-else-if="selectedType === 'skills'">
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}</p>
-        <p class="my-2 text-sm text-text-secondary leading-relaxed"><strong class="text-text-primary">Description:</strong> {{ selectedItem.description || 'No description' }}</p>
-        <p v-if="selectedItem.allowedTools && selectedItem.allowedTools.length > 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong>
-          <span v-for="(tool, index) in selectedItem.allowedTools" :key="index" class="inline-block bg-bg-tertiary px-2 py-1 rounded text-xs mr-1 mt-1">{{ tool }}</span>
-        </p>
-        <p v-else-if="Array.isArray(selectedItem.allowedTools) && selectedItem.allowedTools.length === 0" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Allowed Tools:</strong> None specified
-        </p>
-        <p v-if="selectedItem.directoryPath" class="my-2 text-sm text-text-secondary leading-relaxed">
-          <strong class="text-text-primary">Directory Path:</strong> <code class="bg-bg-primary px-1 py-0.5 rounded font-mono text-xs text-text-secondary">{{ selectedItem.directoryPath }}</code>
-        </p>
-
-        <!-- Structure Information with Collapsible File Tree -->
-        <div v-if="selectedItem.fileCount || selectedItem.files" class="my-3">
-          <Accordion :value="null" class="skill-structure-accordion">
-            <AccordionPanel value="files">
-              <AccordionHeader>
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-folder text-color-skills"></i>
-                  <span class="font-semibold">Structure</span>
-                  <span class="text-text-muted text-xs ml-1">({{ selectedItem.fileCount }} files)</span>
-                </div>
-              </AccordionHeader>
-              <AccordionContent>
-                <div class="file-tree pl-2">
-                  <div
-                    v-for="(file, index) in selectedItem.files"
-                    :key="index"
-                    class="file-tree-item"
-                    :class="{ 'directory': file.type === 'directory' }"
-                    :style="{ paddingLeft: getIndentLevel(file.relativePath) + 'rem' }"
-                  >
-                    <i :class="file.type === 'directory' ? 'pi pi-folder' : 'pi pi-file'"
-                       :style="{ color: file.type === 'directory' ? 'var(--color-skills)' : 'var(--text-muted)' }"></i>
-                    <span class="text-xs text-text-secondary">{{ file.name }}</span>
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionPanel>
-          </Accordion>
-        </div>
-
-        <!-- External References Warning -->
-        <div v-if="selectedItem.externalReferences && selectedItem.externalReferences.length > 0" class="my-3 p-3 bg-color-warning-bg rounded border border-color-warning">
-          <div class="flex items-start gap-2">
-            <i class="pi pi-exclamation-triangle text-color-warning mt-0.5"></i>
-            <div class="flex-1">
-              <p class="text-sm font-semibold text-color-warning mb-2">External References Detected</p>
-              <div v-for="(ref, index) in selectedItem.externalReferences" :key="index" class="mb-2">
-                <p class="text-xs text-text-secondary">
-                  <code class="bg-bg-primary px-1 py-0.5 rounded font-mono">{{ ref.reference }}</code>
-                </p>
-                <p class="text-xs text-text-muted">{{ ref.file }}, line {{ ref.line }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Parse Error -->
-        <div v-if="selectedItem.hasError && selectedItem.parseError" class="my-3 p-3 bg-color-error-bg rounded border border-color-error">
-          <div class="flex items-start gap-2">
-            <i class="pi pi-times-circle text-color-error mt-0.5"></i>
-            <div class="flex-1">
-              <p class="text-sm font-semibold text-color-error mb-1">Parse Error</p>
-              <p class="text-xs text-text-secondary">{{ selectedItem.parseError }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Content Section -->
-    <div v-if="selectedItem?.content" class="mb-6">
-      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Content</h4>
+    <!-- Content Section - only show for types not handled by section components -->
+    <div v-if="selectedItem?.content && !['agents', 'commands', 'skills', 'hooks', 'mcp'].includes(selectedType)" class="mb-6">
       <pre class="bg-bg-primary p-4 rounded border border-border-primary font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[400px] overflow-y-auto text-text-primary">{{ selectedItem.content }}</pre>
     </div>
 
-    <!-- Footer with Actions -->
+    <!-- Footer with Actions (inline icon buttons) -->
     <template #footer>
-      <div class="flex gap-3 w-full">
+      <div class="flex items-center justify-end gap-2">
+        <!-- Delete Button (for agents, commands, skills, hooks, and mcp with edit enabled) -->
+        <Button
+          v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand) || (selectedType === 'skills' && canEditSkill) || (selectedType === 'hooks' && canEditHook) || (selectedType === 'mcp' && canEditMcp)"
+          @click="handleDelete"
+          :disabled="!selectedItem"
+          icon="pi pi-trash"
+          outlined
+          severity="danger"
+          aria-label="Delete"
+          v-tooltip.top="'Delete'"
+          class="sidebar-action-btn delete-action-btn"
+        />
+
         <Button
           @click="handleCopy"
           :disabled="!selectedItem"
-          label="Copy"
           icon="pi pi-copy"
-          class="copy-action-btn flex-1"
+          outlined
+          aria-label="Copy"
+          v-tooltip.top="'Copy'"
+          class="sidebar-action-btn copy-action-btn"
         />
         <Button
           @click="localVisible = false"
-          label="Close"
           icon="pi pi-times"
           outlined
-          class="close-action-btn flex-1"
+          aria-label="Close"
+          v-tooltip.top="'Close'"
+          class="sidebar-action-btn close-action-btn"
         />
       </div>
     </template>
@@ -205,10 +137,11 @@
 import { computed, ref, watch } from 'vue'
 import Button from 'primevue/button'
 import Drawer from 'primevue/drawer'
-import Accordion from 'primevue/accordion'
-import AccordionPanel from 'primevue/accordionpanel'
-import AccordionHeader from 'primevue/accordionheader'
-import AccordionContent from 'primevue/accordioncontent'
+import AgentDetailSection from './sections/AgentDetailSection.vue'
+import CommandDetailSection from './sections/CommandDetailSection.vue'
+import HookDetailSection from './sections/HookDetailSection.vue'
+import McpDetailSection from './sections/McpDetailSection.vue'
+import SkillDetailSection from './sections/SkillDetailSection.vue'
 
 const props = defineProps({
   visible: {
@@ -231,6 +164,20 @@ const props = defineProps({
   selectedIndex: {
     type: Number,
     default: -1
+  },
+  // CRUD support
+  scope: {
+    type: String,
+    default: null,
+    validator: (value) => value === null || ['project', 'user'].includes(value)
+  },
+  projectId: {
+    type: String,
+    default: null
+  },
+  enableCrud: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -242,6 +189,26 @@ const emit = defineEmits({
   'copy-clicked': (item) => {
     return item && typeof item === 'object'
   },
+  'agent-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'agent-updated': () => true,
+  'command-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'command-updated': () => true,
+  'skill-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'skill-updated': () => true,
+  'hook-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'hook-updated': () => true,
+  'mcp-delete': (item) => {
+    return item && typeof item === 'object'
+  },
+  'mcp-updated': () => true,
   'update:visible': (value) => typeof value === 'boolean'
 })
 
@@ -259,6 +226,37 @@ watch(localVisible, (newVal) => {
     emit('close')
   }
   emit('update:visible', newVal)
+})
+
+// Computed: Can edit agents (only if enableCrud is true and not a plugin agent)
+const canEdit = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'agents' &&
+         props.selectedItem?.location !== 'plugin'
+})
+
+// Computed: Can edit commands (only if enableCrud is true)
+const canEditCommand = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'commands'
+})
+
+// Computed: Can edit skills (only if enableCrud is true)
+const canEditSkill = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'skills'
+})
+
+// Computed: Can edit hooks (only if enableCrud is true)
+const canEditHook = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'hooks'
+})
+
+// Computed: Can edit MCP servers (only if enableCrud is true)
+const canEditMcp = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'mcp'
 })
 
 // Computed: navigation state
@@ -308,11 +306,19 @@ const handleNavigateNext = () => {
   }
 }
 
-// Calculate indentation level for file tree based on path depth
-const getIndentLevel = (relativePath) => {
-  if (!relativePath) return 0
-  const depth = (relativePath.match(/\//g) || []).length
-  return depth * 1.25 // 1.25rem per level
+// Handle delete button click
+const handleDelete = () => {
+  if (canEdit.value && props.selectedItem) {
+    emit('agent-delete', props.selectedItem)
+  } else if (canEditCommand.value && props.selectedItem) {
+    emit('command-delete', props.selectedItem)
+  } else if (canEditSkill.value && props.selectedItem) {
+    emit('skill-delete', props.selectedItem)
+  } else if (canEditHook.value && props.selectedItem) {
+    emit('hook-delete', props.selectedItem)
+  } else if (canEditMcp.value && props.selectedItem) {
+    emit('mcp-delete', props.selectedItem)
+  }
 }
 
 // Handle copy button click
@@ -408,97 +414,57 @@ const handleCopy = () => {
   cursor: not-allowed !important;
 }
 
-/* Copy action button */
-.copy-action-btn {
-  background: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-  color: white !important;
-  padding: 0.75rem 1rem !important;
-  font-weight: 500 !important;
+/* Sidebar action buttons (footer) - icon-only outlined style */
+.sidebar-action-btn {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  padding: 0 !important;
   transition: all 0.2s !important;
 }
 
+.sidebar-action-btn:disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed !important;
+}
+
+/* Copy action button */
+.copy-action-btn {
+  background: var(--bg-secondary) !important;
+  color: var(--color-primary) !important;
+  border: 1px solid var(--color-primary) !important;
+}
+
 .copy-action-btn:hover:not(:disabled) {
-  background: var(--color-primary-hover) !important;
-  border-color: var(--color-primary-hover) !important;
+  background: var(--color-primary) !important;
+  color: white !important;
   transform: translateY(-1px);
   box-shadow: var(--shadow-card);
 }
 
-.copy-action-btn:disabled {
-  opacity: 0.6 !important;
-  cursor: not-allowed !important;
-  background: var(--bg-tertiary) !important;
-  border-color: var(--bg-tertiary) !important;
-  color: var(--text-disabled) !important;
+/* Delete action button */
+.delete-action-btn {
+  background: var(--bg-secondary) !important;
+  color: var(--color-error) !important;
+  border: 1px solid var(--color-error) !important;
 }
 
-/* Close action button (outlined) */
+.delete-action-btn:hover:not(:disabled) {
+  background: var(--color-error) !important;
+  color: white !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+/* Close action button */
 .close-action-btn {
   background: var(--bg-secondary) !important;
   color: var(--text-primary) !important;
   border: 1px solid var(--border-primary) !important;
-  padding: 0.75rem 1rem !important;
-  font-weight: 500 !important;
-  transition: all 0.2s !important;
 }
 
 .close-action-btn:hover {
   background: var(--bg-hover) !important;
   transform: translateY(-1px);
   box-shadow: var(--shadow-card);
-}
-
-/* Skills Structure Accordion */
-.skill-structure-accordion {
-  background: var(--bg-tertiary);
-  border-radius: 0.5rem;
-  overflow: hidden;
-}
-
-:deep(.skill-structure-accordion .p-accordionheader) {
-  background: var(--bg-tertiary) !important;
-  border: none !important;
-  padding: 0.75rem 1rem !important;
-}
-
-:deep(.skill-structure-accordion .p-accordionheader:hover) {
-  background: var(--bg-hover) !important;
-}
-
-:deep(.skill-structure-accordion .p-accordioncontent-content) {
-  background: var(--bg-primary) !important;
-  border-top: 1px solid var(--border-primary) !important;
-  padding: 0.75rem !important;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-/* File Tree Styling */
-.file-tree {
-  font-family: var(--font-mono);
-}
-
-.file-tree-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0;
-  border-radius: 0.25rem;
-  transition: background 0.15s;
-}
-
-.file-tree-item:hover {
-  background: var(--bg-hover);
-}
-
-.file-tree-item.directory {
-  font-weight: 500;
-}
-
-.file-tree-item i {
-  font-size: 0.875rem;
-  width: 1rem;
-  text-align: center;
 }
 </style>

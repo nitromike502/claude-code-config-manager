@@ -36,8 +36,8 @@ function getBaseUrl() {
   return origin;
 }
 
-const BASE_URL = getBaseUrl()
-const DEFAULT_TIMEOUT = 30000 // 30 seconds
+export const BASE_URL = getBaseUrl()
+export const DEFAULT_TIMEOUT = 30000 // 30 seconds
 
 /**
  * Fetch with timeout support
@@ -46,7 +46,7 @@ const DEFAULT_TIMEOUT = 30000 // 30 seconds
  * @param {number} timeout - Timeout in milliseconds
  * @returns {Promise<Response>}
  */
-async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
+export async function fetchWithTimeout(url, options = {}, timeout = DEFAULT_TIMEOUT) {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
 
@@ -120,193 +120,10 @@ export async function scanProjects() {
 }
 
 /**
- * Get project agents
- * @param {string} projectId - Project identifier
- * @returns {Promise<Object>} - { agents: [], warnings: [] }
- */
-export async function getProjectAgents(projectId) {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/agents`)
-  return response.json()
-}
-
-/**
- * Get project commands
- * @param {string} projectId - Project identifier
- * @returns {Promise<Object>} - { commands: [], warnings: [] }
- */
-export async function getProjectCommands(projectId) {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/commands`)
-  return response.json()
-}
-
-/**
- * Get project hooks
- * @param {string} projectId - Project identifier
- * @returns {Promise<Object>} - { hooks: [], warnings: [] }
- */
-export async function getProjectHooks(projectId) {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/hooks`)
-  return response.json()
-}
-
-/**
- * Get project MCP servers
- * @param {string} projectId - Project identifier
- * @returns {Promise<Object>} - { mcpServers: [], warnings: [] }
- */
-export async function getProjectMcp(projectId) {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/mcp`)
-  return response.json()
-}
-
-/**
- * Get user agents
- * @returns {Promise<Object>} - { agents: [], warnings: [] }
- */
-export async function getUserAgents() {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/user/agents`)
-  return response.json()
-}
-
-/**
- * Get user commands
- * @returns {Promise<Object>} - { commands: [], warnings: [] }
- */
-export async function getUserCommands() {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/user/commands`)
-  return response.json()
-}
-
-/**
- * Get user hooks
- * @returns {Promise<Object>} - { hooks: [], warnings: [] }
- */
-export async function getUserHooks() {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/user/hooks`)
-  return response.json()
-}
-
-/**
- * Get user MCP servers
- * @returns {Promise<Object>} - { mcp: [], warnings: [] }
- */
-export async function getUserMcp() {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/user/mcp`)
-  return response.json()
-}
-
-/**
- * Get project skills
- * @param {string} projectId - Project identifier
- * @returns {Promise<Object>} - { skills: [], warnings: [] }
- */
-export async function getProjectSkills(projectId) {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/skills`)
-  return response.json()
-}
-
-/**
- * Get user skills
- * @returns {Promise<Object>} - { skills: [], warnings: [] }
- */
-export async function getUserSkills() {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/user/skills`)
-  return response.json()
-}
-
-/**
  * Health check endpoint
  * @returns {Promise<Object>} - { status: string }
  */
 export async function healthCheck() {
   const response = await fetchWithTimeout(`${BASE_URL}/api/health`)
   return response.json()
-}
-
-/**
- * Copy agent to target scope
- * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
- * @returns {Promise<Object>} - { success: boolean, message: string, createdPath?: string }
- */
-export async function copyAgent(request) {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/agent`, {
-    method: 'POST',
-    body: JSON.stringify(request)
-  })
-  return response.json()
-}
-
-/**
- * Copy command to target scope
- * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
- * @returns {Promise<Object>} - { success: boolean, message: string, createdPath?: string }
- */
-export async function copyCommand(request) {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/command`, {
-    method: 'POST',
-    body: JSON.stringify(request)
-  })
-  return response.json()
-}
-
-/**
- * Copy hook to target scope
- * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
- * @returns {Promise<Object>} - { success: boolean, message: string, warnings?: string[] }
- */
-export async function copyHook(request) {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/hook`, {
-    method: 'POST',
-    body: JSON.stringify(request)
-  })
-  return response.json()
-}
-
-/**
- * Copy MCP server to target scope
- * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy }
- * @returns {Promise<Object>} - { success: boolean, message: string, warnings?: string[] }
- */
-export async function copyMcp(request) {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/mcp`, {
-    method: 'POST',
-    body: JSON.stringify(request)
-  })
-  return response.json()
-}
-
-/**
- * Copy skill to target scope
- * @param {Object} request - { sourcePath, targetScope, targetProjectId, conflictStrategy, acknowledgedWarnings }
- * @returns {Promise<Object>} - { success: boolean, message: string, createdPath?: string }
- */
-export async function copySkill(request) {
-  const response = await fetchWithTimeout(`${BASE_URL}/api/copy/skill`, {
-    method: 'POST',
-    body: JSON.stringify(request)
-  })
-  return response.json()
-}
-
-// Default export with all API functions
-export default {
-  BASE_URL,
-  getProjects,
-  scanProjects,
-  getProjectAgents,
-  getProjectCommands,
-  getProjectHooks,
-  getProjectMcp,
-  getProjectSkills,
-  getUserAgents,
-  getUserCommands,
-  getUserHooks,
-  getUserMcp,
-  getUserSkills,
-  healthCheck,
-  copyAgent,
-  copyCommand,
-  copyHook,
-  copyMcp,
-  copySkill
 }

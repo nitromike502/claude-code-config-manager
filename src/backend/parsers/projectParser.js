@@ -5,14 +5,14 @@
 
 const fs = require('fs').promises;
 const path = require('path');
-const os = require('os');
+const config = require('../config/config');
 
 /**
  * Get the path to ~/.claude.json
  * @returns {string} Absolute path to ~/.claude.json
  */
 function getClaudeJsonPath() {
-  return path.join(os.homedir(), '.claude.json');
+  return config.paths.getUserClaudeJsonPath();
 }
 
 /**
@@ -43,9 +43,7 @@ async function parseProjects() {
 
     for (const [projectPath, projectConfig] of Object.entries(config.projects)) {
       // Expand ~ in path if present
-      const expandedPath = projectPath.startsWith('~')
-        ? path.join(os.homedir(), projectPath.slice(1))
-        : projectPath;
+      const expandedPath = config.paths.expandHome(projectPath);
 
       // Check if project directory exists
       let exists = false;
@@ -128,7 +126,7 @@ async function getProjectConfigCounts(projectPath) {
 
   try {
     // Count agents
-    const agentsPath = path.join(projectPath, '.claude', 'agents');
+    const agentsPath = config.paths.getProjectAgentsDir(projectPath);
     try {
       const agentFiles = await fs.readdir(agentsPath);
       counts.agents = agentFiles.filter(f => f.endsWith('.md')).length;
@@ -137,7 +135,7 @@ async function getProjectConfigCounts(projectPath) {
     }
 
     // Count commands (recursive)
-    const commandsPath = path.join(projectPath, '.claude', 'commands');
+    const commandsPath = config.paths.getProjectCommandsDir(projectPath);
     try {
       counts.commands = await countMarkdownFilesRecursive(commandsPath);
     } catch {
@@ -145,7 +143,7 @@ async function getProjectConfigCounts(projectPath) {
     }
 
     // Count hooks
-    const settingsPath = path.join(projectPath, '.claude', 'settings.json');
+    const settingsPath = config.paths.getProjectSettingsPath(projectPath);
     try {
       const content = await fs.readFile(settingsPath, 'utf-8');
       const settings = JSON.parse(content);
@@ -165,7 +163,7 @@ async function getProjectConfigCounts(projectPath) {
     }
 
     // Count MCP servers
-    const mcpJsonPath = path.join(projectPath, '.mcp.json');
+    const mcpJsonPath = config.paths.getProjectMcpPath(projectPath);
     try {
       const content = await fs.readFile(mcpJsonPath, 'utf-8');
       const mcpConfig = JSON.parse(content);
@@ -238,7 +236,7 @@ async function getProjectsWithCounts() {
  */
 async function isValidClaudeProject(projectPath) {
   try {
-    const claudeDirPath = path.join(projectPath, '.claude');
+    const claudeDirPath = config.paths.getProjectClaudeDir(projectPath);
     const stat = await fs.stat(claudeDirPath);
     return stat.isDirectory();
   } catch {

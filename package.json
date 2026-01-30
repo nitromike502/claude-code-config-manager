@@ -1,6 +1,6 @@
 {
   "name": "claude-code-config-manager",
-  "version": "2.3.2",
+  "version": "3.0.0",
   "description": "Web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers",
   "main": "src/backend/server.js",
   "bin": {
@@ -20,8 +20,8 @@
     "prepublishOnly": "npm run build",
     "start": "node src/backend/server.js",
     "dev:backend": "node --watch src/backend/server.js",
-    "server:check": "./scripts/ensure-server-running.sh",
-    "server:restart": "./scripts/ensure-server-running.sh --restart",
+    "server:check": "./.claude/skills/server-management/scripts/ensure-server-running.sh",
+    "server:restart": "./.claude/skills/server-management/scripts/ensure-server-running.sh --restart",
     "test": "NODE_OPTIONS='--max-old-space-size=4096' jest",
     "test:backend": "NODE_OPTIONS='--max-old-space-size=4096' jest tests/backend",
     "test:frontend": "playwright test",

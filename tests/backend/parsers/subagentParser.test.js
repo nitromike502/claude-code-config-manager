@@ -250,10 +250,23 @@ describe('subagentParser', () => {
   });
 
   describe('getAllSubagents', () => {
+    let originalHome;
+
+    beforeEach(() => {
+      originalHome = process.env.HOME;
+    });
+
+    afterEach(() => {
+      process.env.HOME = originalHome;
+    });
+
     test('should return object with project and user arrays', async () => {
       // Use fixtures path as mock project path
       const projectPath = path.join(__dirname, '../../fixtures/mock-project');
       const userHomePath = path.join(__dirname, '../../fixtures/mock-home');
+
+      // Set HOME to test fixture path for config module
+      process.env.HOME = userHomePath;
 
       const result = await subagentParser.getAllSubagents(projectPath, userHomePath);
 
@@ -264,6 +277,9 @@ describe('subagentParser', () => {
     });
 
     test('should handle missing project and user directories', async () => {
+      // Set HOME to nonexistent path for config module
+      process.env.HOME = '/nonexistent/home';
+
       const result = await subagentParser.getAllSubagents('/nonexistent/project', '/nonexistent/home');
 
       expect(result.project).toEqual([]);

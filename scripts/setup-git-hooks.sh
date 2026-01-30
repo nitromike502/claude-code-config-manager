@@ -1,5 +1,5 @@
 #!/bin/bash
-# Setup script to install Git hooks for Claude Code Manager
+# Setup script to install Git hooks for Claude Code Config Manager
 # This enforces the feature branch workflow
 
 set -e  # Exit on error
@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 HOOKS_DIR="$PROJECT_ROOT/.git/hooks"
 
-echo "🔧 Setting up Git hooks for Claude Code Manager..."
+echo "🔧 Setting up Git hooks for Claude Code Config Manager..."
 echo ""
 
 # Create hooks directory if it doesn't exist

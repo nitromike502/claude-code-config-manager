@@ -6,6 +6,7 @@
  */
 
 const { pathToProjectId } = require('../../utils/pathUtils');
+const config = require('../../config/config');
 
 /**
  * Extract project ID from a source file path
@@ -20,8 +21,10 @@ function extractProjectIdFromPath(sourcePath) {
     return null;
   }
 
-  // Find .claude/ in the path - everything before it is the project path
-  const claudeIndex = sourcePath.indexOf('/.claude/');
+  // Find .claude/ or .claude-dev/ in the path - everything before it is the project path
+  const claudeDirName = config.paths._getClaudeDir();
+  const claudePattern = `/${claudeDirName}/`;
+  const claudeIndex = sourcePath.indexOf(claudePattern);
   if (claudeIndex === -1) {
     return null;
   }
@@ -31,7 +34,7 @@ function extractProjectIdFromPath(sourcePath) {
   // Check if this looks like a user-level path (ends with home dir)
   // User paths are typically ~/.claude/ which expands to /home/user/.claude/
   // Project paths have something after the home dir like /home/user/project/.claude/
-  const homeDir = process.env.HOME || require('os').homedir();
+  const homeDir = config.paths.expandHome('~');
   if (projectPath === homeDir) {
     // This is a user-scope source, not a project
     return null;
@@ -53,9 +56,11 @@ function extractProjectIdFromPath(sourcePath) {
 function validateNotSameProject(body) {
   const { sourcePath, targetScope, targetProjectId } = body;
 
-  // If sourcePath doesn't contain .claude/, we can't determine the source location
+  // If sourcePath doesn't contain .claude/ or .claude-dev/, we can't determine the source location
   // This shouldn't happen in real usage, but allow it for backwards compatibility
-  if (!sourcePath || !sourcePath.includes('/.claude/')) {
+  const claudeDirName = config.paths._getClaudeDir();
+  const claudePattern = `/${claudeDirName}/`;
+  if (!sourcePath || !sourcePath.includes(claudePattern)) {
     return null;
   }
 

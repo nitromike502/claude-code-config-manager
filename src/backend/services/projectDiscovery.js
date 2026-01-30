@@ -1,19 +1,21 @@
 const path = require('path');
 const fs = require('fs').promises;
-const { expandHome, pathToProjectId, isValidDirectory } = require('../utils/pathUtils');
+const config = require('../config/config.js');
+const { pathToProjectId, isValidDirectory } = require('../utils/pathUtils');
 const { readJSON, exists, listFiles, listFilesRecursive, readMarkdownWithFrontmatter } = require('./fileReader');
+const { getValidEvents, getMatcherBasedEvents } = require('../config/hooks');
 
 /**
  * Reads and parses ~/.claude.json to get all Claude Code projects
  * @returns {Promise<Object>} Map of projectId -> projectData
  */
 async function discoverProjects() {
-  const claudeJsonPath = expandHome('~/.claude.json');
+  const claudeJsonPath = config.paths.getUserClaudeJsonPath();
 
   try {
-    const config = await readJSON(claudeJsonPath);
+    const claudeConfig = await readJSON(claudeJsonPath);
 
-    if (!config || !config.projects) {
+    if (!claudeConfig || !claudeConfig.projects) {
       return {
         projects: {},
         error: null
@@ -23,8 +25,8 @@ async function discoverProjects() {
     // Build projects map with validation
     const projects = {};
 
-    for (const projectPath of Object.keys(config.projects)) {
-      const expandedPath = expandHome(projectPath);
+    for (const projectPath of Object.keys(claudeConfig.projects)) {
+      const expandedPath = config.paths.expandHome(projectPath);
       const isValid = await isValidDirectory(expandedPath);
       const projectId = pathToProjectId(expandedPath);
 
@@ -33,7 +35,7 @@ async function discoverProjects() {
         path: expandedPath,
         name: path.basename(expandedPath),
         exists: isValid,
-        config: config.projects[projectPath]
+        config: claudeConfig.projects[projectPath]
       };
     }
 
@@ -55,7 +57,7 @@ async function discoverProjects() {
  * @returns {Promise<Object>} Object with agents array and warnings array
  */
 async function getProjectAgents(projectPath) {
-  const agentsDir = path.join(projectPath, '.claude', 'agents');
+  const agentsDir = config.paths.getProjectAgentsDir(projectPath);
 
   try {
     const files = await listFiles(agentsDir);
@@ -131,7 +133,7 @@ async function getProjectAgents(projectPath) {
  * @returns {Promise<Object>} Object with commands array and warnings array
  */
 async function getProjectCommands(projectPath) {
-  const commandsDir = path.join(projectPath, '.claude', 'commands');
+  const commandsDir = config.paths.getProjectCommandsDir(projectPath);
 
   try {
     const files = await listFilesRecursive(commandsDir);
@@ -182,7 +184,10 @@ async function getProjectCommands(projectPath) {
             content: parsed.content,
             description: parsed.frontmatter.description || '',
             tools: tools,
+            color: parsed.frontmatter.color || null,
+            model: parsed.frontmatter.model || null,
             argumentHint: parsed.frontmatter['argument-hint'] || null,
+            disableModelInvocation: parsed.frontmatter['disable-model-invocation'] || null,
             hasParseError: parsed.hasError || false
           });
         }
@@ -207,32 +212,13 @@ async function getProjectCommands(projectPath) {
 }
 
 /**
- * Valid Claude Code hook events per official specification
- * @see https://docs.claude.com/en/docs/claude-code/hooks
- * @see https://json.schemastore.org/claude-code-settings.json
- */
-const VALID_HOOK_EVENTS = [
-  'PreToolUse', 'PostToolUse', 'UserPromptSubmit',
-  'Notification', 'Stop', 'SubagentStop',
-  'PreCompact', 'SessionStart', 'SessionEnd'
-];
-
-/**
- * Hook events that support matchers (can filter by tool name)
- * Only PreToolUse and PostToolUse support the matcher field per official specification
- * @see https://docs.claude.com/en/docs/claude-code/hooks
- * @see https://json.schemastore.org/claude-code-settings.json
- */
-const MATCHER_EVENTS = ['PreToolUse', 'PostToolUse'];
-
-/**
  * Gets hooks for a specific project (from settings.json and settings.local.json)
  * @param {string} projectPath - Absolute project path
  * @returns {Promise<Object>} Object with hooks array and warnings array
  */
 async function getProjectHooks(projectPath) {
-  const settingsPath = path.join(projectPath, '.claude', 'settings.json');
-  const localSettingsPath = path.join(projectPath, '.claude', 'settings.local.json');
+  const settingsPath = config.paths.getProjectSettingsPath(projectPath);
+  const localSettingsPath = config.paths.getProjectLocalSettingsPath(projectPath);
 
   const hooks = [];
   const warnings = [];
@@ -252,19 +238,19 @@ async function getProjectHooks(projectPath) {
         // Each event maps to an array of matcher configs
         for (const [event, matchers] of Object.entries(settings.hooks)) {
           // STEP 2: Validate event name against Claude Code specification
-          if (!VALID_HOOK_EVENTS.includes(event)) {
+          if (!getValidEvents().includes(event)) {
             warnings.push({
               file: settingsPath,
-              error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
+              error: `Invalid hook event: "${event}". Valid events are: ${getValidEvents().join(', ')}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://docs.claude.com/en/docs/claude-code/hooks for valid event names'
+              helpText: `See ${config.urls.DOCS_HOOKS} for valid event names`
             });
             continue;
           }
 
           // Check if event supports matchers
-          const supportsMatchers = MATCHER_EVENTS.includes(event);
+          const supportsMatchers = getMatcherBasedEvents().includes(event);
 
           // STEP 3: Validate top-level structure (must be array)
           if (!Array.isArray(matchers)) {
@@ -273,7 +259,7 @@ async function getProjectHooks(projectPath) {
               error: `Hook event "${event}" must be an array of hook objects, got ${typeof matchers}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://json.schemastore.org/claude-code-settings.json for valid format'
+              helpText: `See ${config.urls.SCHEMA_SETTINGS} for valid format`
             });
             continue;
           }
@@ -369,14 +355,25 @@ async function getProjectHooks(projectPath) {
             // STEP 4: Flatten response structure - create one object per hook command
             // This makes it easier for the UI to consume without nested arrays
             if (validHooks.length > 0) {
-              for (const hook of validHooks) {
+              for (let hookIndex = 0; hookIndex < validHooks.length; hookIndex++) {
+                const hook = validHooks[hookIndex];
+                const matcher = matcherEntry.matcher || '';
+
+                // Generate hookId: event::matcher::index
+                // For matcher-based events, index is per-matcher-group
+                // For non-matcher events, index is global within event
+                const hookId = `${event}::${matcher}::${hookIndex}`;
+
                 hooks.push({
+                  hookId,
                   event,
-                  matcher: matcherEntry.matcher || '*',
+                  matcher: matcher || '*',
                   type: hook.type || 'command',
                   command: hook.command,
                   timeout: hook.timeout || 60,
                   enabled: hook.enabled !== undefined ? hook.enabled : true,
+                  continue: hook.continue,
+                  suppressOutput: hook.suppressOutput,
                   source: 'settings.json'
                 });
               }
@@ -420,19 +417,19 @@ async function getProjectHooks(projectPath) {
         // Each event maps to an array of matcher configs
         for (const [event, matchers] of Object.entries(localSettings.hooks)) {
           // STEP 2: Validate event name against Claude Code specification
-          if (!VALID_HOOK_EVENTS.includes(event)) {
+          if (!getValidEvents().includes(event)) {
             warnings.push({
               file: localSettingsPath,
-              error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
+              error: `Invalid hook event: "${event}". Valid events are: ${getValidEvents().join(', ')}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://docs.claude.com/en/docs/claude-code/hooks for valid event names'
+              helpText: `See ${config.urls.DOCS_HOOKS} for valid event names`
             });
             continue;
           }
 
           // Check if event supports matchers
-          const supportsMatchers = MATCHER_EVENTS.includes(event);
+          const supportsMatchers = getMatcherBasedEvents().includes(event);
 
           // STEP 3: Validate top-level structure (must be array)
           if (!Array.isArray(matchers)) {
@@ -441,7 +438,7 @@ async function getProjectHooks(projectPath) {
               error: `Hook event "${event}" must be an array of hook objects, got ${typeof matchers}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://json.schemastore.org/claude-code-settings.json for valid format'
+              helpText: `See ${config.urls.SCHEMA_SETTINGS} for valid format`
             });
             continue;
           }
@@ -537,14 +534,23 @@ async function getProjectHooks(projectPath) {
             // STEP 4: Flatten response structure - create one object per hook command
             // This makes it easier for the UI to consume without nested arrays
             if (validHooks.length > 0) {
-              for (const hook of validHooks) {
+              for (let hookIndex = 0; hookIndex < validHooks.length; hookIndex++) {
+                const hook = validHooks[hookIndex];
+                const matcher = matcherEntry.matcher || '';
+
+                // Generate hookId: event::matcher::index
+                const hookId = `${event}::${matcher}::${hookIndex}`;
+
                 hooks.push({
+                  hookId,
                   event,
-                  matcher: matcherEntry.matcher || '*',
+                  matcher: matcher || '*',
                   type: hook.type || 'command',
                   command: hook.command,
                   timeout: hook.timeout || 60,
                   enabled: hook.enabled !== undefined ? hook.enabled : true,
+                  continue: hook.continue,
+                  suppressOutput: hook.suppressOutput,
                   source: 'settings.local.json'
                 });
               }
@@ -587,7 +593,7 @@ async function getProjectHooks(projectPath) {
  * @returns {Promise<Object>} Object with mcp array and warnings array
  */
 async function getProjectMCP(projectPath) {
-  const mcpPath = path.join(projectPath, '.mcp.json');
+  const mcpPath = config.paths.getProjectMcpPath(projectPath);
 
   const mcp = [];
   const warnings = [];
@@ -635,7 +641,7 @@ async function getProjectMCP(projectPath) {
  * @returns {Promise<Object>} Object with agents array and warnings array
  */
 async function getUserAgents() {
-  const agentsDir = expandHome('~/.claude/agents');
+  const agentsDir = config.paths.getUserAgentsDir();
 
   try {
     const files = await listFiles(agentsDir);
@@ -710,7 +716,7 @@ async function getUserAgents() {
  * @returns {Promise<Object>} Object with commands array and warnings array
  */
 async function getUserCommands() {
-  const commandsDir = expandHome('~/.claude/commands');
+  const commandsDir = config.paths.getUserCommandsDir();
 
   try {
     const files = await listFilesRecursive(commandsDir);
@@ -760,7 +766,10 @@ async function getUserCommands() {
             content: parsed.content,
             description: parsed.frontmatter.description || '',
             tools: tools,
+            color: parsed.frontmatter.color || null,
+            model: parsed.frontmatter.model || null,
             argumentHint: parsed.frontmatter['argument-hint'] || null,
+            disableModelInvocation: parsed.frontmatter['disable-model-invocation'] || null,
             hasParseError: parsed.hasError || false
           });
         }
@@ -789,7 +798,7 @@ async function getUserCommands() {
  * @returns {Promise<Object>} Object with hooks array and warnings array
  */
 async function getUserHooks() {
-  const settingsPath = expandHome('~/.claude/settings.json');
+  const settingsPath = config.paths.getUserSettingsPath();
 
   const hooks = [];
   const warnings = [];
@@ -809,19 +818,19 @@ async function getUserHooks() {
         // Each event maps to an array of matcher configs
         for (const [event, matchers] of Object.entries(settings.hooks)) {
           // STEP 2: Validate event name against Claude Code specification
-          if (!VALID_HOOK_EVENTS.includes(event)) {
+          if (!getValidEvents().includes(event)) {
             warnings.push({
               file: settingsPath,
-              error: `Invalid hook event: "${event}". Valid events are: ${VALID_HOOK_EVENTS.join(', ')}`,
+              error: `Invalid hook event: "${event}". Valid events are: ${getValidEvents().join(', ')}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://docs.claude.com/en/docs/claude-code/hooks for valid event names'
+              helpText: `See ${config.urls.DOCS_HOOKS} for valid event names`
             });
             continue;
           }
 
           // Check if event supports matchers
-          const supportsMatchers = MATCHER_EVENTS.includes(event);
+          const supportsMatchers = getMatcherBasedEvents().includes(event);
 
           // STEP 3: Validate top-level structure (must be array)
           if (!Array.isArray(matchers)) {
@@ -830,7 +839,7 @@ async function getUserHooks() {
               error: `Hook event "${event}" must be an array of hook objects, got ${typeof matchers}`,
               severity: 'error',
               skipped: true,
-              helpText: 'See https://json.schemastore.org/claude-code-settings.json for valid format'
+              helpText: `See ${config.urls.SCHEMA_SETTINGS} for valid format`
             });
             continue;
           }
@@ -926,14 +935,23 @@ async function getUserHooks() {
             // STEP 4: Flatten response structure - create one object per hook command
             // This makes it easier for the UI to consume without nested arrays
             if (validHooks.length > 0) {
-              for (const hook of validHooks) {
+              for (let hookIndex = 0; hookIndex < validHooks.length; hookIndex++) {
+                const hook = validHooks[hookIndex];
+                const matcher = matcherEntry.matcher || '';
+
+                // Generate hookId: event::matcher::index
+                const hookId = `${event}::${matcher}::${hookIndex}`;
+
                 hooks.push({
+                  hookId,
                   event,
-                  matcher: matcherEntry.matcher || '*',
+                  matcher: matcher || '*',
                   type: hook.type || 'command',
                   command: hook.command,
                   timeout: hook.timeout || 60,
                   enabled: hook.enabled !== undefined ? hook.enabled : true,
+                  continue: hook.continue,
+                  suppressOutput: hook.suppressOutput,
                   source: '~/.claude/settings.json'
                 });
               }
@@ -969,32 +987,34 @@ async function getUserHooks() {
 }
 
 /**
- * Gets user-level MCP servers from ~/.claude/settings.json
+ * Gets user-level MCP servers from ~/.claude.json
+ * Note: User-level MCP servers are stored in ~/.claude.json (root-level mcpServers key),
+ * NOT in ~/.claude/settings.json (which stores permissions and hooks)
  * @returns {Promise<Object>} Object with mcp array and warnings array
  */
 async function getUserMCP() {
-  const settingsPath = expandHome('~/.claude/settings.json');
+  const claudeJsonPath = config.paths.getUserClaudeJsonPath();
 
   const mcp = [];
   const warnings = [];
 
   try {
-    const settings = await readJSON(settingsPath);
+    const claudeJson = await readJSON(claudeJsonPath);
 
-    if (settings && settings.mcpServers) {
+    if (claudeJson && claudeJson.mcpServers) {
       // Type check before Object.entries()
-      if (typeof settings.mcpServers === 'object' && !Array.isArray(settings.mcpServers)) {
-        mcp.push(...Object.entries(settings.mcpServers).map(([name, serverConfig]) => ({
+      if (typeof claudeJson.mcpServers === 'object' && !Array.isArray(claudeJson.mcpServers)) {
+        mcp.push(...Object.entries(claudeJson.mcpServers).map(([name, serverConfig]) => ({
           name,
           ...serverConfig,
-          source: '~/.claude/settings.json'
+          source: '~/.claude.json'
         })));
       } else {
         // Unexpected type
-        const actualType = Array.isArray(settings.mcpServers) ? 'array' : typeof settings.mcpServers;
-        console.warn(`Unexpected mcpServers format in ${settingsPath}: ${actualType}`);
+        const actualType = Array.isArray(claudeJson.mcpServers) ? 'array' : typeof claudeJson.mcpServers;
+        console.warn(`Unexpected mcpServers format in ${claudeJsonPath}: ${actualType}`);
         warnings.push({
-          file: settingsPath,
+          file: claudeJsonPath,
           error: `mcpServers is ${actualType}, expected object`,
           skipped: true
         });
@@ -1003,9 +1023,9 @@ async function getUserMCP() {
   } catch (error) {
     if (error.code !== 'ENOENT') {
       // Log non-ENOENT errors (malformed JSON, etc.)
-      console.warn(`Failed to parse ${settingsPath}: ${error.message}`);
+      console.warn(`Failed to parse ${claudeJsonPath}: ${error.message}`);
       warnings.push({
-        file: settingsPath,
+        file: claudeJsonPath,
         error: error.message,
         skipped: true
       });
@@ -1040,7 +1060,7 @@ function deduplicateHooks(hooks) {
  * @returns {Promise<Object>} Object with skills array and warnings array
  */
 async function getProjectSkills(projectPath) {
-  const skillsDir = path.join(projectPath, '.claude', 'skills');
+  const skillsDir = config.paths.getProjectSkillsDir(projectPath);
 
   try {
     // Check if directory exists
@@ -1175,7 +1195,7 @@ async function getProjectSkills(projectPath) {
  * @returns {Promise<Object>} Object with skills array and warnings array
  */
 async function getUserSkills() {
-  const skillsDir = expandHome('~/.claude/skills');
+  const skillsDir = config.paths.getUserSkillsDir();
 
   try {
     // Check if directory exists

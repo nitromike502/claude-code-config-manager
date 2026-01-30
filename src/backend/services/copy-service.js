@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs').promises;
-const os = require('os');
+const config = require('../config/config.js');
+const { eventHasMatcher } = require('../config/hooks.js');
 const { discoverProjects } = require('./projectDiscovery');
 
 /**
@@ -93,7 +94,8 @@ class CopyService {
    * - Agent (project scope): /path/to/project/.claude/agents/agent-name.md
    * - Command (user scope): ~/.claude/commands/command-name.md
    * - Hook (project scope): /path/to/project/.claude/settings.json (merged)
-   * - MCP server (user scope): ~/.claude/settings.json (merged)
+   * - MCP server (user scope): ~/.claude.json (merged)
+   * - MCP server (project scope): /path/to/project/.mcp.json (merged)
    *
    * @param {string} configType - Type of config ('agent', 'command', 'hook', 'mcp')
    * @param {string} targetScope - Target scope ('project' or 'user')
@@ -141,7 +143,7 @@ class CopyService {
 
     if (targetScope === 'user') {
       // User scope: ~/.claude/
-      basePath = path.join(os.homedir(), '.claude');
+      basePath = config.paths.getUserClaudeDir();
     } else {
       // Project scope: need to resolve projectId to project path
       const projectsResult = await discoverProjects();
@@ -155,7 +157,7 @@ class CopyService {
         throw new Error(`Project directory does not exist: ${projectData.path}`);
       }
 
-      basePath = path.join(projectData.path, '.claude');
+      basePath = config.paths.getProjectClaudeDir(projectData.path);
     }
 
     // Build target path based on config type
@@ -195,13 +197,17 @@ class CopyService {
         break;
 
       case 'mcp':
-        // MCP servers: For user scope -> ~/.claude/settings.json
-        //              For project scope -> .mcp.json (primary) or .claude/settings.json (fallback)
+        // MCP servers: For user scope -> ~/.claude.json (root level)
+        //              For project scope -> .mcp.json in project root
+        // NOTE: copyMcp() has its own path logic and doesn't use buildTargetPath
         if (targetScope === 'user') {
-          targetPath = path.join(basePath, 'settings.json');
+          // User MCP servers are stored in ~/.claude.json, not ~/.claude/settings.json
+          targetPath = config.paths.getUserClaudeJsonPath();
         } else {
-          // For project scope, prefer .mcp.json
-          targetPath = path.join(basePath.replace(path.sep + '.claude', ''), '.mcp.json');
+          // For project scope, use .mcp.json
+          // Extract project path from basePath
+          const projectPath = path.dirname(basePath);
+          targetPath = config.paths.getProjectMcpPath(projectPath);
         }
         break;
 
@@ -563,6 +569,12 @@ class CopyService {
    * Level 2: Find or create matcher entry in event array
    * Level 3: Add hook command to matcher's hooks array (if not duplicate)
    *
+   * Per Claude Code specification:
+   * - Matcher-supporting events (PreToolUse, PostToolUse, PermissionRequest):
+   *   MUST always include the `matcher` field, even when value is "*"
+   * - Non-matcher events (UserPromptSubmit, PreCompact, SessionStart, SessionEnd,
+   *   Notification, Stop, SubagentStop): MUST NOT include the `matcher` field
+   *
    * @param {Object} settings - Settings object to merge into
    * @param {string} event - Event name (e.g., 'PreToolUse')
    * @param {string} matcher - Matcher pattern (e.g., '*.ts')
@@ -570,6 +582,9 @@ class CopyService {
    * @returns {Object} Updated settings object
    */
   mergeHookIntoSettings(settings, event, matcher, hookCommand) {
+    // Check if this event supports the matcher field (per Claude Code spec)
+    const supportsMatchers = eventHasMatcher(event);
+
     // Ensure hooks object exists (Level 0)
     if (!settings.hooks) {
       settings.hooks = {};
@@ -596,12 +611,20 @@ class CopyService {
         hooks: []
       };
 
-      // Only add matcher field if not default "*"
-      if (matcher && matcher !== '*') {
-        matcherEntry.matcher = matcher;
+      // Add matcher field based on event type
+      if (supportsMatchers) {
+        // Matcher-supporting events: ALWAYS include matcher field (even if "*")
+        matcherEntry.matcher = matcher || '*';
       }
+      // Non-matcher events: NEVER include matcher field
 
       eventArray.push(matcherEntry);
+    } else {
+      // Existing matcher entry found - ensure matcher field exists for matcher-supporting events
+      // This handles cases where entry was created without matcher field (e.g., from old code)
+      if (supportsMatchers && !('matcher' in matcherEntry)) {
+        matcherEntry.matcher = matcher || '*';
+      }
     }
 
     // Level 3: Add hook command (if not duplicate)
@@ -781,12 +804,12 @@ class CopyService {
   }
 
   /**
-   * Copies an MCP server configuration by merging it into target settings.json or .mcp.json
+   * Copies an MCP server configuration by merging it into target config file
    *
    * Unlike agents and commands, MCP servers are not copied as separate files.
    * Instead, they are merged into either:
-   * - User scope: ~/.claude/settings.json (under mcpServers key)
-   * - Project scope: .mcp.json (preferred) or .claude/settings.json (fallback)
+   * - User scope: ~/.claude.json (root-level mcpServers key)
+   * - Project scope: .mcp.json in project root
    *
    * The method detects conflicts by checking if a server with the same name already exists.
    * Conflict strategies supported: 'skip' (cancel), 'overwrite' (replace existing).
@@ -833,8 +856,9 @@ class CopyService {
       let targetPath;
 
       if (targetScope === 'user') {
-        // User scope: ~/.claude/settings.json
-        targetPath = path.join(os.homedir(), '.claude', 'settings.json');
+        // User scope: ~/.claude.json (root-level mcpServers key)
+        // Note: User MCP servers are stored in ~/.claude.json, NOT ~/.claude/settings.json
+        targetPath = config.paths.getUserClaudeJsonPath();
       } else if (targetScope === 'project') {
         // Project scope: Always use .mcp.json (create if doesn't exist)
         if (!targetProjectId) {
@@ -842,7 +866,7 @@ class CopyService {
         }
 
         const projectPath = await this.getProjectPath(targetProjectId);
-        targetPath = path.join(projectPath, '.mcp.json');
+        targetPath = config.paths.getProjectMcpPath(projectPath);
       } else {
         throw new Error(`Invalid targetScope: must be 'project' or 'user'`);
       }
@@ -1081,11 +1105,11 @@ class CopyService {
       let targetSkillDir;
 
       if (request.targetScope === 'user') {
-        targetSkillDir = path.join(os.homedir(), '.claude', 'skills', skillName);
+        targetSkillDir = path.join(config.paths.getUserSkillsDir(), skillName);
       } else {
         // Project scope
         const projectPath = await this.getProjectPath(request.targetProjectId);
-        targetSkillDir = path.join(projectPath, '.claude', 'skills', skillName);
+        targetSkillDir = path.join(config.paths.getProjectSkillsDir(projectPath), skillName);
       }
 
       // 7. Detect conflict (target directory already exists)

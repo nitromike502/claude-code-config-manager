@@ -1,10 +1,10 @@
-# Claude Code Manager - API Documentation
+# Claude Code Config Manager - API Documentation
 
-Complete API reference for the Claude Code Manager backend.
+Complete API reference for the Claude Code Config Manager backend.
 
 **Base URL:** `http://localhost:8420/api`
 
-**Version:** 1.0.0 (Phase 1 MVP)
+**Version:** 2.3.0 (Updated December 2025)
 
 ---
 
@@ -157,7 +157,7 @@ Returns server health status and version information.
   "status": "healthy",
   "timestamp": "2025-10-07T12:34:56.789Z",
   "version": "1.0.0",
-  "service": "Claude Code Manager Backend"
+  "service": "Claude Code Config Manager Backend"
 }
 ```
 
@@ -674,13 +674,145 @@ fetch('/api/projects/homeuserprojectsmyapp/agents')
 
 ---
 
-## Future API Enhancements (Phase 2+)
+## Configuration Management
 
-### CRUD Operations
-- `POST /api/projects/:id/agents` - Create new agent
-- `PUT /api/projects/:id/agents/:name` - Update agent
-- `DELETE /api/projects/:id/agents/:name` - Delete agent
-- Similar endpoints for commands, hooks, and MCP servers
+### Delete Agent
+
+#### `DELETE /api/projects/:projectId/agents/:agentName`
+
+Deletes a project-level agent.
+
+**Parameters:**
+- `projectId` (string) - URL-safe project identifier
+- `agentName` (string) - Agent filename without .md extension
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Agent deleted successfully"
+}
+```
+
+#### `DELETE /api/user/agents/:agentName`
+
+Deletes a user-level agent from `~/.claude/agents/`.
+
+**Parameters:**
+- `agentName` (string) - Agent filename without .md extension
+
+**Response:** Same format as project agent deletion
+
+---
+
+### Delete Command
+
+#### `DELETE /api/projects/:projectId/commands/:commandPath`
+
+Deletes a project-level command (supports nested paths).
+
+**Parameters:**
+- `projectId` (string) - URL-safe project identifier
+- `commandPath` (string) - Command path (e.g., "git/commit" for nested commands)
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Command deleted successfully"
+}
+```
+
+#### `DELETE /api/user/commands/:commandPath`
+
+Deletes a user-level command from `~/.claude/commands/`.
+
+**Parameters:**
+- `commandPath` (string) - Command path (supports nested paths)
+
+**Response:** Same format as project command deletion
+
+---
+
+### Delete Skill
+
+#### `DELETE /api/projects/:projectId/skills/:skillName`
+
+Deletes a project-level skill directory.
+
+**Parameters:**
+- `projectId` (string) - URL-safe project identifier
+- `skillName` (string) - Skill directory name
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Skill deleted successfully"
+}
+```
+
+**Note:** Deletes the entire skill directory including SKILL.md and supporting files.
+
+#### `DELETE /api/user/skills/:skillName`
+
+Deletes a user-level skill from `~/.claude/skills/`.
+
+**Parameters:**
+- `skillName` (string) - Skill directory name
+
+**Response:** Same format as project skill deletion
+
+---
+
+### Delete Hook
+
+#### `DELETE /api/projects/:projectId/hooks/:hookId`
+
+Deletes a project-level hook from `.claude/settings.json`.
+
+**Parameters:**
+- `projectId` (string) - URL-safe project identifier
+- `hookId` (string) - Hook identifier in format `event::matcher::index` (URL-encoded)
+
+**Hook ID Format:**
+```
+PreToolUse::Bash::0        - First hook for PreToolUse with Bash matcher
+SessionEnd::::0            - First hook for SessionEnd (no matcher)
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Hook deleted successfully"
+}
+```
+
+**Notes:**
+- Removes hook at specified index from 3-level nested structure
+- Cleans up empty structures (hooks array, matcher entry, event key)
+- No reference checking needed (hooks are self-contained)
+
+#### `DELETE /api/user/hooks/:hookId`
+
+Deletes a user-level hook from `~/.claude/settings.json`.
+
+**Parameters:**
+- `hookId` (string) - Hook identifier in format `event::matcher::index`
+
+**Response:** Same format as project hook deletion
+
+---
+
+## Future API Enhancements
+
+### Copy Operations (Implemented in v2.1.0)
+- `POST /api/copy/agent` - Copy agent between projects
+- `POST /api/copy/command` - Copy command between projects
+- `POST /api/copy/skill` - Copy skill between projects
+- `POST /api/copy/hook` - Copy hook between projects
+- `POST /api/copy/mcp` - Copy MCP server between projects
 
 ### Validation
 - `POST /api/projects/:id/validate` - Validate all configurations

@@ -182,6 +182,7 @@ import Message from 'primevue/message';
 import Checkbox from 'primevue/checkbox';
 import { useProjectsStore } from '@/stores/projects';
 import { useCopyStore } from '@/stores/copy-store';
+import { getTypeIcon, formatType } from '@/utils/typeMapping';
 
 const props = defineProps({
   visible: {
@@ -288,30 +289,6 @@ const externalReferences = computed(() => {
   return props.sourceConfig?.externalReferences || [];
 });
 
-// Get icon for configuration type
-const getTypeIcon = (type) => {
-  const icons = {
-    agent: 'pi pi-users',
-    command: 'pi pi-bolt',
-    hook: 'pi pi-link',
-    mcp: 'pi pi-server',
-    skill: 'pi pi-sparkles'
-  };
-  return icons[type] || 'pi pi-file';
-};
-
-// Format type for display
-const formatType = (type) => {
-  const formats = {
-    agent: 'Agent',
-    command: 'Command',
-    hook: 'Hook',
-    mcp: 'MCP Server',
-    skill: 'Skill'
-  };
-  return formats[type] || type;
-};
-
 // Handle keyboard navigation on destination cards
 const handleKeyDown = async (event, destination) => {
   // Handle Enter key to select and copy
@@ -340,7 +317,6 @@ const handleDialogHide = () => {
 
 // Handle destination selection (selects and triggers copy)
 const selectDestination = async (destination) => {
-  console.log('Selected destination:', destination);
   // Set selection
   selectedDestination.value = destination;
 

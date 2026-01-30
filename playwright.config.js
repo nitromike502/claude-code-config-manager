@@ -1,7 +1,7 @@
 const { defineConfig, devices } = require('@playwright/test');
 
 /**
- * Playwright Configuration for Claude Code Manager Frontend Tests
+ * Playwright Configuration for Claude Code Config Manager Frontend Tests
  *
  * Test Directories:
  * - tests/frontend: Component-level tests for UI elements
@@ -92,14 +92,14 @@ module.exports = defineConfig({
     {
       name: 'firefox',
       // Only run browser-specific tests in Firefox
+      // EXCLUDE: clipboard tests (Firefox doesn't support clipboard permissions API)
       testMatch: [
         '**/tests/frontend/06-styling-theme.spec.js',        // CSS rendering
-        '**/tests/frontend/copy/07-copy-button.spec.js',     // Clipboard API
         '**/tests/e2e/105-user-flow-theme-toggle.spec.js'    // localStorage behavior
       ],
       use: {
         ...devices['Desktop Firefox'],
-        permissions: ['clipboard-read', 'clipboard-write']
+        // Note: Firefox doesn't support clipboard-read/clipboard-write permissions
       },
     },
     {

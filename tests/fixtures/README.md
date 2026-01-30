@@ -1,6 +1,6 @@
 # Test Fixtures
 
-This directory contains all test fixtures (mock data) for the Claude Code Manager backend test suite.
+This directory contains all test fixtures (mock data) for the Claude Code Config Manager backend test suite.
 
 **Purpose:** Provide realistic, reusable test data for comprehensive backend testing.
 
@@ -290,5 +290,5 @@ These fixtures support testing:
 
 ---
 
-**Maintained by:** Claude Code Manager Testing Team
+**Maintained by:** Claude Code Config Manager Testing Team
 **Last Updated:** 2025-10-12

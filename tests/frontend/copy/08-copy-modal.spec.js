@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { setupMocks } = require('../../fixtures/mock-data');
 
 /**
  * Frontend Component Tests: 08-CopyModal Component
@@ -19,11 +20,15 @@ const { test, expect } = require('@playwright/test');
 
 // Test Suite 08.001: Modal Rendering
 test.describe('08.001: CopyModal Rendering', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupMocks(page);
+  });
+
   test('08.001.001: modal opens when copy button clicked', async ({ page }) => {
     await page.goto('/');
 
     // Wait for Vue app and projects to load
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
     const projectCards = page.locator('.project-card:not(.user-card)');
@@ -32,10 +37,10 @@ test.describe('08.001: CopyModal Rendering', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
       // Click copy button
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -51,7 +56,7 @@ test.describe('08.001: CopyModal Rendering', () => {
 
   test('08.001.002: modal displays header with copy icon', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -61,9 +66,9 @@ test.describe('08.001: CopyModal Rendering', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -92,7 +97,7 @@ test.describe('08.001: CopyModal Rendering', () => {
 
   test('08.001.003: modal closes when close button clicked', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -102,9 +107,9 @@ test.describe('08.001: CopyModal Rendering', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -134,9 +139,13 @@ test.describe('08.001: CopyModal Rendering', () => {
 
 // Test Suite 08.002: Source Configuration Display
 test.describe('08.002: CopyModal Source Configuration Display', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupMocks(page);
+  });
+
   test('08.002.001: displays source configuration filename', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -146,9 +155,9 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -177,7 +186,7 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
 
   test('08.002.002: displays source configuration type with icon', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -187,9 +196,9 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -229,7 +238,7 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
 
   test('08.002.003: displays source configuration path', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -239,9 +248,9 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -267,9 +276,13 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
 
 // Test Suite 08.003: Destination Cards
 test.describe('08.003: CopyModal Destination Cards', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupMocks(page);
+  });
+
   test('08.003.001: User Global card renders first', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -279,9 +292,9 @@ test.describe('08.003: CopyModal Destination Cards', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -308,7 +321,7 @@ test.describe('08.003: CopyModal Destination Cards', () => {
 
   test('08.003.002: project cards render in list', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -318,9 +331,9 @@ test.describe('08.003: CopyModal Destination Cards', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -344,7 +357,7 @@ test.describe('08.003: CopyModal Destination Cards', () => {
 
   test('08.003.003: destination cards show name, path, and icon', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -354,9 +367,9 @@ test.describe('08.003: CopyModal Destination Cards', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -392,7 +405,7 @@ test.describe('08.003: CopyModal Destination Cards', () => {
 
   test('08.003.004: destination cards have "Copy Here" button', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -402,9 +415,9 @@ test.describe('08.003: CopyModal Destination Cards', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -427,9 +440,13 @@ test.describe('08.003: CopyModal Destination Cards', () => {
 
 // Test Suite 08.004: User Interactions
 test.describe('08.004: CopyModal User Interactions', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupMocks(page);
+  });
+
   test('08.004.001: clicking card selects destination', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -439,9 +456,9 @@ test.describe('08.004: CopyModal User Interactions', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -467,7 +484,7 @@ test.describe('08.004: CopyModal User Interactions', () => {
 
   test('08.004.002: clicking "Copy Here" button triggers selection', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -477,9 +494,9 @@ test.describe('08.004: CopyModal User Interactions', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -505,7 +522,7 @@ test.describe('08.004: CopyModal User Interactions', () => {
 
   test('08.004.003: modal closes after destination selection', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -515,9 +532,9 @@ test.describe('08.004: CopyModal User Interactions', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -543,9 +560,13 @@ test.describe('08.004: CopyModal User Interactions', () => {
 
 // Test Suite 08.005: Scrolling and Layout
 test.describe('08.005: CopyModal Scrolling and Layout', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupMocks(page);
+  });
+
   test('08.005.001: project list is scrollable when > 300px', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -555,9 +576,9 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -591,7 +612,7 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
 
   test('08.005.002: all project cards are accessible via scroll', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -601,9 +622,9 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -637,9 +658,13 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
 
 // Test Suite 08.006: Keyboard Navigation
 test.describe('08.006: CopyModal Keyboard Navigation', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupMocks(page);
+  });
+
   test('08.006.001: Tab cycles through destination cards', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -649,9 +674,9 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -678,7 +703,7 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
 
   test('08.006.002: Enter key on card triggers selection', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -688,9 +713,9 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -719,7 +744,7 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
 
   test('08.006.003: Escape key closes modal', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -729,9 +754,9 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -756,9 +781,13 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
 
 // Test Suite 08.007: Accessibility
 test.describe('08.007: CopyModal Accessibility', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupMocks(page);
+  });
+
   test('08.007.001: ARIA labels present on destination cards', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -768,9 +797,9 @@ test.describe('08.007: CopyModal Accessibility', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -794,7 +823,7 @@ test.describe('08.007: CopyModal Accessibility', () => {
 
   test('08.007.002: focus indicators visible on cards', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -804,9 +833,9 @@ test.describe('08.007: CopyModal Accessibility', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {
@@ -842,7 +871,7 @@ test.describe('08.007: CopyModal Accessibility', () => {
 
   test('08.007.003: dialog has proper role', async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('#app', { timeout: 10000 });
+    await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
 
 
@@ -852,9 +881,9 @@ test.describe('08.007: CopyModal Accessibility', () => {
     if (count > 0) {
       await projectCards.first().click();
       await page.waitForURL(/\/project\//, { timeout: 10000 });
-      await page.waitForSelector('.config-cards-container', { timeout: 10000 });
+      await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-      const copyButton = page.locator('.copy-button:not(:disabled)').first();
+      const copyButton = page.locator('.p-button.copy-btn:not(:disabled)').first();
       const hasButton = await copyButton.count() > 0;
 
       if (hasButton) {

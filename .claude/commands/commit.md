@@ -59,7 +59,7 @@ Invoke the `git-workflow-specialist` subagent using the Task tool with comprehen
 Complete Git Commit Workflow - All Changes to Feature Branch
 
 **Current Context:**
-- Project: Claude Code Manager (/home/claude/manager)
+- Project: Claude Code Config Manager (/home/claude/manager)
 - Current Branch: {branch from step 1}
 - Uncommitted Changes: {summary from step 1}
 

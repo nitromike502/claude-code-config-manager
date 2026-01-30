@@ -1,6 +1,6 @@
-# Claude Code Manager - Backend API
+# Claude Code Config Manager - Backend API
 
-Phase 1 MVP backend server for the Claude Code Manager web application.
+Phase 1 MVP backend server for the Claude Code Config Manager web application.
 
 ## Architecture
 

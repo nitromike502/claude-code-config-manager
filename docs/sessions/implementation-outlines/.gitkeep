@@ -1,0 +1,27 @@
+# Implementation Outlines Directory
+
+This directory contains detailed implementation outlines created at the end of Phase 1 (before Phase 3 implementation) for complex features.
+
+## Purpose
+
+Implementation outlines help catch architectural issues, data structure mismatches, and design gaps BEFORE code is written, preventing costly debugging cycles.
+
+## When to Create Outlines
+
+- Multi-file changes (3+ files)
+- New API endpoints with frontend integration
+- Feature parity work (implementing existing feature for different entity type)
+- Any work estimated at 2+ hours
+
+## Template
+
+See `docs/guides/IMPLEMENTATION-OUTLINE-GUIDE.md` for complete template and guidance.
+
+## Naming Convention
+
+`STORY-X.X-outline.md` or `TASK-X.X.X-outline.md`
+
+## Examples
+
+- `STORY-7.5-outline.md` - Delete functionality for Skills
+- `STORY-8.1-outline.md` - Team Builder feature architecture

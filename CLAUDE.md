@@ -8,7 +8,7 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Deployment:** Local web server accessible at `http://localhost:5173`
 
-**Current Release:** v2.3.0 - Released November 28, 2025
+**Current Release:** v3.0.0 - Released January 29, 2026
 
 **Key Features:**
 - Copy configuration between projects (agents, commands, skills, hooks, MCP servers)
@@ -40,7 +40,12 @@ manager/
 │   ├── sessions/                     # Development history & lessons learned
 │   └── testing/                      # Test reports and documentation
 ├── src/
-│   ├── backend/                      # Express server & API
+│   ├── backend/
+│   │   ├── config/config.js          # Centralized configuration module
+│   │   ├── parsers/                  # File parsers (agents, commands, skills, etc.)
+│   │   ├── routes/                   # API route handlers
+│   │   ├── services/                 # Business logic services
+│   │   └── server.js                 # Express server entry point
 │   ├── main.js, App.vue              # Vue app entry points
 │   ├── router/, stores/, components/ # Vue 3 SPA architecture
 │   ├── api/client.js                 # Centralized API client
@@ -77,6 +82,7 @@ manager/
 
 ### Configuration Management
 - **Copy Configuration** - Copy agents, commands, skills, hooks, and MCP servers between projects
+- **Delete Configuration** - Delete agents, commands, skills, and hooks from projects or user-level
 - **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
 - **Cross-Scope Copy** - Copy between user-level and project-level configurations
 - **Smart Merging** - Intelligent merge for hooks and MCP configurations
@@ -119,26 +125,80 @@ manager/
 - `~/.claude/skills/*/SKILL.md` - User skills
 - `~/.claude/settings.json` - User settings including hooks and MCP servers
 
+## Backend Configuration Module
+
+The backend uses a centralized configuration module at `src/backend/config/config.js` that provides:
+
+### Configuration Sections
+
+- **`config.server`** - Server settings (port, host, protocol, URL)
+- **`config.paths`** - File path getters for user and project configurations
+- **`config.timeouts`** - Timeout values (API requests, reference checks, hooks)
+- **`config.urls`** - External URLs (documentation, schemas)
+
+### Development Mode
+
+Set `USE_DEV_PATHS=true` to use development paths:
+- `.claude` becomes `.claude-dev`
+- `.claude.json` becomes `.claude-dev.json`
+- `.mcp.json` becomes `.mcp-dev.json`
+
+This prevents accidental modification of production Claude Code configuration during development.
+
+### Path Getter Functions
+
+```javascript
+const { paths } = require('./config/config');
+
+// User-level paths
+paths.getUserClaudeJsonPath()     // ~/.claude.json or ~/.claude-dev.json
+paths.getUserSettingsPath()        // ~/.claude/settings.json
+paths.getUserAgentsDir()           // ~/.claude/agents
+paths.getUserCommandsDir()         // ~/.claude/commands
+paths.getUserSkillsDir()           // ~/.claude/skills
+
+// Project-level paths (require projectPath argument)
+paths.getProjectClaudeDir(projectPath)         // {project}/.claude
+paths.getProjectSettingsPath(projectPath)      // {project}/.claude/settings.json
+paths.getProjectLocalSettingsPath(projectPath) // {project}/.claude/settings.local.json
+paths.getProjectMcpPath(projectPath)           // {project}/.mcp.json
+paths.getProjectAgentsDir(projectPath)         // {project}/.claude/agents
+paths.getProjectCommandsDir(projectPath)       // {project}/.claude/commands
+paths.getProjectSkillsDir(projectPath)         // {project}/.claude/skills
+
+// Utility
+paths.expandHome('~/path')         // Expands ~ to home directory
+paths.isDevelopmentMode()          // Returns true if USE_DEV_PATHS=true
+```
+
 ## API Endpoints
 
 ```
-GET  /api/projects                   - List all projects from ~/.claude.json
-GET  /api/projects/:projectId/agents - Get project subagents
-GET  /api/projects/:projectId/commands - Get project commands
-GET  /api/projects/:projectId/skills - Get project skills
-GET  /api/projects/:projectId/hooks  - Get project hooks
-GET  /api/projects/:projectId/mcp    - Get project MCP servers
-GET  /api/user/agents                - Get user subagents
-GET  /api/user/commands              - Get user commands
-GET  /api/user/skills                - Get user skills
-GET  /api/user/hooks                 - Get user hooks
-GET  /api/user/mcp                   - Get user MCP servers
-POST /api/projects/scan              - Trigger project list refresh
-POST /api/copy/agent                 - Copy agent between projects
-POST /api/copy/command               - Copy command between projects
-POST /api/copy/skill                 - Copy skill directory between projects
-POST /api/copy/hook                  - Copy hook between projects
-POST /api/copy/mcp                   - Copy MCP server between projects
+GET    /api/projects                         - List all projects from ~/.claude.json
+GET    /api/projects/:projectId/agents       - Get project subagents
+GET    /api/projects/:projectId/commands     - Get project commands
+GET    /api/projects/:projectId/skills       - Get project skills
+GET    /api/projects/:projectId/hooks        - Get project hooks
+GET    /api/projects/:projectId/mcp          - Get project MCP servers
+GET    /api/user/agents                      - Get user subagents
+GET    /api/user/commands                    - Get user commands
+GET    /api/user/skills                      - Get user skills
+GET    /api/user/hooks                       - Get user hooks
+GET    /api/user/mcp                         - Get user MCP servers
+POST   /api/projects/scan                    - Trigger project list refresh
+POST   /api/copy/agent                       - Copy agent between projects
+POST   /api/copy/command                     - Copy command between projects
+POST   /api/copy/skill                       - Copy skill directory between projects
+POST   /api/copy/hook                        - Copy hook between projects
+POST   /api/copy/mcp                         - Copy MCP server between projects
+DELETE /api/projects/:projectId/agents/:name - Delete project agent
+DELETE /api/projects/:projectId/commands/:path - Delete project command
+DELETE /api/projects/:projectId/skills/:name - Delete project skill
+DELETE /api/projects/:projectId/hooks/:id   - Delete project hook (id: event::matcher::index)
+DELETE /api/user/agents/:name               - Delete user agent
+DELETE /api/user/commands/:path             - Delete user command
+DELETE /api/user/skills/:name               - Delete user skill
+DELETE /api/user/hooks/:id                  - Delete user hook (id: event::matcher::index)
 ```
 
 **Note:** `projectId` = project path with slashes removed (e.g., `/home/user/projects/myapp` → `homeuserprojectsmyapp`)
@@ -172,9 +232,9 @@ See subagent proposals in project `.claude/agents/` directory.
 
 ## Ticketing Workflow
 
-**Agile Ticketing System:** `/home/tickets/claude/manager/`
+**Agile Ticketing System:** SQLite Database at `/home/tickets/databases/claude-manager.db`
 
-The project uses a file-based Agile ticketing system managed by the `agile-ticket-manager` subagent. This system functions like enterprise tools (Jira, Azure DevOps, Linear) but uses a hierarchical directory structure.
+The project uses a SQLite-based Agile ticketing system managed by the `agile-ticket-manager` subagent. This system functions like enterprise tools (Jira, Azure DevOps, Linear) but stores tickets in a relational database accessed through the `ticket-system` user-level skill.
 
 ### Ticket Hierarchy
 ```
@@ -198,15 +258,16 @@ backlog → todo → in-progress → review → done
 
 **Project Manager (`project-manager` subagent):**
 - **Creates ALL tickets** (Epics, Stories, Tasks, Bugs)
-- Writes ticket files with frontmatter
-- Invokes `agile-ticket-manager` to organize tickets
+- Uses `agile-ticket-manager` to add tickets to the database
 - Sets priorities and dependencies
+- Defines ticket relationships and metadata
 
 **Ticket Manager (`agile-ticket-manager` subagent):**
-- Organizes ticket files into directory structure
-- Provides ticket retrieval and querying
-- Manages status transitions
+- Executes database operations via `ticket-system` skill scripts
+- Provides ticket retrieval and querying from SQLite database
+- Manages status transitions in the database
 - Maintains Epic/Story/Task relationships
+- Acts as API interface to the ticketing system
 
 **Orchestrator (`subagent-orchestrator` subagent):**
 - Queries ticket manager for available work
@@ -219,13 +280,13 @@ backlog → todo → in-progress → review → done
 1. **Feature Request** → User runs `/ba` command
 2. **Analysis** → BA creates PRD in `docs/ba-sessions/`
 3. **Planning** → User invokes `project-manager` to create tickets from PRD
-4. **Organization** → Project manager invokes `agile-ticket-manager` to organize tickets
+4. **Database Storage** → Project manager invokes `agile-ticket-manager` to add tickets to SQLite database
 5. **Execution** → User runs `/swarm <ticket-id>`
    - See `docs/guides/SWARM-WORKFLOW.md` for complete execution workflow
    - Main agent coordinates all subagents (orchestrator creates plans only)
    - Session tracking document maintained at `docs/sessions/tracking/`
-6. **Coordination** → Orchestrator queries ticket manager, assigns work, updates statuses
-7. **Completion** → Tickets moved to `done` after PR merge
+6. **Coordination** → Orchestrator queries ticket manager (via database scripts), assigns work, updates statuses
+7. **Completion** → Tickets marked as `done` in database after PR merge
 
 **See:** `docs/guides/TICKET-MANAGER-INTEGRATION.md` for complete integration patterns
 
@@ -250,6 +311,12 @@ backlog → todo → in-progress → review → done
 
 **Read these documents when you need them:**
 
+### 📚 Documentation Navigation
+- **Documentation index:** `docs/guides/DOCUMENTATION-INDEX.md`
+  - When: Starting any task, need to find the right guide quickly
+  - Contains: Decision tree, guide quick reference, common scenarios, context efficiency strategy
+  - Key benefit: Helps you find exactly the right documentation for your current task
+
 ### 🎯 SWARM Workflow
 - **Complete workflow guide:** `docs/guides/SWARM-WORKFLOW.md`
   - When: Implementing any ticket (Story/Task/Bug)
@@ -271,7 +338,21 @@ backlog → todo → in-progress → review → done
   - When: Creating commits, PRs, or managing branches
   - Contains: Mandatory rules, commit format, branch naming, one-commit-per-task policy
 
+- **Code review best practices:** `docs/guides/CODE-REVIEW-BEST-PRACTICES.md`
+  - When: Reviewing pull requests, especially feature parity work
+  - Contains: UX consistency verification, review checklists, response templates
+  - Critical for: Preventing bugs when implementing features across entity types
+
 ### 📐 Implementation Patterns
+- **Implementation outlining:** `docs/guides/IMPLEMENTATION-OUTLINE-GUIDE.md`
+  - When: End of Phase 1, before Phase 3 implementation (complex features, feature parity work)
+  - Contains: Outline template, comparative analysis for feature parity, real-world case studies
+  - Key benefit: 15 minutes of outlining prevents 2+ hours of debugging
+
+- **Feature parity implementation:** `docs/guides/FEATURE-PARITY-IMPLEMENTATION-GUIDE.md`
+  - When: Implementing features that already work for another entity type (e.g., Commands after Agents)
+  - Contains: Comparative analysis workflow, structural difference detection, 16:1 ROI demonstrated
+
 - **Spec-based implementation:** `docs/guides/SPEC-IMPLEMENTATION-GUIDE.md`
   - When: Implementing from official specifications (Claude Code, Playwright, Vue, etc.)
   - Contains: 5-step pattern, BUG-030 case study, common pitfalls
@@ -370,3 +451,6 @@ This section contains detailed development workflow information for contributors
 - Advanced MCP server management
 
 **See:** `docs/guides/ROADMAP.md` for complete future feature planning
+- For testing, use projects `/home/training/test-1` and `/home/training/test-2`. NEVER test on this project
+- When invoking subagents to debug, don't give them explicit files to review, instead instruct them to review recent commits and investigate.
+- Always create a backup if testing on a production file

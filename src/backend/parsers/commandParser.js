@@ -7,6 +7,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const matter = require('gray-matter');
+const config = require('../config/config');
 
 /**
  * Parse a single command markdown file
@@ -85,7 +86,9 @@ async function parseCommand(filePath, baseDir, scope = 'project') {
       description: description,
       tools: tools,
       color: data.color || null,
+      model: data.model || null,
       argumentHint: data['argument-hint'] || null,
+      disableModelInvocation: data['disable-model-invocation'] || null,
       content: commandContent.trim(),
       filePath: filePath,
       scope: scope,
@@ -161,8 +164,8 @@ async function parseAllCommands(directoryPath, scope = 'project') {
  * @returns {Promise<Object>} Object with project and user command arrays
  */
 async function getAllCommands(projectPath, userHomePath) {
-  const projectCommandsPath = path.join(projectPath, '.claude', 'commands');
-  const userCommandsPath = path.join(userHomePath, '.claude', 'commands');
+  const projectCommandsPath = config.paths.getProjectCommandsDir(projectPath);
+  const userCommandsPath = config.paths.getUserCommandsDir();
 
   const [projectCommands, userCommands] = await Promise.all([
     parseAllCommands(projectCommandsPath, 'project'),

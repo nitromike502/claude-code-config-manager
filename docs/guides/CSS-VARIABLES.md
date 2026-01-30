@@ -8,7 +8,7 @@
 
 ## Overview
 
-Claude Code Manager uses CSS Custom Properties (variables) for theming and consistent styling across the application. This system supports light and dark modes with seamless theme switching.
+Claude Code Config Manager uses CSS Custom Properties (variables) for theming and consistent styling across the application. This system supports light and dark modes with seamless theme switching.
 
 ### Key Principles
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This file is a **personal idea backlog** for the Claude Code Manager project. It serves as a collection point for:
+This file is a **personal idea backlog** for the Claude Code Config Manager project. It serves as a collection point for:
 - Feature ideas and enhancement suggestions
 - Potential improvements discovered during development
 - Nice-to-have functionality for future phases
@@ -56,7 +56,7 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 
 ### UI/UX Enhancements
 - [ ] **Migrate existing components to PrimeVue** - Installed PrimeVue in Phase 3 for copy feature components (CopyButton, CopyModal, ConflictResolver). Consider migrating existing custom HTML/CSS components (ConfigCard, ConfigDetailSidebar, etc.) to PrimeVue components for consistency and reduced maintenance. Low priority - focus on feature completion first.
-- [ ] **Rename app title to "Claude Code Config Manager"** - The package name is `claude-code-config-manager` but the UI displays "Claude Code Manager". Update App.vue header, index.html title/meta, and corresponding test assertions to use the correct name. Will require updating visual regression snapshots.
+- [x] **Rename app title to "Claude Code Config Manager"** - The package name is `claude-code-config-manager` and the documentation now consistently uses "Claude Code Config Manager". Updated all references across documentation, agent files, and configuration files.
 
 ### Performance Optimization Ideas
 - ✅ **RESOLVED: Jest test performance issue** - Copy service tests were split from one monolithic file (653 lines) into 5 focused test files. Now runs in ~0.3s with all 67 tests passing. Resolved in TASK-3.1.6 (November 2, 2025).
@@ -72,10 +72,24 @@ This file is a **personal idea backlog** for the Claude Code Manager project. It
 
 ---
 
+## Technical Debt
+
+### From STORY-7.5 (Skill Edit Operations)
+
+- [ ] **Remove name editing capability from agents and commands** - User decision: configuration names (which map to file/directory names) should NOT be editable via the UI. This was correctly implemented for skills, but agents and commands still have name editing enabled. Remove name field editing from agent and command edit forms to maintain consistency with skills approach.
+
+- [ ] **Code duplication in field update handlers** - `ConfigDetailSidebar.vue` has three nearly identical handlers: `handleFieldUpdate` (agents), `handleCommandFieldUpdate`, and `handleSkillFieldUpdate`. Consider extracting common logic into a shared helper function to follow DRY principle and reduce maintenance burden.
+
+- [ ] **Missing input sanitization in skills store** - `src/stores/skills.js` - The `updateSkill` function doesn't validate the updates object before sending to API. Add basic validation to ensure updates is an object and not empty before making API calls.
+
+- [ ] **Incomplete JSDoc for skill API methods** - `src/api/client.js` - The `updateProjectSkill` and `updateUserSkill` methods are missing complete return type documentation. The warnings array in the response object is not documented in the JSDoc comments.
+
+---
+
 ## Ideas That Have Been Implemented
 
 These ideas were originally captured in this TODO and have since been completed:
 
 - ✅ **Copy Configuration (Phase 3)** - Copy agents, commands, hooks, and MCP servers between projects with conflict resolution (Completed 2025-11-13)
 - ✅ **Vite Migration (Phase 2)** - Modernize frontend architecture with Vite build system, Vue Router, and Pinia state management (Completed 2025-10-20)
-- ✅ **NPX Support** - Allow running Claude Code Manager via `npx claude-code-config-manager` without local installation (Completed 2025-10-17)
+- ✅ **NPX Support** - Allow running Claude Code Config Manager via `npx claude-code-config-manager` without local installation (Completed 2025-10-17)

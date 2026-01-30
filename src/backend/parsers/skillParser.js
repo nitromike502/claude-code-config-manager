@@ -7,6 +7,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const matter = require('gray-matter');
+const config = require('../config/config');
 
 /**
  * Detect external file references in skill content
@@ -340,8 +341,8 @@ async function parseAllSkills(skillsDir, scope = 'project') {
  * @returns {Promise<Object>} Object with projectSkills and userSkills arrays
  */
 async function getAllSkills(projectPath, userHomePath) {
-  const projectSkillsPath = path.join(projectPath, '.claude', 'skills');
-  const userSkillsPath = path.join(userHomePath, '.claude', 'skills');
+  const projectSkillsPath = config.paths.getProjectSkillsDir(projectPath);
+  const userSkillsPath = config.paths.getUserSkillsDir();
 
   const [projectSkills, userSkills] = await Promise.all([
     parseAllSkills(projectSkillsPath, 'project'),

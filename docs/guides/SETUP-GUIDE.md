@@ -1,10 +1,10 @@
 # Setup Guide
 
-Welcome to the Claude Code Manager! This guide will help you get the application up and running on your local machine.
+Welcome to the Claude Code Config Manager! This guide will help you get the application up and running on your local machine.
 
 ## Overview
 
-Claude Code Manager is a web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers. It provides a centralized interface to view and manage configurations across all your Claude Code projects.
+Claude Code Config Manager is a web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers. It provides a centralized interface to view and manage configurations across all your Claude Code projects.
 
 **Access:** Local web server at `http://localhost:5173` (development) or `http://localhost:8420` (production)
 
@@ -24,7 +24,7 @@ npm --version   # Should output npm version
 
 ## Installation
 
-Follow these steps to install the Claude Code Manager:
+Follow these steps to install the Claude Code Config Manager:
 
 ```bash
 # Clone the repository
@@ -129,11 +129,11 @@ This prevents 20+ min debugging sessions on code that's actually correct but run
 ```bash
 # Check server status and start if needed (default mode)
 npm run server:check
-./scripts/ensure-server-running.sh
+./.claude/skills/server-management/scripts/ensure-server-running.sh
 
 # Force restart (kills and restarts)
 npm run server:restart
-./scripts/ensure-server-running.sh --restart
+./.claude/skills/server-management/scripts/ensure-server-running.sh --restart
 ```
 
 ## Common Issues

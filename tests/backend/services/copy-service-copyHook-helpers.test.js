@@ -271,19 +271,34 @@ describe('CopyService.mergeHookIntoSettings()', () => {
       expect(result.hooks.PreToolUse[0].hooks).toHaveLength(2);
     });
 
-    test('omits matcher field when matcher is "*"', () => {
+    test('omits matcher field for non-matcher events', () => {
       const settings = { hooks: {} };
 
       const result = copyService.mergeHookIntoSettings(
         settings,
-        'SessionStart',
+        'SessionStart', // Non-matcher event
         '*',
         { type: 'command', command: 'git status', enabled: true, timeout: 60 }
       );
 
-      // Matcher field should not be present
+      // Matcher field should not be present for non-matcher events
       expect(result.hooks.SessionStart[0].matcher).toBeUndefined();
       expect(result.hooks.SessionStart[0].hooks).toBeDefined();
+    });
+
+    test('includes matcher field for matcher-supporting events even when "*"', () => {
+      const settings = { hooks: {} };
+
+      const result = copyService.mergeHookIntoSettings(
+        settings,
+        'PreToolUse', // Matcher-supporting event
+        '*',
+        { type: 'command', command: 'npm test', enabled: true, timeout: 60 }
+      );
+
+      // Matcher field MUST be present for matcher-supporting events (even when "*")
+      expect(result.hooks.PreToolUse[0].matcher).toBe('*');
+      expect(result.hooks.PreToolUse[0].hooks).toBeDefined();
     });
 
     test('includes matcher field when matcher is not "*"', () => {

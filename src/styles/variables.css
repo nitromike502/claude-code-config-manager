@@ -86,7 +86,22 @@
   --p-select-color: var(--p-surface-900);  /* Select label text */
   --p-overlay-select-background: var(--p-surface-50);  /* Select dropdown background */
   --p-button-primary-color: var(--p-text-color);  /* Primary button text */
+  --p-button-danger-background: var(--p-red-700);  /* Danger button background - true red */
+  --p-button-danger-color: var(--p-red-100);  /* Danger button text */
+  --p-button-danger-border-color: var(--p-red-700);  /* Danger button border */
+  --p-button-danger-hover-background: var(--p-red-900);  /* Danger button hover background */
+  --p-button-danger-hover-border-color: var(--p-red-900);  /* Danger button hover border */
+  --p-button-danger-hover-color: var(--p-red-100);  /* Danger button hover text */
   --p-message-warn-background: color-mix(in srgb, var(--p-orange-500) 65%, transparent);  /* Warning message background */
+  --p-message-warn-color: var(--p-yellow-200);  /* Warning message text */
+  --p-form-field-color: var(--text-primary);  /* Form field text - matches body text #e0e0e0 */
+
+  /* Accordion - fix dark mode visibility */
+  --p-accordion-header-background: var(--bg-tertiary);  /* Dark background for accordion headers */
+  --p-accordion-header-hover-background: var(--bg-hover);  /* Hover state for accordion headers */
+  --p-accordion-header-active-background: var(--bg-tertiary);  /* Expanded state for accordion headers */
+  --p-accordion-header-active-hover-background: var(--bg-tertiary);  /* No hover effect when expanded */
+  --p-accordion-content-background: var(--bg-tertiary);  /* Content area matches header */
 
   /* ========== Backgrounds ========== */
   /* Primary: Page background
@@ -254,6 +269,11 @@
 
   /* Component-specific overrides */
   --p-drawer-background: var(--bg-secondary);  /* Override drawer background */
+  --p-form-field-color: var(--text-primary);  /* Form field text - matches body text #212121 */
+  --p-form-field-border-color: var(--p-neutral-500);  /* Form field border - uses neutral scale */
+  --p-button-secondary-color: var(--p-surface-900);  /* Secondary button text */
+  --p-button-secondary-border-color: var(--p-surface-600);  /* Secondary button border */
+  --p-button-secondary-hover-background: var(--p-surface-900);  /* Secondary button hover background */
 
   /* ========== Backgrounds ========== */
   --bg-primary: #f5f5f5;

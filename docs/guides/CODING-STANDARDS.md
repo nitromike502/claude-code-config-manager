@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document codifies coding standards and best practices learned from code reviews and production experience in the Claude Code Manager project. Following these standards prevents common mistakes, improves maintainability, and ensures consistency across the codebase.
+This document codifies coding standards and best practices learned from code reviews and production experience in the Claude Code Config Manager project. Following these standards prevents common mistakes, improves maintainability, and ensures consistency across the codebase.
 
 ## Table of Contents
 
@@ -137,7 +137,7 @@ const { parseSubagent } = require('../../../src/backend/parsers/subagentParser')
 // ✅ Correct - Frontend uses @ aliases
 import { useProjectStore } from '@/stores/projectStore';
 import ConfigCard from '@/components/ConfigCard.vue';
-import { apiClient } from '@/api/client';
+import { getProjects, copyAgent } from '@/api';
 ```
 
 **Rationale:**

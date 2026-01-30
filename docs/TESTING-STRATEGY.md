@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Claude Code Manager project uses automated testing as a **mandatory quality gate**. All code changes must pass automated tests before Pull Requests can be created.
+The Claude Code Config Manager project uses automated testing as a **mandatory quality gate**. All code changes must pass automated tests before Pull Requests can be created.
 
 ## Test Automation Agent
 

@@ -2,15 +2,16 @@
 
 ## Overview
 
-**SWARM** stands for **Specialized Workflow with Autonomous Resource Management** - a coordinated multi-agent development methodology used in the Claude Code Manager project to execute complex software development tasks efficiently and systematically.
+**SWARM** stands for **Specialized Workflow with Autonomous Resource Management** - a coordinated multi-agent development methodology used in the Claude Code Config Manager project to execute complex software development tasks efficiently and systematically.
 
 ### Architecture Philosophy
 
-The SWARM workflow is built on three foundational principles:
+The SWARM workflow is built on four foundational principles:
 
 1. **Centralized Coordination:** Only the main agent invokes subagents - this prevents chaos and maintains clear command structure
-2. **Specialized Expertise:** Each subagent has a specific domain of expertise and does not perform operations outside their scope
-3. **Systematic Progress:** Work flows through defined phases with clear gates, handoffs, and quality checkpoints
+2. **Trust Subagent Output:** Present subagent results directly without duplicating their analysis - subagents run in isolated contexts specifically to do analysis work
+3. **Specialized Expertise:** Each subagent has a specific domain of expertise and does not perform operations outside their scope
+4. **Systematic Progress:** Work flows through defined phases with clear gates, handoffs, and quality checkpoints
 
 ### Core Components
 
@@ -51,7 +52,93 @@ The SWARM workflow is built on three foundational principles:
 
 ## Complete SWARM Workflow
 
-### Phase 0: Pre-SWARM Ticket Selection
+**IMPORTANT:** For feature parity work (implementing similar features across entity types), you MUST complete Phase 0: Comparative Analysis before beginning any implementation. This phase prevents costly debugging by ensuring a thorough understanding of existing patterns.
+
+### Phase 0: Comparative Analysis (For Feature Parity Work)
+
+**WHEN REQUIRED:** Implementing similar features across entity types
+- Commands that already work for Agents
+- Skills that mirror Command patterns
+- Delete/Edit for new entity type matching existing patterns
+- Any feature described as "This should work like it does for [existing entity]"
+
+**WHEN SKIPPED:** Building entirely new functionality with no precedent
+
+**MANDATORY STEPS (15-30 minutes):**
+
+#### Step 1: Identify Reference Implementation
+- Determine: "Which existing implementation should this mirror?"
+- Example: "Commands Delete/Edit should match Agent Delete/Edit"
+
+#### Step 2: Read Reference Code (Not Ticket)
+- DO NOT rely on tickets - they describe intent, code describes reality
+- Read actual files:
+  - View layer (e.g., AgentsView.vue, CommandsView.vue)
+  - Store layer (e.g., agents.js, commands.js)
+  - Parser layer (e.g., agentParser.js, commandParser.js)
+  - API endpoints
+  - Components (DetailSidebar, DeleteConfirmationModal)
+- Document which file and line numbers contain the pattern
+- Example: "AgentsView.vue lines 145-167 show delete buttons in TWO locations"
+
+#### Step 3: Read Target Entity Definition
+- For target entity type, read:
+  - Parser (e.g., skillParser.js)
+  - Data structure (properties, naming conventions)
+  - File organization (flat vs. nested, extension handling)
+- Document ALL properties and their usage
+
+#### Step 4: Create Comparison Table
+
+| Aspect | Reference Entity | Target Entity | Impact | Notes |
+|--------|------------------|---------------|--------|-------|
+| **Identifier** | e.g., `path` property | e.g., `namespace + name` | Path construction differs | Critical |
+| **File Structure** | e.g., Flat (*.md) | e.g., Nested (**/*.md) | Route patterns differ | Changes impl |
+| **Delete Location** | Card + Sidebar | Same expected | UX consistency | Verify! |
+| **Editable Fields** | List from parser | List from parser | Different edit UI? | Check parser |
+
+#### Step 5: Document and Get Approval
+- Create comparative analysis document at: `docs/sessions/analysis/STORY-X-comparison.md`
+- Main agent reviews comparison table
+- User must approve analysis BEFORE Phase 1 begins
+
+#### Output: Comparative Analysis Document
+
+```markdown
+# Comparative Analysis: [Feature] for [Entity Type]
+
+Date: [today]
+Reference Implementation: [Working PR/commit]
+Task: [STORY-X.X]
+
+## Data Structure Comparison
+[Table comparing properties]
+
+## Behavior Comparison
+[Table comparing features/workflows]
+
+## Risk Areas
+- Risk: [describe]
+- Mitigation: [how to address]
+
+## Implementation Considerations
+1. [Key point 1]
+2. [Key point 2]
+
+## Task Specification Amendments
+- Differences to call out in subagent prompts
+- Reference this document in task descriptions
+```
+
+**USER APPROVAL GATE:** User must review and approve comparative analysis BEFORE Phase 1 begins.
+
+**ROI:** 15-30 minutes of analysis prevents 4+ hours of debugging (16:1 time savings proven in STORY-7.4).
+
+**Cross-Reference:** See `docs/guides/FEATURE-PARITY-IMPLEMENTATION-GUIDE.md` for comprehensive guidance on implementing features across entity types.
+
+---
+
+### Phase 0.5: Pre-SWARM Ticket Selection
 
 Before invoking SWARM, determine what work to execute:
 
@@ -137,6 +224,36 @@ Main agent immediately begins workflow with specified ticket.
 - Risk: File system permissions on different platforms
 - Mitigation: Include comprehensive error handling and test on Windows/Mac/Linux
 ```
+
+**OPTIONAL: Create Implementation Outline (End of Phase 1)**
+
+For complex features (3+ files, new API endpoints, feature parity work, 2+ hour estimates):
+
+1. **Main agent creates detailed implementation outline**
+   - Location: `docs/sessions/implementation-outlines/STORY-X.X-outline.md`
+   - Use template from `docs/guides/IMPLEMENTATION-OUTLINE-GUIDE.md`
+   - Include architecture diagrams, data flow, file changes, edge cases
+   - For feature parity: Complete comparative analysis section
+
+2. **Review and approval**
+   - Main agent reviews outline for completeness
+   - Verify all assumptions with code reading
+   - Resolve open questions before proceeding
+
+**When to Create Outline:**
+- Multi-file changes (3+ files)
+- New API endpoints with frontend integration
+- Feature parity work (implementing for new entity type)
+- Any work estimated at 2+ hours
+
+**When to Skip:**
+- Single-file bug fixes
+- Documentation-only changes
+- Simple configuration updates
+
+**ROI:** 15 minutes of outlining prevents 2+ hours of debugging (proven in STORY-7.4 analysis)
+
+**See:** `docs/guides/IMPLEMENTATION-OUTLINE-GUIDE.md` for complete template and guidance
 
 ---
 
@@ -610,7 +727,13 @@ Reply with "approved" to merge, or provide feedback for changes.
    - Orchestrator creates plans but does NOT invoke other agents
    - This prevents chaos and maintains clear command structure
 
-2. **One Commit Per Task (Sequential Work)**
+2. **Trust Subagent Output**
+   - Present subagent results directly to user without additional research
+   - Do NOT read source files to "verify" or "validate" subagent analysis
+   - Subagents run in isolated contexts specifically to do analysis work
+   - Duplicating that analysis wastes main agent context
+
+3. **One Commit Per Task (Sequential Work)**
    - Each task completion triggers immediate commit
    - Commit message MUST reference ticket ID
    - Never bundle multiple sequential tasks into one commit
@@ -853,45 +976,54 @@ Agile-ticket-manager acts as API for ticket operations:
 
 **Main Agent Pattern:**
 ```
+PHASE 0: Comparative Analysis (if feature parity work)
+1. Identify reference implementation
+2. Read reference code (views, stores, parsers, APIs)
+3. Read target entity definition
+4. Create comparison table
+5. Document analysis at docs/sessions/analysis/
+6. Present to user for approval
+
 PHASE 1-2: Session Init & Git Setup
-1. Invoke orchestrator (create plan)
-2. Invoke ticket-manager (move to in-progress)
-3. Present plan to user (get approval)
-4. Invoke git-specialist (create branch)
-5. Create session tracking doc
-6. Create TodoWrite list
+7. Invoke orchestrator (create plan)
+8. Invoke ticket-manager (move to in-progress)
+9. Present plan to user (get approval)
+10. Invoke git-specialist (create branch)
+11. Create session tracking doc
+12. Create TodoWrite list
 
 PHASE 3: Implementation (for each task)
-7. Invoke developer (implement + validate manually)
-8. Invoke git-specialist (commit)
-9. Update tracking & TodoWrite
+13. Invoke developer (implement + validate manually)
+14. Invoke git-specialist (commit)
+15. Update tracking & TodoWrite
 
 PHASE 4: Code Review & Test (once after all tasks)
-10. Invoke test-engineer (run targeted tests)
-11. Invoke test-engineer (run full test suite)
-12. If failures: Return to developer, fix, re-run targeted tests, then full suite
+16. Invoke test-engineer (run targeted tests)
+17. Invoke test-engineer (run full test suite)
+18. If failures: Return to developer, fix, re-run targeted tests, then full suite
 
 PHASE 5: Documentation
-13. Invoke documentation-engineer (if needed)
-14. Invoke git-specialist (commit docs)
+19. Invoke documentation-engineer (if needed)
+20. Invoke git-specialist (commit docs)
 
 PHASE 6: PR Creation
-15. Invoke git-specialist (create PR)
-16. Invoke ticket-manager (move to review)
-17. Invoke code-reviewer (analyze)
+21. Invoke git-specialist (create PR)
+22. Invoke ticket-manager (move to review)
+23. Invoke code-reviewer (analyze)
 
 PHASE 7: User Approval & Merge
-18. Present to user (wait for approval)
-19. Move tracking doc to .deleted/
-20. Invoke git-specialist (merge PR)
-21. Invoke ticket-manager (move to done)
-22. Present final summary
+24. Present to user (wait for approval)
+25. Move tracking doc to .deleted/
+26. Invoke git-specialist (merge PR)
+27. Invoke ticket-manager (move to done)
+28. Present final summary
 ```
 
 ---
 
 ## Related Documentation
 
+- **Feature Parity Implementation:** `docs/guides/FEATURE-PARITY-IMPLEMENTATION-GUIDE.md` - Comprehensive guide for implementing features across entity types
 - **Git Workflow:** `docs/guides/GIT-WORKFLOW.md` - Feature branch workflow and commit conventions
 - **Testing Guide:** `docs/guides/TESTING-GUIDE.md` - Test execution and quality gates
 - **Parallel Execution:** `docs/guides/PARALLEL-EXECUTION-GUIDE.md` - When and how to parallelize
@@ -955,7 +1087,9 @@ PHASE 7: User Approval & Merge
 
 ---
 
-**Last Updated:** November 8, 2025
-**Version:** 1.1
+**Last Updated:** December 28, 2025
+**Version:** 1.3
 **Status:** Official Workflow Standard
-**Key Changes in v1.1:** Implemented targeted testing strategy (defer comprehensive testing to Phase 4, avoid per-task test bottleneck)
+**Key Changes in v1.3:** Added "Trust Subagent Output" as foundational principle (#2) - main agent must present subagent results directly without duplicating their analysis
+**Previous Changes in v1.2:** Added Phase 0 (Comparative Analysis) for feature parity work to prevent costly debugging by ensuring thorough understanding of existing patterns before implementation
+**Previous Changes in v1.1:** Implemented targeted testing strategy (defer comprehensive testing to Phase 4, avoid per-task test bottleneck)

@@ -46,6 +46,7 @@ Claude Code Config Manager provides a centralized dashboard to browse all your C
 
 **Configuration Management:**
 - **Copy Configuration** - Copy agents, commands, skills, hooks, and MCP servers between projects
+- **Delete Configuration** - Delete agents, commands, skills, and hooks from projects or user-level
 - **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
 - **Single-Click Copy** - Streamlined UX for quick configuration duplication
 - **Cross-Scope Copy** - Copy between user-level and project-level configurations
@@ -131,7 +132,7 @@ Opens http://localhost:8420
 
 ## Deployment
 
-Claude Code Manager supports environment-based API URL configuration for different deployment scenarios.
+Claude Code Config Manager supports environment-based API URL configuration for different deployment scenarios.
 
 ### Local Development (Default)
 
@@ -214,7 +215,7 @@ The application will automatically:
 
 ## How It Works
 
-Claude Code Manager reads your Claude Code configurations directly from the file system:
+Claude Code Config Manager reads your Claude Code configurations directly from the file system:
 
 ### Project-Level Configurations
 - `.claude/agents/*.md` - Subagent definitions
@@ -232,7 +233,7 @@ Claude Code Manager reads your Claude Code configurations directly from the file
 
 ## Platform Support
 
-Claude Code Manager works on:
+Claude Code Config Manager works on:
 - Linux
 - macOS
 - Windows (both WSL and native)

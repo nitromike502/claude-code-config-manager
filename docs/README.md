@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Purpose:** Central navigation guide for all Claude Code Manager documentation
+**Purpose:** Central navigation guide for all Claude Code Config Manager documentation
 
 **Quick Links:**
 - [Project Overview](../README.md) - User-facing project README

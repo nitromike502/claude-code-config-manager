@@ -417,10 +417,23 @@ describe('hookParser', () => {
   });
 
   describe('parseUserHooks', () => {
+    let originalHome;
+
+    beforeEach(() => {
+      originalHome = process.env.HOME;
+    });
+
+    afterEach(() => {
+      process.env.HOME = originalHome;
+    });
+
     test('should parse user-level hooks from ~/.claude/settings.json', async () => {
       // Create temporary user home structure
       const tempUserPath = path.join(__dirname, '../../fixtures/temp-user-home');
       const claudePath = path.join(tempUserPath, '.claude');
+
+      // Set HOME to test fixture path for config module
+      process.env.HOME = tempUserPath;
 
       await fs.mkdir(claudePath, { recursive: true });
 
@@ -456,6 +469,9 @@ describe('hookParser', () => {
     });
 
     test('should return empty array if user hooks do not exist', async () => {
+      // Set HOME to nonexistent path for config module
+      process.env.HOME = '/nonexistent/user/home';
+
       const result = await hookParser.parseUserHooks('/nonexistent/user/home');
 
       expect(Array.isArray(result)).toBe(true);
@@ -464,6 +480,15 @@ describe('hookParser', () => {
   });
 
   describe('getAllHooks', () => {
+    let originalHome;
+
+    beforeEach(() => {
+      originalHome = process.env.HOME;
+    });
+
+    afterEach(() => {
+      process.env.HOME = originalHome;
+    });
     test('should return object with project and user hook arrays', async () => {
       // Create temporary structures
       const tempProjectPath = path.join(__dirname, '../../fixtures/temp-all-project');
@@ -517,6 +542,9 @@ describe('hookParser', () => {
         })
       );
 
+      // Set HOME to test fixture path for config module
+      process.env.HOME = tempUserPath;
+
       const result = await hookParser.getAllHooks(tempProjectPath, tempUserPath);
 
       expect(result).toHaveProperty('project');
@@ -532,6 +560,9 @@ describe('hookParser', () => {
     });
 
     test('should handle missing project and user directories', async () => {
+      // Set HOME to nonexistent path for config module
+      process.env.HOME = '/nonexistent/home';
+
       const result = await hookParser.getAllHooks('/nonexistent/project', '/nonexistent/home');
 
       expect(result.project).toEqual([]);

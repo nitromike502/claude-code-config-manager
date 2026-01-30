@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document defines the comprehensive testing structure for the Claude Code Manager backend. All test development must follow this organization to ensure consistency across development sessions.
+This document defines the comprehensive testing structure for the Claude Code Config Manager backend. All test development must follow this organization to ensure consistency across development sessions.
 
 **Testing Framework:** Jest + Supertest
 **Test Location:** `/home/claude/manager/tests/backend/`
@@ -515,7 +515,7 @@ describe('Feature Name', () => {
 
 ---
 
-**Document Owner:** Claude Code Manager Team
+**Document Owner:** Claude Code Config Manager Team
 **Review Schedule:** After each major feature addition
 **Change Log:**
 - 2025-10-12: Initial version created and approved

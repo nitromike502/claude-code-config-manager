@@ -1,7 +1,7 @@
 # Component Specifications
 
 ## Overview
-This document defines reusable Vue components for the Claude Code Manager application. Each component is specified with its purpose, props, events, and PrimeVue dependencies.
+This document defines reusable Vue components for the Claude Code Config Manager application. Each component is specified with its purpose, props, events, and PrimeVue dependencies.
 
 ---
 
@@ -22,7 +22,7 @@ Top of every view (Dashboard, Project Detail, User/Global).
       <Breadcrumb v-if="breadcrumbs" :model="breadcrumbs" />
       <div v-else class="app-title">
         <i class="pi pi-code"></i>
-        <span>Claude Code Manager</span>
+        <span>Claude Code Config Manager</span>
       </div>
     </template>
 
@@ -811,6 +811,101 @@ export function useClipboard() {
   return { copyToClipboard };
 }
 ```
+
+---
+
+## 11. LabeledEditField Component
+
+### Purpose
+Wrapper around InlineEditField that includes the label as part of the component. Provides intelligent layout selection based on field type.
+
+### Location
+`src/components/forms/LabeledEditField.vue`
+
+**Detailed Specification:** See `docs/ba-sessions/20251128-phase5-crud-discovery/component-specs/labeled-edit-field.md`
+
+### Layout Modes
+
+**Inline Layout (Simple Fields):**
+- Used for: text, select, number, colorpalette, selectbutton
+- Label and field appear side-by-side in the same row
+
+**Block Layout (Large Content):**
+- Used for: textarea, multiselect
+- Edit button appears next to label
+- Content displays below label
+
+### Usage in Form Context
+
+```vue
+<!-- Simple text field (inline) -->
+<LabeledEditField
+  v-model="agent.name"
+  field-type="text"
+  label="Agent Name"
+  placeholder="Enter name"
+/>
+
+<!-- Large content field (block) -->
+<LabeledEditField
+  v-model="agent.description"
+  field-type="textarea"
+  label="Description"
+  :validation="[{ rule: 'maxLength', value: 500 }]"
+/>
+
+<!-- Boolean selection (inline) -->
+<LabeledEditField
+  v-model="hook.enabled"
+  field-type="selectbutton"
+  label="Status"
+  :options="[
+    { label: 'Enabled', value: true },
+    { label: 'Disabled', value: false }
+  ]"
+/>
+```
+
+### Props
+```typescript
+interface Props {
+  modelValue: any;              // Current value (v-model)
+  fieldType: string;            // 'text' | 'textarea' | 'select' | 'selectbutton' | 'multiselect' | 'colorpalette' | 'number'
+  label: string;                // Label text (required)
+  options?: Array;              // Options for select/multiselect/selectbutton
+  placeholder?: string;         // Placeholder text
+  disabled?: boolean;           // Disable editing
+  validation?: Array;           // Validation rules
+  min?: number;                 // Minimum value (number fields)
+  max?: number;                 // Maximum value (number fields)
+}
+```
+
+### Events
+```typescript
+interface Events {
+  'update:modelValue': (value: any) => void;
+  'edit-start': () => void;
+  'edit-cancel': () => void;
+  'edit-accept': (value: any) => void;
+}
+```
+
+### PrimeVue Components Used
+- `Button` (Edit, Save, Cancel)
+- `InputText` (via InlineEditField)
+- `Textarea`
+- `Select` (via InlineEditField)
+- `SelectButton` (via InlineEditField)
+- `MultiSelect`
+- `InputNumber` (via InlineEditField)
+- `Message` (validation errors)
+- `ColorPaletteDropdown` (via InlineEditField)
+
+### Related Components
+- InlineEditField (base component)
+- ColorPaletteDropdown (color picker)
+- useFormValidation (validation composable)
 
 ---
 

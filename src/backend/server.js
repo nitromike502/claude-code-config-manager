@@ -1,10 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const config = require('./config/config');
 
 // Initialize Express app
 const app = express();
-const PORT = process.env.PORT || 8420;
+const PORT = config.server.getBackendPort();
 
 // Global security middleware: Prevent path traversal attacks
 // Note: Express normalizes paths before middleware runs, so this catches encoded traversal (%2F)
@@ -40,11 +41,24 @@ app.use((req, res, next) => {
 const projectsRouter = require('./routes/projects');
 const userRouter = require('./routes/user');
 const copyRoutes = require('./routes/copy');
+const hooksRouter = require('./routes/hooks');
+const { projectRouter: mcpProjectRouter, userRouter: mcpUserRouter } = require('./routes/mcp');
 
 // API routes
+// Note: Multiple routers are mounted on '/api/projects' and '/api/user' because they handle
+// different sub-paths and HTTP methods:
+//   - projectsRouter: GET /api/projects/:projectId/hooks (read hooks)
+//   - hooksRouter:    PUT /api/projects/:projectId/hooks/:hookId (update specific hook)
+//   - hooksRouter:    GET /api/hooks/events (get hook event metadata)
+//   - mcpProjectRouter: PUT /api/projects/:projectId/mcp/:serverName (update MCP server)
+// Express routes requests to the appropriate router based on method and path pattern
 app.use('/api/projects', projectsRouter);
 app.use('/api/user', userRouter);
 app.use('/api/copy', copyRoutes);
+app.use('/api/hooks', hooksRouter);
+app.use('/api/projects', hooksRouter);
+app.use('/api/projects', mcpProjectRouter);
+app.use('/api/user', mcpUserRouter);
 
 // Serve static frontend files from built SPA (dist)
 // Fall back to frontend for development if dist is not available

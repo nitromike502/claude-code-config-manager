@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This guide describes the three proven development strategies used in the Claude Code Manager project. Each strategy is optimized for different types of work, and selecting the right strategy for your task can dramatically improve efficiency and reduce rework.
+This guide describes the three proven development strategies used in the Claude Code Config Manager project. Each strategy is optimized for different types of work, and selecting the right strategy for your task can dramatically improve efficiency and reduce rework.
 
 Different types of work require different development approaches. This project uses **three proven strategies** optimized for different task characteristics.
 

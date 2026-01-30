@@ -1,7 +1,7 @@
 ---
 name: documentation-engineer
 description: Updates project documentation (CHANGELOG, README, guides, code comments) after implementation is complete. Invoked conditionally only when documentation changes are needed. DOES NOT maintain session tracking documents - that is the main agent's responsibility.
-tools: Read, Write, Edit, Glob, Grep, WebFetch, Bash
+tools: Read, Write, Edit, Glob, Grep, WebFetch, Bash, TodoWrite, WebSearch, NotebookEdit, Skill
 model: sonnet
 color: blue
 ---

@@ -6,7 +6,7 @@
 
 ## Purpose
 
-This document provides a comprehensive index of all test files in the Claude Code Manager project, organized by category with suite-level detail (XXX and XXX.YYY). Use this as a quick reference to:
+This document provides a comprehensive index of all test files in the Claude Code Config Manager project, organized by category with suite-level detail (XXX and XXX.YYY). Use this as a quick reference to:
 
 - Find existing tests before creating new ones
 - Identify available test numbers for new test files
