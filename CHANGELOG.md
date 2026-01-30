@@ -11,6 +11,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.0] - 2026-01-29
+
+### Added
+- **Full CRUD Operations** (EPIC-007) - Complete edit and delete functionality for all configuration types
+  - Agent edit/delete with inline sidebar editing and reference checking
+  - Command edit/delete with nested path support and property mapping (allowedTools→allowed-tools)
+  - Skill edit/delete with complete directory operations
+  - Hook edit/delete with composite hookId format (event::matcher::index) and field validation
+  - MCP server edit/delete with transport-specific fields (stdio: command/args/env, http/sse: url/headers)
+- InlineEditField component with 7 field types (text, textarea, select, selectbutton, multiselect, colorpalette, number)
+- DeleteConfirmationModal with type-to-confirm protection and dependent items warning
+- ColorPaletteDropdown with 10 official Claude Code colors
+- LabeledEditField, ArgsArrayEditor, KeyValueEditor components
+- Backend services: updateService (atomic writes), deleteService (safe deletion), referenceChecker (cross-reference scanning)
+- useFormValidation composable for validation rules
+- 325 new CRUD foundation tests (149 frontend + 176 backend)
+
+### Changed
+- **Architecture Refactoring** (EPIC-008) - Improved code organization and maintainability
+  - Configurable settings file paths with USE_DEV_PATHS support
+  - Centralized hook event definitions (single source of truth)
+  - Split API client into entity modules (agents.js, commands.js, skills.js, hooks.js, mcp.js)
+  - Split ConfigDetailSidebar into entity-specific sections (AgentSection, CommandSection, SkillSection, HookSection, McpSection)
+  - Consolidated ProjectDetail and UserGlobal into unified ConfigurationPage (50% code reduction)
+- Project renamed to "Claude Code Config Manager"
+- Updated documentation (SWARM workflow, delegation rules)
+
+### Fixed
+- **BUG-031:** Missing skills type mapping in copy operations
+- **BUG-032:** User-level command delete button missing
+- **BUG-043:** Ensure matcher field present for matcher-supporting hook events
+- User-level MCP servers now correctly read from ~/.claude.json
+
+---
+
 ## [2.3.1] - 2025-11-28
 
 ### Fixed
