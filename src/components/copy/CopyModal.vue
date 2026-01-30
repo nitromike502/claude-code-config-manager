@@ -317,7 +317,6 @@ const handleDialogHide = () => {
 
 // Handle destination selection (selects and triggers copy)
 const selectDestination = async (destination) => {
-  console.log('Selected destination:', destination);
   // Set selection
   selectedDestination.value = destination;
 
