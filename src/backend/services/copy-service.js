@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs').promises;
 const config = require('../config/config.js');
+const { eventHasMatcher } = require('../config/hooks.js');
 const { discoverProjects } = require('./projectDiscovery');
 
 /**
@@ -581,9 +582,8 @@ class CopyService {
    * @returns {Object} Updated settings object
    */
   mergeHookIntoSettings(settings, event, matcher, hookCommand) {
-    // Define which events support the matcher field (per Claude Code spec)
-    const MATCHER_SUPPORTING_EVENTS = ['PreToolUse', 'PostToolUse', 'PermissionRequest'];
-    const supportsMatchers = MATCHER_SUPPORTING_EVENTS.includes(event);
+    // Check if this event supports the matcher field (per Claude Code spec)
+    const supportsMatchers = eventHasMatcher(event);
 
     // Ensure hooks object exists (Level 0)
     if (!settings.hooks) {
