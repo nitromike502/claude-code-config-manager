@@ -8,6 +8,7 @@ const commandParser = require('./commandParser');
 const hookParser = require('./hookParser');
 const mcpParser = require('./mcpParser');
 const projectParser = require('./projectParser');
+const rulesParser = require('./rulesParser');
 
 module.exports = {
   // Subagent Parser
@@ -34,6 +35,13 @@ module.exports = {
   parseUserMcpServers: mcpParser.parseUserMcpServers,
   getAllMcpServers: mcpParser.getAllMcpServers,
   filterMcpServersByStatus: mcpParser.filterMcpServersByStatus,
+
+  // Rules Parser
+  parseRule: rulesParser.parseRule,
+  findMarkdownFiles: rulesParser.findMarkdownFiles,
+  extractDescription: rulesParser.extractDescription,
+  parseAllRules: rulesParser.parseAllRules,
+  getAllRules: rulesParser.getAllRules,
 
   // Project Parser
   getClaudeJsonPath: projectParser.getClaudeJsonPath,

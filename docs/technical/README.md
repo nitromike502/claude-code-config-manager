@@ -50,6 +50,30 @@ This directory contains comprehensive technical specifications, architecture doc
 - `/src/backend/parsers/hookParser.js`
 - `/src/backend/services/projectDiscovery.js`
 
+#### Rules Structure Documentation
+**File:** `rules-structure.md`
+
+**Covers:**
+- Claude Code's Rules system for modular CLAUDE.md extensions
+- File format with optional YAML frontmatter (`paths` field)
+- Unconditional vs conditional (path-scoped) loading behavior
+- API flattened format for frontend consumption
+- Comparison with other features (CLAUDE.md, Skills, Agents, Commands)
+- Parsing similarity to agents and commands
+- Proposed Config Manager integration (parser, routes, copy service)
+- Edge cases and error handling
+
+**Use When:**
+- Implementing rules-related features
+- Understanding rules parsing logic
+- Adding rules support to the Config Manager
+- Extending copy service for rules
+
+**Related Code:**
+- `/src/backend/parsers/rulesParser.js` (proposed)
+- `/src/backend/config/config.js`
+- `/src/backend/services/copy-service.js`
+
 ---
 
 ## Documentation Patterns
@@ -235,12 +259,17 @@ Real-world examples from the codebase
 
 ## Index of Documents
 
-### Current Documents (1)
+### Current Documents (2)
 
 1. **hook-structure.md** - Claude Code hook structure specification
    - Last Updated: 2025-11-05
    - Status: Current
    - Related: Copy service, hook parser
+
+2. **rules-structure.md** - Claude Code rules structure specification
+   - Last Updated: 2026-03-07
+   - Status: Current
+   - Related: Rules parser (proposed), copy service, config module
 
 ### Planned Documents (Future)
 
@@ -249,4 +278,4 @@ Real-world examples from the codebase
 ---
 
 **Maintained by:** Documentation Engineer
-**Last Updated:** 2025-11-05
+**Last Updated:** 2026-03-07
