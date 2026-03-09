@@ -81,6 +81,71 @@ export const useRulesStore = defineStore('rules', () => {
   }
 
   /**
+   * Update a rule (project or user scope)
+   * @param {string} projectId - Project identifier (required for project scope, null for user scope)
+   * @param {string} ruleName - Current rule name
+   * @param {Object} updates - Properties to update (content, paths, name)
+   * @param {string} scope - 'project' or 'user'
+   * @returns {Promise<Object>} - { success: boolean, rule?: Object, error?: string }
+   */
+  async function updateRule(projectId, ruleName, updates, scope) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      // Validate scope
+      if (!['project', 'user'].includes(scope)) {
+        throw new Error('Invalid scope: must be "project" or "user"')
+      }
+
+      // Validate projectId for project scope
+      if (scope === 'project' && !projectId) {
+        throw new Error('projectId is required for project scope')
+      }
+
+      // Call appropriate API method based on scope
+      const result = scope === 'project'
+        ? await api.updateProjectRule(projectId, ruleName, updates)
+        : await api.updateUserRule(ruleName, updates)
+
+      if (result.success) {
+        // Update local state
+        if (scope === 'project') {
+          const rules = projectRules.value.get(projectId) || []
+          const index = rules.findIndex(r => r.name === ruleName)
+          if (index !== -1) {
+            rules[index] = result.rule
+            projectRules.value.set(projectId, [...rules])
+          }
+        } else {
+          const index = userRules.value.findIndex(r => r.name === ruleName)
+          if (index !== -1) {
+            userRules.value[index] = result.rule
+          }
+        }
+
+        // Show success notification
+        notifications.success(`Rule "${ruleName}" updated successfully`)
+
+        return { success: true, rule: result.rule }
+      } else {
+        throw new Error(result.message || 'Failed to update rule')
+      }
+    } catch (err) {
+      error.value = err.message
+      notifications.error(`Failed to update rule: ${err.message}`)
+
+      if (!err.isExpected) {
+        console.error('Error updating rule:', err)
+      }
+
+      return { success: false, error: err.message }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  /**
    * Delete a rule (project or user scope)
    * @param {string} scope - 'project' or 'user'
    * @param {string} projectId - Project identifier (required for project scope, null for user scope)
@@ -201,6 +266,7 @@ export const useRulesStore = defineStore('rules', () => {
     // Actions
     loadProjectRules,
     loadUserRules,
+    updateRule,
     deleteRule,
     copyRule,
     getProjectRulesCache,

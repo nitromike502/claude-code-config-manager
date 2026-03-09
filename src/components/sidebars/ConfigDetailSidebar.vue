@@ -96,6 +96,7 @@
       :can-edit="canEditRule"
       :project-id="projectId"
       :scope="scope"
+      @rule-updated="$emit('rule-updated')"
     />
 
     <!-- Content Section - only show for types not handled by section components -->
@@ -221,6 +222,7 @@ const emit = defineEmits({
   'rule-delete': (item) => {
     return item && typeof item === 'object'
   },
+  'rule-updated': () => true,
   'update:visible': (value) => typeof value === 'boolean'
 })
 

@@ -38,6 +38,37 @@ export async function copyRule(request) {
 }
 
 /**
+ * Update a project rule
+ * @param {string} projectId - Project identifier
+ * @param {string} ruleName - Rule name (path relative to rules dir)
+ * @param {Object} updates - Properties to update (content, paths, name)
+ * @returns {Promise<Object>} - { success: boolean, rule: Object }
+ */
+export async function updateProjectRule(projectId, ruleName, updates) {
+  const encodedName = encodeURIComponent(ruleName)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/rules/${encodedName}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates)
+  })
+  return response.json()
+}
+
+/**
+ * Update a user-level rule
+ * @param {string} ruleName - Rule name (path relative to rules dir)
+ * @param {Object} updates - Properties to update (content, paths, name)
+ * @returns {Promise<Object>} - { success: boolean, rule: Object }
+ */
+export async function updateUserRule(ruleName, updates) {
+  const encodedName = encodeURIComponent(ruleName)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/user/rules/${encodedName}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates)
+  })
+  return response.json()
+}
+
+/**
  * Delete a project rule
  * @param {string} projectId - Project identifier
  * @param {string} ruleName - Rule name
