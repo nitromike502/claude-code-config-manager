@@ -28,6 +28,7 @@ export * from './commands'
 export * from './skills'
 export * from './hooks'
 export * from './mcp'
+export * from './rules'
 
 // Default export for backward compatibility
 // Allows: import api from '@/api'; api.getProjectAgents()
@@ -36,6 +37,7 @@ import * as commands from './commands'
 import * as skills from './skills'
 import * as hooks from './hooks'
 import * as mcp from './mcp'
+import * as rules from './rules'
 import { BASE_URL, getProjects, scanProjects, healthCheck } from './client'
 
 export default {
@@ -47,5 +49,6 @@ export default {
   ...commands,
   ...skills,
   ...hooks,
-  ...mcp
+  ...mcp,
+  ...rules
 }

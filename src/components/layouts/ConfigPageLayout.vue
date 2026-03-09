@@ -167,6 +167,31 @@
               />
             </template>
           </ConfigPanel>
+
+          <!-- Rules Panel -->
+          <ConfigPanel
+            card-type="rules"
+            title="Rules"
+            :count="rules.length"
+            icon="pi pi-book"
+            color="var(--color-rules)"
+            :loading="loadingRules"
+            :items="rules"
+            :showing-all="showingAllRules"
+            :initial-display-count="initialDisplayCount"
+            @toggle-show-all="$emit('toggle-rules')"
+          >
+            <template #default="{ items }">
+              <ConfigItemList
+                :items="items"
+                item-type="rules"
+                :enable-crud="enableRuleCrud"
+                @item-selected="(item) => $emit('show-detail', item, 'rules', rules)"
+                @copy-clicked="(item) => $emit('copy-clicked', item)"
+                @delete-clicked="(item) => $emit('rule-delete', item)"
+              />
+            </template>
+          </ConfigPanel>
         </div>
       </div>
     </div>
@@ -188,7 +213,7 @@
       :selected-index="selectedIndex"
       :scope="scope"
       :project-id="projectId"
-      :enable-crud="enableAgentCrud || enableCommandCrud || enableSkillCrud || enableHookCrud || enableMcpCrud"
+      :enable-crud="enableAgentCrud || enableCommandCrud || enableSkillCrud || enableHookCrud || enableMcpCrud || enableRuleCrud"
       @close="$emit('close-sidebar')"
       @navigate="(direction) => $emit('navigate', direction)"
       @copy-clicked="(item) => $emit('copy-clicked', item)"
@@ -200,6 +225,7 @@
       @hook-updated="$emit('hook-updated')"
       @hook-delete="(item) => $emit('hook-delete', item)"
       @mcp-delete="(item) => $emit('mcp-delete', item)"
+      @rule-delete="(item) => $emit('rule-delete', item)"
     />
 
     <!-- Copy Modal Slot -->
@@ -268,6 +294,10 @@ defineProps({
     type: Boolean,
     default: false
   },
+  loadingRules: {
+    type: Boolean,
+    default: false
+  },
 
   // Error state
   error: {
@@ -306,6 +336,10 @@ defineProps({
     type: Array,
     default: () => []
   },
+  rules: {
+    type: Array,
+    default: () => []
+  },
 
   // Show all toggles
   showingAllAgents: {
@@ -325,6 +359,10 @@ defineProps({
     default: false
   },
   showingAllSkills: {
+    type: Boolean,
+    default: false
+  },
+  showingAllRules: {
     type: Boolean,
     default: false
   },
@@ -384,6 +422,10 @@ defineProps({
   enableMcpCrud: {
     type: Boolean,
     default: false
+  },
+  enableRuleCrud: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -394,6 +436,7 @@ defineEmits([
   'toggle-hooks',
   'toggle-mcp',
   'toggle-skills',
+  'toggle-rules',
   'show-detail',
   'close-sidebar',
   'navigate',
@@ -405,7 +448,8 @@ defineEmits([
   'skill-delete',
   'hook-updated',
   'hook-delete',
-  'mcp-delete'
+  'mcp-delete',
+  'rule-delete'
 ])
 </script>
 

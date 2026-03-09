@@ -90,8 +90,16 @@
       @skill-updated="$emit('skill-updated')"
     />
 
+    <RuleDetailSection
+      v-else-if="selectedType === 'rules'"
+      :selected-item="selectedItem"
+      :can-edit="canEditRule"
+      :project-id="projectId"
+      :scope="scope"
+    />
+
     <!-- Content Section - only show for types not handled by section components -->
-    <div v-if="selectedItem?.content && !['agents', 'commands', 'skills', 'hooks', 'mcp'].includes(selectedType)" class="mb-6">
+    <div v-if="selectedItem?.content && !['agents', 'commands', 'skills', 'hooks', 'mcp', 'rules'].includes(selectedType)" class="mb-6">
       <pre class="bg-bg-primary p-4 rounded border border-border-primary font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[400px] overflow-y-auto text-text-primary">{{ selectedItem.content }}</pre>
     </div>
 
@@ -100,7 +108,7 @@
       <div class="flex items-center justify-end gap-2">
         <!-- Delete Button (for agents, commands, skills, hooks, and mcp with edit enabled) -->
         <Button
-          v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand) || (selectedType === 'skills' && canEditSkill) || (selectedType === 'hooks' && canEditHook) || (selectedType === 'mcp' && canEditMcp)"
+          v-if="(selectedType === 'agents' && canEdit) || (selectedType === 'commands' && canEditCommand) || (selectedType === 'skills' && canEditSkill) || (selectedType === 'hooks' && canEditHook) || (selectedType === 'mcp' && canEditMcp) || (selectedType === 'rules' && canEditRule)"
           @click="handleDelete"
           :disabled="!selectedItem"
           icon="pi pi-trash"
@@ -142,6 +150,7 @@ import CommandDetailSection from './sections/CommandDetailSection.vue'
 import HookDetailSection from './sections/HookDetailSection.vue'
 import McpDetailSection from './sections/McpDetailSection.vue'
 import SkillDetailSection from './sections/SkillDetailSection.vue'
+import RuleDetailSection from './sections/RuleDetailSection.vue'
 
 const props = defineProps({
   visible: {
@@ -209,6 +218,9 @@ const emit = defineEmits({
     return item && typeof item === 'object'
   },
   'mcp-updated': () => true,
+  'rule-delete': (item) => {
+    return item && typeof item === 'object'
+  },
   'update:visible': (value) => typeof value === 'boolean'
 })
 
@@ -259,6 +271,12 @@ const canEditMcp = computed(() => {
          props.selectedType === 'mcp'
 })
 
+// Computed: Can edit rules (only if enableCrud is true)
+const canEditRule = computed(() => {
+  return props.enableCrud &&
+         props.selectedType === 'rules'
+})
+
 // Computed: navigation state
 const hasPrev = computed(() => props.selectedIndex > 0)
 const hasNext = computed(() => props.selectedIndex < props.currentItems.length - 1)
@@ -270,7 +288,8 @@ const typeIcon = computed(() => {
     commands: 'pi pi-bolt',
     hooks: 'pi pi-link',
     mcp: 'pi pi-server',
-    skills: 'pi pi-sparkles'
+    skills: 'pi pi-sparkles',
+    rules: 'pi pi-book'
   }
   return icons[props.selectedType] || 'pi pi-file'
 })
@@ -288,7 +307,8 @@ const typeColor = computed(() => {
     commands: 'var(--color-commands)',
     hooks: 'var(--color-hooks)',
     mcp: 'var(--color-mcp)',
-    skills: 'var(--color-skills)'
+    skills: 'var(--color-skills)',
+    rules: 'var(--color-rules)'
   }
   return colors[props.selectedType] || 'var(--text-primary)'
 })
@@ -318,6 +338,8 @@ const handleDelete = () => {
     emit('hook-delete', props.selectedItem)
   } else if (canEditMcp.value && props.selectedItem) {
     emit('mcp-delete', props.selectedItem)
+  } else if (canEditRule.value && props.selectedItem) {
+    emit('rule-delete', props.selectedItem)
   }
 }
 
@@ -330,7 +352,8 @@ const handleCopy = () => {
       'commands': 'command',
       'hooks': 'hook',
       'mcp': 'mcp',
-      'skills': 'skill'
+      'skills': 'skill',
+      'rules': 'rule'
     };
 
     // Use configType to avoid overwriting hook's type field

@@ -33,6 +33,11 @@ export const TYPE_CONFIG = {
     icon: 'pi pi-server',
     label: 'MCP Server',
     color: 'mcp' // Maps to --color-mcp
+  },
+  rule: {
+    icon: 'pi pi-book',
+    label: 'Rule',
+    color: 'rules' // Maps to --color-rules
   }
 };
 
