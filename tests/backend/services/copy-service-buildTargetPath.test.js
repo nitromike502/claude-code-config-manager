@@ -69,7 +69,7 @@ describe('CopyService - buildTargetPath()', () => {
 
     test('should reject invalid configType', async () => {
       await expect(copyService.buildTargetPath('invalid', 'user', null, '/path/to/file.md'))
-        .rejects.toThrow('Invalid configType: must be one of agent, command, hook, mcp');
+        .rejects.toThrow('Invalid configType: must be one of agent, command, hook, mcp, rule');
     });
 
     test('should reject null targetScope', async () => {

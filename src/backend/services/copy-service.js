@@ -119,7 +119,7 @@ class CopyService {
     }
 
     // Validate configType
-    const validConfigTypes = ['agent', 'command', 'hook', 'mcp'];
+    const validConfigTypes = ['agent', 'command', 'hook', 'mcp', 'rule'];
     if (!validConfigTypes.includes(configType)) {
       throw new Error(`Invalid configType: must be one of ${validConfigTypes.join(', ')}`);
     }
@@ -187,6 +187,24 @@ class CopyService {
         } else {
           // No nesting detected, place in root of commands
           targetPath = path.join(basePath, 'commands', sourceFilename);
+        }
+        break;
+
+      case 'rule':
+        // Rules: .claude/rules/rule-name.md
+        // Note: Rules can be nested in subdirectories (like commands)
+        const ruleSourceDir = path.dirname(sourcePath);
+        const rulesIndex = ruleSourceDir.lastIndexOf(path.sep + 'rules');
+
+        if (rulesIndex !== -1) {
+          const rulesNestedPath = ruleSourceDir.substring(rulesIndex + '/rules'.length + 1);
+          if (rulesNestedPath) {
+            targetPath = path.join(basePath, 'rules', rulesNestedPath, sourceFilename);
+          } else {
+            targetPath = path.join(basePath, 'rules', sourceFilename);
+          }
+        } else {
+          targetPath = path.join(basePath, 'rules', sourceFilename);
         }
         break;
 
@@ -539,6 +557,99 @@ class CopyService {
 
     } catch (error) {
       // Handle all errors with consistent format
+      return {
+        success: false,
+        error: error.message || 'Unknown error occurred during copy operation'
+      };
+    }
+  }
+
+  /**
+   * Copies a rule file to a target scope/project
+   * Rules are .md files that may be nested in subdirectories (like commands)
+   *
+   * @param {Object} request - Copy request object
+   * @param {string} request.sourcePath - Absolute path to source rule file
+   * @param {string} request.targetScope - 'user' or 'project'
+   * @param {string} [request.targetProjectId] - Required if targetScope is 'project'
+   * @param {string} [request.conflictStrategy] - 'skip', 'overwrite', or 'rename'
+   * @returns {Promise<Object>} Result with success, copiedPath, conflict, or error
+   */
+  async copyRule(request) {
+    try {
+      // 1. Validate source path (security + existence)
+      const validatedSourcePath = await this.validateSource(request.sourcePath);
+
+      // 2. Read and validate content exists
+      let content;
+      try {
+        content = await fs.readFile(validatedSourcePath, 'utf8');
+      } catch (error) {
+        throw new Error(`Failed to read source file: ${error.message}`);
+      }
+
+      if (!content || content.trim().length === 0) {
+        throw new Error('Invalid rule file: file is empty');
+      }
+
+      // 3. Build target path
+      const targetPath = await this.buildTargetPath(
+        'rule',
+        request.targetScope,
+        request.targetProjectId,
+        validatedSourcePath
+      );
+
+      // 4. Detect conflict
+      const conflict = await this.detectConflict(validatedSourcePath, targetPath);
+
+      // 5. Handle conflict if detected
+      let finalTargetPath = targetPath;
+
+      if (conflict) {
+        if (!request.conflictStrategy) {
+          return {
+            success: false,
+            conflict: conflict
+          };
+        }
+
+        try {
+          finalTargetPath = await this.resolveConflict(targetPath, request.conflictStrategy);
+        } catch (error) {
+          if (error.message === 'Copy cancelled by user') {
+            return {
+              success: false,
+              skipped: true,
+              message: 'Copy cancelled by user'
+            };
+          }
+          throw error;
+        }
+      }
+
+      // 6. Ensure parent directory exists
+      const targetDir = path.dirname(finalTargetPath);
+      try {
+        await fs.mkdir(targetDir, { recursive: true });
+      } catch (error) {
+        throw new Error(`Failed to create target directory: ${error.message}`);
+      }
+
+      // 7. Copy file
+      try {
+        await fs.copyFile(validatedSourcePath, finalTargetPath);
+      } catch (error) {
+        throw new Error(`Failed to copy file: ${error.message}`);
+      }
+
+      // 8. Return success
+      return {
+        success: true,
+        copiedPath: finalTargetPath
+      };
+
+    } catch (error) {
       return {
         success: false,
         error: error.message || 'Unknown error occurred during copy operation'
