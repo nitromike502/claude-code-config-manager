@@ -303,6 +303,64 @@ This project uses specialized Claude Code subagents for different aspects of dev
 
 For SWARM-based development workflows, use the `/swarm` command to launch coordinated multi-agent tasks.
 
+## Epic/Release Branch Workflow
+
+For multi-story epics, use a **release branch** to collect all story PRs before merging to main. This keeps main clean and allows the user to review the full feature as a single PR.
+
+### Branch Hierarchy
+
+```
+main
+  └── feature/epic-XXX-description          (release branch)
+        ├── feature/story-X.1-description   (story branch → squash-merge into release)
+        ├── feature/story-X.2-description   (story branch → squash-merge into release)
+        ├── feature/story-X.3-description   (story branch → squash-merge into release)
+        └── feature/story-X.4-description   (story branch → squash-merge into release)
+```
+
+### Workflow
+
+```bash
+# 1. Create release branch from main (once per epic)
+git checkout main && git pull
+git checkout -b feature/epic-XXX-description
+git push -u origin feature/epic-XXX-description
+
+# 2. For each story, branch from the release branch
+git checkout feature/epic-XXX-description && git pull
+git checkout -b feature/story-X.Y-description
+# ... implement, test, commit, push ...
+
+# 3. Create story PR targeting the RELEASE branch (not main)
+gh pr create --base feature/epic-XXX-description --title "feat: description (STORY-X.Y)"
+
+# 4. Code reviewer reviews and approves → squash-merge into release branch
+gh pr merge <pr-number> --squash
+
+# 5. Update release branch before next story
+git checkout feature/epic-XXX-description && git pull
+
+# 6. After ALL stories complete, create final PR: release branch → main
+gh pr create --base main --title "feat: Epic description (EPIC-XXX)"
+# User reviews the full feature PR
+
+# 7. Fast-forward merge release branch into main
+gh pr merge <pr-number> --merge  # or --ff-only locally
+git checkout main && git pull
+git branch -d feature/epic-XXX-description
+```
+
+### Review Strategy
+
+- **Story PRs** (into release branch): Code reviewer approval is sufficient
+- **Final Epic PR** (into main): User reviews the full feature before merge
+
+### When to Use
+
+- Epics with 3+ stories that form a cohesive feature
+- Features where user wants to review the complete implementation as a unit
+- Any work where intermediate merges to main would expose incomplete functionality
+
 ## Related Documentation
 
 - **Workflow Analysis (October 7, 2025):** `docs/workflow-analysis-20251007.md` - Critical incident analysis that led to this workflow
