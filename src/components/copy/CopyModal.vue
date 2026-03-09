@@ -195,7 +195,7 @@ const props = defineProps({
     validator: (value) => {
       // Config items can have either 'name' (agents, commands, MCP, skills) or 'event' (hooks)
       return value && (value.name || value.event) && value.type &&
-             ['agent', 'command', 'hook', 'mcp', 'skill'].includes(value.type);
+             ['agent', 'command', 'hook', 'mcp', 'skill', 'rule'].includes(value.type);
     }
   }
 });
@@ -432,6 +432,11 @@ const handleButtonCopy = async (destination) => {
 .config-type.type-skill {
   background: var(--color-skills-bg);
   color: var(--color-skills);
+}
+
+.config-type.type-rule {
+  background: var(--color-rules-bg);
+  color: var(--color-rules);
 }
 
 /* Custom scrollbar for destinations container */

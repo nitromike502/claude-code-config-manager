@@ -114,7 +114,8 @@ export const useCopyStore = defineStore('copy', () => {
       'command': 'copyCommand',
       'hook': 'copyHook',
       'mcp': 'copyMcp',
-      'skill': 'copySkill'
+      'skill': 'copySkill',
+      'rule': 'copyRule'
     }
 
     if (!typeMap[type]) {
@@ -138,8 +139,8 @@ export const useCopyStore = defineStore('copy', () => {
   function buildRequestPayload(sourceConfig, targetScope, targetProjectId, conflictStrategy, acknowledgedWarnings) {
     const configType = sourceConfig.configType || sourceConfig.type
 
-    // Agents and Commands use sourcePath
-    if (configType === 'agent' || configType === 'command') {
+    // Agents, Commands, and Rules use sourcePath
+    if (configType === 'agent' || configType === 'command' || configType === 'rule') {
       const sourcePath = sourceConfig.path || sourceConfig.filePath
       if (!sourcePath) {
         throw new Error('sourceConfig must have either path or filePath property')
