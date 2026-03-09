@@ -9,7 +9,8 @@ const {
   getUserCommands,
   getUserHooks,
   getUserMCP,
-  getUserSkills
+  getUserSkills,
+  getUserRules
 } = require('../services/projectDiscovery');
 const { updateYamlFrontmatter, updateFile } = require('../services/updateService');
 const { deleteFile, deleteDirectory, deleteHook } = require('../services/deleteService');
@@ -442,6 +443,27 @@ router.get('/skills', async (req, res) => {
     res.json({
       success: true,
       skills: result.skills,
+      warnings: result.warnings
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/user/rules
+ * Returns user-level rules from ~/.claude/rules/
+ */
+router.get('/rules', async (req, res) => {
+  try {
+    const result = await getUserRules();
+
+    res.json({
+      success: true,
+      rules: result.rules,
       warnings: result.warnings
     });
   } catch (error) {
@@ -1254,6 +1276,52 @@ router.delete('/skills/:skillName', validateSkillName, async (req, res) => {
     }
 
     console.error('Error deleting user skill:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/user/rules/*
+ * Delete a user-level rule file
+ *
+ * Uses wildcard route to support nested rule paths (e.g., frontend/react)
+ */
+router.delete('/rules/*', async (req, res) => {
+  try {
+    const rulePath = req.params[0]; // Wildcard capture
+
+    if (!rulePath || rulePath.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Rule path is required'
+      });
+    }
+
+    // Construct rule file path (add .md extension if not present)
+    const ruleName = rulePath.endsWith('.md') ? rulePath : `${rulePath}.md`;
+    const ruleFilePath = path.join(config.paths.getUserRulesDir(), ruleName);
+
+    // Delete the file
+    await deleteFile(ruleFilePath);
+
+    res.json({
+      success: true,
+      message: `User rule "${rulePath}" deleted successfully`,
+      deleted: ruleFilePath
+    });
+  } catch (error) {
+    // Handle file not found specifically
+    if (error.message.includes('File not found')) {
+      return res.status(404).json({
+        success: false,
+        error: `User rule not found: ${req.params[0]}`
+      });
+    }
+
+    console.error('Error deleting user rule:', error);
     res.status(500).json({
       success: false,
       error: error.message

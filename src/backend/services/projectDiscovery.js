@@ -4,6 +4,7 @@ const config = require('../config/config.js');
 const { pathToProjectId, isValidDirectory } = require('../utils/pathUtils');
 const { readJSON, exists, listFiles, listFilesRecursive, readMarkdownWithFrontmatter } = require('./fileReader');
 const { getValidEvents, getMatcherBasedEvents } = require('../config/hooks');
+const rulesParser = require('../parsers/rulesParser');
 
 /**
  * Reads and parses ~/.claude.json to get all Claude Code projects
@@ -1475,18 +1476,38 @@ function detectExternalReferences(skillPath, content) {
 }
 
 /**
+ * Gets rules for a specific project
+ * @param {string} projectPath - Absolute project path
+ * @returns {Promise<Object>} Object with rules array and warnings array
+ */
+async function getProjectRules(projectPath) {
+  const rulesDir = config.paths.getProjectRulesDir(projectPath);
+  return rulesParser.parseAllRules(rulesDir, 'project');
+}
+
+/**
+ * Gets user-level rules from ~/.claude/rules/
+ * @returns {Promise<Object>} Object with rules array and warnings array
+ */
+async function getUserRules() {
+  const rulesDir = config.paths.getUserRulesDir();
+  return rulesParser.parseAllRules(rulesDir, 'user');
+}
+
+/**
  * Counts configuration items for a project (for summary display)
  * @param {string} projectPath - Absolute project path
  * @returns {Promise<Object>} Object with counts
  */
 async function getProjectCounts(projectPath) {
   try {
-    const [agentsResult, commandsResult, hooksResult, mcpResult, skillsResult] = await Promise.all([
+    const [agentsResult, commandsResult, hooksResult, mcpResult, skillsResult, rulesResult] = await Promise.all([
       getProjectAgents(projectPath),
       getProjectCommands(projectPath),
       getProjectHooks(projectPath),
       getProjectMCP(projectPath),
-      getProjectSkills(projectPath)
+      getProjectSkills(projectPath),
+      getProjectRules(projectPath)
     ]);
 
     return {
@@ -1494,7 +1515,8 @@ async function getProjectCounts(projectPath) {
       commands: commandsResult.commands.length,
       hooks: hooksResult.hooks.length,
       mcp: mcpResult.mcp.length,
-      skills: skillsResult.skills.length
+      skills: skillsResult.skills.length,
+      rules: rulesResult.rules.length
     };
   } catch (error) {
     return {
@@ -1502,7 +1524,8 @@ async function getProjectCounts(projectPath) {
       commands: 0,
       hooks: 0,
       mcp: 0,
-      skills: 0
+      skills: 0,
+      rules: 0
     };
   }
 }
@@ -1519,5 +1542,7 @@ module.exports = {
   getUserHooks,
   getUserMCP,
   getUserSkills,
+  getProjectRules,
+  getUserRules,
   getProjectCounts
 };

@@ -9,6 +9,7 @@ const {
   getProjectHooks,
   getProjectMCP,
   getProjectSkills,
+  getProjectRules,
   getProjectCounts
 } = require('../services/projectDiscovery');
 const { projectIdToPath } = require('../utils/pathUtils');
@@ -73,7 +74,7 @@ router.use('/:projectId/*', (req, res, next) => {
   // Check if wildcard starts with a valid resource name
   // Valid patterns: agents, agents/:name, commands, commands/:name, hooks, mcp, skills, skills/:name
   // Invalid patterns: with/slashes/agents (path traversal attempt)
-  const validResourcePrefixes = ['agents', 'commands', 'hooks', 'mcp', 'skills'];
+  const validResourcePrefixes = ['agents', 'commands', 'hooks', 'mcp', 'skills', 'rules'];
   const wildcardFirstSegment = wildcard.split('/')[0];
 
   if (wildcard && !validResourcePrefixes.includes(wildcardFirstSegment)) {
@@ -382,6 +383,54 @@ router.get('/:projectId/skills', validateProjectId, async (req, res) => {
     res.json({
       success: true,
       skills: result.skills,
+      warnings: result.warnings,
+      projectId,
+      projectPath: projectData.path
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/projects/:projectId/rules
+ * Returns rules for a specific project
+ */
+router.get('/:projectId/rules', validateProjectId, async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    // Ensure projects are loaded
+    if (!projectsCache) {
+      const result = await discoverProjects();
+      projectsCache = result;
+    }
+
+    // Find project path
+    const projectData = projectsCache.projects[projectId];
+
+    if (!projectData) {
+      return res.status(404).json({
+        success: false,
+        error: `Project not found: ${projectId}`
+      });
+    }
+
+    if (!projectData.exists) {
+      return res.status(404).json({
+        success: false,
+        error: `Project directory does not exist: ${projectData.path}`
+      });
+    }
+
+    const result = await getProjectRules(projectData.path);
+
+    res.json({
+      success: true,
+      rules: result.rules,
       warnings: result.warnings,
       projectId,
       projectPath: projectData.path
@@ -1333,6 +1382,59 @@ router.delete('/:projectId/skills/:skillName', validateProjectId, validateSkillN
     }
 
     console.error('Error deleting skill:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/projects/:projectId/rules/*
+ * Delete a rule file
+ *
+ * Uses wildcard route to support nested rule paths (e.g., frontend/react)
+ */
+router.delete('/:projectId/rules/*', validateProjectId, async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const rulePath = req.params[0]; // Wildcard capture
+
+    if (!rulePath || rulePath.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Rule path is required'
+      });
+    }
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Construct rule file path (add .md extension if not present)
+    const ruleName = rulePath.endsWith('.md') ? rulePath : `${rulePath}.md`;
+    const ruleFilePath = path.join(config.paths.getProjectRulesDir(projectPath), ruleName);
+
+    // Delete the file
+    await deleteFile(ruleFilePath);
+
+    res.json({
+      success: true,
+      message: `Rule "${rulePath}" deleted successfully`,
+      deleted: ruleFilePath
+    });
+  } catch (error) {
+    // Handle file not found specifically
+    if (error.message.includes('File not found')) {
+      return res.status(404).json({
+        success: false,
+        error: `Rule not found: ${req.params[0]}`
+      });
+    }
+
+    console.error('Error deleting rule:', error);
     res.status(500).json({
       success: false,
       error: error.message
