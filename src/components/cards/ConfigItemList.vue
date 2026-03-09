@@ -88,7 +88,7 @@ const props = defineProps({
   itemType: {
     type: String,
     required: true,
-    validator: (value) => ['agents', 'commands', 'hooks', 'mcp', 'skills'].includes(value),
+    validator: (value) => ['agents', 'commands', 'hooks', 'mcp', 'skills', 'rules'].includes(value),
   },
   truncateDescription: {
     type: Boolean,
@@ -105,7 +105,7 @@ const props = defineProps({
 
 const emit = defineEmits({
   'item-selected': (item, itemType) => {
-    return item !== null && typeof itemType === 'string' && ['agents', 'commands', 'hooks', 'mcp', 'skills'].includes(itemType)
+    return item !== null && typeof itemType === 'string' && ['agents', 'commands', 'hooks', 'mcp', 'skills', 'rules'].includes(itemType)
   },
   'copy-clicked': (item) => {
     return item !== null && typeof item === 'object';
@@ -121,7 +121,7 @@ const emit = defineEmits({
  */
 const canDelete = (item) => {
   return props.enableCrud &&
-         (props.itemType === 'agents' || props.itemType === 'commands' || props.itemType === 'skills' || props.itemType === 'hooks' || props.itemType === 'mcp') &&
+         (props.itemType === 'agents' || props.itemType === 'commands' || props.itemType === 'skills' || props.itemType === 'hooks' || props.itemType === 'mcp' || props.itemType === 'rules') &&
          item.location !== 'plugin';
 };
 
@@ -144,7 +144,8 @@ const handleCopyClick = (item) => {
     'commands': 'command',
     'hooks': 'hook',
     'mcp': 'mcp',
-    'skills': 'skill'
+    'skills': 'skill',
+    'rules': 'rule'
   };
 
   const itemWithType = {
