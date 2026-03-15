@@ -41,7 +41,8 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
                 agents: 5,
                 commands: 12,
                 hooks: 3,
-                mcp: 2
+                mcp: 2,
+                rules: 0
               }
             }
           ]
@@ -78,6 +79,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       });
     });
+    await page.route('**/api/user/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/user/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      });
+    });
 
     // Mock project detail API endpoints
     await page.route('**/api/projects/configproject/agents', (route) => {
@@ -106,6 +121,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, mcp: [] })
+      });
+    });
+    await page.route('**/api/projects/configproject/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/projects/configproject/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       });
     });
 
@@ -184,13 +213,13 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
               id: 'project1',
               name: 'Project Alpha',
               path: '/alpha',
-              stats: { agents: 10, commands: 20, hooks: 5, mcp: 3 }
+              stats: { agents: 10, commands: 20, hooks: 5, mcp: 3, rules: 0 }
             },
             {
               id: 'project2',
               name: 'Project Beta',
               path: '/beta',
-              stats: { agents: 2, commands: 8, hooks: 1, mcp: 0 }
+              stats: { agents: 2, commands: 8, hooks: 1, mcp: 0, rules: 0 }
             }
           ]
         })
@@ -226,6 +255,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       });
     });
+    await page.route('**/api/user/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/user/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      });
+    });
 
     // Mock project detail API endpoints for both projects
     const projectIds = ['project1', 'project2'];
@@ -256,6 +299,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({ success: true, mcp: [] })
+        });
+      });
+      await page.route(`**/api/projects/${projectId}/skills`, (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, skills: [] })
+        });
+      });
+      await page.route(`**/api/projects/${projectId}/rules`, (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, rules: [] })
         });
       });
     }
@@ -318,7 +375,7 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
               id: 'emptyproject',
               name: 'Empty Project',
               path: '/empty',
-              stats: { agents: 0, commands: 0, hooks: 0, mcp: 0 }
+              stats: { agents: 0, commands: 0, hooks: 0, mcp: 0, rules: 0 }
             }
           ]
         })
@@ -354,6 +411,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       });
     });
+    await page.route('**/api/user/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/user/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      });
+    });
 
     // Mock project detail API endpoints
     await page.route('**/api/projects/emptyproject/agents', (route) => {
@@ -382,6 +453,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, mcp: [] })
+      });
+    });
+    await page.route('**/api/projects/emptyproject/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/projects/emptyproject/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       });
     });
 
@@ -422,7 +507,7 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
               id: 'searchproject',
               name: 'Search Project',
               path: '/search',
-              stats: { agents: 5, commands: 10, hooks: 2, mcp: 1 }
+              stats: { agents: 5, commands: 10, hooks: 2, mcp: 1, rules: 0 }
             }
           ]
         })
@@ -456,6 +541,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, mcp: [] })
+      });
+    });
+    await page.route('**/api/user/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/user/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       });
     });
 
@@ -488,6 +587,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       });
     });
+    await page.route('**/api/projects/searchproject/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/projects/searchproject/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      });
+    });
 
     await page.goto('/');
     await page.waitForSelector('.project-card', { timeout: 10000 });
@@ -518,7 +631,7 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
               id: 'integrityproject',
               name: 'Data Integrity Project',
               path: '/home/user/integrity',
-              stats: { agents: 7, commands: 14, hooks: 4, mcp: 2 }
+              stats: { agents: 7, commands: 14, hooks: 4, mcp: 2, rules: 0 }
             }
           ]
         })
@@ -554,6 +667,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       });
     });
+    await page.route('**/api/user/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/user/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      });
+    });
 
     // Mock project detail API endpoints
     await page.route('**/api/projects/integrityproject/agents', (route) => {
@@ -582,6 +709,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, mcp: [] })
+      });
+    });
+    await page.route('**/api/projects/integrityproject/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/projects/integrityproject/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       });
     });
 
@@ -633,7 +774,7 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
               id: 'iconproject',
               name: 'Icon Project',
               path: '/icons',
-              stats: { agents: 1, commands: 1, hooks: 1, mcp: 1 }
+              stats: { agents: 1, commands: 1, hooks: 1, mcp: 1, rules: 0 }
             }
           ]
         })
@@ -669,6 +810,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       });
     });
+    await page.route('**/api/user/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/user/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      });
+    });
 
     // Mock project detail API endpoints
     await page.route('**/api/projects/iconproject/agents', (route) => {
@@ -697,6 +852,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, mcp: [] })
+      });
+    });
+    await page.route('**/api/projects/iconproject/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/projects/iconproject/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       });
     });
 
@@ -735,7 +904,7 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
               id: 'largeproject',
               name: 'Large Project',
               path: '/large',
-              stats: { agents: 99, commands: 250, hooks: 45, mcp: 12 }
+              stats: { agents: 99, commands: 250, hooks: 45, mcp: 12, rules: 0 }
             }
           ]
         })
@@ -771,6 +940,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       });
     });
+    await page.route('**/api/user/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/user/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      });
+    });
 
     // Mock project detail API endpoints
     await page.route('**/api/projects/largeproject/agents', (route) => {
@@ -799,6 +982,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, mcp: [] })
+      });
+    });
+    await page.route('**/api/projects/largeproject/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/projects/largeproject/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       });
     });
 
@@ -838,7 +1035,7 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
               id: 'responsiveproject',
               name: 'Responsive Project',
               path: '/responsive',
-              stats: { agents: 3, commands: 6, hooks: 2, mcp: 1 }
+              stats: { agents: 3, commands: 6, hooks: 2, mcp: 1, rules: 0 }
             }
           ]
         })
@@ -874,6 +1071,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       });
     });
+    await page.route('**/api/user/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/user/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      });
+    });
 
     // Mock project detail API endpoints
     await page.route('**/api/projects/responsiveproject/agents', (route) => {
@@ -902,6 +1113,20 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, mcp: [] })
+      });
+    });
+    await page.route('**/api/projects/responsiveproject/skills', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/projects/responsiveproject/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       });
     });
 
@@ -967,6 +1192,7 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
             !text.includes('Error loading skills:') &&
             !text.includes('Error loading hooks:') &&
             !text.includes('Error loading MCP servers:') &&
+            !text.includes('Error loading rules:') &&
             !text.includes('net::ERR') &&
             !text.includes('favicon')) {
           consoleErrors.push(text);
@@ -985,7 +1211,7 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
               id: 'cleanproject',
               name: 'Clean Project',
               path: '/clean',
-              stats: { agents: 2, commands: 4, hooks: 1, mcp: 1 }
+              stats: { agents: 2, commands: 4, hooks: 1, mcp: 1, rules: 0 }
             }
           ]
         })
@@ -1028,6 +1254,13 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         body: JSON.stringify({ success: true, skills: [] })
       });
     });
+    await page.route('**/api/user/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      });
+    });
 
     // Mock project detail API endpoints
     await page.route('**/api/projects/cleanproject/agents', (route) => {
@@ -1063,6 +1296,13 @@ test.describe('102.001: E2E Flow: Configuration Viewing Journey', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/projects/cleanproject/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       });
     });
 

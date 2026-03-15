@@ -100,7 +100,7 @@ test.describe('111.001: MCP Server Selection and Display', () => {
             id: 'testproject',
             name: 'Test Project',
             path: '/home/user/testproject',
-            stats: { agents: 0, commands: 0, hooks: 0, mcp: 3 }
+            stats: { agents: 0, commands: 0, hooks: 0, mcp: 3, rules: 0 }
           }]
         })
       })
@@ -135,6 +135,20 @@ test.describe('111.001: MCP Server Selection and Display', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       })
     })
+    await page.route('**/api/user/skills', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      })
+    })
+    await page.route('**/api/user/rules', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      })
+    })
 
     // Mock project MCP servers
     await page.route('**/api/projects/testproject/mcp', async (route) => {
@@ -165,6 +179,20 @@ test.describe('111.001: MCP Server Selection and Display', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, hooks: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/skills', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/rules', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       })
     })
 
@@ -265,7 +293,7 @@ test.describe('111.002: Inline Editing', () => {
             id: 'testproject',
             name: 'Test Project',
             path: '/home/user/testproject',
-            stats: { agents: 0, commands: 0, hooks: 0, mcp: 3 }
+            stats: { agents: 0, commands: 0, hooks: 0, mcp: 3, rules: 0 }
           }]
         })
       })
@@ -276,7 +304,7 @@ test.describe('111.002: Inline Editing', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ success: true, agents: [], commands: [], hooks: [], mcp: [] })
+        body: JSON.stringify({ success: true, agents: [], commands: [], hooks: [], mcp: [], skills: [], rules: [] })
       })
     })
 
@@ -307,6 +335,20 @@ test.describe('111.002: Inline Editing', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, hooks: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/skills', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/rules', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       })
     })
 
@@ -605,7 +647,7 @@ test.describe('111.003: Conditional Field Visibility', () => {
             id: 'testproject',
             name: 'Test Project',
             path: '/home/user/testproject',
-            stats: { agents: 0, commands: 0, hooks: 0, mcp: 3 }
+            stats: { agents: 0, commands: 0, hooks: 0, mcp: 3, rules: 0 }
           }]
         })
       })
@@ -616,7 +658,7 @@ test.describe('111.003: Conditional Field Visibility', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ success: true, agents: [], commands: [], hooks: [], mcp: [] })
+        body: JSON.stringify({ success: true, agents: [], commands: [], hooks: [], mcp: [], skills: [], rules: [] })
       })
     })
 
@@ -647,6 +689,20 @@ test.describe('111.003: Conditional Field Visibility', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, hooks: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/skills', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/rules', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       })
     })
 
@@ -738,7 +794,7 @@ test.describe('111.004: Array/Object Editors', () => {
             id: 'testproject',
             name: 'Test Project',
             path: '/home/user/testproject',
-            stats: { agents: 0, commands: 0, hooks: 0, mcp: 3 }
+            stats: { agents: 0, commands: 0, hooks: 0, mcp: 3, rules: 0 }
           }]
         })
       })
@@ -749,7 +805,7 @@ test.describe('111.004: Array/Object Editors', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ success: true, agents: [], commands: [], hooks: [], mcp: [] })
+        body: JSON.stringify({ success: true, agents: [], commands: [], hooks: [], mcp: [], skills: [], rules: [] })
       })
     })
 
@@ -796,6 +852,20 @@ test.describe('111.004: Array/Object Editors', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, hooks: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/skills', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/rules', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       })
     })
 
@@ -996,7 +1066,7 @@ test.describe('111.005: Validation', () => {
             id: 'testproject',
             name: 'Test Project',
             path: '/home/user/testproject',
-            stats: { agents: 0, commands: 0, hooks: 0, mcp: 3 }
+            stats: { agents: 0, commands: 0, hooks: 0, mcp: 3, rules: 0 }
           }]
         })
       })
@@ -1007,7 +1077,7 @@ test.describe('111.005: Validation', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ success: true, agents: [], commands: [], hooks: [], mcp: [] })
+        body: JSON.stringify({ success: true, agents: [], commands: [], hooks: [], mcp: [], skills: [], rules: [] })
       })
     })
 
@@ -1038,6 +1108,20 @@ test.describe('111.005: Validation', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, hooks: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/skills', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/rules', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       })
     })
 
@@ -1233,6 +1317,13 @@ test.describe('111.006: User-Level MCP Servers', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, skills: [] })
+      })
+    })
+    await page.route('**/api/user/rules', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       })
     })
 

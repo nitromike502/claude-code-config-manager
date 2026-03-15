@@ -227,7 +227,8 @@ const mockProjectDetails = {
     commands: [],
     skills: [],
     hooks: [],
-    mcp: []
+    mcp: [],
+    rules: []
   },
   myproject: {
     agents: [
@@ -270,14 +271,16 @@ const mockProjectDetails = {
     commands: [],
     skills: [],
     hooks: [],
-    mcp: []
+    mcp: [],
+    rules: []
   },
   retryproject: {
     agents: [],
     commands: [],
     skills: [],
     hooks: [],
-    mcp: []
+    mcp: [],
+    rules: []
   },
   statsproject: {
     agents: [
@@ -515,6 +518,14 @@ async function setupMocks(page, options = {}) {
     });
   });
 
+  await page.route('**/api/user/rules', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ success: true, rules: mockUserConfig.rules || [] })
+    });
+  });
+
   // 2. Mock specific project detail endpoints for each project
   for (const proj of projects) {
     const details = mockProjectDetails[proj.id] || {
@@ -569,6 +580,15 @@ async function setupMocks(page, options = {}) {
         body: JSON.stringify({ success: true, skills: details.skills || [] })
       });
     });
+
+    // Mock rules endpoint for this project
+    await page.route(`**/api/projects/${proj.id}/rules`, (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: details.rules || [] })
+      });
+    });
   }
 
   // 3. Mock projects list endpoint LAST (most general wildcard)
@@ -602,7 +622,8 @@ function getProjectDetails(projectId) {
     commands: [],
     skills: [],
     hooks: [],
-    mcp: []
+    mcp: [],
+    rules: []
   };
 }
 

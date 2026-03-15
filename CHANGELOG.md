@@ -11,6 +11,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.1.0] - 2026-03-14
+
+### Added
+- **Rules Support** (EPIC-009) - Rules as 6th configuration type alongside agents, commands, skills, hooks, and MCP servers
+  - Rules ConfigCard with `pi pi-book` icon (red-orange #E53E3E) in project and user views
+  - Conditional/unconditional rule indicators with amber badge for path-based rules
+  - Rules detail sidebar with Path Patterns section showing glob patterns
+  - Rules editing with paths field support in sidebar
+  - Full directory copy support preserving nested subdirectory structure
+  - Cross-scope copy (user <-> project) for rules with conflict resolution
+  - Delete support for project and user rules
+- Rules parser with YAML frontmatter extraction (paths field for conditional loading)
+- New API endpoints: GET/DELETE/PUT for project and user rules, POST /api/copy/rule
+- Rules count displayed on dashboard project cards
+- 80+ new tests across parser, routes, copy service, and frontend
+
+### Changed
+- Updated dashboard to display rules count on project cards (6 config types now)
+- ConfigPageLayout now supports 6 configuration panels
+- Copy modal updated with rules type support
+
+---
+
 ## [3.0.0] - 2026-01-29
 
 ### Added
