@@ -1,6 +1,6 @@
 # Claude Code Config Manager
 
-A web-based tool for managing Claude Code projects, subagents, slash commands, hooks, and MCP servers.
+A web-based tool for managing Claude Code projects, subagents, slash commands, hooks, MCP servers, and rules.
 
 ## Project Overview
 
@@ -8,10 +8,10 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Deployment:** Local web server accessible at `http://localhost:5173`
 
-**Current Release:** v3.0.0 - Released January 29, 2026
+**Current Release:** v3.1.0 - Released March 14, 2026
 
 **Key Features:**
-- Copy configuration between projects (agents, commands, skills, hooks, MCP servers)
+- Copy configuration between projects (agents, commands, skills, hooks, MCP servers, rules)
 - Smart conflict resolution with skip/overwrite/rename strategies
 - Modern PrimeVue UI components with Aura theme
 - Tailwind CSS v4 integration for responsive design
@@ -42,7 +42,7 @@ manager/
 ├── src/
 │   ├── backend/
 │   │   ├── config/config.js          # Centralized configuration module
-│   │   ├── parsers/                  # File parsers (agents, commands, skills, etc.)
+│   │   ├── parsers/                  # File parsers (agents, commands, skills, rules, etc.)
 │   │   ├── routes/                   # API route handlers
 │   │   ├── services/                 # Business logic services
 │   │   └── server.js                 # Express server entry point
@@ -77,12 +77,13 @@ manager/
 - **Skills Viewing** - Browse and view skills (directory-based configurations with SKILL.md)
 - **Hooks Viewing** - Display configured hooks from settings files
 - **MCP Server Viewing** - View MCP server configurations
+- **Rules Viewing** - Browse and view rules with conditional/unconditional indicators and path pattern display
 - **Search & Filter** - Quickly find specific configurations
 - **Detail Sidebar** - View full content with markdown rendering and file tree for skills
 
 ### Configuration Management
-- **Copy Configuration** - Copy agents, commands, skills, hooks, and MCP servers between projects
-- **Delete Configuration** - Delete agents, commands, skills, and hooks from projects or user-level
+- **Copy Configuration** - Copy agents, commands, skills, hooks, MCP servers, and rules between projects
+- **Delete Configuration** - Delete agents, commands, skills, hooks, and rules from projects or user-level
 - **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
 - **Cross-Scope Copy** - Copy between user-level and project-level configurations
 - **Smart Merging** - Intelligent merge for hooks and MCP configurations
@@ -115,6 +116,7 @@ manager/
 - `.claude/agents/*.md` - Subagents (markdown with YAML frontmatter)
 - `.claude/commands/**/*.md` - Slash commands (markdown, supports nested directories)
 - `.claude/skills/*/SKILL.md` - Skills (directory-based configurations with SKILL.md and supporting files)
+- `.claude/rules/**/*.md` - Rules (markdown with optional YAML frontmatter, paths field for conditional loading)
 - `.claude/settings.json` - Project settings including hooks
 - `.claude/settings.local.json` - Local project settings
 - `.mcp.json` - Project MCP servers
@@ -123,6 +125,7 @@ manager/
 - `~/.claude/agents/*.md` - User subagents
 - `~/.claude/commands/**/*.md` - User commands
 - `~/.claude/skills/*/SKILL.md` - User skills
+- `~/.claude/rules/**/*.md` - User rules
 - `~/.claude/settings.json` - User settings including hooks and MCP servers
 
 ## Backend Configuration Module
@@ -156,6 +159,7 @@ paths.getUserSettingsPath()        // ~/.claude/settings.json
 paths.getUserAgentsDir()           // ~/.claude/agents
 paths.getUserCommandsDir()         // ~/.claude/commands
 paths.getUserSkillsDir()           // ~/.claude/skills
+paths.getUserRulesDir()            // ~/.claude/rules
 
 // Project-level paths (require projectPath argument)
 paths.getProjectClaudeDir(projectPath)         // {project}/.claude
@@ -165,6 +169,7 @@ paths.getProjectMcpPath(projectPath)           // {project}/.mcp.json
 paths.getProjectAgentsDir(projectPath)         // {project}/.claude/agents
 paths.getProjectCommandsDir(projectPath)       // {project}/.claude/commands
 paths.getProjectSkillsDir(projectPath)         // {project}/.claude/skills
+paths.getProjectRulesDir(projectPath)          // {project}/.claude/rules
 
 // Utility
 paths.expandHome('~/path')         // Expands ~ to home directory
@@ -180,17 +185,20 @@ GET    /api/projects/:projectId/commands     - Get project commands
 GET    /api/projects/:projectId/skills       - Get project skills
 GET    /api/projects/:projectId/hooks        - Get project hooks
 GET    /api/projects/:projectId/mcp          - Get project MCP servers
+GET    /api/projects/:projectId/rules        - Get project rules
 GET    /api/user/agents                      - Get user subagents
 GET    /api/user/commands                    - Get user commands
 GET    /api/user/skills                      - Get user skills
 GET    /api/user/hooks                       - Get user hooks
 GET    /api/user/mcp                         - Get user MCP servers
+GET    /api/user/rules                       - Get user rules
 POST   /api/projects/scan                    - Trigger project list refresh
 POST   /api/copy/agent                       - Copy agent between projects
 POST   /api/copy/command                     - Copy command between projects
 POST   /api/copy/skill                       - Copy skill directory between projects
 POST   /api/copy/hook                        - Copy hook between projects
 POST   /api/copy/mcp                         - Copy MCP server between projects
+POST   /api/copy/rule                        - Copy rule between projects
 DELETE /api/projects/:projectId/agents/:name - Delete project agent
 DELETE /api/projects/:projectId/commands/:path - Delete project command
 DELETE /api/projects/:projectId/skills/:name - Delete project skill
@@ -199,6 +207,10 @@ DELETE /api/user/agents/:name               - Delete user agent
 DELETE /api/user/commands/:path             - Delete user command
 DELETE /api/user/skills/:name               - Delete user skill
 DELETE /api/user/hooks/:id                  - Delete user hook (id: event::matcher::index)
+DELETE /api/projects/:projectId/rules/:path - Delete project rule
+DELETE /api/user/rules/:path                - Delete user rule
+PUT    /api/projects/:projectId/rules/:path - Update project rule
+PUT    /api/user/rules/:path                - Update user rule
 ```
 
 **Note:** `projectId` = project path with slashes removed (e.g., `/home/user/projects/myapp` → `homeuserprojectsmyapp`)
@@ -292,18 +304,15 @@ backlog → todo → in-progress → review → done
 
 ## Current Status
 
-**Release:** v2.1.0 (November 13, 2025)
+**Release:** v3.1.0 (March 14, 2026)
 
 **Latest Updates:**
-- Agent Skills support added (EPIC-006)
-- Copy configuration feature released
+- Rules support added as 6th configuration type (EPIC-009)
+- Full CRUD operations for all 6 configuration types
 - WCAG 2.1 AA accessibility compliance achieved
 - PrimeVue UI components integrated
-- 1,226 tests across backend and frontend
 
 **Quality Metrics:**
-- 582 backend tests (100% pass rate)
-- 644 frontend tests (80% pass rate, 20% deferred for manual testing)
 - WCAG 2.1 AA compliant (96%, 0 critical violations)
 - Performance: Grade A+
 

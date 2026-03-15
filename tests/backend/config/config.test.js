@@ -187,6 +187,12 @@ describe('Config Module', () => {
         expect(result).toMatch(/[/\\]\.claude[/\\]skills$/);
         expect(result).not.toContain('.claude-dev');
       });
+
+      test('getUserRulesDir() should return ~/.claude/rules', () => {
+        const result = config.paths.getUserRulesDir();
+        expect(result).toMatch(/[/\\]\.claude[/\\]rules$/);
+        expect(result).not.toContain('.claude-dev');
+      });
     });
 
     describe('Project-level paths', () => {
@@ -225,6 +231,12 @@ describe('Config Module', () => {
       test('getProjectSkillsDir() should return {project}/.claude/skills', () => {
         const result = config.paths.getProjectSkillsDir(testProject);
         expect(result).toBe(path.join(testProject, '.claude', 'skills'));
+        expect(result).not.toContain('.claude-dev');
+      });
+
+      test('getProjectRulesDir() should return {project}/.claude/rules', () => {
+        const result = config.paths.getProjectRulesDir(testProject);
+        expect(result).toBe(path.join(testProject, '.claude', 'rules'));
         expect(result).not.toContain('.claude-dev');
       });
 
@@ -280,6 +292,11 @@ describe('Config Module', () => {
         const result = config.paths.getUserSkillsDir();
         expect(result).toMatch(/[/\\]\.claude-dev[/\\]skills$/);
       });
+
+      test('getUserRulesDir() should return ~/.claude-dev/rules', () => {
+        const result = config.paths.getUserRulesDir();
+        expect(result).toMatch(/[/\\]\.claude-dev[/\\]rules$/);
+      });
     });
 
     describe('Project-level paths', () => {
@@ -313,6 +330,11 @@ describe('Config Module', () => {
       test('getProjectSkillsDir() should return {project}/.claude-dev/skills', () => {
         const result = config.paths.getProjectSkillsDir(testProject);
         expect(result).toBe(path.join(testProject, '.claude-dev', 'skills'));
+      });
+
+      test('getProjectRulesDir() should return {project}/.claude-dev/rules', () => {
+        const result = config.paths.getProjectRulesDir(testProject);
+        expect(result).toBe(path.join(testProject, '.claude-dev', 'rules'));
       });
 
       test('getProjectMcpPath() should return {project}/.mcp-dev.json', () => {
@@ -489,12 +511,14 @@ describe('Config Module', () => {
       expect(typeof config.paths.getUserAgentsDir).toBe('function');
       expect(typeof config.paths.getUserCommandsDir).toBe('function');
       expect(typeof config.paths.getUserSkillsDir).toBe('function');
+      expect(typeof config.paths.getUserRulesDir).toBe('function');
       expect(typeof config.paths.getProjectClaudeDir).toBe('function');
       expect(typeof config.paths.getProjectSettingsPath).toBe('function');
       expect(typeof config.paths.getProjectLocalSettingsPath).toBe('function');
       expect(typeof config.paths.getProjectAgentsDir).toBe('function');
       expect(typeof config.paths.getProjectCommandsDir).toBe('function');
       expect(typeof config.paths.getProjectSkillsDir).toBe('function');
+      expect(typeof config.paths.getProjectRulesDir).toBe('function');
       expect(typeof config.paths.getProjectMcpPath).toBe('function');
       expect(typeof config.paths.expandHome).toBe('function');
     });

@@ -93,6 +93,10 @@
                   <i class="pi pi-sparkles"></i>
                   <span>{{ project.stats?.skills || 0 }} Skills</span>
                 </div>
+                <div class="stat stat-rules">
+                  <i class="pi pi-book"></i>
+                  <span>{{ project.stats?.rules || 0 }} Rules</span>
+                </div>
               </div>
 
               <div class="project-footer">
@@ -141,11 +145,12 @@ export default {
     const loadUserConfig = async () => {
       try {
         // Get user stats by calling all endpoints and counting
-        const [agents, commands, hooks, mcp] = await Promise.all([
+        const [agents, commands, hooks, mcp, rules] = await Promise.all([
           api.getUserAgents(),
           api.getUserCommands(),
           api.getUserHooks(),
           api.getUserMcp(),
+          api.getUserRules(),
         ])
 
         const stats = {
@@ -153,6 +158,7 @@ export default {
           commands: commands.commands?.length || 0,
           hooks: hooks.hooks?.length || 0,
           mcp: mcp.mcp?.length || 0,
+          rules: rules.rules?.length || 0,
         }
 
         userConfig.value = {
@@ -387,6 +393,7 @@ export default {
 .stat-hooks i { color: var(--color-hooks); }
 .stat-mcp i { color: var(--color-mcp); }
 .stat-skills i { color: var(--color-skills); }
+.stat-rules i { color: var(--color-rules); }
 
 /* Project Card Footer */
 .project-footer {

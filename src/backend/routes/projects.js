@@ -9,6 +9,7 @@ const {
   getProjectHooks,
   getProjectMCP,
   getProjectSkills,
+  getProjectRules,
   getProjectCounts
 } = require('../services/projectDiscovery');
 const { projectIdToPath } = require('../utils/pathUtils');
@@ -18,6 +19,7 @@ const { deleteProjectMcpServer } = require('../services/deleteMcpService');
 const { findReferences } = require('../services/referenceChecker');
 const { parseSubagent } = require('../parsers/subagentParser');
 const { parseSkill } = require('../parsers/skillParser');
+const { parseRule } = require('../parsers/rulesParser');
 const config = require('../config/config.js');
 
 // Cache for projects (refreshed on scan)
@@ -73,7 +75,7 @@ router.use('/:projectId/*', (req, res, next) => {
   // Check if wildcard starts with a valid resource name
   // Valid patterns: agents, agents/:name, commands, commands/:name, hooks, mcp, skills, skills/:name
   // Invalid patterns: with/slashes/agents (path traversal attempt)
-  const validResourcePrefixes = ['agents', 'commands', 'hooks', 'mcp', 'skills'];
+  const validResourcePrefixes = ['agents', 'commands', 'hooks', 'mcp', 'skills', 'rules'];
   const wildcardFirstSegment = wildcard.split('/')[0];
 
   if (wildcard && !validResourcePrefixes.includes(wildcardFirstSegment)) {
@@ -382,6 +384,54 @@ router.get('/:projectId/skills', validateProjectId, async (req, res) => {
     res.json({
       success: true,
       skills: result.skills,
+      warnings: result.warnings,
+      projectId,
+      projectPath: projectData.path
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/projects/:projectId/rules
+ * Returns rules for a specific project
+ */
+router.get('/:projectId/rules', validateProjectId, async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    // Ensure projects are loaded
+    if (!projectsCache) {
+      const result = await discoverProjects();
+      projectsCache = result;
+    }
+
+    // Find project path
+    const projectData = projectsCache.projects[projectId];
+
+    if (!projectData) {
+      return res.status(404).json({
+        success: false,
+        error: `Project not found: ${projectId}`
+      });
+    }
+
+    if (!projectData.exists) {
+      return res.status(404).json({
+        success: false,
+        error: `Project directory does not exist: ${projectData.path}`
+      });
+    }
+
+    const result = await getProjectRules(projectData.path);
+
+    res.json({
+      success: true,
+      rules: result.rules,
       warnings: result.warnings,
       projectId,
       projectPath: projectData.path
@@ -1333,6 +1383,251 @@ router.delete('/:projectId/skills/:skillName', validateProjectId, validateSkillN
     }
 
     console.error('Error deleting skill:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * PUT /api/projects/:projectId/rules/*
+ * Update a rule file's properties
+ *
+ * Uses wildcard route to support nested rule paths (e.g., frontend/react)
+ *
+ * Request body can include:
+ * - description: string (ignored, derived from content)
+ * - paths: string[] (glob patterns for conditional rules)
+ * - content: string (markdown body content)
+ * - name: string (new name, triggers rename)
+ */
+router.put('/:projectId/rules/*', validateProjectId, async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const rulePath = req.params[0]; // Wildcard capture
+    const updates = req.body;
+
+    if (!rulePath || rulePath.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Rule path is required'
+      });
+    }
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Construct rule file path
+    const rulesDir = config.paths.getProjectRulesDir(projectPath);
+    const ruleName = rulePath.endsWith('.md') ? rulePath : `${rulePath}.md`;
+    const ruleFilePath = path.join(rulesDir, ruleName);
+
+    // Check if rule file exists
+    try {
+      await fs.access(ruleFilePath);
+    } catch {
+      return res.status(404).json({
+        success: false,
+        error: `Rule not found: ${rulePath}`
+      });
+    }
+
+    // Validate updates
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must be a JSON object with rule properties'
+      });
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
+        details: 'Request body must contain at least one property to update'
+      });
+    }
+
+    // Validate paths if provided
+    if (updates.paths !== undefined) {
+      if (updates.paths !== null && !Array.isArray(updates.paths)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid paths',
+          details: 'Paths must be an array of glob pattern strings or null'
+        });
+      }
+      if (Array.isArray(updates.paths)) {
+        for (const p of updates.paths) {
+          if (typeof p !== 'string' || p.trim() === '') {
+            return res.status(400).json({
+              success: false,
+              error: 'Invalid paths',
+              details: 'Each path must be a non-empty string'
+            });
+          }
+        }
+      }
+    }
+
+    // Handle content update (body content, not frontmatter)
+    let contentUpdate = null;
+    if (updates.content !== undefined) {
+      if (typeof updates.content !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid content',
+          details: 'Content must be a string'
+        });
+      }
+      contentUpdate = updates.content;
+      delete updates.content;
+    }
+
+    // Remove description from updates (it's derived from content, not stored in frontmatter)
+    delete updates.description;
+
+    // Remove name from frontmatter updates (handle rename separately)
+    const newName = updates.name;
+    delete updates.name;
+
+    // Build frontmatter updates (only paths for rules)
+    const frontmatterUpdates = {};
+    if (updates.paths !== undefined) {
+      // If paths is null or empty array, remove the paths key entirely
+      if (updates.paths === null || (Array.isArray(updates.paths) && updates.paths.length === 0)) {
+        frontmatterUpdates.paths = undefined;
+      } else {
+        frontmatterUpdates.paths = updates.paths;
+      }
+    }
+
+    // Write updates to file
+    if (contentUpdate !== null || Object.keys(frontmatterUpdates).length > 0) {
+      const yaml = require('js-yaml');
+      const fileContent = await fs.readFile(ruleFilePath, 'utf8');
+      const matter = require('gray-matter');
+      const parsed = matter(fileContent);
+
+      // Merge frontmatter
+      let newFrontmatter = { ...parsed.data };
+      for (const [key, value] of Object.entries(frontmatterUpdates)) {
+        if (value === undefined) {
+          delete newFrontmatter[key];
+        } else {
+          newFrontmatter[key] = value;
+        }
+      }
+
+      // Determine body content
+      const body = contentUpdate !== null ? contentUpdate : parsed.content.trim();
+
+      // Build file content
+      const hasFrontmatter = Object.keys(newFrontmatter).length > 0;
+      let newContent;
+      if (hasFrontmatter) {
+        const yamlStr = yaml.dump(newFrontmatter, { lineWidth: -1 });
+        newContent = `---\n${yamlStr}---\n\n${body}\n`;
+      } else {
+        newContent = `${body}\n`;
+      }
+
+      await updateFile(ruleFilePath, newContent);
+    }
+
+    // Handle rename if name changed
+    let finalPath = ruleFilePath;
+    if (newName && newName !== rulePath) {
+      const newRuleName = newName.endsWith('.md') ? newName : `${newName}.md`;
+      const newFilePath = path.join(rulesDir, newRuleName);
+
+      // Ensure parent directory exists for nested names
+      const newDir = path.dirname(newFilePath);
+      await fs.mkdir(newDir, { recursive: true });
+
+      try {
+        await fs.access(newFilePath);
+        return res.status(409).json({
+          success: false,
+          error: 'Rule name conflict',
+          details: `A rule named "${newName}" already exists`
+        });
+      } catch {
+        // Good - new name doesn't exist
+      }
+
+      await fs.rename(ruleFilePath, newFilePath);
+      finalPath = newFilePath;
+    }
+
+    // Re-read the updated rule to return
+    const updatedRule = await parseRule(finalPath, rulesDir, 'project');
+
+    res.json({
+      success: true,
+      message: 'Rule updated successfully',
+      rule: updatedRule
+    });
+  } catch (error) {
+    console.error('Error updating rule:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/projects/:projectId/rules/*
+ * Delete a rule file
+ *
+ * Uses wildcard route to support nested rule paths (e.g., frontend/react)
+ */
+router.delete('/:projectId/rules/*', validateProjectId, async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const rulePath = req.params[0]; // Wildcard capture
+
+    if (!rulePath || rulePath.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Rule path is required'
+      });
+    }
+
+    // Get project path
+    const { path: projectPath, error: projectError } = await getProjectPath(projectId);
+    if (projectError) {
+      return res.status(404).json({ success: false, error: projectError });
+    }
+
+    // Construct rule file path (add .md extension if not present)
+    const ruleName = rulePath.endsWith('.md') ? rulePath : `${rulePath}.md`;
+    const ruleFilePath = path.join(config.paths.getProjectRulesDir(projectPath), ruleName);
+
+    // Delete the file
+    await deleteFile(ruleFilePath);
+
+    res.json({
+      success: true,
+      message: `Rule "${rulePath}" deleted successfully`,
+      deleted: ruleFilePath
+    });
+  } catch (error) {
+    // Handle file not found specifically
+    if (error.message.includes('File not found')) {
+      return res.status(404).json({
+        success: false,
+        error: `Rule not found: ${req.params[0]}`
+      });
+    }
+
+    console.error('Error deleting rule:', error);
     res.status(500).json({
       success: false,
       error: error.message

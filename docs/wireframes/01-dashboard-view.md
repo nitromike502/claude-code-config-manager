@@ -24,7 +24,7 @@ The Dashboard View is the entry point of the application. It displays all discov
 │  │                            │  │                            │            │
 │  │ /home/user/projects/name   │  │ /home/user/projects/other  │            │
 │  │                            │  │                            │            │
-│  │ 🤖 3 Agents  ⚡ 5 Commands │  │ 🤖 1 Agent   ⚡ 8 Commands │            │
+│  │ 🤖 3 Agents  ⚡ 5 Commands │  │ 🤖 1 Agent   ⚡ 8 Commands  │            │
 │  │ 🪝 2 Hooks   🔌 1 MCP      │  │ 🪝 0 Hooks   🔌 0 MCP      │            │
 │  │                            │  │                            │            │
 │  │            [View →]        │  │            [View →]        │            │
@@ -67,11 +67,13 @@ Each card displays:
 - **Header:** Project name (directory name)
 - **Subheader:** Full file path (smaller, muted text)
 - **Body:**
-  - Statistics in 2x2 grid:
+  - Statistics in 3x2 grid:
     - Agents count with icon
     - Commands count with icon
+    - Skills count with icon
     - Hooks count with icon
     - MCP servers count with icon
+    - Rules count with icon
 - **Footer:** "View →" button (PrimeVue `Button`)
 
 ### Filter/Sort Controls
@@ -102,8 +104,10 @@ Each card displays:
       "stats": {
         "agents": 3,
         "commands": 5,
+        "skills": 2,
         "hooks": 2,
-        "mcp": 1
+        "mcp": 1,
+        "rules": 4
       }
     }
   ]
@@ -177,8 +181,10 @@ Each card displays:
 ### Statistics Icons
 - **Agents:** `var(--color-agents)` - green
 - **Commands:** `var(--color-commands)` - blue
+- **Skills:** `var(--color-skills)` - teal
 - **Hooks:** `var(--color-hooks)` - orange
 - **MCP:** `var(--color-mcp)` - purple
+- **Rules:** `var(--color-rules)` - red-orange
 
 ### Buttons
 - **Primary Button:** `var(--color-primary)` / `var(--color-primary-hover)` on hover
@@ -229,6 +235,14 @@ Each card displays:
 
 .stat-mcp .icon {
   color: var(--color-mcp);
+}
+
+.stat-skills .icon {
+  color: var(--color-skills);
+}
+
+.stat-rules .icon {
+  color: var(--color-rules);
 }
 ```
 

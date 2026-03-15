@@ -45,6 +45,7 @@ const commandHandler = require('./copy/command');
 const hookHandler = require('./copy/hook');
 const mcpHandler = require('./copy/mcp');
 const skillHandler = require('./copy/skill');
+const ruleHandler = require('./copy/rule');
 
 // Register routes
 router.post('/agent', agentHandler);
@@ -52,5 +53,6 @@ router.post('/command', commandHandler);
 router.post('/hook', hookHandler);
 router.post('/mcp', mcpHandler);
 router.post('/skill', skillHandler);
+router.post('/rule', ruleHandler);
 
 module.exports = router;

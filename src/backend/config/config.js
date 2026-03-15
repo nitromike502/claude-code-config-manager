@@ -155,6 +155,14 @@ const paths = {
     return path.join(this.getUserClaudeDir(), 'skills');
   },
 
+  /**
+   * Get user's rules directory
+   * @returns {string} Path to ~/.claude/rules or ~/.claude-dev/rules
+   */
+  getUserRulesDir: function() {
+    return path.join(this.getUserClaudeDir(), 'rules');
+  },
+
   // Project-level paths
 
   /**
@@ -209,6 +217,15 @@ const paths = {
    */
   getProjectSkillsDir: function(projectPath) {
     return path.join(this.getProjectClaudeDir(projectPath), 'skills');
+  },
+
+  /**
+   * Get project's rules directory
+   * @param {string} projectPath - Full path to project
+   * @returns {string} Path to {project}/.claude/rules or {project}/.claude-dev/rules
+   */
+  getProjectRulesDir: function(projectPath) {
+    return path.join(this.getProjectClaudeDir(projectPath), 'rules');
   },
 
   /**

@@ -12,6 +12,7 @@
     :loading-hooks="loadingHooks"
     :loading-mcp="loadingMCP"
     :loading-skills="loadingSkills"
+    :loading-rules="loadingRules"
     :error="error"
     :error-message="errorMessage"
     :warnings="warnings"
@@ -20,11 +21,13 @@
     :hooks="hooks"
     :mcp-servers="mcpServers"
     :skills="skills"
+    :rules="rules"
     :showing-all-agents="showingAllAgents"
     :showing-all-commands="showingAllCommands"
     :showing-all-hooks="showingAllHooks"
     :showing-all-mcp="showingAllMcp"
     :showing-all-skills="showingAllSkills"
+    :showing-all-rules="showingAllRules"
     :initial-display-count="initialDisplayCount"
     :sidebar-visible="sidebarVisible"
     :selected-item="selectedItem"
@@ -38,12 +41,14 @@
     :enable-skill-crud="true"
     :enable-hook-crud="true"
     :enable-mcp-crud="true"
+    :enable-rule-crud="true"
     @retry="retryLoad"
     @toggle-agents="showingAllAgents = !showingAllAgents"
     @toggle-commands="showingAllCommands = !showingAllCommands"
     @toggle-hooks="showingAllHooks = !showingAllHooks"
     @toggle-mcp="showingAllMcp = !showingAllMcp"
     @toggle-skills="showingAllSkills = !showingAllSkills"
+    @toggle-rules="showingAllRules = !showingAllRules"
     @show-detail="showDetail"
     @close-sidebar="sidebarVisible = false"
     @navigate="onNavigate"
@@ -56,6 +61,7 @@
     @hook-delete="handleHookDelete"
     @skill-delete="handleSkillDelete"
     @mcp-delete="handleMcpDelete"
+    @rule-delete="handleRuleDelete"
   >
     <template #copy-modal>
       <CopyModal
@@ -96,6 +102,7 @@ import { useCommandsStore } from '@/stores/commands'
 import { useSkillsStore } from '@/stores/skills'
 import { useHooksStore } from '@/stores/hooks'
 import { useMcpStore } from '@/stores/mcp'
+import { useRulesStore } from '@/stores/rules'
 import { useConfigToast } from '@/composables/useConfigToast'
 import { formatType } from '@/utils/typeMapping'
 
@@ -146,6 +153,7 @@ export default {
     const skillsStore = useSkillsStore()
     const hooksStore = useHooksStore()
     const mcpStore = useMcpStore()
+    const rulesStore = useRulesStore()
 
     // Project-specific state (only used when scope='project')
     const projectName = ref('Loading...')
@@ -194,6 +202,7 @@ export default {
     const hooks = ref([])
     const mcpServers = ref([])
     const skills = ref([])
+    const rules = ref([])
 
     // Copy modal state
     const showCopyModal = ref(false)
@@ -202,7 +211,7 @@ export default {
     // Consolidated delete modal state
     const deleteModal = reactive({
       visible: false,
-      itemType: null,      // 'agent' | 'command' | 'skill' | 'hook' | 'mcp'
+      itemType: null,      // 'agent' | 'command' | 'skill' | 'hook' | 'mcp' | 'rule'
       item: null,          // The item being deleted
       loading: false,
       references: [],      // For agents/commands
@@ -216,6 +225,7 @@ export default {
     const loadingHooks = ref(false)
     const loadingMCP = ref(false)
     const loadingSkills = ref(false)
+    const loadingRules = ref(false)
 
     // Error states (only used for project scope)
     const error = ref(false)
@@ -229,6 +239,7 @@ export default {
     const showingAllHooks = ref(false)
     const showingAllMcp = ref(false)
     const showingAllSkills = ref(false)
+    const showingAllRules = ref(false)
 
     // Sidebar state
     const sidebarVisible = ref(false)
@@ -281,7 +292,8 @@ export default {
           loadCommands(),
           loadHooks(),
           loadMCP(),
-          loadSkills()
+          loadSkills(),
+          loadRules()
         ])
 
         // Project scope: Check if ALL config loads failed
@@ -315,7 +327,7 @@ export default {
                 }
               } else {
                 // Failed - log error but don't break the page
-                const configNames = ['agents', 'commands', 'hooks', 'MCP servers', 'skills']
+                const configNames = ['agents', 'commands', 'hooks', 'MCP servers', 'skills', 'rules']
                 console.error(`Error loading ${configNames[index]}:`, result.reason)
 
                 // Add warning message for this config type
@@ -471,6 +483,29 @@ export default {
         throw err
       } finally {
         loadingSkills.value = false
+      }
+    }
+
+    /**
+     * Load rules based on scope
+     */
+    const loadRules = async () => {
+      loadingRules.value = true
+      try {
+        const data = props.scope === 'project'
+          ? await api.getProjectRules(props.projectId)
+          : await api.getUserRules()
+        rules.value = data.rules || []
+        return data
+      } catch (err) {
+        // Only log unexpected errors to console
+        if (!err.isExpected) {
+          console.error('Error loading rules:', err)
+        }
+        rules.value = []
+        throw err
+      } finally {
+        loadingRules.value = false
       }
     }
 
@@ -632,6 +667,12 @@ export default {
             item.name,
             props.scope
           )
+        } else if (itemType === 'rule') {
+          result = await rulesStore.deleteRule(
+            props.scope,
+            props.scope === 'project' ? props.projectId : null,
+            item.name
+          )
         }
 
         if (result?.success) {
@@ -672,6 +713,12 @@ export default {
               sidebarVisible.value = false
             }
             configToast.deleteSuccess('MCP Server', `MCP server "${item.name}"`)
+          } else if (itemType === 'rule') {
+            await loadRules()
+            if (selectedItem.value?.name === item.name) {
+              sidebarVisible.value = false
+            }
+            configToast.deleteSuccess('Rule', `Rule "${item.name}"`)
           }
         } else {
           configToast.deleteError({ error: result?.error || 'Failed to delete configuration' })
@@ -766,6 +813,10 @@ export default {
       openDeleteModal('mcp', mcp)
     }
 
+    const handleRuleDelete = (rule) => {
+      openDeleteModal('rule', rule)
+    }
+
     /**
      * Handle copy button click - opens copy modal
      */
@@ -807,6 +858,8 @@ export default {
           await loadMCP()
         } else if (configType === 'skill') {
           await loadSkills()
+        } else if (configType === 'rule') {
+          await loadRules()
         }
       }
     }
@@ -868,6 +921,7 @@ export default {
       hooks,
       mcpServers,
       skills,
+      rules,
       // Loading states
       loading,
       loadingAgents,
@@ -875,6 +929,7 @@ export default {
       loadingHooks,
       loadingMCP,
       loadingSkills,
+      loadingRules,
       // Error states
       error,
       errorMessage,
@@ -887,6 +942,7 @@ export default {
       showingAllHooks,
       showingAllMcp,
       showingAllSkills,
+      showingAllRules,
       // Sidebar state
       sidebarVisible,
       selectedItem,
@@ -915,7 +971,8 @@ export default {
       handleHookUpdated,
       handleHookDelete,
       handleSkillDelete,
-      handleMcpDelete
+      handleMcpDelete,
+      handleRuleDelete
     }
   }
 }
