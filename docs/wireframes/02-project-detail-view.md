@@ -1,7 +1,7 @@
 # Project Detail View Wireframe
 
 ## Overview
-The Project Detail View displays all configurations for a single Claude Code project. This is the core view of the application where users can see subagents, slash commands, hooks, and MCP servers for a specific project. **Critical:** All four config types are displayed on ONE page using cards - NO tabs.
+The Project Detail View displays all configurations for a single Claude Code project. This is the core view of the application where users can see subagents, slash commands, skills, hooks, MCP servers, and rules for a specific project. **Critical:** All six config types are displayed on ONE page using cards - NO tabs.
 
 ## Layout Structure
 
@@ -87,6 +87,27 @@ The Project Detail View displays all configurations for a single Claude Code pro
 │ │                                                                          ││
 │ └──────────────────────────────────────────────────────────────────────────┘│
 │                                                                              │
+│ ┌──────────────────────────────────────────────────────────────────────────┐│
+│ │ 📋 Rules (5)                                                [Expand All]││
+│ ├──────────────────────────────────────────────────────────────────────────┤│
+│ │                                                                          ││
+│ │  ┌───────────────────────────────────────────────────────────────────┐  ││
+│ │  │ coding-standards                                    [View Details]│  ││
+│ │  │ Loads always • No path restrictions                              │  ││
+│ │  └───────────────────────────────────────────────────────────────────┘  ││
+│ │                                                                          ││
+│ │  ┌───────────────────────────────────────────────────────────────────┐  ││
+│ │  │ frontend/react                          ◆ Conditional [View Details] ││
+│ │  │ Loads when: src/**/*.tsx, src/**/*.jsx                           │  ││
+│ │  └───────────────────────────────────────────────────────────────────┘  ││
+│ │                                                                          ││
+│ │  [Show 3 more...]                                                       ││
+│ │                                                                          ││
+│ │  Empty state: "No rules configured"                                     ││
+│ │  Help text: "Add .md files to .claude/rules/ to define project rules"   ││
+│ │                                                                          ││
+│ └──────────────────────────────────────────────────────────────────────────┘│
+│                                                                              │
 │ [Empty state if no configs found: "No configurations found"]                │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -113,9 +134,10 @@ The Project Detail View displays all configurations for a single Claude Code pro
   - Full file path (smaller, muted)
   - Optional: Quick stats summary
 
-### Configuration Cards (All 4 on One Page)
+### Configuration Cards (All 6 on One Page)
 - **Container:** Stacked vertically with spacing
 - **Component:** PrimeVue `Card` for each config type
+- **Order:** Subagents, Slash Commands, Skills, Hooks, MCP Servers, Rules
 
 #### Card Structure (Same for All Types)
 - **Header:**
@@ -145,6 +167,7 @@ The Project Detail View displays all configurations for a single Claude Code pro
 - `GET /api/projects/:projectId/commands` - Fetch project commands
 - `GET /api/projects/:projectId/hooks` - Fetch project hooks
 - `GET /api/projects/:projectId/mcp` - Fetch project MCP servers
+- `GET /api/projects/:projectId/rules` - Fetch project rules
 
 ### Data Structure Expected
 
@@ -203,6 +226,23 @@ The Project Detail View displays all configurations for a single Claude Code pro
       "command": "npx",
       "args": ["@modelcontextprotocol/server-filesystem", "/path"],
       "source": ".mcp.json"
+    }
+  ]
+}
+```
+
+#### Rules
+```json
+{
+  "rules": [
+    {
+      "name": "frontend/react",
+      "description": "React Component Rules",
+      "paths": ["src/**/*.tsx", "src/**/*.jsx"],
+      "isConditional": true,
+      "content": "Full markdown content...",
+      "filePath": ".claude/rules/frontend/react.md",
+      "scope": "project"
     }
   ]
 }
@@ -336,7 +376,13 @@ The Project Detail View displays all configurations for a single Claude Code pro
    - Reduces cognitive load
    - Easier to implement and maintain
 
-4. **"View Details" Button:**
+4. **Rules Card Placement:**
+   - Rules card placed 6th (last) to preserve existing layout stability
+   - Existing users find their familiar cards in the same positions
+   - Rules items show full relative path as name (e.g., `frontend/react`) to handle subdirectory collisions
+   - Conditional rules display an amber "Conditional" badge with glob patterns
+
+5. **"View Details" Button:**
    - Explicit call-to-action for each item
    - Clearer than implicit "click anywhere" interaction
    - Better for accessibility and mobile

@@ -65,8 +65,11 @@ All colors use CSS custom properties for easy theme switching:
 ```css
 --color-agents     /* Agents (green) */
 --color-commands   /* Commands (blue) */
+--color-skills     /* Skills (teal) */
 --color-hooks      /* Hooks (orange) */
 --color-mcp        /* MCP servers (purple) */
+--color-rules      /* Rules (red-orange) */
+--color-rules-conditional  /* Conditional badge (amber) */
 ```
 
 ### Shadows & Overlays
@@ -253,6 +256,24 @@ Each wireframe now includes a **Color Specifications** section with:
 - **Light Mode:** `#7b1fa2` (darker for better contrast)
 - **Variable:** `var(--color-mcp)`
 - **Icon:** 🔌 or `pi-server`
+
+### Skills (Teal)
+- **Dark Mode:** `#14B8A6`
+- **Light Mode:** `#0d9488` (darker for better contrast)
+- **Variable:** `var(--color-skills)`
+- **Icon:** `pi-star`
+
+### Rules (Red-Orange)
+- **Dark Mode:** `#E53E3E`
+- **Light Mode:** `#C53030` (darker for better contrast on white)
+- **Variable:** `var(--color-rules)`
+- **Icon:** `pi-book`
+
+### Conditional Badge (Amber)
+- **Dark Mode:** `#F59E0B`
+- **Light Mode:** `#D97706` (darker for better contrast)
+- **Variable:** `var(--color-rules-conditional)`
+- **Usage:** Conditional rules indicator badge (not a config type color)
 
 **Note:** Colors are slightly adjusted between light/dark modes to maintain WCAG AA contrast ratios.
 

@@ -95,6 +95,7 @@ After evaluating three options (Modal Dialog, Side Panel, Inline Expansion), **S
   - **Commands:** name, description, namespace
   - **Hooks:** event, pattern, command, source
   - **MCP:** name, transport, command, args
+  - **Rules:** name (relative path), conditional status, path patterns
 
 #### 2. YAML Frontmatter Section
 - **Component:** PrimeVue `Panel` (collapsible)
@@ -238,6 +239,46 @@ Environment Variables (if any):
   API_KEY: ***hidden***
   BASE_URL: https://api.example.com
 ```
+
+### Rules
+```
+Header:
+  📋 frontend/react
+  Type: Rule
+  Loading: Conditional
+  File: .claude/rules/frontend/react.md
+
+Path Patterns (if conditional):
+  Loads when files match:
+  ┌──────────────────────────────┐
+  │ src/**/*.tsx                 │
+  └──────────────────────────────┘
+  ┌──────────────────────────────┐
+  │ src/**/*.jsx                 │
+  └──────────────────────────────┘
+
+YAML Frontmatter (Collapsible):
+  ---
+  paths:
+    - "src/**/*.tsx"
+    - "src/**/*.jsx"
+  ---
+
+Markdown Content (Rendered):
+  # React Component Rules
+
+  - Use functional components with hooks
+  - Prefer composition over inheritance
+  ...
+```
+
+**Rules-Specific Sections:**
+
+1. **Path Patterns Section** (unique to rules): Displayed only for conditional rules (those with `paths` frontmatter). Each glob pattern shown in a styled code block or PrimeVue `Chip`. Positioned above YAML Frontmatter section since paths define when the rule applies.
+
+2. **Loading Behavior Indicator**: Header shows "Conditional" with amber diamond icon (`pi pi-filter`, `#F59E0B`) or "Unconditional" for always-loaded rules.
+
+3. **Minimal Frontmatter**: Rules have only the `paths` field in frontmatter. The YAML Frontmatter collapsible section is de-emphasized; the Path Patterns and Markdown Content sections are primary.
 
 ## Interactions
 

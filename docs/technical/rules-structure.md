@@ -4,8 +4,8 @@
 
 This document provides comprehensive documentation on Claude Code's Rules system structure, file format, loading behavior, and implementation details for the Config Manager's rules parser and copy service.
 
-**Last Updated:** 2026-03-07
-**Related Code:** `/src/backend/parsers/rulesParser.js` (proposed)
+**Last Updated:** 2026-03-14
+**Related Code:** `/src/backend/parsers/rulesParser.js`
 
 ---
 
@@ -242,25 +242,28 @@ Rules can reference other files using `@path/to/import` syntax within their mark
 
 ---
 
-## Proposed Config Manager Integration
+## Config Manager Integration
 
 ### Parser
 
 **File:** `src/backend/parsers/rulesParser.js`
 
 **Functions:**
-- `parseRuleFile(filePath)` - Parse a single rule file, extract frontmatter and content
-- `getProjectRules(projectPath)` - Discover and parse all rules in a project
-- `getUserRules()` - Discover and parse all user-level rules
+- `parseRule(filePath, baseDir, scope)` - Parse a single rule file, extract `paths` frontmatter and markdown content
+- `findMarkdownFiles(directoryPath)` - Recursively find all `.md` files in a rules directory
+- `parseAllRules(directoryPath, scope)` - Discover and parse all rules in a rules directory
+- `getAllRules(projectPath)` - Get both project and user rules
 
 ### Configuration Paths
 
-**Additions to `src/backend/config/config.js`:**
+**In `src/backend/config/config.js`:**
 
 ```javascript
 paths.getUserRulesDir()                    // ~/.claude/rules
 paths.getProjectRulesDir(projectPath)      // {project}/.claude/rules
 ```
+
+Dev mode paths automatically use `.claude-dev/rules/` based on existing `getProjectClaudeDir()` and `getUserClaudeDir()` methods.
 
 ### API Routes
 
@@ -272,20 +275,36 @@ paths.getProjectRulesDir(projectPath)      // {project}/.claude/rules
 | `DELETE` | `/api/projects/:projectId/rules/:name` | Delete project rule |
 | `DELETE` | `/api/user/rules/:name` | Delete user rule |
 
-**Note:** `projectId` follows the existing encoding convention (project path with slashes removed).
+**Note:** `projectId` follows the existing encoding convention (project path with slashes removed). The `:name` parameter supports forward slashes for subdirectory-based names (e.g., `frontend/react`).
 
 ### Copy Service
+
+**Method:** `copyRule()` in `CopyService` class (`src/backend/services/copy-service.js`).
 
 **Copy operation:** File-based copy similar to agents and commands.
 
 1. Read source rule file
-2. Determine target path from target project/user rules directory
-3. Check for conflicts (same filename in target)
-4. Apply conflict resolution strategy (skip/overwrite/rename)
-5. Copy file to target location
-6. Return success with copied rule details
+2. Determine target directory from target project/user rules directory
+3. Calculate relative path from source rules dir to preserve subdirectory structure
+4. Build target path (e.g., `rules/frontend/react.md` in target)
+5. Check for conflicts (same relative path in target)
+6. Apply conflict resolution strategy (skip/overwrite/rename)
+7. Create subdirectories if needed and write file
+8. Return success with copied rule details
 
 **Complexity:** LOW - File-based copy, no merge algorithm needed (unlike hooks).
+
+### Frontend Integration
+
+**UI Components:**
+- Rules ConfigCard: 6th card (last) in project and user detail views
+- Rules DetailSidebar: Path Patterns section for conditional rules, rendered markdown content
+- Dashboard: Rules count in project card stats (3x2 grid)
+
+**Visual Design:**
+- Icon: `pi pi-book` in red-orange `#E53E3E`
+- Conditional badge: Amber `#F59E0B` outlined PrimeVue `Tag` with `pi pi-filter` icon
+- Name display: Full relative path (e.g., `frontend/react`) to handle subdirectory collisions
 
 ---
 
@@ -477,8 +496,9 @@ paths:
 ## References
 
 - **Claude Code Documentation:** [https://docs.anthropic.com/claude-code](https://docs.anthropic.com/claude-code)
-- **Proposed Parser:** `/src/backend/parsers/rulesParser.js`
-- **Existing Agent Parser (reference pattern):** `/src/backend/parsers/agentParser.js`
-- **Existing Command Parser (reference pattern):** `/src/backend/parsers/commandParser.js`
+- **Rules Parser:** `/src/backend/parsers/rulesParser.js`
+- **Agent Parser (similar pattern):** `/src/backend/parsers/agentParser.js`
+- **Command Parser (similar pattern):** `/src/backend/parsers/commandParser.js`
 - **Configuration Module:** `/src/backend/config/config.js`
 - **Copy Service:** `/src/backend/services/copy-service.js`
+- **Wireframes:** `/docs/wireframes/02-project-detail-view.md`, `/docs/wireframes/04-detail-interactions.md`

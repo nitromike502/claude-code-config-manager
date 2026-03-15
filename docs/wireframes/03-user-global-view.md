@@ -119,7 +119,7 @@ The User/Global View displays user-level configurations that apply across all Cl
   - Optional: Visual indicator (badge/chip) that distinguishes this from project view
 
 ### Configuration Cards (Identical Structure to Project View)
-- Same four cards: Subagents, Commands, Hooks, MCP
+- Same six cards: Subagents, Commands, Skills, Hooks, MCP, Rules
 - Same layout and interaction patterns
 - Same PrimeVue components
 
@@ -130,6 +130,7 @@ The User/Global View displays user-level configurations that apply across all Cl
 - `GET /api/user/commands` - Fetch user commands
 - `GET /api/user/hooks` - Fetch user hooks
 - `GET /api/user/mcp` - Fetch user MCP servers
+- `GET /api/user/rules` - Fetch user rules
 
 ### Data Structure Expected
 Same structure as project-level endpoints, but sourced from `~/.claude/` directory.
@@ -216,7 +217,7 @@ To distinguish User view from Project view:
 | **Visual Accent** | Blue (default) | Purple |
 | **Info Bar Title** | Project name | "User Configurations" |
 | **Breadcrumb** | Dashboard / Project Name | Dashboard / User Configurations |
-| **Layout** | Same 4 cards | Same 4 cards |
+| **Layout** | Same 6 cards | Same 6 cards |
 | **Interactions** | Identical | Identical |
 
 ### Open Questions for Project Manager

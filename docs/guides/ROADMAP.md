@@ -23,6 +23,7 @@ Claude Code Config Manager follows a phased development approach, building incre
 | Phase 3 - Copy Configuration | ✅ Complete | Completed (Nov 13, 2025) | High |
 | Phase 3.1 - UI Modernization | ✅ Complete | Completed (Nov 26, 2025) | High |
 | EPIC-006 - Agent Skills | ✅ Complete | Completed (Nov 28, 2025) | High |
+| EPIC-009 - Rules Support | ✅ Complete | Completed (Mar 14, 2026) | High |
 | Subagent CRUD | 📅 Planned | Q1 2026 | Medium |
 | Command Management | 📅 Planned | Q1 2026 | Medium |
 | Hooks Configuration | 📅 Planned | Q1 2026 | Medium |
@@ -100,6 +101,62 @@ Add Agent Skills as a new manageable configuration type alongside agents, comman
 - **Copy Skills:** Duplicate skills between projects with full directory copy
 - **Safety Warnings:** External reference detection prevents broken skills
 - **Consistent UX:** Skills work just like agents, commands, hooks, and MCP servers
+
+---
+
+## EPIC-009 - Rules Support
+
+**Status:** Complete
+**Completed:** March 14, 2026
+**Priority:** High (Complete configuration type coverage)
+
+### Objective
+
+Add Rules as the 6th configuration type, giving users full view/copy/delete capabilities over all Claude Code configuration types from a single interface. Rules are markdown files with optional YAML frontmatter stored in `.claude/rules/` directories that provide modular, topic-specific instructions extending CLAUDE.md, with optional path-based conditional loading.
+
+### Achievements
+
+**Backend Implementation:**
+1. **Rules Parser** (`src/backend/parsers/rulesParser.js`)
+   - Parses markdown files with optional `paths` YAML frontmatter
+   - Recursive subdirectory discovery
+   - Conditional vs unconditional rule detection
+   - Graceful error handling for invalid YAML
+
+2. **API Routes**
+   - `GET /api/projects/:projectId/rules` - Get project rules
+   - `GET /api/user/rules` - Get user-level rules
+   - `POST /api/copy/rule` - Copy rule between projects
+   - `DELETE /api/projects/:projectId/rules/:name` - Delete project rule
+   - `DELETE /api/user/rules/:name` - Delete user rule
+
+3. **Copy Service**
+   - File-based copy with subdirectory structure preservation
+   - Conflict detection using full relative path
+   - Resolution strategies (skip/overwrite/rename)
+   - Cross-scope copy (user to project, project to project)
+
+**Frontend Implementation:**
+1. **Rules ConfigCard**
+   - 6th card in project and user detail views
+   - `pi pi-book` icon in red-orange `#E53E3E`
+   - Conditional badge (amber `#F59E0B`) for path-scoped rules
+   - Full relative path as name (handles subdirectory collisions)
+
+2. **Rules DetailSidebar**
+   - Path Patterns section for conditional rules (glob patterns in code chips)
+   - Rendered markdown content
+   - Copy and Delete action buttons
+
+3. **Dashboard Integration**
+   - Rules count on project cards (3x2 stats grid)
+   - "Most Rules" sort option
+
+### User Value
+
+- **Complete coverage:** All 6 Claude Code configuration types manageable from one interface
+- **Feature parity:** Rules get the same view/copy/delete capabilities as existing types
+- **Consistent UX:** Zero learning curve for users already familiar with the app
 
 ---
 
@@ -365,6 +422,6 @@ Have ideas for features or improvements? See the following resources:
 
 ---
 
-**Last Updated:** 2025-11-28
-**Roadmap Version:** 2.1
-**Status:** All core viewing and copy features complete (including Skills). CRUD features planned for Q1 2026.
+**Last Updated:** 2026-03-14
+**Roadmap Version:** 2.2
+**Status:** All core viewing and copy features complete (including Skills and Rules -- all 6 config types). CRUD features planned for Q2 2026.

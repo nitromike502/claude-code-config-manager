@@ -55,8 +55,11 @@ All colors are defined as CSS custom properties for easy theming and consistency
   /* Category Colors */
   --color-agents: #4CAF50;
   --color-commands: #2196F3;
+  --color-skills: #14B8A6;
   --color-hooks: #FF9800;
   --color-mcp: #9C27B0;
+  --color-rules: #E53E3E;
+  --color-rules-conditional: #F59E0B;
 
   /* Shadows */
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -282,6 +285,24 @@ All colors are defined as CSS custom properties for easy theming and consistency
 - **Color:** `#9C27B0`
 - **Icon:** 🔌 or `pi-server`
 - **RGB:** `156, 39, 176`
+
+#### Skills (Teal)
+- **Variable:** `var(--color-skills)`
+- **Color:** `#14B8A6`
+- **Icon:** `pi-star`
+- **RGB:** `20, 184, 166`
+
+#### Rules (Red-Orange)
+- **Variable:** `var(--color-rules)`
+- **Color:** `#E53E3E`
+- **Icon:** `pi-book`
+- **RGB:** `229, 62, 62`
+
+#### Conditional Badge (Amber)
+- **Variable:** `var(--color-rules-conditional)`
+- **Color:** `#F59E0B`
+- **Usage:** Amber badge on conditional rules (those with `paths` frontmatter)
+- **RGB:** `245, 158, 11`
 
 ---
 

@@ -133,6 +133,14 @@ Dashboard view (multiple instances in grid).
           <i class="pi pi-server" style="color: #9C27B0"></i>
           <span>{{ project.stats.mcp }} MCP</span>
         </div>
+        <div class="stat">
+          <i class="pi pi-star" style="color: #14B8A6"></i>
+          <span>{{ project.stats.skills }} Skills</span>
+        </div>
+        <div class="stat">
+          <i class="pi pi-book" style="color: #E53E3E"></i>
+          <span>{{ project.stats.rules }} Rules</span>
+        </div>
       </div>
     </template>
 
@@ -154,8 +162,10 @@ interface Props {
     stats: {
       agents: number;
       commands: number;
+      skills: number;
       hooks: number;
       mcp: number;
+      rules: number;
     };
   };
 }
@@ -184,10 +194,10 @@ interface Events {
 ## 3. ConfigCard Component
 
 ### Purpose
-Reusable card for displaying configuration lists (Subagents, Commands, Hooks, MCP).
+Reusable card for displaying configuration lists (Subagents, Commands, Skills, Hooks, MCP, Rules).
 
 ### Location in UI
-Project Detail and User/Global views (4 instances per page).
+Project Detail and User/Global views (6 instances per page).
 
 ### Structure
 ```vue
@@ -250,7 +260,7 @@ interface Props {
   title: string;           // e.g., "Subagents", "Slash Commands"
   icon: string;            // PrimeIcons class
   iconColor: string;       // Hex color for icon
-  type: 'agents' | 'commands' | 'hooks' | 'mcp';
+  type: 'agents' | 'commands' | 'skills' | 'hooks' | 'mcp' | 'rules';
   items: Array<any>;       // Config items to display
   loading?: boolean;
   initialDisplayCount?: number;  // Default: 5
@@ -325,7 +335,7 @@ Inside ConfigCard (multiple instances).
 ```typescript
 interface Props {
   item: any;
-  type: 'agents' | 'commands' | 'hooks' | 'mcp';
+  type: 'agents' | 'commands' | 'skills' | 'hooks' | 'mcp' | 'rules';
 }
 ```
 
@@ -337,6 +347,7 @@ const itemName = computed(() => {
     case 'commands': return props.item.name;
     case 'hooks': return props.item.name || props.item.event;
     case 'mcp': return props.item.name;
+    case 'rules': return props.item.name;  // Full relative path (e.g., frontend/react)
   }
 });
 
@@ -346,6 +357,9 @@ const itemDescription = computed(() => {
     case 'commands': return props.item.description;
     case 'hooks': return `Event: ${props.item.event} • Pattern: ${props.item.pattern}`;
     case 'mcp': return `Transport: ${props.item.transport} • Command: ${props.item.command}`;
+    case 'rules': return props.item.isConditional
+      ? `Loads when: ${props.item.paths.slice(0, 2).join(', ')}${props.item.paths.length > 2 ? ` (+${props.item.paths.length - 2} more)` : ''}`
+      : 'Loads always • No path restrictions';
   }
 });
 ```
@@ -453,7 +467,7 @@ Overlays right side of screen when viewing details.
 interface Props {
   visible: boolean;
   item: any;
-  type: 'agents' | 'commands' | 'hooks' | 'mcp';
+  type: 'agents' | 'commands' | 'skills' | 'hooks' | 'mcp' | 'rules';
   hasPrev?: boolean;
   hasNext?: boolean;
 }
@@ -733,14 +747,14 @@ App
 ├── ProjectDetailView
 │   ├── AppHeader
 │   ├── Card (project info)
-│   ├── ConfigCard (4 instances)
+│   ├── ConfigCard (6 instances: agents, commands, skills, hooks, mcp, rules)
 │   │   └── ConfigItem (multiple)
 │   └── DetailSidebar
 │
 └── UserGlobalView
     ├── AppHeader
     ├── Card (user info)
-    ├── ConfigCard (4 instances)
+    ├── ConfigCard (6 instances: agents, commands, skills, hooks, mcp, rules)
     │   └── ConfigItem (multiple)
     └── DetailSidebar
 ```

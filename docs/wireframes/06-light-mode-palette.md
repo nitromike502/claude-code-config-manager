@@ -172,6 +172,24 @@ This document defines the complete light mode color system for Claude Code Confi
 - **RGB:** `123, 31, 162`
 - **Contrast:** 6.88:1 on white
 
+#### Skills (Teal)
+- **Color:** `#0d9488`
+- **Icon:** `pi-star`
+- **RGB:** `13, 148, 136`
+- **Contrast:** 4.52:1 on white
+
+#### Rules (Red-Orange)
+- **Color:** `#C53030`
+- **Icon:** `pi-book`
+- **RGB:** `197, 48, 48`
+- **Contrast:** 6.18:1 on white
+
+#### Conditional Badge (Amber)
+- **Color:** `#D97706`
+- **Usage:** Amber badge on conditional rules
+- **RGB:** `217, 119, 6`
+- **Contrast:** 4.51:1 on white
+
 ---
 
 ## Interactive States
@@ -375,8 +393,11 @@ Base theme: `lara-light-blue` from PrimeVue CDN
   /* Category Icons */
   --color-agents: #388e3c;
   --color-commands: #1976d2;
+  --color-skills: #0d9488;
   --color-hooks: #f57c00;
   --color-mcp: #7b1fa2;
+  --color-rules: #C53030;
+  --color-rules-conditional: #D97706;
 }
 ```
 
@@ -425,6 +446,8 @@ Base theme: `lara-light-blue` from PrimeVue CDN
 | **Commands Color** | `#1976d2` | `#2196F3` |
 | **Hooks Color** | `#f57c00` | `#FF9800` |
 | **MCP Color** | `#7b1fa2` | `#9C27B0` |
+| **Skills Color** | `#0d9488` | `#14B8A6` |
+| **Rules Color** | `#C53030` | `#E53E3E` |
 
 **Notes:**
 - Category colors slightly adjusted for better contrast on white backgrounds
