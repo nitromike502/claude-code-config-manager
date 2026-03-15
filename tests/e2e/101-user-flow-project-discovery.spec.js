@@ -303,7 +303,7 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
               id: 'testproject',
               name: 'Test Project',
               path: '/test/project',
-              stats: { agents: 1, commands: 1, hooks: 1, mcp: 1 }
+              stats: { agents: 1, commands: 1, hooks: 1, mcp: 1, rules: 0 }
             }
           ]
         })
@@ -438,6 +438,7 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
             !text.includes('Error loading skills:') &&
             !text.includes('Error loading hooks:') &&
             !text.includes('Error loading MCP servers:') &&
+            !text.includes('Error loading rules:') &&
             !text.includes('net::ERR') &&
             !text.includes('favicon')) {
           consoleErrors.push(text);
@@ -461,7 +462,7 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
               id: 'cleanproject',
               name: 'Clean Project',
               path: '/clean/project',
-              stats: { agents: 1, commands: 1, hooks: 1, mcp: 1 }
+              stats: { agents: 1, commands: 1, hooks: 1, mcp: 1, rules: 0 }
             }
           ]
         })
@@ -504,6 +505,13 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
         body: JSON.stringify({ success: true, skills: [] })
       });
     });
+    await page.route('**/api/user/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      });
+    });
 
     // Mock project detail API endpoints
     await page.route('**/api/projects/cleanproject/agents', (route) => {
@@ -539,6 +547,13 @@ test.describe('101.001: E2E Flow: First-Time User - Project Discovery', () => {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true, skills: [] })
+      });
+    });
+    await page.route('**/api/projects/cleanproject/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
       });
     });
 

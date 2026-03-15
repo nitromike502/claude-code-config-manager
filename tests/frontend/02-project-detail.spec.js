@@ -134,9 +134,9 @@ test.describe('02.001: Page Load and Structure', () => {
  // Wait for configuration cards to render - PrimeVue Panel components
     await page.waitForSelector('.config-panel', { timeout: 10000 });
 
-    // Verify all five config cards are displayed (agents, commands, skills, hooks, mcp)
+    // Verify all six config cards are displayed (agents, commands, skills, hooks, mcp, rules)
     const cards = page.locator('.config-panel');
-    expect(await cards.count()).toBe(5);
+    expect(await cards.count()).toBe(6);
 
     // Check each card type is present - using PrimeVue Panel with -panel suffix
     await expect(page.locator('.agents-panel')).toBeVisible();
@@ -144,6 +144,7 @@ test.describe('02.001: Page Load and Structure', () => {
     await expect(page.locator('.skills-panel')).toBeVisible();
     await expect(page.locator('.hooks-panel')).toBeVisible();
     await expect(page.locator('.mcp-panel')).toBeVisible();
+    await expect(page.locator('.rules-panel')).toBeVisible();
 
     // Verify card titles - look for header text within each panel
     await expect(page.locator('.agents-panel')).toContainText('Subagents');
@@ -151,6 +152,7 @@ test.describe('02.001: Page Load and Structure', () => {
     await expect(page.locator('.skills-panel')).toContainText('Skills');
     await expect(page.locator('.hooks-panel')).toContainText('Hooks');
     await expect(page.locator('.mcp-panel')).toContainText('MCP Servers');
+    await expect(page.locator('.rules-panel')).toContainText('Rules');
   });
 });
 
@@ -644,6 +646,18 @@ test.describe('02.005: Error Handling', () => {
       });
     });
 
+    await page.route('**/api/projects/warningproject/rules', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          rules: [],
+          warnings: []
+        })
+      });
+    });
+
     await page.goto('/project/warningproject');
 
     // Wait for Vue app to mount
@@ -776,9 +790,9 @@ test.describe('02.007: Responsive Design', () => {
     const projectTitle = page.locator('.text-2xl.font-semibold');
     await expect(projectTitle).toBeVisible();
 
-    // Verify configuration panels are visible (agents, commands, skills, hooks, mcp)
+    // Verify configuration panels are visible (agents, commands, skills, hooks, mcp, rules)
     const panels = page.locator('.config-panel');
-    expect(await panels.count()).toBe(5);
+    expect(await panels.count()).toBe(6);
   });
 
   test('02.007.002: layout adapts to tablet viewport', async ({ page }) => {
@@ -799,9 +813,9 @@ test.describe('02.007: Responsive Design', () => {
     const header = page.locator('header');
     await expect(header).toBeVisible();
 
-    // Verify configuration panels are visible (agents, commands, skills, hooks, mcp)
+    // Verify configuration panels are visible (agents, commands, skills, hooks, mcp, rules)
     const panels = page.locator('.config-panel');
-    expect(await panels.count()).toBe(5);
+    expect(await panels.count()).toBe(6);
   });
 
   test('02.007.003: layout works on desktop viewport', async ({ page }) => {
@@ -826,9 +840,9 @@ test.describe('02.007: Responsive Design', () => {
     const panelGrid = page.locator('.grid.gap-6');
     await expect(panelGrid).toBeVisible();
 
-    // Verify configuration panels are visible (agents, commands, skills, hooks, mcp)
+    // Verify configuration panels are visible (agents, commands, skills, hooks, mcp, rules)
     const panels = page.locator('.config-panel');
-    expect(await panels.count()).toBe(5);
+    expect(await panels.count()).toBe(6);
   });
 });
 
@@ -848,6 +862,7 @@ test.describe('02.008: Console Error Detection', () => {
             !text.includes('Error loading skills:') &&
             !text.includes('Error loading hooks:') &&
             !text.includes('Error loading MCP servers:') &&
+            !text.includes('Error loading rules:') &&
             !text.includes('net::ERR') &&
             !text.includes('favicon')) {
           consoleErrors.push(text);
