@@ -35,14 +35,17 @@ export const YES_NO_OPTIONS = [
 // Hook type options
 export const HOOK_TYPE_OPTIONS = [
   { label: 'Command', value: 'command' },
-  { label: 'Prompt', value: 'prompt' }
+  { label: 'HTTP', value: 'http' },
+  { label: 'Prompt', value: 'prompt' },
+  { label: 'Agent', value: 'agent' }
 ]
 
 // MCP server transport options
 export const TRANSPORT_OPTIONS = [
   { label: 'stdio', value: 'stdio' },
   { label: 'http', value: 'http' },
-  { label: 'sse', value: 'sse' }
+  { label: 'sse', value: 'sse' },
+  { label: 'WebSocket', value: 'ws' }
 ]
 
 // Hook event type options with matcher support flag
@@ -50,18 +53,35 @@ export const TRANSPORT_OPTIONS = [
 export const HOOK_EVENT_OPTIONS = [
   { label: 'PreToolUse', value: 'PreToolUse', hasMatcher: true },
   { label: 'PostToolUse', value: 'PostToolUse', hasMatcher: true },
+  { label: 'PostToolUseFailure', value: 'PostToolUseFailure', hasMatcher: true },
   { label: 'PermissionRequest', value: 'PermissionRequest', hasMatcher: true },
-  { label: 'Notification', value: 'Notification', hasMatcher: false },
+  { label: 'Notification', value: 'Notification', hasMatcher: true },
   { label: 'UserPromptSubmit', value: 'UserPromptSubmit', hasMatcher: false },
   { label: 'Stop', value: 'Stop', hasMatcher: false },
-  { label: 'SubagentStop', value: 'SubagentStop', hasMatcher: false },
-  { label: 'PreCompact', value: 'PreCompact', hasMatcher: false },
-  { label: 'SessionStart', value: 'SessionStart', hasMatcher: false },
-  { label: 'SessionEnd', value: 'SessionEnd', hasMatcher: false }
+  { label: 'StopFailure', value: 'StopFailure', hasMatcher: true },
+  { label: 'SubagentStart', value: 'SubagentStart', hasMatcher: true },
+  { label: 'SubagentStop', value: 'SubagentStop', hasMatcher: true },
+  { label: 'PreCompact', value: 'PreCompact', hasMatcher: true },
+  { label: 'PostCompact', value: 'PostCompact', hasMatcher: true },
+  { label: 'SessionStart', value: 'SessionStart', hasMatcher: true },
+  { label: 'SessionEnd', value: 'SessionEnd', hasMatcher: true },
+  { label: 'InstructionsLoaded', value: 'InstructionsLoaded', hasMatcher: true },
+  { label: 'ConfigChange', value: 'ConfigChange', hasMatcher: true },
+  { label: 'FileChanged', value: 'FileChanged', hasMatcher: true },
+  { label: 'Elicitation', value: 'Elicitation', hasMatcher: true },
+  { label: 'ElicitationResult', value: 'ElicitationResult', hasMatcher: true },
+  { label: 'TaskCreated', value: 'TaskCreated', hasMatcher: false },
+  { label: 'TaskCompleted', value: 'TaskCompleted', hasMatcher: false },
+  { label: 'TeammateIdle', value: 'TeammateIdle', hasMatcher: false },
+  { label: 'CwdChanged', value: 'CwdChanged', hasMatcher: false },
+  { label: 'WorktreeCreate', value: 'WorktreeCreate', hasMatcher: false },
+  { label: 'WorktreeRemove', value: 'WorktreeRemove', hasMatcher: false },
+  { label: 'Setup', value: 'Setup', hasMatcher: false }
 ]
 
 // Built-in Claude Code tools
 export const BUILT_IN_TOOLS = [
+  'Agent',
   'AskUserQuestion',
   'Bash',
   'BashOutput',
@@ -70,12 +90,19 @@ export const BUILT_IN_TOOLS = [
   'Glob',
   'Grep',
   'KillShell',
+  'LSP',
   'NotebookEdit',
   'Read',
   'Skill',
-  'SlashCommand',
   'Task',
+  'TaskCreate',
+  'TaskGet',
+  'TaskList',
+  'TaskOutput',
+  'TaskStop',
+  'TaskUpdate',
   'TodoWrite',
+  'ToolSearch',
   'WebFetch',
   'WebSearch',
   'Write'
@@ -99,7 +126,9 @@ export const PERMISSION_MODE_OPTIONS = [
   { label: 'Accept Edits', value: 'acceptEdits' },
   { label: 'Bypass Permissions', value: 'bypassPermissions' },
   { label: 'Plan', value: 'plan' },
-  { label: 'Ignore', value: 'ignore' }
+  { label: "Don't Ask", value: 'dontAsk' },
+  { label: 'Auto', value: 'auto' },
+  { label: 'Delegate', value: 'delegate' }
 ]
 
 // Model invocation options (for commands)
