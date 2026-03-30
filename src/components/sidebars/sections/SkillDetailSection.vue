@@ -32,7 +32,84 @@
         @edit-cancel="updateEditingField(null)"
         @edit-accept="handleSkillFieldUpdate('allowedTools', $event)"
       />
+    </div>
 
+    <!-- Configuration Section -->
+    <div v-if="hasConfigFields" class="mb-6">
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Configuration</h4>
+
+      <!-- Argument Hint -->
+      <p v-if="skillData.argumentHint" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Argument Hint:</strong> {{ skillData.argumentHint }}
+      </p>
+
+      <!-- User Invocable -->
+      <p v-if="skillData.userInvocable === true" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">User Invocable:</strong>
+        <Tag value="Yes" severity="success" class="ml-2 text-xs" />
+      </p>
+
+      <!-- Disable Model Invocation -->
+      <p v-if="skillData.disableModelInvocation === true" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Model Invocation:</strong>
+        <Tag value="Disabled" severity="warning" class="ml-2 text-xs" />
+      </p>
+
+      <!-- Model -->
+      <p v-if="skillData.model" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Model:</strong>
+        <Tag :value="skillData.model" severity="info" class="ml-2 text-xs" />
+      </p>
+
+      <!-- Effort -->
+      <p v-if="skillData.effort" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Effort:</strong>
+        <Tag :value="skillData.effort" :severity="effortSeverity" class="ml-2 text-xs" />
+      </p>
+
+      <!-- Shell -->
+      <p v-if="skillData.shell" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Shell:</strong>
+        <Tag :value="skillData.shell" severity="info" class="ml-2 text-xs" />
+      </p>
+    </div>
+
+    <!-- Execution Section -->
+    <div v-if="hasExecutionFields" class="mb-6">
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Execution</h4>
+
+      <!-- Context -->
+      <p v-if="skillData.context" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Context:</strong>
+        <Tag :value="skillData.context" severity="warning" class="ml-2 text-xs" />
+      </p>
+
+      <!-- Agent (shown only when context=fork) -->
+      <p v-if="skillData.context === 'fork' && skillData.agent" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Agent:</strong> {{ skillData.agent }}
+      </p>
+
+      <!-- Paths (glob patterns) -->
+      <div v-if="skillData.paths && skillData.paths.length > 0" class="my-3">
+        <div class="text-text-primary font-bold text-sm mb-2">Paths:</div>
+        <div class="flex flex-wrap gap-1">
+          <Tag v-for="(pattern, index) in skillData.paths" :key="index" :value="pattern" severity="secondary" class="text-xs font-mono" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Lifecycle Section -->
+    <div v-if="skillData.hooks" class="mb-6">
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Lifecycle</h4>
+
+      <!-- Hooks (collapsible) -->
+      <Panel header="Hooks" :toggleable="true" :collapsed="true">
+        <pre class="bg-bg-primary p-3 rounded font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[200px] overflow-y-auto text-text-primary">{{ JSON.stringify(skillData.hooks, null, 2) }}</pre>
+      </Panel>
+    </div>
+
+    <!-- Files & References Section -->
+    <div class="mb-6">
       <!-- Supporting Files (Read-Only Display) -->
       <div v-if="selectedItem.fileCount || selectedItem.files" class="my-3">
         <div class="text-text-primary font-bold text-sm mb-2">Supporting Files (Read-Only)</div>
@@ -131,6 +208,7 @@ import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
 import Tag from 'primevue/tag'
+import Panel from 'primevue/panel'
 
 const props = defineProps({
   selectedItem: {
@@ -164,11 +242,40 @@ const skillData = ref({
   name: '',
   description: '',
   allowedTools: [],
-  content: ''
+  content: '',
+  // New fields
+  argumentHint: '',
+  disableModelInvocation: false,
+  userInvocable: false,
+  model: '',
+  effort: '',
+  shell: '',
+  context: '',
+  agent: '',
+  paths: [],
+  hooks: null
 })
 
 // Use constants from form-options
 const toolOptions = TOOL_OPTIONS
+
+// Computed: effort badge severity
+const effortSeverity = computed(() => {
+  const map = { low: 'secondary', medium: 'info', high: 'warning', max: 'danger' }
+  return map[skillData.value.effort] || 'info'
+})
+
+// Computed: whether config section has content
+const hasConfigFields = computed(() => {
+  const d = skillData.value
+  return d.argumentHint || d.userInvocable === true || d.disableModelInvocation === true || d.model || d.effort || d.shell
+})
+
+// Computed: whether execution section has content
+const hasExecutionFields = computed(() => {
+  const d = skillData.value
+  return d.context || (d.paths && d.paths.length > 0)
+})
 
 // Update editing field (emit to parent)
 const updateEditingField = (fieldName) => {
@@ -216,7 +323,18 @@ watch(() => props.selectedItem, (newItem) => {
       name: newItem.name || '',
       description: newItem.description || '',
       allowedTools: newItem.allowedTools || [],
-      content: newItem.content || ''
+      content: newItem.content || '',
+      // New fields
+      argumentHint: newItem.argumentHint || '',
+      disableModelInvocation: newItem.disableModelInvocation || false,
+      userInvocable: newItem.userInvocable || false,
+      model: newItem.model || '',
+      effort: newItem.effort || '',
+      shell: newItem.shell || '',
+      context: newItem.context || '',
+      agent: newItem.agent || '',
+      paths: newItem.paths || [],
+      hooks: newItem.hooks || null
     }
     updateEditingField(null)
   }

@@ -24,29 +24,153 @@
       @edit-accept="handleHookFieldUpdate('matcher', $event)"
     />
 
-    <!-- Type Field (command or prompt - prompt only for certain events) -->
+    <!-- Type Field (command, http, prompt, agent) -->
     <LabeledEditField
       v-model="hookData.type"
       field-type="selectbutton"
       label="Type"
-      :options="supportsPromptType(hookData.event) ? hookTypeOptions : [{ label: 'Command', value: 'command' }]"
+      :options="availableTypeOptions"
       :disabled="!canEdit || editingField !== null && editingField !== 'type'"
       @edit-start="handleEditStart('type')"
       @edit-cancel="handleEditCancel"
       @edit-accept="handleHookFieldUpdate('type', $event)"
     />
 
-    <!-- Command Field -->
+    <!-- Command-type fields -->
+    <template v-if="hookData.type === 'command'">
+      <!-- Command Field -->
+      <LabeledEditField
+        v-model="hookData.command"
+        field-type="textarea"
+        label="Command"
+        placeholder="Shell command to execute"
+        :disabled="!canEdit || editingField !== null && editingField !== 'command'"
+        :validation="[{ type: 'required' }]"
+        @edit-start="handleEditStart('command')"
+        @edit-cancel="handleEditCancel"
+        @edit-accept="handleHookFieldUpdate('command', $event)"
+      />
+
+      <!-- Async Field -->
+      <LabeledEditField
+        v-if="hookData.async !== undefined && hookData.async !== false"
+        v-model="hookData.async"
+        field-type="selectbutton"
+        label="Async"
+        :options="booleanOptions"
+        :disabled="!canEdit || editingField !== null && editingField !== 'async'"
+        @edit-start="handleEditStart('async')"
+        @edit-cancel="handleEditCancel"
+        @edit-accept="handleHookFieldUpdate('async', $event)"
+      />
+
+      <!-- Shell Field -->
+      <p v-if="hookData.shell" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Shell:</strong>
+        <Tag :value="hookData.shell" severity="info" class="ml-2 text-xs" />
+      </p>
+    </template>
+
+    <!-- HTTP-type fields -->
+    <template v-if="hookData.type === 'http'">
+      <LabeledEditField
+        v-model="hookData.url"
+        field-type="text"
+        label="URL"
+        placeholder="https://example.com/webhook"
+        :disabled="!canEdit || editingField !== null && editingField !== 'url'"
+        :validation="[{ type: 'required' }]"
+        @edit-start="handleEditStart('url')"
+        @edit-cancel="handleEditCancel"
+        @edit-accept="handleHookFieldUpdate('url', $event)"
+      />
+
+      <!-- Headers (read-only key-value display) -->
+      <div v-if="hookData.headers && Object.keys(hookData.headers).length > 0" class="my-3">
+        <div class="text-text-primary font-bold text-sm mb-2">Headers:</div>
+        <div class="bg-bg-primary p-3 rounded border border-border-primary">
+          <div
+            v-for="(value, key) in hookData.headers"
+            :key="key"
+            class="flex items-center gap-2 py-1 text-xs"
+          >
+            <code class="font-mono text-text-primary">{{ key }}:</code>
+            <code class="font-mono text-text-secondary">{{ value }}</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Allowed Env Vars -->
+      <div v-if="hookData.allowedEnvVars && hookData.allowedEnvVars.length > 0" class="my-3">
+        <div class="text-text-primary font-bold text-sm mb-2">Allowed Env Vars:</div>
+        <div class="flex flex-wrap gap-1">
+          <Tag v-for="envVar in hookData.allowedEnvVars" :key="envVar" :value="envVar" severity="info" class="text-xs" />
+        </div>
+      </div>
+    </template>
+
+    <!-- Prompt-type fields -->
+    <template v-if="hookData.type === 'prompt'">
+      <LabeledEditField
+        v-model="hookData.prompt"
+        field-type="textarea"
+        label="Prompt"
+        placeholder="Prompt text for Claude"
+        :disabled="!canEdit || editingField !== null && editingField !== 'prompt'"
+        @edit-start="handleEditStart('prompt')"
+        @edit-cancel="handleEditCancel"
+        @edit-accept="handleHookFieldUpdate('prompt', $event)"
+      />
+
+      <p v-if="hookData.model" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Model:</strong>
+        <Tag :value="hookData.model" severity="info" class="ml-2 text-xs" />
+      </p>
+    </template>
+
+    <!-- Agent-type fields -->
+    <template v-if="hookData.type === 'agent'">
+      <LabeledEditField
+        v-model="hookData.prompt"
+        field-type="textarea"
+        label="Prompt"
+        placeholder="Prompt text for agent"
+        :disabled="!canEdit || editingField !== null && editingField !== 'prompt'"
+        @edit-start="handleEditStart('prompt')"
+        @edit-cancel="handleEditCancel"
+        @edit-accept="handleHookFieldUpdate('prompt', $event)"
+      />
+
+      <p v-if="hookData.model" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Model:</strong>
+        <Tag :value="hookData.model" severity="info" class="ml-2 text-xs" />
+      </p>
+    </template>
+
+    <!-- Common fields for all types -->
+
+    <!-- Condition (if) Field -->
+    <p v-if="hookData.if" class="my-2 text-sm text-text-secondary leading-relaxed">
+      <strong class="text-text-primary">Condition (if):</strong>
+      <code class="ml-1 bg-bg-primary px-2 py-0.5 rounded text-xs font-mono">{{ hookData.if }}</code>
+    </p>
+
+    <!-- Status Message Field -->
+    <p v-if="hookData.statusMessage" class="my-2 text-sm text-text-secondary leading-relaxed">
+      <strong class="text-text-primary">Status Message:</strong> {{ hookData.statusMessage }}
+    </p>
+
+    <!-- Once Field -->
     <LabeledEditField
-      v-model="hookData.command"
-      field-type="textarea"
-      label="Command"
-      placeholder="Shell command to execute"
-      :disabled="!canEdit || editingField !== null && editingField !== 'command'"
-      :validation="[{ type: 'required' }]"
-      @edit-start="handleEditStart('command')"
+      v-if="hookData.once !== undefined && hookData.once !== false"
+      v-model="hookData.once"
+      field-type="selectbutton"
+      label="Once"
+      :options="booleanOptions"
+      :disabled="!canEdit || editingField !== null && editingField !== 'once'"
+      @edit-start="handleEditStart('once')"
       @edit-cancel="handleEditCancel"
-      @edit-accept="handleHookFieldUpdate('command', $event)"
+      @edit-accept="handleHookFieldUpdate('once', $event)"
     />
 
     <!-- Timeout Field -->
@@ -101,11 +225,20 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
+import Tag from 'primevue/tag'
 import { useHooksStore } from '@/stores/hooks'
 import { HOOK_TYPE_OPTIONS, YES_NO_OPTIONS } from '@/constants/form-options'
 import api from '@/api'
+
+// Extended hook type options (command, http, prompt, agent)
+const EXTENDED_HOOK_TYPE_OPTIONS = [
+  { label: 'Command', value: 'command' },
+  { label: 'HTTP', value: 'http' },
+  { label: 'Prompt', value: 'prompt' },
+  { label: 'Agent', value: 'agent' }
+]
 
 // Props
 const props = defineProps({
@@ -146,7 +279,18 @@ const hookData = ref({
   timeout: 30000,
   enabled: true,
   suppressOutput: false,
-  continue: true
+  continue: true,
+  // New fields
+  async: undefined,
+  shell: '',
+  url: '',
+  headers: null,
+  allowedEnvVars: [],
+  prompt: '',
+  model: '',
+  if: '',
+  statusMessage: '',
+  once: undefined
 })
 
 const editingField = ref(null)
@@ -155,10 +299,26 @@ const editingField = ref(null)
 const hookTypeOptions = HOOK_TYPE_OPTIONS
 const booleanOptions = YES_NO_OPTIONS
 
+// Computed: available type options based on event support
+const availableTypeOptions = computed(() => {
+  if (supportsPromptType(hookData.value.event)) {
+    return EXTENDED_HOOK_TYPE_OPTIONS
+  }
+  return [
+    { label: 'Command', value: 'command' },
+    { label: 'HTTP', value: 'http' }
+  ]
+})
+
 // Hook event metadata - fetched from API on mount, with fallback values
 const hookEventMetadata = ref({
   matcherBasedEvents: ['PreToolUse', 'PostToolUse', 'PermissionRequest', 'Notification'],
-  promptSupportedEvents: ['PreToolUse', 'PermissionRequest', 'UserPromptSubmit', 'Stop', 'SubagentStop']
+  promptSupportedEvents: ['PreToolUse', 'PermissionRequest', 'UserPromptSubmit', 'Stop', 'SubagentStop',
+    'SubagentTool', 'SessionPause', 'SessionResume', 'ModelSwitch', 'ContextTruncation',
+    'CompactComplete', 'TaskStart', 'TaskComplete', 'ToolError', 'ToolRetry',
+    'ModelError', 'ContextWindowWarning', 'McpConnectionChange', 'EditConflict',
+    'AgentHandoff', 'PermissionEscalation', 'MemoryCommit', 'WorktreeCreate',
+    'WorktreeCleanup', 'GitOperation', 'FileWatch', 'TokenBudgetWarning']
 })
 
 // Fetch hook event metadata from API
@@ -201,7 +361,18 @@ watch(() => props.selectedItem, (newItem) => {
       timeout: newItem.timeout || 30000,
       enabled: newItem.enabled !== false, // Default to true
       suppressOutput: newItem.suppressOutput || false,
-      continue: newItem.continue !== false // Default to true
+      continue: newItem.continue !== false, // Default to true
+      // New fields
+      async: newItem.async,
+      shell: newItem.shell || '',
+      url: newItem.url || '',
+      headers: newItem.headers || null,
+      allowedEnvVars: newItem.allowedEnvVars || [],
+      prompt: newItem.prompt || '',
+      model: newItem.model || '',
+      if: newItem.if || '',
+      statusMessage: newItem.statusMessage || '',
+      once: newItem.once
     }
     editingField.value = null
   }
