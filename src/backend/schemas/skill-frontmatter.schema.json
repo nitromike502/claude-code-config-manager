@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Skill Frontmatter Schema",
+  "description": "Schema for Claude Code skill (SKILL.md) YAML frontmatter fields",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name for the skill"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of the skill's purpose"
+    },
+    "argument-hint": {
+      "type": "string",
+      "description": "Hint text shown for the skill's argument in the UI"
+    },
+    "disable-model-invocation": {
+      "type": "boolean",
+      "description": "When true, prevents the model from invoking this skill automatically"
+    },
+    "user-invocable": {
+      "type": "boolean",
+      "description": "Whether the skill can be invoked by the user via slash command"
+    },
+    "allowed-tools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of tools this skill is allowed to use"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model override for this skill (e.g., sonnet, opus, haiku)"
+    },
+    "effort": {
+      "type": "string",
+      "description": "Reasoning effort level for the skill",
+      "enum": ["low", "medium", "high"]
+    },
+    "context": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of context files or patterns to include when the skill runs"
+    },
+    "agent": {
+      "type": "string",
+      "description": "Agent to delegate skill execution to"
+    },
+    "hooks": {
+      "type": "object",
+      "description": "Hook configuration specific to this skill"
+    },
+    "paths": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Glob patterns for files this skill applies to"
+    },
+    "shell": {
+      "type": "string",
+      "description": "Shell to use for command execution within this skill"
+    }
+  },
+  "additionalProperties": false
+}

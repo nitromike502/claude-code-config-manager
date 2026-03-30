@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent Frontmatter Schema",
+  "description": "Schema for Claude Code agent (.claude/agents/*.md) YAML frontmatter fields",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name for the agent"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of the agent's purpose and capabilities"
+    },
+    "tools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of tools the agent is allowed to use (e.g., Read, Write, Bash)"
+    },
+    "disallowedTools": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of tools the agent is NOT allowed to use"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model override for this agent (e.g., sonnet, opus, haiku)",
+      "enum": ["sonnet", "opus", "haiku"]
+    },
+    "permissionMode": {
+      "type": "string",
+      "description": "Permission mode for the agent",
+      "enum": ["acceptEdits", "bypassPermissions", "default", "dontAsk", "plan", "auto"]
+    },
+    "maxTurns": {
+      "type": "integer",
+      "description": "Maximum number of turns the agent can take before stopping",
+      "minimum": 1
+    },
+    "skills": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of skills available to this agent"
+    },
+    "mcpServers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of MCP servers available to this agent"
+    },
+    "hooks": {
+      "type": "object",
+      "description": "Hook configuration specific to this agent"
+    },
+    "memory": {
+      "type": "boolean",
+      "description": "Whether the agent has access to memory"
+    },
+    "background": {
+      "type": "boolean",
+      "description": "Whether the agent runs in the background"
+    },
+    "effort": {
+      "type": "string",
+      "description": "Reasoning effort level for the agent",
+      "enum": ["low", "medium", "high"]
+    },
+    "isolation": {
+      "type": "string",
+      "description": "Isolation mode for the agent",
+      "enum": ["worktree"]
+    },
+    "initialPrompt": {
+      "type": "string",
+      "description": "Initial prompt sent to the agent when it starts"
+    },
+    "color": {
+      "type": "string",
+      "description": "Display color for the agent in terminal UI"
+    }
+  },
+  "additionalProperties": false
+}
