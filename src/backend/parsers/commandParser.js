@@ -80,6 +80,16 @@ async function parseCommand(filePath, baseDir, scope = 'project') {
       }
     }
 
+    // Handle paths field - normalize comma-separated string to array
+    let paths = null;
+    if (data.paths) {
+      if (typeof data.paths === 'string') {
+        paths = data.paths.split(',').map(p => p.trim()).filter(Boolean);
+      } else if (Array.isArray(data.paths)) {
+        paths = data.paths;
+      }
+    }
+
     return {
       name: data.name || filename,
       namespace: namespace,
@@ -88,7 +98,14 @@ async function parseCommand(filePath, baseDir, scope = 'project') {
       color: data.color || null,
       model: data.model || null,
       argumentHint: data['argument-hint'] || null,
-      disableModelInvocation: data['disable-model-invocation'] || null,
+      disableModelInvocation: data['disable-model-invocation'] === true,
+      userInvocable: data['user-invocable'] !== false,
+      effort: data.effort || null,
+      context: data.context || null,
+      agent: data.agent || null,
+      hooks: data.hooks || null,
+      paths: paths,
+      shell: data.shell || null,
       content: commandContent.trim(),
       filePath: filePath,
       scope: scope,

@@ -200,11 +200,31 @@ async function parseSkill(skillPath, scope = 'project') {
     // 6. Detect external references in SKILL.md content
     const externalReferences = detectExternalReferences(skillPath, content);
 
+    // Handle paths field - normalize comma-separated string to array
+    let paths = null;
+    if (data.paths) {
+      if (typeof data.paths === 'string') {
+        paths = data.paths.split(',').map(p => p.trim()).filter(Boolean);
+      } else if (Array.isArray(data.paths)) {
+        paths = data.paths;
+      }
+    }
+
     // 7. Return parsed skill object
     return {
       name: name,
       description: description,
       allowedTools: allowedTools,
+      argumentHint: data['argument-hint'] || null,
+      disableModelInvocation: data['disable-model-invocation'] === true,
+      userInvocable: data['user-invocable'] !== false,
+      model: data.model || null,
+      effort: data.effort || null,
+      context: data.context || null,
+      agent: data.agent || null,
+      hooks: data.hooks || null,
+      paths: paths,
+      shell: data.shell || null,
       content: markdownContent.trim(),
       directoryPath: skillPath,
       scope: scope,

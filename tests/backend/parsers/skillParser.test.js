@@ -59,6 +59,46 @@ describe('skillParser', () => {
         expect(nestedFile.type).toBe('file');
       });
 
+      test('should parse skill with all official frontmatter fields', async () => {
+        const skillPath = path.join(fixturesPath, 'full-frontmatter');
+        const result = await skillParser.parseSkill(skillPath, 'project');
+
+        expect(result).not.toBeNull();
+        expect(result.name).toBe('full-frontmatter-skill');
+        expect(result.description).toBe('Skill with all official frontmatter fields');
+        expect(result.allowedTools).toEqual(['Read', 'Write']);
+        expect(result.argumentHint).toBe('<filename> [options]');
+        expect(result.disableModelInvocation).toBe(true);
+        expect(result.userInvocable).toBe(false);
+        expect(result.model).toBe('claude-sonnet-4');
+        expect(result.effort).toBe('high');
+        expect(result.context).toBe('src/**/*.ts');
+        expect(result.agent).toBe('code-reviewer');
+        expect(result.hooks).toEqual({
+          preToolUse: [{ matcher: 'Write', command: 'echo "validate"' }]
+        });
+        expect(result.paths).toEqual(['src/**/*.ts', 'tests/**/*.ts']);
+        expect(result.shell).toBe('bash');
+        expect(result.hasError).toBe(false);
+      });
+
+      test('should default new fields correctly when not present', async () => {
+        const skillPath = path.join(fixturesPath, 'valid-minimal');
+        const result = await skillParser.parseSkill(skillPath, 'user');
+
+        expect(result).not.toBeNull();
+        expect(result.argumentHint).toBeNull();
+        expect(result.disableModelInvocation).toBe(false);
+        expect(result.userInvocable).toBe(true);
+        expect(result.model).toBeNull();
+        expect(result.effort).toBeNull();
+        expect(result.context).toBeNull();
+        expect(result.agent).toBeNull();
+        expect(result.hooks).toBeNull();
+        expect(result.paths).toBeNull();
+        expect(result.shell).toBeNull();
+      });
+
       test('should handle allowed-tools as comma-separated string', async () => {
         const skillPath = path.join(fixturesPath, 'with-subdirs');
         const result = await skillParser.parseSkill(skillPath, 'project');

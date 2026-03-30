@@ -64,6 +64,71 @@ describe('subagentParser', () => {
       expect(result.color).toBe('#FF5733');
     });
 
+    test('should parse agent with all official frontmatter fields', async () => {
+      const filePath = path.join(fixturesPath, 'full-frontmatter.md');
+      const result = await subagentParser.parseSubagent(filePath, 'project');
+
+      expect(result).not.toBeNull();
+      expect(result.name).toBe('full-frontmatter-agent');
+      expect(result.description).toBe('Agent with all official frontmatter fields');
+      expect(result.tools).toEqual(['Read', 'Write', 'Edit']);
+      expect(result.disallowedTools).toEqual(['Bash', 'WebSearch']);
+      expect(result.model).toBe('claude-sonnet-4');
+      expect(result.color).toBe('blue');
+      expect(result.permissionMode).toBe('bypassPermissions');
+      expect(result.maxTurns).toBe(25);
+      expect(result.skills).toEqual(['code-review', 'testing']);
+      expect(result.mcpServers).toEqual({
+        playwright: {
+          command: 'npx',
+          args: ['@anthropic-ai/mcp-playwright']
+        }
+      });
+      expect(result.hooks).toEqual({
+        preToolUse: [{ matcher: 'Bash', command: 'echo "pre-hook"' }]
+      });
+      expect(result.memory).toBe('project');
+      expect(result.background).toBe(true);
+      expect(result.effort).toBe('high');
+      expect(result.isolation).toBe('worktree');
+      expect(result.initialPrompt).toBe('Start by reviewing the codebase');
+      expect(result.systemPrompt).toContain('Full Frontmatter Agent');
+      expect(result.hasError).toBe(false);
+    });
+
+    test('should default new fields correctly when not present', async () => {
+      const filePath = path.join(fixturesPath, 'valid-minimal.md');
+      const result = await subagentParser.parseSubagent(filePath, 'project');
+
+      expect(result).not.toBeNull();
+      expect(result.disallowedTools).toEqual([]);
+      expect(result.permissionMode).toBeNull();
+      expect(result.maxTurns).toBeNull();
+      expect(result.skills).toEqual([]);
+      expect(result.mcpServers).toBeNull();
+      expect(result.hooks).toBeNull();
+      expect(result.memory).toBeNull();
+      expect(result.background).toBe(false);
+      expect(result.effort).toBeNull();
+      expect(result.isolation).toBeNull();
+      expect(result.initialPrompt).toBeNull();
+    });
+
+    test('should parse disallowedTools as comma-separated string', async () => {
+      // Create a temp file with string-format disallowedTools
+      const tempDir = path.join(__dirname, '../../temp-agent-test');
+      await fs.mkdir(tempDir, { recursive: true });
+      const tempFile = path.join(tempDir, 'string-disallowed.md');
+      await fs.writeFile(tempFile, '---\nname: test\ndisallowedTools: Bash, WebSearch, Edit\n---\n\nTest');
+
+      try {
+        const result = await subagentParser.parseSubagent(tempFile, 'project');
+        expect(result.disallowedTools).toEqual(['Bash', 'WebSearch', 'Edit']);
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true });
+      }
+    });
+
     test('should handle extra unknown fields gracefully (ignore them)', async () => {
       const filePath = path.join(fixturesPath, 'extra-fields.md');
       const result = await subagentParser.parseSubagent(filePath);
