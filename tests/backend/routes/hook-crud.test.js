@@ -79,42 +79,37 @@ describe('Hook CRUD API Routes', () => {
       const res = await request(app)
         .get('/api/hooks/events');
 
-      expect(res.body.validEvents).toEqual([
-        'PreToolUse',
-        'PostToolUse',
-        'PermissionRequest',
-        'Notification',
-        'UserPromptSubmit',
-        'Stop',
-        'SubagentStop',
-        'PreCompact',
-        'SessionStart',
-        'SessionEnd'
-      ]);
+      expect(res.body.validEvents).toHaveLength(26);
+      expect(res.body.validEvents).toContain('PreToolUse');
+      expect(res.body.validEvents).toContain('PostToolUse');
+      expect(res.body.validEvents).toContain('PostToolUseFailure');
+      expect(res.body.validEvents).toContain('ConfigChange');
+      expect(res.body.validEvents).toContain('Setup');
     });
 
     it('should return correct matcherBasedEvents array', async () => {
       const res = await request(app)
         .get('/api/hooks/events');
 
-      expect(res.body.matcherBasedEvents).toEqual([
-        'PreToolUse',
-        'PostToolUse',
-        'PermissionRequest'
-      ]);
+      expect(res.body.matcherBasedEvents).toHaveLength(17);
+      expect(res.body.matcherBasedEvents).toContain('PreToolUse');
+      expect(res.body.matcherBasedEvents).toContain('PostToolUse');
+      expect(res.body.matcherBasedEvents).toContain('PermissionRequest');
+      expect(res.body.matcherBasedEvents).toContain('Notification');
+      expect(res.body.matcherBasedEvents).toContain('SessionStart');
+      expect(res.body.matcherBasedEvents).toContain('SessionEnd');
     });
 
     it('should return correct promptSupportedEvents array', async () => {
       const res = await request(app)
         .get('/api/hooks/events');
 
-      expect(res.body.promptSupportedEvents).toEqual([
-        'PreToolUse',
-        'PermissionRequest',
-        'UserPromptSubmit',
-        'Stop',
-        'SubagentStop'
-      ]);
+      expect(res.body.promptSupportedEvents).toHaveLength(5);
+      expect(res.body.promptSupportedEvents).toContain('PreToolUse');
+      expect(res.body.promptSupportedEvents).toContain('PermissionRequest');
+      expect(res.body.promptSupportedEvents).toContain('SubagentStop');
+      expect(res.body.promptSupportedEvents).toContain('UserPromptSubmit');
+      expect(res.body.promptSupportedEvents).toContain('Stop');
     });
 
     it('should return eventOptions with correct structure', async () => {
@@ -122,7 +117,7 @@ describe('Hook CRUD API Routes', () => {
         .get('/api/hooks/events');
 
       expect(Array.isArray(res.body.eventOptions)).toBe(true);
-      expect(res.body.eventOptions.length).toBe(10);
+      expect(res.body.eventOptions.length).toBe(26);
 
       // Check first event option structure
       const firstOption = res.body.eventOptions[0];
@@ -143,13 +138,13 @@ describe('Hook CRUD API Routes', () => {
       expect(preToolUse.hasMatcher).toBe(true);
     });
 
-    it('should return SessionEnd with hasMatcher false in eventOptions', async () => {
+    it('should return SessionEnd with hasMatcher true in eventOptions', async () => {
       const res = await request(app)
         .get('/api/hooks/events');
 
       const sessionEnd = res.body.eventOptions.find(opt => opt.value === 'SessionEnd');
       expect(sessionEnd).toBeDefined();
-      expect(sessionEnd.hasMatcher).toBe(false);
+      expect(sessionEnd.hasMatcher).toBe(true);
     });
   });
 

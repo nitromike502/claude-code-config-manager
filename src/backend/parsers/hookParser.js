@@ -2,11 +2,73 @@
  * Hook Parser
  * Parses hooks from .claude/settings.json files
  * Supports project, project-local, and user-level hooks
+ * Handles all 4 handler types: command, http, prompt, agent
  */
 
 const fs = require('fs').promises;
 const path = require('path');
 const config = require('../config/config');
+
+/**
+ * Parse a single hook entry, extracting type-specific and common fields
+ * @param {Object} hook - Raw hook object from settings.json
+ * @param {string} eventType - The event type this hook belongs to
+ * @param {string} matcher - The matcher value
+ * @param {string} scope - 'project', 'project-local', or 'user'
+ * @param {string} filePath - Source file path
+ * @returns {Object} Parsed hook object
+ */
+function parseHookEntry(hook, eventType, matcher, scope, filePath) {
+  const type = hook.type || 'command';
+
+  const parsed = {
+    event: eventType,
+    matcher: matcher,
+    type: type,
+    command: hook.command || '',
+    enabled: hook.enabled !== false,
+    scope: scope,
+    filePath: filePath
+  };
+
+  // Type-specific fields
+  if (type === 'http') {
+    if (hook.url) parsed.url = hook.url;
+    if (hook.headers) parsed.headers = hook.headers;
+    if (hook.allowedEnvVars) parsed.allowedEnvVars = hook.allowedEnvVars;
+  }
+
+  if (type === 'prompt' || type === 'agent') {
+    if (hook.prompt) parsed.prompt = hook.prompt;
+    if (hook.model) parsed.model = hook.model;
+  }
+
+  // Common new fields
+  if (hook.if !== undefined) parsed.if = hook.if;
+  if (hook.statusMessage !== undefined) parsed.statusMessage = hook.statusMessage;
+  if (hook.once !== undefined) parsed.once = hook.once;
+  if (hook.async !== undefined) parsed.async = hook.async;
+  if (hook.shell !== undefined) parsed.shell = hook.shell;
+  if (hook.timeout !== undefined) parsed.timeout = hook.timeout;
+  if (hook.suppressOutput !== undefined) parsed.suppressOutput = hook.suppressOutput;
+  if (hook.continue !== undefined) parsed.continue = hook.continue;
+
+  // Pass through unknown fields
+  const knownFields = new Set([
+    'type', 'command', 'enabled', 'matcher', 'url', 'headers',
+    'allowedEnvVars', 'prompt', 'model', 'if', 'statusMessage',
+    'once', 'async', 'shell', 'timeout', 'suppressOutput', 'continue',
+    'hooks'
+  ]);
+
+  for (const [key, value] of Object.entries(hook)) {
+    if (!knownFields.has(key) && !(key in parsed)) {
+      parsed[key] = value;
+    }
+  }
+
+  return parsed;
+}
 
 /**
  * Parse hooks from a settings.json file
@@ -44,15 +106,7 @@ async function parseHooksFromFile(filePath, scope) {
 
         // Each matcher can have multiple hooks
         for (const hook of hooksList) {
-          hooks.push({
-            event: eventType,
-            matcher: matcher,
-            type: hook.type || 'command',
-            command: hook.command || '',
-            enabled: hook.enabled !== false, // Default to true if not specified
-            scope: scope,
-            filePath: filePath
-          });
+          hooks.push(parseHookEntry(hook, eventType, matcher, scope, filePath));
         }
       }
     }
@@ -128,6 +182,7 @@ function groupHooksByEvent(hooks) {
 }
 
 module.exports = {
+  parseHookEntry,
   parseHooksFromFile,
   parseProjectHooks,
   parseUserHooks,
