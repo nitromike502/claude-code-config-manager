@@ -154,7 +154,7 @@ describe('CopyService.copyHook()', () => {
 
       const request = {
         sourceHook: {
-          event: 'SessionStart',
+          event: 'CwdChanged',
           type: 'command',
           command: 'git fetch',
           enabled: true,
@@ -171,7 +171,7 @@ describe('CopyService.copyHook()', () => {
 
       // Verify file was created
       const settings = JSON.parse(await fs.readFile(result.mergedInto, 'utf8'));
-      expect(settings.hooks.SessionStart).toEqual([
+      expect(settings.hooks.CwdChanged).toEqual([
         {
           hooks: [
             {
@@ -512,7 +512,7 @@ describe('CopyService.copyHook()', () => {
     test('omits matcher field when value is "*"', async () => {
       const request = {
         sourceHook: {
-          event: 'SessionStart',
+          event: 'CwdChanged',
           matcher: '*',
           type: 'command',
           command: 'git status',
@@ -529,7 +529,7 @@ describe('CopyService.copyHook()', () => {
       const settings = JSON.parse(await fs.readFile(result.mergedInto, 'utf8'));
 
       // Matcher field should not be present when value is "*"
-      expect(settings.hooks.SessionStart[0]).toEqual({
+      expect(settings.hooks.CwdChanged[0]).toEqual({
         hooks: [
           {
             type: 'command',
@@ -539,7 +539,7 @@ describe('CopyService.copyHook()', () => {
           }
         ]
       });
-      expect(settings.hooks.SessionStart[0].matcher).toBeUndefined();
+      expect(settings.hooks.CwdChanged[0].matcher).toBeUndefined();
     });
 
     test('includes matcher field when value is not "*"', async () => {
@@ -948,7 +948,7 @@ describe('CopyService.copyHook()', () => {
           command: 'npm test' // Different event
         },
         {
-          event: 'SessionStart',
+          event: 'CwdChanged',
           command: 'git fetch' // No matcher support
         }
       ];
@@ -982,9 +982,9 @@ describe('CopyService.copyHook()', () => {
       // Verify PostToolUse added
       expect(settings.hooks.PostToolUse).toHaveLength(1);
 
-      // Verify SessionStart added (no matcher field)
-      expect(settings.hooks.SessionStart).toHaveLength(1);
-      expect(settings.hooks.SessionStart[0].matcher).toBeUndefined();
+      // Verify CwdChanged added (no matcher field)
+      expect(settings.hooks.CwdChanged).toHaveLength(1);
+      expect(settings.hooks.CwdChanged[0].matcher).toBeUndefined();
     });
   });
 });
