@@ -64,14 +64,12 @@ describe('Hook Events Configuration', () => {
       });
     });
 
-    it('should have hasMatcher, matcherValues, canBlock, and supportsPrompt for each event', () => {
+    it('should have hasMatcher, canBlock, and supportsPrompt for each event', () => {
       Object.entries(HOOK_EVENTS).forEach(([event, metadata]) => {
         expect(metadata).toHaveProperty('hasMatcher');
-        expect(metadata).toHaveProperty('matcherValues');
         expect(metadata).toHaveProperty('canBlock');
         expect(metadata).toHaveProperty('supportsPrompt');
         expect(typeof metadata.hasMatcher).toBe('boolean');
-        expect(Array.isArray(metadata.matcherValues)).toBe(true);
         expect(typeof metadata.canBlock).toBe('boolean');
         expect(typeof metadata.supportsPrompt).toBe('boolean');
       });
@@ -82,7 +80,7 @@ describe('Hook Events Configuration', () => {
         expect(HOOK_EVENTS.PreToolUse.hasMatcher).toBe(true);
         expect(HOOK_EVENTS.PreToolUse.canBlock).toBe(true);
         expect(HOOK_EVENTS.PreToolUse.supportsPrompt).toBe(true);
-        expect(HOOK_EVENTS.PreToolUse.matcherValues).toContain('Bash');
+
       });
 
       it('PostToolUse should support matchers but not blocking or prompts', () => {
@@ -93,7 +91,6 @@ describe('Hook Events Configuration', () => {
 
       it('PostToolUseFailure should support matchers', () => {
         expect(HOOK_EVENTS.PostToolUseFailure.hasMatcher).toBe(true);
-        expect(HOOK_EVENTS.PostToolUseFailure.matcherValues).toContain('Bash');
       });
 
       it('PermissionRequest should support matchers, blocking, and prompts', () => {
@@ -104,13 +101,10 @@ describe('Hook Events Configuration', () => {
 
       it('Notification should support matchers (fixed from no-matcher)', () => {
         expect(HOOK_EVENTS.Notification.hasMatcher).toBe(true);
-        expect(HOOK_EVENTS.Notification.matcherValues).toContain('permission_prompt');
-        expect(HOOK_EVENTS.Notification.matcherValues).toContain('idle_prompt');
       });
 
       it('SubagentStart should support matchers', () => {
         expect(HOOK_EVENTS.SubagentStart.hasMatcher).toBe(true);
-        expect(HOOK_EVENTS.SubagentStart.matcherValues).toContain('general-purpose');
       });
 
       it('SubagentStop should support matchers (fixed from no-matcher)', () => {
@@ -121,30 +115,23 @@ describe('Hook Events Configuration', () => {
 
       it('SessionStart should support matchers (fixed from no-matcher)', () => {
         expect(HOOK_EVENTS.SessionStart.hasMatcher).toBe(true);
-        expect(HOOK_EVENTS.SessionStart.matcherValues).toContain('startup');
-        expect(HOOK_EVENTS.SessionStart.matcherValues).toContain('resume');
       });
 
       it('SessionEnd should support matchers (fixed from no-matcher)', () => {
         expect(HOOK_EVENTS.SessionEnd.hasMatcher).toBe(true);
-        expect(HOOK_EVENTS.SessionEnd.matcherValues).toContain('clear');
-        expect(HOOK_EVENTS.SessionEnd.matcherValues).toContain('logout');
       });
 
       it('PreCompact should support matchers (fixed from no-matcher)', () => {
         expect(HOOK_EVENTS.PreCompact.hasMatcher).toBe(true);
-        expect(HOOK_EVENTS.PreCompact.matcherValues).toEqual(['manual', 'auto']);
       });
 
       it('PostCompact should support matchers', () => {
         expect(HOOK_EVENTS.PostCompact.hasMatcher).toBe(true);
-        expect(HOOK_EVENTS.PostCompact.matcherValues).toEqual(['manual', 'auto']);
       });
 
       it('ConfigChange should support matchers and blocking', () => {
         expect(HOOK_EVENTS.ConfigChange.hasMatcher).toBe(true);
         expect(HOOK_EVENTS.ConfigChange.canBlock).toBe(true);
-        expect(HOOK_EVENTS.ConfigChange.matcherValues).toContain('user_settings');
       });
 
       it('Elicitation and ElicitationResult should support matchers and blocking', () => {
@@ -160,7 +147,6 @@ describe('Hook Events Configuration', () => {
         expect(HOOK_EVENTS.UserPromptSubmit.hasMatcher).toBe(false);
         expect(HOOK_EVENTS.UserPromptSubmit.canBlock).toBe(true);
         expect(HOOK_EVENTS.UserPromptSubmit.supportsPrompt).toBe(true);
-        expect(HOOK_EVENTS.UserPromptSubmit.matcherValues).toEqual([]);
       });
 
       it('Stop should support blocking and prompts but not matchers', () => {
@@ -411,7 +397,6 @@ describe('Hook Events Configuration', () => {
       const metadata = getEventMetadata('PreToolUse');
       expect(metadata).toEqual({
         hasMatcher: true,
-        matcherValues: ['Bash', 'Read', 'Write', 'Edit', 'Glob', 'Grep', 'Agent'],
         canBlock: true,
         supportsPrompt: true
       });
@@ -421,12 +406,10 @@ describe('Hook Events Configuration', () => {
       const configChange = getEventMetadata('ConfigChange');
       expect(configChange.hasMatcher).toBe(true);
       expect(configChange.canBlock).toBe(true);
-      expect(configChange.matcherValues).toContain('user_settings');
 
       const setup = getEventMetadata('Setup');
       expect(setup.hasMatcher).toBe(false);
       expect(setup.canBlock).toBe(false);
-      expect(setup.matcherValues).toEqual([]);
     });
 
     it('should return null for invalid events', () => {

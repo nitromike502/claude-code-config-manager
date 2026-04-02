@@ -76,35 +76,46 @@ export const useSchemaStore = defineStore('schema', () => {
     error.value = null
 
     try {
-      const [eventsData, typesData, agentsData, skillsData, rulesData] = await Promise.all([
-        fetchEndpoint('hook-events'),
-        fetchEndpoint('hook-handler-types'),
-        fetchEndpoint('agent-fields'),
-        fetchEndpoint('skill-fields'),
-        fetchEndpoint('rule-fields')
+      const [hooksData, agentsData, skillsData, rulesData] = await Promise.all([
+        fetchEndpoint('hooks'),
+        fetchEndpoint('agents'),
+        fetchEndpoint('skills'),
+        fetchEndpoint('rules')
       ])
 
-      // Hook events - fall back to constants
-      if (eventsData?.events) {
-        hookEvents.value = eventsData.events
+      // Hook data from official schema - contains events, hookTypes, hookFields
+      if (hooksData?.success && hooksData.data) {
+        const { events, hookTypes: types } = hooksData.data
+
+        // Map schema events to the format components expect
+        if (events?.length > 0) {
+          hookEvents.value = events.map(e => ({
+            value: e.name,
+            label: e.name,
+            description: e.description || '',
+            hasMatcher: true // default; enriched by backend /api/hooks/events
+          }))
+        } else {
+          hookEvents.value = HOOK_EVENT_OPTIONS
+        }
+
+        // Handler types from schema
+        if (types?.length > 0) {
+          hookHandlerTypes.value = types.map(t => t.type)
+        }
       } else {
         hookEvents.value = HOOK_EVENT_OPTIONS
       }
 
-      // Hook handler types - only populate from API; getter falls back to constants
-      if (typesData?.types) {
-        hookHandlerTypes.value = typesData.types
+      // Frontmatter field schemas
+      if (agentsData?.success && agentsData.data?.fields) {
+        agentFields.value = agentsData.data.fields
       }
-
-      // Entity field schemas (no fallback needed - optional)
-      if (agentsData?.fields) {
-        agentFields.value = agentsData.fields
+      if (skillsData?.success && skillsData.data?.fields) {
+        skillFields.value = skillsData.data.fields
       }
-      if (skillsData?.fields) {
-        skillFields.value = skillsData.fields
-      }
-      if (rulesData?.fields) {
-        ruleFields.value = rulesData.fields
+      if (rulesData?.success && rulesData.data?.fields) {
+        ruleFields.value = rulesData.data.fields
       }
 
       loaded.value = true

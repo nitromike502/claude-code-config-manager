@@ -16,34 +16,24 @@
  * }
  */
 
-// Import centralized hook events configuration
-const { getValidEvents, getMatcherBasedEvents, getPromptSupportedEvents } = require('../config/hooks');
+// Import centralized hook events configuration (dynamically backed by schema service).
+// These functions delegate to the schema service when loaded, falling back to
+// embedded defaults during startup or when the remote schema is unreachable.
+const hooks = require('../config/hooks');
 
-/**
- * Valid hook event types as defined by Claude Code specification
- */
-const VALID_HOOK_EVENTS = getValidEvents();
+// Internal helpers that call through to the dynamic hooks module.
+// Every call returns a fresh array reflecting current schema state.
+function getValidHookEvents() { return hooks.getValidEvents(); }
+function getMatcherEvents() { return hooks.getMatcherBasedEvents(); }
+function getPromptEvents() { return hooks.getPromptSupportedEvents(); }
+function getHandlerTypes() { return hooks.getValidHandlerTypes(); }
 
-/**
- * Events that require a matcher field
- * Matcher specifies which tool(s) or category the hook applies to
- */
-const MATCHER_BASED_EVENTS = getMatcherBasedEvents();
-
-/**
- * Events that support the 'prompt' type
- * When type is 'prompt', the hook returns a message to Claude instead of executing a command
- */
-const PROMPT_SUPPORTED_EVENTS = getPromptSupportedEvents();
-
-/**
- * Valid hook type values
- * - command: Execute a shell command (default)
- * - http: Make an HTTP request
- * - prompt: Return a message to Claude
- * - agent: Spawn an agent with a prompt
- */
-const VALID_HOOK_TYPES = ['command', 'http', 'prompt', 'agent'];
+// These names are used extensively in this file. We keep them as
+// local references to the functions — each call site evaluates fresh.
+const VALID_HOOK_EVENTS = { get length() { return getValidHookEvents().length; }, includes(v) { return getValidHookEvents().includes(v); }, join(s) { return getValidHookEvents().join(s); } };
+const MATCHER_BASED_EVENTS = { includes(v) { return getMatcherEvents().includes(v); }, join(s) { return getMatcherEvents().join(s); } };
+const PROMPT_SUPPORTED_EVENTS = { includes(v) { return getPromptEvents().includes(v); }, join(s) { return getPromptEvents().join(s); } };
+const VALID_HOOK_TYPES = { includes(v) { return getHandlerTypes().includes(v); }, join(s) { return getHandlerTypes().join(s); } };
 
 /**
  * Default timeout values per hook type (in seconds)
@@ -329,11 +319,6 @@ function getHookDefaults(type = 'command') {
 }
 
 module.exports = {
-  // Constants
-  VALID_HOOK_EVENTS,
-  MATCHER_BASED_EVENTS,
-  PROMPT_SUPPORTED_EVENTS,
-  VALID_HOOK_TYPES,
   DEFAULT_TIMEOUTS,
   VALID_SHELLS,
 
@@ -346,3 +331,12 @@ module.exports = {
   validateCommonFields,
   getHookDefaults
 };
+
+// Dynamic getters — consumers that destructure these get fresh arrays
+// backed by the schema service on every property access.
+Object.defineProperties(module.exports, {
+  VALID_HOOK_EVENTS:       { get: getValidHookEvents, enumerable: true },
+  MATCHER_BASED_EVENTS:    { get: getMatcherEvents,   enumerable: true },
+  PROMPT_SUPPORTED_EVENTS: { get: getPromptEvents,    enumerable: true },
+  VALID_HOOK_TYPES:        { get: getHandlerTypes,    enumerable: true }
+});
