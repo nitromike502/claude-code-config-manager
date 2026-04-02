@@ -133,8 +133,8 @@ export const PERMISSION_MODE_OPTIONS = [
 
 // Model invocation options (for commands)
 export const MODEL_INVOCATION_OPTIONS = [
-  { label: 'Allow Model', value: false },
-  { label: 'Skip Model', value: true }
+  { label: 'Invocable', value: false },
+  { label: 'Non-Invocable', value: true }
 ]
 
 // Official Claude Code colors

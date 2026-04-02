@@ -253,6 +253,11 @@ const displayValue = computed(() => {
   if (props.modelValue === null || props.modelValue === undefined) {
     return 'Not set'
   }
+  // For selectbutton/select fields, look up the label from options
+  if ((props.fieldType === 'selectbutton' || props.fieldType === 'select') && props.options?.length) {
+    const match = props.options.find(opt => opt.value === props.modelValue)
+    if (match) return match.label
+  }
   return String(props.modelValue)
 })
 

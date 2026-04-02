@@ -2,6 +2,8 @@
   <div>
     <!-- Metadata Section -->
     <div class="mb-6">
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Metadata</h4>
+
       <!-- Skill Name (Read-Only - directory name cannot be changed) -->
       <p class="my-2 text-sm text-text-secondary leading-relaxed">
         <strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}
@@ -20,6 +22,18 @@
         @edit-accept="handleSkillFieldUpdate('description', $event)"
       />
 
+      <!-- Model Field -->
+      <LabeledEditField
+        v-model="skillData.model"
+        field-type="selectbutton"
+        label="Model"
+        :options="modelOptions"
+        :disabled="!canEdit || editingField !== null && editingField !== 'model'"
+        @edit-start="updateEditingField('model')"
+        @edit-cancel="updateEditingField(null)"
+        @edit-accept="handleSkillFieldUpdate('model', $event)"
+      />
+
       <!-- Allowed Tools Field -->
       <LabeledEditField
         v-model="skillData.allowedTools"
@@ -32,34 +46,50 @@
         @edit-cancel="updateEditingField(null)"
         @edit-accept="handleSkillFieldUpdate('allowedTools', $event)"
       />
+
+      <!-- Argument Hint Field -->
+      <LabeledEditField
+        v-if="canEdit || skillData.argumentHint"
+        v-model="skillData.argumentHint"
+        field-type="text"
+        label="Argument Hint"
+        placeholder="<query>"
+        :disabled="!canEdit || editingField !== null && editingField !== 'argumentHint'"
+        @edit-start="updateEditingField('argumentHint')"
+        @edit-cancel="updateEditingField(null)"
+        @edit-accept="handleSkillFieldUpdate('argumentHint', $event)"
+      />
+
+      <!-- Model Invocation Field -->
+      <LabeledEditField
+        v-if="canEdit || skillData.disableModelInvocation !== null"
+        v-model="skillData.disableModelInvocation"
+        field-type="selectbutton"
+        label="Model Invocation"
+        :options="modelInvocationOptions"
+        :disabled="!canEdit || editingField !== null && editingField !== 'disableModelInvocation'"
+        @edit-start="updateEditingField('disableModelInvocation')"
+        @edit-cancel="updateEditingField(null)"
+        @edit-accept="handleSkillFieldUpdate('disableModelInvocation', $event)"
+      />
+
+      <!-- User Invocable Field -->
+      <LabeledEditField
+        v-if="canEdit || skillData.userInvocable === false"
+        v-model="skillData.userInvocable"
+        field-type="selectbutton"
+        label="User Invocable"
+        :options="booleanOptions"
+        :disabled="!canEdit || editingField !== null && editingField !== 'userInvocable'"
+        @edit-start="updateEditingField('userInvocable')"
+        @edit-cancel="updateEditingField(null)"
+        @edit-accept="handleSkillFieldUpdate('userInvocable', $event)"
+      />
     </div>
 
-    <!-- Configuration Section -->
+    <!-- Configuration Section (display-only fields, shown when set) -->
     <div v-if="hasConfigFields" class="mb-6">
       <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Configuration</h4>
-
-      <!-- Argument Hint -->
-      <p v-if="skillData.argumentHint" class="my-2 text-sm text-text-secondary leading-relaxed">
-        <strong class="text-text-primary">Argument Hint:</strong> {{ skillData.argumentHint }}
-      </p>
-
-      <!-- User Invocable -->
-      <p v-if="skillData.userInvocable === true" class="my-2 text-sm text-text-secondary leading-relaxed">
-        <strong class="text-text-primary">User Invocable:</strong>
-        <Tag value="Yes" severity="success" class="ml-2 text-xs" />
-      </p>
-
-      <!-- Disable Model Invocation -->
-      <p v-if="skillData.disableModelInvocation === true" class="my-2 text-sm text-text-secondary leading-relaxed">
-        <strong class="text-text-primary">Model Invocation:</strong>
-        <Tag value="Disabled" severity="warning" class="ml-2 text-xs" />
-      </p>
-
-      <!-- Model -->
-      <p v-if="skillData.model" class="my-2 text-sm text-text-secondary leading-relaxed">
-        <strong class="text-text-primary">Model:</strong>
-        <Tag :value="skillData.model" severity="info" class="ml-2 text-xs" />
-      </p>
 
       <!-- Effort -->
       <p v-if="skillData.effort" class="my-2 text-sm text-text-secondary leading-relaxed">
@@ -72,11 +102,6 @@
         <strong class="text-text-primary">Shell:</strong>
         <Tag :value="skillData.shell" severity="info" class="ml-2 text-xs" />
       </p>
-    </div>
-
-    <!-- Execution Section -->
-    <div v-if="hasExecutionFields" class="mb-6">
-      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Execution</h4>
 
       <!-- Context -->
       <p v-if="skillData.context" class="my-2 text-sm text-text-secondary leading-relaxed">
@@ -96,14 +121,9 @@
           <Tag v-for="(pattern, index) in skillData.paths" :key="index" :value="pattern" severity="secondary" class="text-xs font-mono" />
         </div>
       </div>
-    </div>
-
-    <!-- Lifecycle Section -->
-    <div v-if="skillData.hooks" class="mb-6">
-      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Lifecycle</h4>
 
       <!-- Hooks (collapsible) -->
-      <Panel header="Hooks" :toggleable="true" :collapsed="true">
+      <Panel v-if="skillData.hooks" header="Hooks" :toggleable="true" :collapsed="true">
         <pre class="bg-bg-primary p-3 rounded font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[200px] overflow-y-auto text-text-primary">{{ JSON.stringify(skillData.hooks, null, 2) }}</pre>
       </Panel>
     </div>
@@ -202,7 +222,7 @@
 import { ref, computed, watch } from 'vue'
 import { useSkillsStore } from '@/stores/skills'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
-import { TOOL_OPTIONS } from '@/constants/form-options'
+import { TOOL_OPTIONS, MODEL_OPTIONS, MODEL_INVOCATION_OPTIONS, YES_NO_OPTIONS } from '@/constants/form-options'
 import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
@@ -243,11 +263,11 @@ const skillData = ref({
   description: '',
   allowedTools: [],
   content: '',
-  // New fields
+  model: 'inherit',
   argumentHint: '',
   disableModelInvocation: false,
-  userInvocable: false,
-  model: '',
+  userInvocable: true,
+  // Display-only fields
   effort: '',
   shell: '',
   context: '',
@@ -258,6 +278,9 @@ const skillData = ref({
 
 // Use constants from form-options
 const toolOptions = TOOL_OPTIONS
+const modelOptions = MODEL_OPTIONS
+const modelInvocationOptions = MODEL_INVOCATION_OPTIONS
+const booleanOptions = YES_NO_OPTIONS
 
 // Computed: effort badge severity
 const effortSeverity = computed(() => {
@@ -265,16 +288,10 @@ const effortSeverity = computed(() => {
   return map[skillData.value.effort] || 'info'
 })
 
-// Computed: whether config section has content
+// Computed: whether config section has content (display-only fields)
 const hasConfigFields = computed(() => {
   const d = skillData.value
-  return d.argumentHint || d.userInvocable === true || d.disableModelInvocation === true || d.model || d.effort || d.shell
-})
-
-// Computed: whether execution section has content
-const hasExecutionFields = computed(() => {
-  const d = skillData.value
-  return d.context || (d.paths && d.paths.length > 0)
+  return d.effort || d.shell || d.context || d.hooks || (d.paths && d.paths.length > 0)
 })
 
 // Update editing field (emit to parent)
@@ -324,11 +341,10 @@ watch(() => props.selectedItem, (newItem) => {
       description: newItem.description || '',
       allowedTools: newItem.allowedTools || [],
       content: newItem.content || '',
-      // New fields
+      model: newItem.model || 'inherit',
       argumentHint: newItem.argumentHint || '',
       disableModelInvocation: newItem.disableModelInvocation || false,
-      userInvocable: newItem.userInvocable || false,
-      model: newItem.model || '',
+      userInvocable: newItem.userInvocable !== false,
       effort: newItem.effort || '',
       shell: newItem.shell || '',
       context: newItem.context || '',
