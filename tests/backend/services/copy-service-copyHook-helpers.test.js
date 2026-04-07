@@ -276,14 +276,14 @@ describe('CopyService.mergeHookIntoSettings()', () => {
 
       const result = copyService.mergeHookIntoSettings(
         settings,
-        'SessionStart', // Non-matcher event
+        'CwdChanged', // Non-matcher event
         '*',
         { type: 'command', command: 'git status', enabled: true, timeout: 60 }
       );
 
       // Matcher field should not be present for non-matcher events
-      expect(result.hooks.SessionStart[0].matcher).toBeUndefined();
-      expect(result.hooks.SessionStart[0].hooks).toBeDefined();
+      expect(result.hooks.CwdChanged[0].matcher).toBeUndefined();
+      expect(result.hooks.CwdChanged[0].hooks).toBeDefined();
     });
 
     test('includes matcher field for matcher-supporting events even when "*"', () => {

@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$comment": "Source: https://code.claude.com/docs/en/sub-agents#supported-frontmatter-fields — Check this page periodically for new fields.",
+  "title": "Agent Frontmatter Schema",
+  "description": "Schema for Claude Code agent (.claude/agents/*.md) YAML frontmatter fields",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Unique identifier using lowercase letters and hyphens"
+    },
+    "description": {
+      "type": "string",
+      "description": "When Claude should delegate to this subagent"
+    },
+    "tools": {
+      "type": ["array", "string"],
+      "items": { "type": "string" },
+      "description": "Tools the subagent can use. Inherits all tools if omitted. Comma-separated string or array."
+    },
+    "disallowedTools": {
+      "type": ["array", "string"],
+      "items": { "type": "string" },
+      "description": "Tools to deny, removed from inherited or specified list"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model to use: 'sonnet', 'opus', 'haiku', a full model ID (e.g. claude-opus-4-6), or 'inherit'. Defaults to 'inherit'."
+    },
+    "permissionMode": {
+      "type": "string",
+      "description": "Permission mode for the subagent",
+      "enum": ["default", "acceptEdits", "dontAsk", "bypassPermissions", "plan"]
+    },
+    "maxTurns": {
+      "type": "integer",
+      "description": "Maximum number of agentic turns before the subagent stops",
+      "minimum": 1
+    },
+    "skills": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Skills to preload into the subagent's context at startup. Full content is injected, not just made available."
+    },
+    "mcpServers": {
+      "type": ["object", "array"],
+      "description": "MCP servers available to this subagent. Each entry is either an inline server definition (object with server name key) or a string referencing an already-configured server."
+    },
+    "hooks": {
+      "type": "object",
+      "description": "Lifecycle hooks scoped to this subagent. Supports PreToolUse, PostToolUse, Stop events."
+    },
+    "memory": {
+      "type": "string",
+      "description": "Persistent memory scope. Enables cross-session learning.",
+      "enum": ["user", "project", "local"]
+    },
+    "background": {
+      "type": "boolean",
+      "description": "Set to true to always run this subagent as a background task. Default: false."
+    },
+    "effort": {
+      "type": "string",
+      "description": "Effort level when this subagent is active. Overrides session effort level.",
+      "enum": ["low", "medium", "high", "max"]
+    },
+    "isolation": {
+      "type": "string",
+      "description": "Set to 'worktree' to run in a temporary git worktree for an isolated copy of the repository.",
+      "enum": ["worktree"]
+    },
+    "initialPrompt": {
+      "type": "string",
+      "description": "Auto-submitted as the first user turn when this agent runs as the main session agent (via --agent or the agent setting)."
+    },
+    "color": {
+      "type": "string",
+      "description": "Background color for the subagent in the UI."
+    }
+  },
+  "additionalProperties": false
+}

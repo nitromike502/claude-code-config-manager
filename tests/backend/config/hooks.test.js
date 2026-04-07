@@ -7,135 +7,196 @@ const {
   getValidEvents,
   getMatcherBasedEvents,
   getPromptSupportedEvents,
+  getBlockingEvents,
   getHookEventOptions,
   isValidEvent,
   eventHasMatcher,
   eventSupportsPrompt,
+  eventCanBlock,
   getEventMetadata
 } = require('../../../src/backend/config/hooks');
 
 describe('Hook Events Configuration', () => {
+  // All 27 events
+  const ALL_EVENTS = [
+    'PreToolUse', 'PostToolUse', 'PostToolUseFailure', 'PermissionRequest',
+    'Notification', 'SubagentStart', 'SubagentStop', 'SessionStart',
+    'SessionEnd', 'InstructionsLoaded', 'StopFailure', 'ConfigChange',
+    'FileChanged', 'PreCompact', 'PostCompact', 'Elicitation', 'ElicitationResult',
+    'UserPromptSubmit', 'Stop', 'TaskCreated', 'TaskCompleted', 'TeammateIdle',
+    'CwdChanged', 'WorktreeCreate', 'WorktreeRemove', 'Setup'
+  ];
+
+  // 17 matcher-based events
+  const MATCHER_EVENTS = [
+    'PreToolUse', 'PostToolUse', 'PostToolUseFailure', 'PermissionRequest',
+    'Notification', 'SubagentStart', 'SubagentStop', 'SessionStart',
+    'SessionEnd', 'InstructionsLoaded', 'StopFailure', 'ConfigChange',
+    'FileChanged', 'PreCompact', 'PostCompact', 'Elicitation', 'ElicitationResult'
+  ];
+
+  // 10 non-matcher events
+  const NON_MATCHER_EVENTS = [
+    'UserPromptSubmit', 'Stop', 'TaskCreated', 'TaskCompleted', 'TeammateIdle',
+    'CwdChanged', 'WorktreeCreate', 'WorktreeRemove', 'Setup'
+  ];
+
+  // Events that support prompts
+  const PROMPT_EVENTS = [
+    'PreToolUse', 'PermissionRequest', 'SubagentStop',
+    'UserPromptSubmit', 'Stop'
+  ];
+
+  // Events that can block
+  const BLOCKING_EVENTS = [
+    'PreToolUse', 'PermissionRequest', 'SubagentStop', 'ConfigChange',
+    'Elicitation', 'ElicitationResult',
+    'UserPromptSubmit', 'Stop', 'TaskCreated', 'TaskCompleted',
+    'TeammateIdle', 'WorktreeCreate'
+  ];
+
   describe('HOOK_EVENTS object', () => {
-    it('should contain all 10 hook events', () => {
+    it('should contain all 26 hook events', () => {
       const events = Object.keys(HOOK_EVENTS);
-      expect(events).toHaveLength(10);
-      expect(events).toContain('PreToolUse');
-      expect(events).toContain('PostToolUse');
-      expect(events).toContain('PermissionRequest');
-      expect(events).toContain('Notification');
-      expect(events).toContain('UserPromptSubmit');
-      expect(events).toContain('Stop');
-      expect(events).toContain('SubagentStop');
-      expect(events).toContain('PreCompact');
-      expect(events).toContain('SessionStart');
-      expect(events).toContain('SessionEnd');
+      expect(events).toHaveLength(26);
+      ALL_EVENTS.forEach(event => {
+        expect(events).toContain(event);
+      });
     });
 
-    it('should have hasMatcher and supportsPrompt for each event', () => {
+    it('should have hasMatcher, canBlock, and supportsPrompt for each event', () => {
       Object.entries(HOOK_EVENTS).forEach(([event, metadata]) => {
         expect(metadata).toHaveProperty('hasMatcher');
+        expect(metadata).toHaveProperty('canBlock');
         expect(metadata).toHaveProperty('supportsPrompt');
         expect(typeof metadata.hasMatcher).toBe('boolean');
+        expect(typeof metadata.canBlock).toBe('boolean');
         expect(typeof metadata.supportsPrompt).toBe('boolean');
       });
     });
 
     describe('matcher-based events', () => {
-      it('PreToolUse should support matchers and prompts', () => {
-        expect(HOOK_EVENTS.PreToolUse).toEqual({
-          hasMatcher: true,
-          supportsPrompt: true
-        });
+      it('PreToolUse should support matchers, blocking, and prompts', () => {
+        expect(HOOK_EVENTS.PreToolUse.hasMatcher).toBe(true);
+        expect(HOOK_EVENTS.PreToolUse.canBlock).toBe(true);
+        expect(HOOK_EVENTS.PreToolUse.supportsPrompt).toBe(true);
+
       });
 
-      it('PostToolUse should support matchers but not prompts', () => {
-        expect(HOOK_EVENTS.PostToolUse).toEqual({
-          hasMatcher: true,
-          supportsPrompt: false
-        });
+      it('PostToolUse should support matchers but not blocking or prompts', () => {
+        expect(HOOK_EVENTS.PostToolUse.hasMatcher).toBe(true);
+        expect(HOOK_EVENTS.PostToolUse.canBlock).toBe(false);
+        expect(HOOK_EVENTS.PostToolUse.supportsPrompt).toBe(false);
       });
 
-      it('PermissionRequest should support matchers and prompts', () => {
-        expect(HOOK_EVENTS.PermissionRequest).toEqual({
-          hasMatcher: true,
-          supportsPrompt: true
-        });
+      it('PostToolUseFailure should support matchers', () => {
+        expect(HOOK_EVENTS.PostToolUseFailure.hasMatcher).toBe(true);
+      });
+
+      it('PermissionRequest should support matchers, blocking, and prompts', () => {
+        expect(HOOK_EVENTS.PermissionRequest.hasMatcher).toBe(true);
+        expect(HOOK_EVENTS.PermissionRequest.canBlock).toBe(true);
+        expect(HOOK_EVENTS.PermissionRequest.supportsPrompt).toBe(true);
+      });
+
+      it('Notification should support matchers (fixed from no-matcher)', () => {
+        expect(HOOK_EVENTS.Notification.hasMatcher).toBe(true);
+      });
+
+      it('SubagentStart should support matchers', () => {
+        expect(HOOK_EVENTS.SubagentStart.hasMatcher).toBe(true);
+      });
+
+      it('SubagentStop should support matchers (fixed from no-matcher)', () => {
+        expect(HOOK_EVENTS.SubagentStop.hasMatcher).toBe(true);
+        expect(HOOK_EVENTS.SubagentStop.canBlock).toBe(true);
+        expect(HOOK_EVENTS.SubagentStop.supportsPrompt).toBe(true);
+      });
+
+      it('SessionStart should support matchers (fixed from no-matcher)', () => {
+        expect(HOOK_EVENTS.SessionStart.hasMatcher).toBe(true);
+      });
+
+      it('SessionEnd should support matchers (fixed from no-matcher)', () => {
+        expect(HOOK_EVENTS.SessionEnd.hasMatcher).toBe(true);
+      });
+
+      it('PreCompact should support matchers (fixed from no-matcher)', () => {
+        expect(HOOK_EVENTS.PreCompact.hasMatcher).toBe(true);
+      });
+
+      it('PostCompact should support matchers', () => {
+        expect(HOOK_EVENTS.PostCompact.hasMatcher).toBe(true);
+      });
+
+      it('ConfigChange should support matchers and blocking', () => {
+        expect(HOOK_EVENTS.ConfigChange.hasMatcher).toBe(true);
+        expect(HOOK_EVENTS.ConfigChange.canBlock).toBe(true);
+      });
+
+      it('Elicitation and ElicitationResult should support matchers and blocking', () => {
+        expect(HOOK_EVENTS.Elicitation.hasMatcher).toBe(true);
+        expect(HOOK_EVENTS.Elicitation.canBlock).toBe(true);
+        expect(HOOK_EVENTS.ElicitationResult.hasMatcher).toBe(true);
+        expect(HOOK_EVENTS.ElicitationResult.canBlock).toBe(true);
       });
     });
 
     describe('non-matcher events', () => {
-      it('UserPromptSubmit should support prompts but not matchers', () => {
-        expect(HOOK_EVENTS.UserPromptSubmit).toEqual({
-          hasMatcher: false,
-          supportsPrompt: true
-        });
+      it('UserPromptSubmit should support blocking and prompts but not matchers', () => {
+        expect(HOOK_EVENTS.UserPromptSubmit.hasMatcher).toBe(false);
+        expect(HOOK_EVENTS.UserPromptSubmit.canBlock).toBe(true);
+        expect(HOOK_EVENTS.UserPromptSubmit.supportsPrompt).toBe(true);
       });
 
-      it('Stop should support prompts but not matchers', () => {
-        expect(HOOK_EVENTS.Stop).toEqual({
-          hasMatcher: false,
-          supportsPrompt: true
-        });
+      it('Stop should support blocking and prompts but not matchers', () => {
+        expect(HOOK_EVENTS.Stop.hasMatcher).toBe(false);
+        expect(HOOK_EVENTS.Stop.canBlock).toBe(true);
+        expect(HOOK_EVENTS.Stop.supportsPrompt).toBe(true);
       });
 
-      it('SubagentStop should support prompts but not matchers', () => {
-        expect(HOOK_EVENTS.SubagentStop).toEqual({
-          hasMatcher: false,
-          supportsPrompt: true
-        });
+      it('TaskCreated and TaskCompleted should support blocking', () => {
+        expect(HOOK_EVENTS.TaskCreated.hasMatcher).toBe(false);
+        expect(HOOK_EVENTS.TaskCreated.canBlock).toBe(true);
+        expect(HOOK_EVENTS.TaskCompleted.hasMatcher).toBe(false);
+        expect(HOOK_EVENTS.TaskCompleted.canBlock).toBe(true);
       });
 
-      it('Notification should support neither matchers nor prompts', () => {
-        expect(HOOK_EVENTS.Notification).toEqual({
-          hasMatcher: false,
-          supportsPrompt: false
-        });
+      it('TeammateIdle should support blocking', () => {
+        expect(HOOK_EVENTS.TeammateIdle.hasMatcher).toBe(false);
+        expect(HOOK_EVENTS.TeammateIdle.canBlock).toBe(true);
       });
 
-      it('PreCompact should support neither matchers nor prompts', () => {
-        expect(HOOK_EVENTS.PreCompact).toEqual({
-          hasMatcher: false,
-          supportsPrompt: false
-        });
+      it('CwdChanged should not support blocking', () => {
+        expect(HOOK_EVENTS.CwdChanged.hasMatcher).toBe(false);
+        expect(HOOK_EVENTS.CwdChanged.canBlock).toBe(false);
       });
 
-      it('SessionStart should support neither matchers nor prompts', () => {
-        expect(HOOK_EVENTS.SessionStart).toEqual({
-          hasMatcher: false,
-          supportsPrompt: false
-        });
+      it('WorktreeCreate should support blocking, WorktreeRemove should not', () => {
+        expect(HOOK_EVENTS.WorktreeCreate.canBlock).toBe(true);
+        expect(HOOK_EVENTS.WorktreeRemove.canBlock).toBe(false);
       });
 
-      it('SessionEnd should support neither matchers nor prompts', () => {
-        expect(HOOK_EVENTS.SessionEnd).toEqual({
-          hasMatcher: false,
-          supportsPrompt: false
-        });
+      it('Setup should not support blocking or prompts', () => {
+        expect(HOOK_EVENTS.Setup.hasMatcher).toBe(false);
+        expect(HOOK_EVENTS.Setup.canBlock).toBe(false);
+        expect(HOOK_EVENTS.Setup.supportsPrompt).toBe(false);
       });
     });
   });
 
   describe('getValidEvents()', () => {
-    it('should return array of all event names', () => {
+    it('should return array of all 26 event names', () => {
       const events = getValidEvents();
       expect(Array.isArray(events)).toBe(true);
-      expect(events).toHaveLength(10);
+      expect(events).toHaveLength(26);
     });
 
-    it('should return all 10 event names', () => {
+    it('should contain all expected events', () => {
       const events = getValidEvents();
-      expect(events).toEqual([
-        'PreToolUse',
-        'PostToolUse',
-        'PermissionRequest',
-        'Notification',
-        'UserPromptSubmit',
-        'Stop',
-        'SubagentStop',
-        'PreCompact',
-        'SessionStart',
-        'SessionEnd'
-      ]);
+      ALL_EVENTS.forEach(event => {
+        expect(events).toContain(event);
+      });
     });
 
     it('should return a new array each time (not cached)', () => {
@@ -147,66 +208,74 @@ describe('Hook Events Configuration', () => {
   });
 
   describe('getMatcherBasedEvents()', () => {
-    it('should return array of events that support matchers', () => {
+    it('should return 17 matcher-based events', () => {
       const events = getMatcherBasedEvents();
-      expect(Array.isArray(events)).toBe(true);
-      expect(events).toHaveLength(3);
+      expect(events).toHaveLength(17);
     });
 
-    it('should return only matcher-based events', () => {
+    it('should contain all matcher-based events', () => {
       const events = getMatcherBasedEvents();
-      expect(events).toEqual([
-        'PreToolUse',
-        'PostToolUse',
-        'PermissionRequest'
-      ]);
+      MATCHER_EVENTS.forEach(event => {
+        expect(events).toContain(event);
+      });
     });
 
     it('should not include non-matcher events', () => {
       const events = getMatcherBasedEvents();
-      expect(events).not.toContain('Notification');
-      expect(events).not.toContain('UserPromptSubmit');
-      expect(events).not.toContain('Stop');
-      expect(events).not.toContain('SubagentStop');
-      expect(events).not.toContain('PreCompact');
-      expect(events).not.toContain('SessionStart');
-      expect(events).not.toContain('SessionEnd');
+      NON_MATCHER_EVENTS.forEach(event => {
+        expect(events).not.toContain(event);
+      });
     });
   });
 
   describe('getPromptSupportedEvents()', () => {
-    it('should return array of events that support prompts', () => {
+    it('should return 5 prompt-supported events', () => {
       const events = getPromptSupportedEvents();
-      expect(Array.isArray(events)).toBe(true);
       expect(events).toHaveLength(5);
     });
 
-    it('should return only prompt-supported events', () => {
+    it('should contain all prompt-supported events', () => {
       const events = getPromptSupportedEvents();
-      expect(events).toEqual([
-        'PreToolUse',
-        'PermissionRequest',
-        'UserPromptSubmit',
-        'Stop',
-        'SubagentStop'
-      ]);
+      PROMPT_EVENTS.forEach(event => {
+        expect(events).toContain(event);
+      });
     });
 
     it('should not include non-prompt events', () => {
       const events = getPromptSupportedEvents();
       expect(events).not.toContain('PostToolUse');
       expect(events).not.toContain('Notification');
-      expect(events).not.toContain('PreCompact');
       expect(events).not.toContain('SessionStart');
-      expect(events).not.toContain('SessionEnd');
+      expect(events).not.toContain('Setup');
+    });
+  });
+
+  describe('getBlockingEvents()', () => {
+    it('should return 12 blocking events', () => {
+      const events = getBlockingEvents();
+      expect(events).toHaveLength(12);
+    });
+
+    it('should contain all blocking events', () => {
+      const events = getBlockingEvents();
+      BLOCKING_EVENTS.forEach(event => {
+        expect(events).toContain(event);
+      });
+    });
+
+    it('should not include non-blocking events', () => {
+      const events = getBlockingEvents();
+      expect(events).not.toContain('PostToolUse');
+      expect(events).not.toContain('CwdChanged');
+      expect(events).not.toContain('Setup');
     });
   });
 
   describe('getHookEventOptions()', () => {
-    it('should return array of UI-friendly options', () => {
+    it('should return array of 26 UI-friendly options', () => {
       const options = getHookEventOptions();
       expect(Array.isArray(options)).toBe(true);
-      expect(options).toHaveLength(10);
+      expect(options).toHaveLength(26);
     });
 
     it('should include value, label, and hasMatcher for each option', () => {
@@ -236,30 +305,14 @@ describe('Hook Events Configuration', () => {
       expect(preToolUse.hasMatcher).toBe(true);
       expect(userPromptSubmit.hasMatcher).toBe(false);
     });
-
-    it('should include all 10 events', () => {
-      const options = getHookEventOptions();
-      const values = options.map(opt => opt.value);
-
-      expect(values).toContain('PreToolUse');
-      expect(values).toContain('PostToolUse');
-      expect(values).toContain('PermissionRequest');
-      expect(values).toContain('Notification');
-      expect(values).toContain('UserPromptSubmit');
-      expect(values).toContain('Stop');
-      expect(values).toContain('SubagentStop');
-      expect(values).toContain('PreCompact');
-      expect(values).toContain('SessionStart');
-      expect(values).toContain('SessionEnd');
-    });
   });
 
   describe('isValidEvent()', () => {
     it('should return true for valid events', () => {
       expect(isValidEvent('PreToolUse')).toBe(true);
-      expect(isValidEvent('PostToolUse')).toBe(true);
-      expect(isValidEvent('UserPromptSubmit')).toBe(true);
-      expect(isValidEvent('SessionStart')).toBe(true);
+      expect(isValidEvent('PostToolUseFailure')).toBe(true);
+      expect(isValidEvent('ConfigChange')).toBe(true);
+      expect(isValidEvent('Setup')).toBe(true);
     });
 
     it('should return false for invalid events', () => {
@@ -279,19 +332,15 @@ describe('Hook Events Configuration', () => {
 
   describe('eventHasMatcher()', () => {
     it('should return true for matcher-based events', () => {
-      expect(eventHasMatcher('PreToolUse')).toBe(true);
-      expect(eventHasMatcher('PostToolUse')).toBe(true);
-      expect(eventHasMatcher('PermissionRequest')).toBe(true);
+      MATCHER_EVENTS.forEach(event => {
+        expect(eventHasMatcher(event)).toBe(true);
+      });
     });
 
     it('should return false for non-matcher events', () => {
-      expect(eventHasMatcher('Notification')).toBe(false);
-      expect(eventHasMatcher('UserPromptSubmit')).toBe(false);
-      expect(eventHasMatcher('Stop')).toBe(false);
-      expect(eventHasMatcher('SubagentStop')).toBe(false);
-      expect(eventHasMatcher('PreCompact')).toBe(false);
-      expect(eventHasMatcher('SessionStart')).toBe(false);
-      expect(eventHasMatcher('SessionEnd')).toBe(false);
+      NON_MATCHER_EVENTS.forEach(event => {
+        expect(eventHasMatcher(event)).toBe(false);
+      });
     });
 
     it('should return false for invalid events', () => {
@@ -304,19 +353,16 @@ describe('Hook Events Configuration', () => {
 
   describe('eventSupportsPrompt()', () => {
     it('should return true for prompt-supported events', () => {
-      expect(eventSupportsPrompt('PreToolUse')).toBe(true);
-      expect(eventSupportsPrompt('PermissionRequest')).toBe(true);
-      expect(eventSupportsPrompt('UserPromptSubmit')).toBe(true);
-      expect(eventSupportsPrompt('Stop')).toBe(true);
-      expect(eventSupportsPrompt('SubagentStop')).toBe(true);
+      PROMPT_EVENTS.forEach(event => {
+        expect(eventSupportsPrompt(event)).toBe(true);
+      });
     });
 
     it('should return false for non-prompt events', () => {
       expect(eventSupportsPrompt('PostToolUse')).toBe(false);
       expect(eventSupportsPrompt('Notification')).toBe(false);
-      expect(eventSupportsPrompt('PreCompact')).toBe(false);
       expect(eventSupportsPrompt('SessionStart')).toBe(false);
-      expect(eventSupportsPrompt('SessionEnd')).toBe(false);
+      expect(eventSupportsPrompt('Setup')).toBe(false);
     });
 
     it('should return false for invalid events', () => {
@@ -327,32 +373,43 @@ describe('Hook Events Configuration', () => {
     });
   });
 
+  describe('eventCanBlock()', () => {
+    it('should return true for blocking events', () => {
+      BLOCKING_EVENTS.forEach(event => {
+        expect(eventCanBlock(event)).toBe(true);
+      });
+    });
+
+    it('should return false for non-blocking events', () => {
+      expect(eventCanBlock('PostToolUse')).toBe(false);
+      expect(eventCanBlock('CwdChanged')).toBe(false);
+      expect(eventCanBlock('Setup')).toBe(false);
+    });
+
+    it('should return false for invalid events', () => {
+      expect(eventCanBlock('InvalidEvent')).toBe(false);
+      expect(eventCanBlock(null)).toBe(false);
+    });
+  });
+
   describe('getEventMetadata()', () => {
     it('should return metadata object for valid events', () => {
       const metadata = getEventMetadata('PreToolUse');
       expect(metadata).toEqual({
         hasMatcher: true,
+        canBlock: true,
         supportsPrompt: true
       });
     });
 
-    it('should return correct metadata for all events', () => {
-      expect(getEventMetadata('PreToolUse')).toEqual({
-        hasMatcher: true,
-        supportsPrompt: true
-      });
-      expect(getEventMetadata('PostToolUse')).toEqual({
-        hasMatcher: true,
-        supportsPrompt: false
-      });
-      expect(getEventMetadata('UserPromptSubmit')).toEqual({
-        hasMatcher: false,
-        supportsPrompt: true
-      });
-      expect(getEventMetadata('PreCompact')).toEqual({
-        hasMatcher: false,
-        supportsPrompt: false
-      });
+    it('should return correct metadata for new events', () => {
+      const configChange = getEventMetadata('ConfigChange');
+      expect(configChange.hasMatcher).toBe(true);
+      expect(configChange.canBlock).toBe(true);
+
+      const setup = getEventMetadata('Setup');
+      expect(setup.hasMatcher).toBe(false);
+      expect(setup.canBlock).toBe(false);
     });
 
     it('should return null for invalid events', () => {
@@ -388,6 +445,15 @@ describe('Hook Events Configuration', () => {
       });
     });
 
+    it('blocking events should match across all functions', () => {
+      const blockingEvents = getBlockingEvents();
+
+      blockingEvents.forEach(event => {
+        expect(eventCanBlock(event)).toBe(true);
+        expect(getEventMetadata(event).canBlock).toBe(true);
+      });
+    });
+
     it('valid events should match across all functions', () => {
       const validEvents = getValidEvents();
 
@@ -419,6 +485,7 @@ describe('Hook Events Configuration', () => {
       expect(isValidEvent('')).toBe(false);
       expect(eventHasMatcher('')).toBe(false);
       expect(eventSupportsPrompt('')).toBe(false);
+      expect(eventCanBlock('')).toBe(false);
       expect(getEventMetadata('')).toBeNull();
     });
 
@@ -426,6 +493,7 @@ describe('Hook Events Configuration', () => {
       expect(isValidEvent(null)).toBe(false);
       expect(eventHasMatcher(null)).toBe(false);
       expect(eventSupportsPrompt(null)).toBe(false);
+      expect(eventCanBlock(null)).toBe(false);
       expect(getEventMetadata(null)).toBeNull();
     });
 
@@ -433,6 +501,7 @@ describe('Hook Events Configuration', () => {
       expect(isValidEvent(undefined)).toBe(false);
       expect(eventHasMatcher(undefined)).toBe(false);
       expect(eventSupportsPrompt(undefined)).toBe(false);
+      expect(eventCanBlock(undefined)).toBe(false);
       expect(getEventMetadata(undefined)).toBeNull();
     });
 
@@ -442,31 +511,33 @@ describe('Hook Events Configuration', () => {
       expect(isValidEvent([])).toBe(false);
       expect(eventHasMatcher(123)).toBe(false);
       expect(eventSupportsPrompt({})).toBe(false);
+      expect(eventCanBlock([])).toBe(false);
       expect(getEventMetadata([])).toBeNull();
     });
   });
 
   describe('count verification', () => {
-    it('should have exactly 3 matcher-based events', () => {
-      expect(getMatcherBasedEvents()).toHaveLength(3);
+    it('should have exactly 17 matcher-based events', () => {
+      expect(getMatcherBasedEvents()).toHaveLength(17);
+    });
+
+    it('should have exactly 9 non-matcher events', () => {
+      const allEvents = getValidEvents();
+      const matcherEvents = getMatcherBasedEvents();
+      const nonMatcherEvents = allEvents.filter(e => !matcherEvents.includes(e));
+      expect(nonMatcherEvents).toHaveLength(9);
     });
 
     it('should have exactly 5 prompt-supported events', () => {
       expect(getPromptSupportedEvents()).toHaveLength(5);
     });
 
-    it('should have exactly 7 non-matcher events', () => {
-      const allEvents = getValidEvents();
-      const matcherEvents = getMatcherBasedEvents();
-      const nonMatcherEvents = allEvents.filter(e => !matcherEvents.includes(e));
-      expect(nonMatcherEvents).toHaveLength(7);
+    it('should have exactly 12 blocking events', () => {
+      expect(getBlockingEvents()).toHaveLength(12);
     });
 
-    it('should have exactly 5 non-prompt events', () => {
-      const allEvents = getValidEvents();
-      const promptEvents = getPromptSupportedEvents();
-      const nonPromptEvents = allEvents.filter(e => !promptEvents.includes(e));
-      expect(nonPromptEvents).toHaveLength(5);
+    it('should have exactly 26 total events', () => {
+      expect(getValidEvents()).toHaveLength(26);
     });
   });
 });

@@ -34,6 +34,8 @@ manager/
 │   ├── skills/                       # Project skills (directory-based configs)
 │   ├── templates/                    # Workflow templates (session tracking, testing, etc.)
 │   └── settings.json                 # Project Claude Code settings
+├── data/
+│   └── schemas/                      # Cached official Claude Code JSON schema (auto-populated)
 ├── docs/
 │   ├── prd/                          # Phase Requirements Documents
 │   ├── guides/                       # Development guides (see Quick Reference below)
@@ -42,17 +44,19 @@ manager/
 ├── src/
 │   ├── backend/
 │   │   ├── config/config.js          # Centralized configuration module
+│   │   ├── config/hooks.js           # Hook event metadata (dynamic, schema-driven)
 │   │   ├── parsers/                  # File parsers (agents, commands, skills, rules, etc.)
-│   │   ├── routes/                   # API route handlers
-│   │   ├── services/                 # Business logic services
+│   │   ├── routes/                   # API route handlers (includes schema.js)
+│   │   ├── schemas/                  # Local JSON schemas for agent/skill/rule frontmatter
+│   │   ├── services/                 # Business logic services (includes schemaService.js)
 │   │   └── server.js                 # Express server entry point
 │   ├── main.js, App.vue              # Vue app entry points
 │   ├── router/, stores/, components/ # Vue 3 SPA architecture
 │   ├── api/client.js                 # Centralized API client
 │   └── styles/                       # CSS variables & theming
 ├── tests/
-│   ├── backend/                      # Jest tests (582 tests)
-│   ├── frontend/, e2e/, responsive/  # Playwright tests (644 tests)
+│   ├── backend/                      # Jest tests (1,548 tests across 52 suites)
+│   ├── frontend/, e2e/, responsive/  # Playwright tests
 │   └── fixtures/                     # Mock data and test helpers
 └── CLAUDE.md                          # This file
 ```
@@ -137,7 +141,7 @@ The backend uses a centralized configuration module at `src/backend/config/confi
 - **`config.server`** - Server settings (port, host, protocol, URL)
 - **`config.paths`** - File path getters for user and project configurations
 - **`config.timeouts`** - Timeout values (API requests, reference checks, hooks)
-- **`config.urls`** - External URLs (documentation, schemas)
+- **`config.urls`** - External URLs (documentation, schemas); `config.urls.SCHEMA_SETTINGS` is the schemastore.org URL used by the Schema Service
 
 ### Development Mode
 
@@ -211,6 +215,15 @@ DELETE /api/projects/:projectId/rules/:path - Delete project rule
 DELETE /api/user/rules/:path                - Delete user rule
 PUT    /api/projects/:projectId/rules/:path - Update project rule
 PUT    /api/user/rules/:path                - Update user rule
+
+# Schema API (EPIC-010)
+GET    /api/schema/hooks                     - Hook events, handler types, and field definitions
+GET    /api/schema/settings                  - All Claude Code settings keys with metadata
+GET    /api/schema/agents                    - Agent frontmatter field definitions
+GET    /api/schema/skills                    - Skill frontmatter field definitions
+GET    /api/schema/rules                     - Rule frontmatter field definitions
+POST   /api/schema/refresh                   - Force re-fetch of official schema from schemastore.org
+GET    /api/schema/status                    - Schema cache status (loaded, last fetch time, staleness)
 ```
 
 **Note:** `projectId` = project path with slashes removed (e.g., `/home/user/projects/myapp` → `homeuserprojectsmyapp`)
@@ -307,6 +320,9 @@ backlog → todo → in-progress → review → done
 **Release:** v3.1.0 (March 14, 2026)
 
 **Latest Updates:**
+- Dynamic Schema System added (EPIC-010): live hook events, frontmatter schemas, and schema API
+- Hook system expanded from 10 to 27 events with 4 handler types (command, http, prompt, agent)
+- Agent frontmatter parser extended with 10 additional fields (disallowedTools, skills, permissionMode, maxTurns, mcpServers, hooks, memory, background, effort, isolation, initialPrompt)
 - Rules support added as 6th configuration type (EPIC-009)
 - Full CRUD operations for all 6 configuration types
 - WCAG 2.1 AA accessibility compliance achieved
@@ -440,15 +456,20 @@ This section contains detailed development workflow information for contributors
 
 ### Test Coverage Details
 
-**Backend Tests (582 tests, 100% pass rate):**
-- API endpoints: 276 tests
-- Parsers: Skills parser with 29 tests (YAML parsing, external reference detection)
-- Copy service: 182 tests (agents: 24, commands: 25, skills: 71, hooks: 45, MCP: 17)
-- Performance: 5 tests (Grade A+, 200x-500x faster than targets)
+**Total: 1,548 tests across 52 test suites (100% pass rate)**
 
-**Frontend Tests (644 tests, 80% pass rate):**
-- 514 passing tests (E2E workflows, component tests, responsive design)
-- 130 deferred for post-release manual testing (Test 106 E2E workflows)
+**Backend Tests (includes EPIC-010 additions):**
+- Schema service: 600 tests (`schemaService.test.js`)
+- Schema routes: 322 tests (`routes/schema.test.js`)
+- Hook validation: expanded suite
+- Parsers: extended for new frontmatter fields (agents, commands, skills)
+- Copy service: updated for corrected hook matcher metadata
+- Performance: Grade A+, 200x-500x faster than targets
+
+**Frontend Tests:**
+- Schema store: 261 tests (`stores/schema.test.js`)
+- Detail sidebar components: 204 tests (`detail-sidebars.spec.js`)
+- E2E workflows, component tests, responsive design
 - 31 accessibility tests (WCAG 2.1 AA compliance verified)
 
 ### Future Phase Planning

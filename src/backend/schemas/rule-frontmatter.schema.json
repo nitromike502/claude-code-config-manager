@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$comment": "Source: https://code.claude.com/docs/en/memory#path-specific-rules — Check this page periodically for new fields.",
+  "title": "Rule Frontmatter Schema",
+  "description": "Schema for Claude Code rule (.claude/rules/*.md) YAML frontmatter fields",
+  "type": "object",
+  "properties": {
+    "paths": {
+      "type": ["array", "string"],
+      "items": { "type": "string" },
+      "description": "Glob patterns that determine when this rule is loaded. When present, the rule is conditional — only loaded when matching files are in context. When absent, the rule is unconditional — always loaded. Comma-separated string or YAML list."
+    }
+  },
+  "additionalProperties": false
+}

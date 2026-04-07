@@ -1,6 +1,7 @@
 /**
  * Unit tests for hookParser
  * Tests parsing of hooks from settings.json files
+ * Updated to test all 4 handler types and new common fields
  */
 
 const hookParser = require('../../../src/backend/parsers/hookParser');
@@ -9,6 +10,115 @@ const fs = require('fs').promises;
 
 describe('hookParser', () => {
   const fixturesPath = path.join(__dirname, '../../fixtures/samples/settings');
+
+  describe('parseHookEntry()', () => {
+    it('should parse a basic command hook', () => {
+      const hook = { type: 'command', command: 'echo test' };
+      const result = hookParser.parseHookEntry(hook, 'PreToolUse', 'Bash', 'project', '/path/settings.json');
+
+      expect(result.event).toBe('PreToolUse');
+      expect(result.matcher).toBe('Bash');
+      expect(result.type).toBe('command');
+      expect(result.command).toBe('echo test');
+      expect(result.enabled).toBe(true);
+      expect(result.scope).toBe('project');
+      expect(result.filePath).toBe('/path/settings.json');
+    });
+
+    it('should parse an http hook with type-specific fields', () => {
+      const hook = {
+        type: 'http',
+        url: 'https://example.com/hook',
+        headers: { 'Authorization': 'Bearer token' },
+        allowedEnvVars: ['API_KEY']
+      };
+      const result = hookParser.parseHookEntry(hook, 'PostToolUse', 'Bash', 'project', '/path/settings.json');
+
+      expect(result.type).toBe('http');
+      expect(result.url).toBe('https://example.com/hook');
+      expect(result.headers).toEqual({ 'Authorization': 'Bearer token' });
+      expect(result.allowedEnvVars).toEqual(['API_KEY']);
+    });
+
+    it('should parse a prompt hook with type-specific fields', () => {
+      const hook = {
+        type: 'prompt',
+        prompt: 'Review this code for security issues',
+        model: 'claude-sonnet-4-6'
+      };
+      const result = hookParser.parseHookEntry(hook, 'Stop', '*', 'user', '/path/settings.json');
+
+      expect(result.type).toBe('prompt');
+      expect(result.prompt).toBe('Review this code for security issues');
+      expect(result.model).toBe('claude-sonnet-4-6');
+    });
+
+    it('should parse an agent hook with type-specific fields', () => {
+      const hook = {
+        type: 'agent',
+        prompt: 'Analyze the changes',
+        model: 'claude-opus-4-6'
+      };
+      const result = hookParser.parseHookEntry(hook, 'UserPromptSubmit', '*', 'project', '/path/settings.json');
+
+      expect(result.type).toBe('agent');
+      expect(result.prompt).toBe('Analyze the changes');
+      expect(result.model).toBe('claude-opus-4-6');
+    });
+
+    it('should parse common new fields', () => {
+      const hook = {
+        command: 'echo test',
+        if: 'git diff --cached',
+        statusMessage: 'Running checks...',
+        once: true,
+        async: false,
+        shell: 'bash',
+        timeout: 5000
+      };
+      const result = hookParser.parseHookEntry(hook, 'PreToolUse', 'Bash', 'project', '/path/settings.json');
+
+      expect(result.if).toBe('git diff --cached');
+      expect(result.statusMessage).toBe('Running checks...');
+      expect(result.once).toBe(true);
+      expect(result.async).toBe(false);
+      expect(result.shell).toBe('bash');
+      expect(result.timeout).toBe(5000);
+    });
+
+    it('should pass through unknown fields', () => {
+      const hook = {
+        command: 'echo test',
+        customField: 'custom-value',
+        anotherField: 42
+      };
+      const result = hookParser.parseHookEntry(hook, 'Stop', '*', 'project', '/path/settings.json');
+
+      expect(result.customField).toBe('custom-value');
+      expect(result.anotherField).toBe(42);
+    });
+
+    it('should default type to command when not specified', () => {
+      const hook = { command: 'echo test' };
+      const result = hookParser.parseHookEntry(hook, 'Stop', '*', 'project', '/path/settings.json');
+
+      expect(result.type).toBe('command');
+    });
+
+    it('should default enabled to true when not specified', () => {
+      const hook = { command: 'echo test' };
+      const result = hookParser.parseHookEntry(hook, 'Stop', '*', 'project', '/path/settings.json');
+
+      expect(result.enabled).toBe(true);
+    });
+
+    it('should respect enabled: false', () => {
+      const hook = { command: 'echo test', enabled: false };
+      const result = hookParser.parseHookEntry(hook, 'Stop', '*', 'project', '/path/settings.json');
+
+      expect(result.enabled).toBe(false);
+    });
+  });
 
   describe('Valid Hooks Parsing (Task 3.4)', () => {
     test('should parse hooks from valid settings.json with complete structure', async () => {
@@ -39,7 +149,6 @@ describe('hookParser', () => {
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
 
-      // Check that hooks have all expected fields
       const hook = result[0];
       expect(hook.event).toBeDefined();
       expect(hook.matcher).toBeDefined();
@@ -55,10 +164,9 @@ describe('hookParser', () => {
 
       expect(Array.isArray(result)).toBe(true);
 
-      // Verify defaults are applied
       result.forEach(hook => {
-        expect(hook.type).toBe('command'); // Default type
-        expect(hook.enabled).toBe(true); // Default enabled
+        expect(hook.type).toBe('command');
+        expect(hook.enabled).toBe(true);
       });
     });
 
@@ -77,7 +185,6 @@ describe('hookParser', () => {
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
 
-      // Check that we have different event types
       const eventTypes = [...new Set(result.map(h => h.event))];
       expect(eventTypes.length).toBeGreaterThan(1);
       expect(eventTypes).toContain('pre-commit');
@@ -90,7 +197,6 @@ describe('hookParser', () => {
 
       expect(Array.isArray(result)).toBe(true);
 
-      // Check for different matcher patterns
       const matchers = result.map(h => h.matcher);
       expect(matchers.some(m => m === '*.ts')).toBe(true);
     });
@@ -100,15 +206,13 @@ describe('hookParser', () => {
       const result = await hookParser.parseHooksFromFile(filePath, 'project');
 
       expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBe(3); // 3 hooks for the same matcher
+      expect(result.length).toBe(3);
 
-      // All should have same event and matcher
       const events = [...new Set(result.map(h => h.event))];
       const matchers = [...new Set(result.map(h => h.matcher))];
       expect(events.length).toBe(1);
       expect(matchers.length).toBe(1);
 
-      // But different commands
       const commands = result.map(h => h.command);
       expect(commands).toContain('tsc --noEmit');
       expect(commands).toContain('eslint --fix');
@@ -131,13 +235,10 @@ describe('hookParser', () => {
     });
 
     test('should default matcher to "*" if not provided', async () => {
-      // Note: Current implementation always requires matcher in the JSON structure
-      // This test verifies the parser handles missing matcher gracefully
       const filePath = path.join(fixturesPath, 'valid-complete.json');
       const result = await hookParser.parseHooksFromFile(filePath, 'project');
 
       expect(Array.isArray(result)).toBe(true);
-      // All hooks should have a matcher (default or specified)
       result.forEach(hook => {
         expect(hook.matcher).toBeDefined();
         expect(typeof hook.matcher).toBe('string');
@@ -163,11 +264,95 @@ describe('hookParser', () => {
 
       expect(Array.isArray(result)).toBe(true);
 
-      // All hooks should have enabled field
       result.forEach(hook => {
         expect(hook).toHaveProperty('enabled');
         expect(typeof hook.enabled).toBe('boolean');
       });
+    });
+  });
+
+  describe('Multi-type hook parsing', () => {
+    test('should parse settings with mixed handler types', async () => {
+      const tempPath = path.join(fixturesPath, 'temp-multi-type-hooks.json');
+      await fs.writeFile(tempPath, JSON.stringify({
+        hooks: {
+          PreToolUse: [
+            {
+              matcher: 'Bash',
+              hooks: [
+                { type: 'command', command: 'echo pre-check' },
+                { type: 'http', url: 'https://api.example.com/hook', headers: { 'X-Key': 'val' } },
+                { type: 'prompt', prompt: 'Verify this tool use' }
+              ]
+            }
+          ],
+          Stop: [
+            {
+              matcher: '*',
+              hooks: [
+                { type: 'agent', prompt: 'Summarize session', model: 'claude-sonnet-4-6' }
+              ]
+            }
+          ]
+        }
+      }));
+
+      const result = await hookParser.parseHooksFromFile(tempPath, 'project');
+
+      expect(result).toHaveLength(4);
+
+      const commandHook = result.find(h => h.type === 'command');
+      expect(commandHook.command).toBe('echo pre-check');
+
+      const httpHook = result.find(h => h.type === 'http');
+      expect(httpHook.url).toBe('https://api.example.com/hook');
+      expect(httpHook.headers).toEqual({ 'X-Key': 'val' });
+
+      const promptHook = result.find(h => h.type === 'prompt');
+      expect(promptHook.prompt).toBe('Verify this tool use');
+
+      const agentHook = result.find(h => h.type === 'agent');
+      expect(agentHook.prompt).toBe('Summarize session');
+      expect(agentHook.model).toBe('claude-sonnet-4-6');
+
+      await fs.unlink(tempPath);
+    });
+
+    test('should parse hooks with common new fields', async () => {
+      const tempPath = path.join(fixturesPath, 'temp-common-fields-hooks.json');
+      await fs.writeFile(tempPath, JSON.stringify({
+        hooks: {
+          PreToolUse: [
+            {
+              matcher: 'Bash',
+              hooks: [
+                {
+                  command: 'echo check',
+                  if: 'git diff --cached --name-only',
+                  statusMessage: 'Running pre-check...',
+                  once: true,
+                  async: true,
+                  shell: 'bash',
+                  timeout: 10000
+                }
+              ]
+            }
+          ]
+        }
+      }));
+
+      const result = await hookParser.parseHooksFromFile(tempPath, 'project');
+
+      expect(result).toHaveLength(1);
+      const hook = result[0];
+      expect(hook.if).toBe('git diff --cached --name-only');
+      expect(hook.statusMessage).toBe('Running pre-check...');
+      expect(hook.once).toBe(true);
+      expect(hook.async).toBe(true);
+      expect(hook.shell).toBe('bash');
+      expect(hook.timeout).toBe(10000);
+
+      await fs.unlink(tempPath);
     });
   });
 
@@ -214,18 +399,16 @@ describe('hookParser', () => {
       const filePath = path.join(fixturesPath, 'invalid-hook-structure.json');
       const result = await hookParser.parseHooksFromFile(filePath, 'project');
 
-      // Should parse but with empty command
       expect(Array.isArray(result)).toBe(true);
       if (result.length > 0) {
         result.forEach(hook => {
           expect(hook).toHaveProperty('command');
-          expect(hook.command).toBe(''); // Default to empty string
+          expect(hook.command).toBe('');
         });
       }
     });
 
     test('should handle hooks section that is not an object', async () => {
-      // Create temporary invalid fixture
       const tempPath = path.join(fixturesPath, 'temp-invalid-hooks-type.json');
       await fs.writeFile(tempPath, JSON.stringify({ hooks: "not an object" }));
 
@@ -234,12 +417,10 @@ describe('hookParser', () => {
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBe(0);
 
-      // Clean up
       await fs.unlink(tempPath);
     });
 
     test('should handle hooks with non-array matchers', async () => {
-      // Create temporary invalid fixture
       const tempPath = path.join(fixturesPath, 'temp-invalid-matchers.json');
       await fs.writeFile(tempPath, JSON.stringify({
         hooks: {
@@ -252,20 +433,17 @@ describe('hookParser', () => {
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBe(0);
 
-      // Clean up
       await fs.unlink(tempPath);
     });
   });
 
   describe('Merge Logic (parseProjectHooks)', () => {
     test('should merge project and local hooks', async () => {
-      // Create temporary project structure
       const tempProjectPath = path.join(__dirname, '../../fixtures/temp-project-merge');
       const claudePath = path.join(tempProjectPath, '.claude');
 
       await fs.mkdir(claudePath, { recursive: true });
 
-      // Create project settings.json
       await fs.writeFile(
         path.join(claudePath, 'settings.json'),
         JSON.stringify({
@@ -274,11 +452,7 @@ describe('hookParser', () => {
               {
                 "matcher": "*.js",
                 "hooks": [
-                  {
-                    "type": "command",
-                    "command": "npm run lint",
-                    "enabled": true
-                  }
+                  { "type": "command", "command": "npm run lint", "enabled": true }
                 ]
               }
             ]
@@ -286,7 +460,6 @@ describe('hookParser', () => {
         })
       );
 
-      // Create local settings.local.json
       await fs.writeFile(
         path.join(claudePath, 'settings.local.json'),
         JSON.stringify({
@@ -295,11 +468,7 @@ describe('hookParser', () => {
               {
                 "matcher": "*",
                 "hooks": [
-                  {
-                    "type": "command",
-                    "command": "npm test",
-                    "enabled": true
-                  }
+                  { "type": "command", "command": "npm test", "enabled": true }
                 ]
               }
             ]
@@ -310,7 +479,7 @@ describe('hookParser', () => {
       const result = await hookParser.parseProjectHooks(tempProjectPath);
 
       expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBe(2); // One from project, one from local
+      expect(result.length).toBe(2);
 
       const projectHooks = result.filter(h => h.scope === 'project');
       const localHooks = result.filter(h => h.scope === 'project-local');
@@ -318,7 +487,6 @@ describe('hookParser', () => {
       expect(projectHooks.length).toBe(1);
       expect(localHooks.length).toBe(1);
 
-      // Clean up
       await fs.rm(tempProjectPath, { recursive: true, force: true });
     });
 
@@ -330,7 +498,6 @@ describe('hookParser', () => {
     });
 
     test('should handle missing local settings file (project settings exist)', async () => {
-      // Create temporary project structure with only project settings
       const tempProjectPath = path.join(__dirname, '../../fixtures/temp-project-no-local');
       const claudePath = path.join(tempProjectPath, '.claude');
 
@@ -344,11 +511,7 @@ describe('hookParser', () => {
               {
                 "matcher": "*.js",
                 "hooks": [
-                  {
-                    "type": "command",
-                    "command": "eslint",
-                    "enabled": true
-                  }
+                  { "type": "command", "command": "eslint", "enabled": true }
                 ]
               }
             ]
@@ -359,21 +522,18 @@ describe('hookParser', () => {
       const result = await hookParser.parseProjectHooks(tempProjectPath);
 
       expect(Array.isArray(result)).toBe(true);
-      expect(result.length).toBe(1); // Only project hooks
+      expect(result.length).toBe(1);
       expect(result[0].scope).toBe('project');
 
-      // Clean up
       await fs.rm(tempProjectPath, { recursive: true, force: true });
     });
 
     test('merge logic handles errors in one file gracefully', async () => {
-      // Create temporary project structure
       const tempProjectPath = path.join(__dirname, '../../fixtures/temp-project-error');
       const claudePath = path.join(tempProjectPath, '.claude');
 
       await fs.mkdir(claudePath, { recursive: true });
 
-      // Create valid project settings
       await fs.writeFile(
         path.join(claudePath, 'settings.json'),
         JSON.stringify({
@@ -382,11 +542,7 @@ describe('hookParser', () => {
               {
                 "matcher": "*.js",
                 "hooks": [
-                  {
-                    "type": "command",
-                    "command": "eslint",
-                    "enabled": true
-                  }
+                  { "type": "command", "command": "eslint", "enabled": true }
                 ]
               }
             ]
@@ -394,7 +550,6 @@ describe('hookParser', () => {
         })
       );
 
-      // Create invalid local settings (malformed JSON)
       await fs.writeFile(
         path.join(claudePath, 'settings.local.json'),
         '{ invalid json'
@@ -404,14 +559,12 @@ describe('hookParser', () => {
 
       const result = await hookParser.parseProjectHooks(tempProjectPath);
 
-      // Should return project hooks, ignore failed local parse
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBe(1);
       expect(result[0].scope).toBe('project');
 
       consoleErrorSpy.mockRestore();
 
-      // Clean up
       await fs.rm(tempProjectPath, { recursive: true, force: true });
     });
   });
@@ -428,11 +581,9 @@ describe('hookParser', () => {
     });
 
     test('should parse user-level hooks from ~/.claude/settings.json', async () => {
-      // Create temporary user home structure
       const tempUserPath = path.join(__dirname, '../../fixtures/temp-user-home');
       const claudePath = path.join(tempUserPath, '.claude');
 
-      // Set HOME to test fixture path for config module
       process.env.HOME = tempUserPath;
 
       await fs.mkdir(claudePath, { recursive: true });
@@ -445,11 +596,7 @@ describe('hookParser', () => {
               {
                 "matcher": "*",
                 "hooks": [
-                  {
-                    "type": "command",
-                    "command": "echo 'user hook'",
-                    "enabled": true
-                  }
+                  { "type": "command", "command": "echo 'user hook'", "enabled": true }
                 ]
               }
             ]
@@ -464,12 +611,10 @@ describe('hookParser', () => {
       expect(result[0].scope).toBe('user');
       expect(result[0].command).toBe("echo 'user hook'");
 
-      // Clean up
       await fs.rm(tempUserPath, { recursive: true, force: true });
     });
 
     test('should return empty array if user hooks do not exist', async () => {
-      // Set HOME to nonexistent path for config module
       process.env.HOME = '/nonexistent/user/home';
 
       const result = await hookParser.parseUserHooks('/nonexistent/user/home');
@@ -489,8 +634,8 @@ describe('hookParser', () => {
     afterEach(() => {
       process.env.HOME = originalHome;
     });
+
     test('should return object with project and user hook arrays', async () => {
-      // Create temporary structures
       const tempProjectPath = path.join(__dirname, '../../fixtures/temp-all-project');
       const tempUserPath = path.join(__dirname, '../../fixtures/temp-all-user');
 
@@ -500,7 +645,6 @@ describe('hookParser', () => {
       await fs.mkdir(projectClaudePath, { recursive: true });
       await fs.mkdir(userClaudePath, { recursive: true });
 
-      // Create project hooks
       await fs.writeFile(
         path.join(projectClaudePath, 'settings.json'),
         JSON.stringify({
@@ -509,11 +653,7 @@ describe('hookParser', () => {
               {
                 "matcher": "*.js",
                 "hooks": [
-                  {
-                    "type": "command",
-                    "command": "project hook",
-                    "enabled": true
-                  }
+                  { "type": "command", "command": "project hook", "enabled": true }
                 ]
               }
             ]
@@ -521,7 +661,6 @@ describe('hookParser', () => {
         })
       );
 
-      // Create user hooks
       await fs.writeFile(
         path.join(userClaudePath, 'settings.json'),
         JSON.stringify({
@@ -530,11 +669,7 @@ describe('hookParser', () => {
               {
                 "matcher": "*",
                 "hooks": [
-                  {
-                    "type": "command",
-                    "command": "user hook",
-                    "enabled": true
-                  }
+                  { "type": "command", "command": "user hook", "enabled": true }
                 ]
               }
             ]
@@ -542,7 +677,6 @@ describe('hookParser', () => {
         })
       );
 
-      // Set HOME to test fixture path for config module
       process.env.HOME = tempUserPath;
 
       const result = await hookParser.getAllHooks(tempProjectPath, tempUserPath);
@@ -554,13 +688,11 @@ describe('hookParser', () => {
       expect(result.project.length).toBe(1);
       expect(result.user.length).toBe(1);
 
-      // Clean up
       await fs.rm(tempProjectPath, { recursive: true, force: true });
       await fs.rm(tempUserPath, { recursive: true, force: true });
     });
 
     test('should handle missing project and user directories', async () => {
-      // Set HOME to nonexistent path for config module
       process.env.HOME = '/nonexistent/home';
 
       const result = await hookParser.getAllHooks('/nonexistent/project', '/nonexistent/home');

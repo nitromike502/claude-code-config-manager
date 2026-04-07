@@ -50,6 +50,34 @@ This directory contains comprehensive technical specifications, architecture doc
 - `/src/backend/parsers/hookParser.js`
 - `/src/backend/services/projectDiscovery.js`
 
+#### Schema Service Documentation
+**File:** `schema-service.md`
+
+**Covers:**
+- Two-layer schema architecture (remote official schema + local frontmatter schemas)
+- Initialization sequence and 24-hour caching to `data/schemas/`
+- Fallback behavior for offline/startup scenarios
+- Public service API (`getHookSchema`, `getFrontmatterFields`, etc.)
+- Schema API routes (`/api/schema/*`)
+- Frontend Pinia schema store
+- Hook event enrichment table (metadata not encoded in official schema)
+- How to add new frontmatter fields when Claude Code spec updates
+
+**Use When:**
+- Understanding how hook events are discovered dynamically
+- Adding new frontmatter fields to agents, skills, or rules
+- Debugging schema cache issues
+- Extending the Schema API
+
+**Related Code:**
+- `/src/backend/services/schemaService.js`
+- `/src/backend/routes/schema.js`
+- `/src/backend/config/hooks.js`
+- `/src/backend/schemas/` (agent, skill, rule JSON schemas)
+- `/src/stores/schema.js`
+
+---
+
 #### Rules Structure Documentation
 **File:** `rules-structure.md`
 
@@ -165,6 +193,7 @@ Real-world examples from the codebase
 
 **Specifications:**
 - Claude Code Official Documentation - [https://docs.anthropic.com/claude-code](https://docs.anthropic.com/claude-code)
+- Claude Code JSON Schema (official, used by Schema Service) - `https://json.schemastore.org/claude-code-settings.json`
 
 ---
 
@@ -259,17 +288,22 @@ Real-world examples from the codebase
 
 ## Index of Documents
 
-### Current Documents (2)
+### Current Documents (3)
 
 1. **hook-structure.md** - Claude Code hook structure specification
-   - Last Updated: 2025-11-05
+   - Last Updated: 2026-03-30
    - Status: Current
-   - Related: Copy service, hook parser
+   - Related: Copy service, hook parser, schema service
 
 2. **rules-structure.md** - Claude Code rules structure specification
    - Last Updated: 2026-03-07
    - Status: Current
-   - Related: Rules parser (proposed), copy service, config module
+   - Related: Rules parser, copy service, config module
+
+3. **schema-service.md** - Dynamic Schema Service architecture and API reference
+   - Last Updated: 2026-03-30
+   - Status: Current (added EPIC-010)
+   - Related: schemaService.js, routes/schema.js, hooks.js, stores/schema.js
 
 ### Planned Documents (Future)
 
@@ -278,4 +312,4 @@ Real-world examples from the codebase
 ---
 
 **Maintained by:** Documentation Engineer
-**Last Updated:** 2026-03-07
+**Last Updated:** 2026-03-30

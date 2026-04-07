@@ -2,6 +2,8 @@
   <div>
     <!-- Metadata Section -->
     <div class="mb-6">
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Metadata</h4>
+
       <!-- Skill Name (Read-Only - directory name cannot be changed) -->
       <p class="my-2 text-sm text-text-secondary leading-relaxed">
         <strong class="text-text-primary">Name:</strong> {{ selectedItem.name }}
@@ -20,6 +22,18 @@
         @edit-accept="handleSkillFieldUpdate('description', $event)"
       />
 
+      <!-- Model Field -->
+      <LabeledEditField
+        v-model="skillData.model"
+        field-type="selectbutton"
+        label="Model"
+        :options="modelOptions"
+        :disabled="!canEdit || editingField !== null && editingField !== 'model'"
+        @edit-start="updateEditingField('model')"
+        @edit-cancel="updateEditingField(null)"
+        @edit-accept="handleSkillFieldUpdate('model', $event)"
+      />
+
       <!-- Allowed Tools Field -->
       <LabeledEditField
         v-model="skillData.allowedTools"
@@ -33,6 +47,89 @@
         @edit-accept="handleSkillFieldUpdate('allowedTools', $event)"
       />
 
+      <!-- Argument Hint Field -->
+      <LabeledEditField
+        v-if="canEdit || skillData.argumentHint"
+        v-model="skillData.argumentHint"
+        field-type="text"
+        label="Argument Hint"
+        placeholder="<query>"
+        :disabled="!canEdit || editingField !== null && editingField !== 'argumentHint'"
+        @edit-start="updateEditingField('argumentHint')"
+        @edit-cancel="updateEditingField(null)"
+        @edit-accept="handleSkillFieldUpdate('argumentHint', $event)"
+      />
+
+      <!-- Model Invocation Field -->
+      <LabeledEditField
+        v-if="canEdit || skillData.disableModelInvocation !== null"
+        v-model="skillData.disableModelInvocation"
+        field-type="selectbutton"
+        label="Model Invocation"
+        :options="modelInvocationOptions"
+        :disabled="!canEdit || editingField !== null && editingField !== 'disableModelInvocation'"
+        @edit-start="updateEditingField('disableModelInvocation')"
+        @edit-cancel="updateEditingField(null)"
+        @edit-accept="handleSkillFieldUpdate('disableModelInvocation', $event)"
+      />
+
+      <!-- User Invocable Field -->
+      <LabeledEditField
+        v-if="canEdit || skillData.userInvocable === false"
+        v-model="skillData.userInvocable"
+        field-type="selectbutton"
+        label="User Invocable"
+        :options="booleanOptions"
+        :disabled="!canEdit || editingField !== null && editingField !== 'userInvocable'"
+        @edit-start="updateEditingField('userInvocable')"
+        @edit-cancel="updateEditingField(null)"
+        @edit-accept="handleSkillFieldUpdate('userInvocable', $event)"
+      />
+    </div>
+
+    <!-- Configuration Section (display-only fields, shown when set) -->
+    <div v-if="hasConfigFields" class="mb-6">
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Configuration</h4>
+
+      <!-- Effort -->
+      <p v-if="skillData.effort" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Effort:</strong>
+        <Tag :value="skillData.effort" :severity="effortSeverity" class="ml-2 text-xs" />
+      </p>
+
+      <!-- Shell -->
+      <p v-if="skillData.shell" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Shell:</strong>
+        <Tag :value="skillData.shell" severity="info" class="ml-2 text-xs" />
+      </p>
+
+      <!-- Context -->
+      <p v-if="skillData.context" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Context:</strong>
+        <Tag :value="skillData.context" severity="warning" class="ml-2 text-xs" />
+      </p>
+
+      <!-- Agent (shown only when context=fork) -->
+      <p v-if="skillData.context === 'fork' && skillData.agent" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Agent:</strong> {{ skillData.agent }}
+      </p>
+
+      <!-- Paths (glob patterns) -->
+      <div v-if="skillData.paths && skillData.paths.length > 0" class="my-3">
+        <div class="text-text-primary font-bold text-sm mb-2">Paths:</div>
+        <div class="flex flex-wrap gap-1">
+          <Tag v-for="(pattern, index) in skillData.paths" :key="index" :value="pattern" severity="secondary" class="text-xs font-mono" />
+        </div>
+      </div>
+
+      <!-- Hooks (collapsible) -->
+      <Panel v-if="skillData.hooks" header="Hooks" :toggleable="true" :collapsed="true">
+        <pre class="bg-bg-primary p-3 rounded font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[200px] overflow-y-auto text-text-primary">{{ JSON.stringify(skillData.hooks, null, 2) }}</pre>
+      </Panel>
+    </div>
+
+    <!-- Files & References Section -->
+    <div class="mb-6">
       <!-- Supporting Files (Read-Only Display) -->
       <div v-if="selectedItem.fileCount || selectedItem.files" class="my-3">
         <div class="text-text-primary font-bold text-sm mb-2">Supporting Files (Read-Only)</div>
@@ -125,12 +222,13 @@
 import { ref, computed, watch } from 'vue'
 import { useSkillsStore } from '@/stores/skills'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
-import { TOOL_OPTIONS } from '@/constants/form-options'
+import { TOOL_OPTIONS, MODEL_OPTIONS, MODEL_INVOCATION_OPTIONS, YES_NO_OPTIONS } from '@/constants/form-options'
 import Accordion from 'primevue/accordion'
 import AccordionPanel from 'primevue/accordionpanel'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionContent from 'primevue/accordioncontent'
 import Tag from 'primevue/tag'
+import Panel from 'primevue/panel'
 
 const props = defineProps({
   selectedItem: {
@@ -164,11 +262,37 @@ const skillData = ref({
   name: '',
   description: '',
   allowedTools: [],
-  content: ''
+  content: '',
+  model: 'inherit',
+  argumentHint: '',
+  disableModelInvocation: false,
+  userInvocable: true,
+  // Display-only fields
+  effort: '',
+  shell: '',
+  context: '',
+  agent: '',
+  paths: [],
+  hooks: null
 })
 
 // Use constants from form-options
 const toolOptions = TOOL_OPTIONS
+const modelOptions = MODEL_OPTIONS
+const modelInvocationOptions = MODEL_INVOCATION_OPTIONS
+const booleanOptions = YES_NO_OPTIONS
+
+// Computed: effort badge severity
+const effortSeverity = computed(() => {
+  const map = { low: 'secondary', medium: 'info', high: 'warning', max: 'danger' }
+  return map[skillData.value.effort] || 'info'
+})
+
+// Computed: whether config section has content (display-only fields)
+const hasConfigFields = computed(() => {
+  const d = skillData.value
+  return d.effort || d.shell || d.context || d.hooks || (d.paths && d.paths.length > 0)
+})
 
 // Update editing field (emit to parent)
 const updateEditingField = (fieldName) => {
@@ -216,7 +340,17 @@ watch(() => props.selectedItem, (newItem) => {
       name: newItem.name || '',
       description: newItem.description || '',
       allowedTools: newItem.allowedTools || [],
-      content: newItem.content || ''
+      content: newItem.content || '',
+      model: newItem.model || 'inherit',
+      argumentHint: newItem.argumentHint || '',
+      disableModelInvocation: newItem.disableModelInvocation || false,
+      userInvocable: newItem.userInvocable !== false,
+      effort: newItem.effort || '',
+      shell: newItem.shell || '',
+      context: newItem.context || '',
+      agent: newItem.agent || '',
+      paths: newItem.paths || [],
+      hooks: newItem.hooks || null
     }
     updateEditingField(null)
   }

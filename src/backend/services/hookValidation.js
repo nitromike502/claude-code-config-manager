@@ -2,63 +2,49 @@
  * Hook Validation Service
  *
  * Validates hook configurations for Claude Code settings.json files.
- * Hooks are event handlers that execute commands or prompts when specific
- * events occur during a Claude Code session.
+ * Hooks are event handlers that execute commands, HTTP requests, prompts,
+ * or agent actions when specific events occur during a Claude Code session.
  *
  * Hook Structure in settings.json:
  * {
  *   "hooks": {
- *     "PreToolUse": [{ "matcher": "Bash", "command": "...", ... }],
- *     "PostToolUse": [{ "matcher": "Read|Write", ... }],
- *     "Stop": [{ "type": "prompt", ... }],
- *     "SessionEnd": [{ "command": "...", ... }]
+ *     "PreToolUse": [{ "matcher": "Bash", "type": "command", "command": "...", ... }],
+ *     "PostToolUse": [{ "matcher": "Read|Write", "type": "http", "url": "...", ... }],
+ *     "Stop": [{ "type": "prompt", "prompt": "...", ... }],
+ *     "SessionEnd": [{ "type": "agent", "prompt": "...", ... }]
  *   }
  * }
  */
 
-// Import centralized hook events configuration
-const { getValidEvents, getMatcherBasedEvents, getPromptSupportedEvents } = require('../config/hooks');
+// Import centralized hook events configuration (dynamically backed by schema service).
+// These functions delegate to the schema service when loaded, falling back to
+// embedded defaults during startup or when the remote schema is unreachable.
+const hooks = require('../config/hooks');
+
+// Internal helpers that call through to the dynamic hooks module.
+// Every call returns a fresh array reflecting current schema state.
+function getValidHookEvents() { return hooks.getValidEvents(); }
+function getMatcherEvents() { return hooks.getMatcherBasedEvents(); }
+function getPromptEvents() { return hooks.getPromptSupportedEvents(); }
+function getHandlerTypes() { return hooks.getValidHandlerTypes(); }
+
+// No local constants — all internal usage calls the getter functions directly.
+// Exports use Object.defineProperties (at end of file) to return real arrays.
 
 /**
- * Valid hook event types as defined by Claude Code specification
- *
- * Matcher-based events (require matcher field):
- * - PreToolUse: Before a tool is executed (supports prompt type)
- * - PostToolUse: After a tool completes
- *
- * Simple events (no matcher needed):
- * - Stop: When agent stops (supports prompt type)
- * - SubagentStop: When a subagent stops (supports prompt type)
- * - UserPromptSubmit: When user submits a prompt (supports prompt type)
- * - PermissionRequest: When permission is requested (supports prompt type)
- * - Notification: When a notification occurs
- * - PreCompact: Before context compaction
- * - SessionStart: When session begins
- * - SessionEnd: When session ends
+ * Default timeout values per hook type (in seconds)
  */
-const VALID_HOOK_EVENTS = getValidEvents();
+const DEFAULT_TIMEOUTS = {
+  command: 600,
+  http: 30,
+  prompt: 30,
+  agent: 60
+};
 
 /**
- * Events that require a matcher field
- * Matcher specifies which tool(s) the hook applies to using pipe-separated values
- * Example: "Bash|Read|Write" or "*" for all tools
+ * Valid shell values for command-type hooks
  */
-const MATCHER_BASED_EVENTS = getMatcherBasedEvents();
-
-/**
- * Events that support the 'prompt' type
- * When type is 'prompt', the hook returns a message to Claude instead of executing a command
- * Official Claude Code specification supports prompt type for:
- * - Stop, SubagentStop, UserPromptSubmit, PreToolUse, PermissionRequest
- */
-const PROMPT_SUPPORTED_EVENTS = getPromptSupportedEvents();
-
-/**
- * Valid hook type values
- * - command: Execute a shell command (default)
- * - prompt: Return a message to Claude (only for Stop/SubagentStop)
- */
-const VALID_HOOK_TYPES = ['command', 'prompt'];
+const VALID_SHELLS = ['bash', 'powershell'];
 
 /**
  * Check if an event type requires a matcher field
@@ -67,7 +53,7 @@ const VALID_HOOK_TYPES = ['command', 'prompt'];
  * @returns {boolean} True if event requires matcher
  */
 function isMatcherBasedEvent(event) {
-  return MATCHER_BASED_EVENTS.includes(event);
+  return getMatcherEvents().includes(event);
 }
 
 /**
@@ -77,7 +63,97 @@ function isMatcherBasedEvent(event) {
  * @returns {boolean} True if event supports prompt type
  */
 function supportsPromptType(event) {
-  return PROMPT_SUPPORTED_EVENTS.includes(event);
+  return getPromptEvents().includes(event);
+}
+
+/**
+ * Validate type-specific required fields
+ *
+ * @param {Object} hook - Hook object to validate
+ * @param {string} hookType - The resolved hook type
+ * @returns {string[]} Array of error messages
+ */
+function validateTypeSpecificFields(hook, hookType) {
+  const errors = [];
+
+  switch (hookType) {
+    case 'command':
+      if (!hook.command || typeof hook.command !== 'string' || hook.command.trim() === '') {
+        errors.push('Command is required for command-type hooks');
+      }
+      break;
+    case 'http':
+      if (!hook.url || typeof hook.url !== 'string' || hook.url.trim() === '') {
+        errors.push('URL is required for http-type hooks');
+      }
+      break;
+    case 'prompt':
+      if (!hook.prompt || typeof hook.prompt !== 'string' || hook.prompt.trim() === '') {
+        errors.push('Prompt is required for prompt-type hooks');
+      }
+      break;
+    case 'agent':
+      if (!hook.prompt || typeof hook.prompt !== 'string' || hook.prompt.trim() === '') {
+        errors.push('Prompt is required for agent-type hooks');
+      }
+      break;
+  }
+
+  return errors;
+}
+
+/**
+ * Validate common optional fields
+ *
+ * @param {Object} hook - Hook object to validate
+ * @returns {string[]} Array of error messages
+ */
+function validateCommonFields(hook) {
+  const errors = [];
+
+  // Validate 'if' field (conditional expression)
+  if (hook.if !== undefined && typeof hook.if !== 'string') {
+    errors.push('if must be a string');
+  }
+
+  // Validate statusMessage field
+  if (hook.statusMessage !== undefined && typeof hook.statusMessage !== 'string') {
+    errors.push('statusMessage must be a string');
+  }
+
+  // Validate once field
+  if (hook.once !== undefined && typeof hook.once !== 'boolean') {
+    errors.push('once must be a boolean value');
+  }
+
+  // Validate async field
+  if (hook.async !== undefined && typeof hook.async !== 'boolean') {
+    errors.push('async must be a boolean value');
+  }
+
+  // Validate shell field
+  if (hook.shell !== undefined) {
+    if (typeof hook.shell !== 'string' || !VALID_SHELLS.includes(hook.shell)) {
+      errors.push(`shell must be one of: ${VALID_SHELLS.join(', ')}`);
+    }
+  }
+
+  // Validate timeout if provided (must be positive integer)
+  if (hook.timeout !== undefined) {
+    if (typeof hook.timeout !== 'number' || !Number.isInteger(hook.timeout) || hook.timeout <= 0) {
+      errors.push('Timeout must be a positive integer (milliseconds)');
+    }
+  }
+
+  // Validate boolean fields
+  const booleanFields = ['enabled', 'suppressOutput', 'continue'];
+  for (const field of booleanFields) {
+    if (hook[field] !== undefined && typeof hook[field] !== 'boolean') {
+      errors.push(`${field} must be a boolean value`);
+    }
+  }
+
+  return errors;
 }
 
 /**
@@ -100,8 +176,8 @@ function validateHook(hook, expectedEvent = null) {
   const event = hook.event || expectedEvent;
   if (!event) {
     errors.push('Event type is required');
-  } else if (!VALID_HOOK_EVENTS.includes(event)) {
-    errors.push(`Invalid event type: "${event}". Valid events: ${VALID_HOOK_EVENTS.join(', ')}`);
+  } else if (!getValidHookEvents().includes(event)) {
+    errors.push(`Invalid event type: "${event}". Valid events: ${getValidHookEvents().join(', ')}`);
   }
 
   // Validate matcher for matcher-based events
@@ -113,38 +189,24 @@ function validateHook(hook, expectedEvent = null) {
 
   // Validate type if provided
   if (hook.type !== undefined) {
-    if (!VALID_HOOK_TYPES.includes(hook.type)) {
-      errors.push(`Invalid hook type: "${hook.type}". Valid types: ${VALID_HOOK_TYPES.join(', ')}`);
+    if (!getHandlerTypes().includes(hook.type)) {
+      errors.push(`Invalid hook type: "${hook.type}". Valid types: ${getHandlerTypes().join(', ')}`);
     }
 
-    // Validate prompt type constraint
-    if (hook.type === 'prompt' && event && !supportsPromptType(event)) {
-      errors.push(`Type "prompt" is only supported for ${PROMPT_SUPPORTED_EVENTS.join(' and ')} events`);
+    // Validate prompt/agent type constraint
+    if ((hook.type === 'prompt' || hook.type === 'agent') && event && !supportsPromptType(event)) {
+      errors.push(`Type "${hook.type}" is only supported for ${getPromptEvents().join(' and ')} events`);
     }
   }
 
-  // Validate command (required for all hooks with type 'command' or no type)
+  // Validate type-specific required fields
   const hookType = hook.type || 'command';
-  if (hookType === 'command') {
-    if (!hook.command || typeof hook.command !== 'string' || hook.command.trim() === '') {
-      errors.push('Command is required for command-type hooks');
-    }
+  if (getHandlerTypes().includes(hookType)) {
+    errors.push(...validateTypeSpecificFields(hook, hookType));
   }
 
-  // Validate timeout if provided (must be positive integer)
-  if (hook.timeout !== undefined) {
-    if (typeof hook.timeout !== 'number' || !Number.isInteger(hook.timeout) || hook.timeout <= 0) {
-      errors.push('Timeout must be a positive integer (milliseconds)');
-    }
-  }
-
-  // Validate boolean fields
-  const booleanFields = ['enabled', 'suppressOutput', 'continue'];
-  for (const field of booleanFields) {
-    if (hook[field] !== undefined && typeof hook[field] !== 'boolean') {
-      errors.push(`${field} must be a boolean value`);
-    }
-  }
+  // Validate common optional fields
+  errors.push(...validateCommonFields(hook));
 
   return {
     valid: errors.length === 0,
@@ -178,29 +240,25 @@ function validateHookUpdate(updates, existingHook, event) {
   // Validate matcher update
   if (updates.matcher !== undefined) {
     if (isMatcherBasedEvent(event)) {
-      // Matcher is required for matcher-based events - can be changed but not removed
       if (typeof updates.matcher !== 'string' || updates.matcher.trim() === '') {
         errors.push('Matcher cannot be empty for matcher-based events');
       }
-    } else {
-      // For non-matcher events, warn but allow (it will be ignored)
-      // This is not an error, just silently ignore
     }
   }
 
   // Validate type update
   if (updates.type !== undefined) {
-    if (!VALID_HOOK_TYPES.includes(updates.type)) {
-      errors.push(`Invalid hook type: "${updates.type}". Valid types: ${VALID_HOOK_TYPES.join(', ')}`);
+    if (!getHandlerTypes().includes(updates.type)) {
+      errors.push(`Invalid hook type: "${updates.type}". Valid types: ${getHandlerTypes().join(', ')}`);
     }
 
-    // Validate prompt type constraint
-    if (updates.type === 'prompt' && !supportsPromptType(event)) {
-      errors.push(`Type "prompt" is only supported for ${PROMPT_SUPPORTED_EVENTS.join(' and ')} events`);
+    // Validate prompt/agent type constraint
+    if ((updates.type === 'prompt' || updates.type === 'agent') && !supportsPromptType(event)) {
+      errors.push(`Type "${updates.type}" is only supported for ${getPromptEvents().join(' and ')} events`);
     }
   }
 
-  // Validate command update
+  // Validate command update (for command-type hooks)
   if (updates.command !== undefined) {
     const effectiveType = updates.type || existingHook?.type || 'command';
     if (effectiveType === 'command') {
@@ -210,20 +268,29 @@ function validateHookUpdate(updates, existingHook, event) {
     }
   }
 
-  // Validate timeout update
-  if (updates.timeout !== undefined) {
-    if (typeof updates.timeout !== 'number' || !Number.isInteger(updates.timeout) || updates.timeout <= 0) {
-      errors.push('Timeout must be a positive integer (milliseconds)');
+  // Validate url update (for http-type hooks)
+  if (updates.url !== undefined) {
+    const effectiveType = updates.type || existingHook?.type || 'command';
+    if (effectiveType === 'http') {
+      if (typeof updates.url !== 'string' || updates.url.trim() === '') {
+        errors.push('URL cannot be empty for http-type hooks');
+      }
     }
   }
 
-  // Validate boolean field updates
-  const booleanFields = ['enabled', 'suppressOutput', 'continue'];
-  for (const field of booleanFields) {
-    if (updates[field] !== undefined && typeof updates[field] !== 'boolean') {
-      errors.push(`${field} must be a boolean value`);
+  // Validate prompt update (for prompt/agent-type hooks)
+  if (updates.prompt !== undefined) {
+    const effectiveType = updates.type || existingHook?.type || 'command';
+    if (effectiveType === 'prompt' || effectiveType === 'agent') {
+      if (typeof updates.prompt !== 'string' || updates.prompt.trim() === '') {
+        errors.push('Prompt cannot be empty for prompt/agent-type hooks');
+      }
     }
   }
+
+  // Validate common optional fields present in updates
+  const commonErrors = validateCommonFields(updates);
+  errors.push(...commonErrors);
 
   return {
     valid: errors.length === 0,
@@ -234,29 +301,38 @@ function validateHookUpdate(updates, existingHook, event) {
 /**
  * Get default values for optional hook fields
  *
+ * @param {string} type - Hook type (command, http, prompt, agent)
  * @returns {Object} Default hook field values
  */
-function getHookDefaults() {
+function getHookDefaults(type = 'command') {
   return {
-    type: 'command',
+    type: type,
     enabled: true,
     suppressOutput: false,
     continue: true,
-    timeout: 30000
+    timeout: (DEFAULT_TIMEOUTS[type] || 30) * 1000
   };
 }
 
 module.exports = {
-  // Constants
-  VALID_HOOK_EVENTS,
-  MATCHER_BASED_EVENTS,
-  PROMPT_SUPPORTED_EVENTS,
-  VALID_HOOK_TYPES,
+  DEFAULT_TIMEOUTS,
+  VALID_SHELLS,
 
   // Functions
   isMatcherBasedEvent,
   supportsPromptType,
   validateHook,
   validateHookUpdate,
+  validateTypeSpecificFields,
+  validateCommonFields,
   getHookDefaults
 };
+
+// Dynamic getters — consumers that destructure these get fresh arrays
+// backed by the schema service on every property access.
+Object.defineProperties(module.exports, {
+  VALID_HOOK_EVENTS:       { get: getValidHookEvents, enumerable: true },
+  MATCHER_BASED_EVENTS:    { get: getMatcherEvents,   enumerable: true },
+  PROMPT_SUPPORTED_EVENTS: { get: getPromptEvents,    enumerable: true },
+  VALID_HOOK_TYPES:        { get: getHandlerTypes,    enumerable: true }
+});

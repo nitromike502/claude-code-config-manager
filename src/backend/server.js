@@ -43,6 +43,13 @@ const userRouter = require('./routes/user');
 const copyRoutes = require('./routes/copy');
 const hooksRouter = require('./routes/hooks');
 const { projectRouter: mcpProjectRouter, userRouter: mcpUserRouter } = require('./routes/mcp');
+const schemaRouter = require('./routes/schema');
+const schemaService = require('./services/schemaService');
+
+// Initialize schema service (async, non-blocking - falls back gracefully on failure)
+Promise.resolve(schemaService.initialize()).catch(err => {
+  console.error('Schema service initialization failed (using fallback):', err.message);
+});
 
 // API routes
 // Note: Multiple routers are mounted on '/api/projects' and '/api/user' because they handle
@@ -59,6 +66,7 @@ app.use('/api/hooks', hooksRouter);
 app.use('/api/projects', hooksRouter);
 app.use('/api/projects', mcpProjectRouter);
 app.use('/api/user', mcpUserRouter);
+app.use('/api/schema', schemaRouter);
 
 // Serve static frontend files from built SPA (dist)
 // Fall back to frontend for development if dist is not available

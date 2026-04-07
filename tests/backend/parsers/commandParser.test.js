@@ -86,6 +86,59 @@ describe('commandParser', () => {
       expect(result.description).toBe('Command Without Frontmatter');
     });
 
+    test('should parse command with all official frontmatter fields', async () => {
+      const filePath = path.join(fixturesPath, 'full-frontmatter.md');
+      const result = await commandParser.parseCommand(filePath, fixturesPath, 'project');
+
+      expect(result).not.toBeNull();
+      expect(result.name).toBe('full-frontmatter-cmd');
+      expect(result.description).toBe('Command with all official frontmatter fields');
+      expect(result.tools).toEqual(['Read', 'Write', 'Bash']);
+      expect(result.color).toBe('purple');
+      expect(result.model).toBe('claude-sonnet-4');
+      expect(result.argumentHint).toBe('<task-name>');
+      expect(result.disableModelInvocation).toBe(true);
+      expect(result.userInvocable).toBe(false);
+      expect(result.effort).toBe('medium');
+      expect(result.context).toBe('src/**/*.js');
+      expect(result.agent).toBe('backend-architect');
+      expect(result.hooks).toEqual({
+        preToolUse: [{ matcher: 'Bash', command: 'echo "check"' }]
+      });
+      expect(result.paths).toEqual(['src/**/*.js', 'tests/**/*.js']);
+      expect(result.shell).toBe('powershell');
+      expect(result.hasError).toBe(false);
+    });
+
+    test('should default new fields correctly when not present', async () => {
+      const filePath = path.join(fixturesPath, 'valid-minimal.md');
+      const result = await commandParser.parseCommand(filePath, fixturesPath, 'project');
+
+      expect(result).not.toBeNull();
+      expect(result.userInvocable).toBe(true);
+      expect(result.effort).toBeNull();
+      expect(result.context).toBeNull();
+      expect(result.agent).toBeNull();
+      expect(result.hooks).toBeNull();
+      expect(result.paths).toBeNull();
+      expect(result.shell).toBeNull();
+    });
+
+    test('should normalize paths from comma-separated string', async () => {
+      // Create a temp file with string-format paths
+      const tempDir = path.join(__dirname, '../../temp-cmd-test');
+      await fs.mkdir(tempDir, { recursive: true });
+      const tempFile = path.join(tempDir, 'string-paths.md');
+      await fs.writeFile(tempFile, '---\nname: test\npaths: "src/**/*.js, tests/**/*.js"\n---\n\nTest');
+
+      try {
+        const result = await commandParser.parseCommand(tempFile, tempDir, 'project');
+        expect(result.paths).toEqual(['src/**/*.js', 'tests/**/*.js']);
+      } finally {
+        await fs.rm(tempDir, { recursive: true, force: true });
+      }
+    });
+
     test('should handle multiline descriptions', async () => {
       const filePath = path.join(fixturesPath, 'multiline-description.md');
       const result = await commandParser.parseCommand(filePath, fixturesPath, 'project');

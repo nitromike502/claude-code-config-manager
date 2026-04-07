@@ -1,8 +1,8 @@
 <template>
   <div>
-    <!-- Metadata Section -->
+    <!-- Identity Section -->
     <div class="mb-6">
-      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Metadata</h4>
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Identity</h4>
 
       <!-- Name Field -->
       <LabeledEditField
@@ -40,6 +40,58 @@
         @edit-cancel="handleEditCancel"
         @edit-accept="handleFieldUpdate('color', $event)"
       />
+    </div>
+
+    <!-- Capabilities Section -->
+    <div class="mb-6">
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Capabilities</h4>
+
+      <!-- Tools Field -->
+      <LabeledEditField
+        v-model="agentData.tools"
+        field-type="multiselect"
+        label="Allowed Tools"
+        :options="toolOptions"
+        placeholder="Select allowed tools"
+        :disabled="!canEdit || editingField !== null && editingField !== 'tools'"
+        @edit-start="handleEditStart('tools')"
+        @edit-cancel="handleEditCancel"
+        @edit-accept="handleFieldUpdate('tools', $event)"
+      />
+
+      <!-- Disallowed Tools (read-only display) -->
+      <div v-if="agentData.disallowedTools && agentData.disallowedTools.length > 0" class="my-3">
+        <div class="text-text-primary font-bold text-sm mb-2">Disallowed Tools:</div>
+        <div class="flex flex-wrap gap-1">
+          <Tag v-for="tool in agentData.disallowedTools" :key="tool" :value="tool" severity="danger" class="text-xs" />
+        </div>
+      </div>
+
+      <!-- Skills Field -->
+      <LabeledEditField
+        v-model="agentData.skills"
+        field-type="multiselect"
+        label="Skills"
+        :options="skillOptions"
+        placeholder="Select skills"
+        :disabled="!canEdit || editingField !== null && editingField !== 'skills'"
+        @edit-start="handleEditStart('skills')"
+        @edit-cancel="handleEditCancel"
+        @edit-accept="handleFieldUpdate('skills', $event)"
+      />
+
+      <!-- MCP Servers (read-only display) -->
+      <div v-if="agentData.mcpServers && agentData.mcpServers.length > 0" class="my-3">
+        <div class="text-text-primary font-bold text-sm mb-2">MCP Servers:</div>
+        <div class="flex flex-wrap gap-1">
+          <Tag v-for="server in agentData.mcpServers" :key="server" :value="server" severity="info" class="text-xs" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Execution Section -->
+    <div class="mb-6">
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Execution</h4>
 
       <!-- Model Field -->
       <LabeledEditField
@@ -65,31 +117,53 @@
         @edit-accept="handleFieldUpdate('permissionMode', $event)"
       />
 
-      <!-- Tools Field -->
-      <LabeledEditField
-        v-model="agentData.tools"
-        field-type="multiselect"
-        label="Allowed Tools"
-        :options="toolOptions"
-        placeholder="Select allowed tools"
-        :disabled="!canEdit || editingField !== null && editingField !== 'tools'"
-        @edit-start="handleEditStart('tools')"
-        @edit-cancel="handleEditCancel"
-        @edit-accept="handleFieldUpdate('tools', $event)"
-      />
+      <!-- Max Turns -->
+      <p v-if="agentData.maxTurns" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Max Turns:</strong> {{ agentData.maxTurns }}
+      </p>
 
-      <!-- Skills Field -->
-      <LabeledEditField
-        v-model="agentData.skills"
-        field-type="multiselect"
-        label="Skills"
-        :options="skillOptions"
-        placeholder="Select skills"
-        :disabled="!canEdit || editingField !== null && editingField !== 'skills'"
-        @edit-start="handleEditStart('skills')"
-        @edit-cancel="handleEditCancel"
-        @edit-accept="handleFieldUpdate('skills', $event)"
-      />
+      <!-- Effort -->
+      <p v-if="agentData.effort" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Effort:</strong>
+        <Tag :value="agentData.effort" :severity="effortSeverity" class="ml-2 text-xs" />
+      </p>
+
+      <!-- Background -->
+      <p v-if="agentData.background" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Background:</strong>
+        <Tag value="Yes" severity="info" class="ml-2 text-xs" />
+      </p>
+
+      <!-- Isolation -->
+      <p v-if="agentData.isolation" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Isolation:</strong>
+        <Tag :value="agentData.isolation" severity="warning" class="ml-2 text-xs" />
+      </p>
+    </div>
+
+    <!-- Lifecycle Section -->
+    <div v-if="hasLifecycleFields" class="mb-6">
+      <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Lifecycle</h4>
+
+      <!-- Memory -->
+      <p v-if="agentData.memory" class="my-2 text-sm text-text-secondary leading-relaxed">
+        <strong class="text-text-primary">Memory:</strong>
+        <Tag :value="agentData.memory" severity="info" class="ml-2 text-xs" />
+      </p>
+
+      <!-- Hooks (collapsible) -->
+      <div v-if="agentData.hooks" class="my-3">
+        <Panel header="Hooks" :toggleable="true" :collapsed="true">
+          <pre class="bg-bg-primary p-3 rounded font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[200px] overflow-y-auto text-text-primary">{{ JSON.stringify(agentData.hooks, null, 2) }}</pre>
+        </Panel>
+      </div>
+
+      <!-- Initial Prompt (collapsible) -->
+      <div v-if="agentData.initialPrompt" class="my-3">
+        <Panel header="Initial Prompt" :toggleable="true" :collapsed="true">
+          <pre class="bg-bg-primary p-3 rounded font-mono text-xs whitespace-pre-wrap break-words overflow-x-auto max-h-[200px] overflow-y-auto text-text-primary">{{ agentData.initialPrompt }}</pre>
+        </Panel>
+      </div>
     </div>
 
     <!-- Content Section (System Prompt) -->
@@ -112,8 +186,10 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
+import Tag from 'primevue/tag'
+import Panel from 'primevue/panel'
 import { useAgentsStore } from '@/stores/agents'
 import { MODEL_OPTIONS, TOOL_OPTIONS, PERMISSION_MODE_OPTIONS } from '@/constants/form-options'
 
@@ -153,7 +229,17 @@ const agentData = ref({
   permissionMode: 'default',
   tools: [],
   skills: [],
-  systemPrompt: ''
+  systemPrompt: '',
+  // New fields
+  disallowedTools: [],
+  mcpServers: [],
+  maxTurns: null,
+  effort: '',
+  background: false,
+  isolation: '',
+  hooks: null,
+  memory: '',
+  initialPrompt: ''
 })
 
 // Local editing field state
@@ -166,6 +252,18 @@ const toolOptions = TOOL_OPTIONS
 
 // Skill options for agents (TODO: populate from available skills)
 const skillOptions = []
+
+// Computed: effort badge severity
+const effortSeverity = computed(() => {
+  const map = { low: 'secondary', medium: 'info', high: 'warning', max: 'danger' }
+  return map[agentData.value.effort] || 'info'
+})
+
+// Computed: whether lifecycle section has any content
+const hasLifecycleFields = computed(() => {
+  const d = agentData.value
+  return d.memory || d.hooks || d.initialPrompt
+})
 
 // Watch for selectedItem changes to update agentData
 watch(() => props.selectedItem, (newItem) => {
@@ -184,7 +282,17 @@ watch(() => props.selectedItem, (newItem) => {
       permissionMode: newItem.permissionMode || 'default',
       tools: newItem.tools || [],
       skills: newItem.skills || [],
-      systemPrompt: displaySystemPrompt
+      systemPrompt: displaySystemPrompt,
+      // New fields
+      disallowedTools: newItem.disallowedTools || [],
+      mcpServers: newItem.mcpServers || [],
+      maxTurns: newItem.maxTurns || null,
+      effort: newItem.effort || '',
+      background: newItem.background || false,
+      isolation: newItem.isolation || '',
+      hooks: newItem.hooks || null,
+      memory: newItem.memory || '',
+      initialPrompt: newItem.initialPrompt || ''
     }
     editingField.value = null
   }

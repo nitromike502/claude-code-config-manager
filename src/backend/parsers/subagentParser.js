@@ -58,12 +58,43 @@ async function parseSubagent(filePath, scope = 'project') {
       }
     }
 
+    // Handle disallowedTools field - same format as tools
+    let disallowedTools = [];
+    if (data.disallowedTools) {
+      if (typeof data.disallowedTools === 'string') {
+        disallowedTools = data.disallowedTools.split(',').map(t => t.trim()).filter(Boolean);
+      } else if (Array.isArray(data.disallowedTools)) {
+        disallowedTools = data.disallowedTools;
+      }
+    }
+
+    // Handle skills field - same format as tools
+    let skills = [];
+    if (data.skills) {
+      if (typeof data.skills === 'string') {
+        skills = data.skills.split(',').map(s => s.trim()).filter(Boolean);
+      } else if (Array.isArray(data.skills)) {
+        skills = data.skills;
+      }
+    }
+
     return {
       name: data.name || filename,
       description: data.description || '',
       tools: tools,
+      disallowedTools: disallowedTools,
       model: data.model || 'inherit',
       color: data.color || null,
+      permissionMode: data.permissionMode || null,
+      maxTurns: typeof data.maxTurns === 'number' ? data.maxTurns : null,
+      skills: skills,
+      mcpServers: data.mcpServers || null,
+      hooks: data.hooks || null,
+      memory: data.memory || null,
+      background: data.background === true,
+      effort: data.effort || null,
+      isolation: data.isolation || null,
+      initialPrompt: data.initialPrompt || null,
       systemPrompt: systemPrompt.trim(),
       filePath: filePath,
       scope: scope,

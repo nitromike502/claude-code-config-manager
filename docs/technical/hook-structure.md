@@ -4,8 +4,8 @@
 
 This document provides comprehensive documentation on Claude Code's hook system structure, merge strategies, and implementation details for the copy service.
 
-**Last Updated:** 2025-11-05
-**Related Code:** `/src/backend/services/copy-service.js`
+**Last Updated:** 2026-03-30
+**Related Code:** `/src/backend/services/copy-service.js`, `/src/backend/config/hooks.js`, `/src/backend/services/schemaService.js`
 
 ---
 
@@ -64,9 +64,15 @@ Hooks in `settings.json` follow this structure:
 
 **Top-level keys under "hooks":**
 
-Valid events: `PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `PermissionRequest`, `Notification`, `Stop`, `SubagentStop`, `PreCompact`, `SessionStart`, `SessionEnd`
+As of EPIC-010 the hook system supports 27 events sourced dynamically from the official Claude Code JSON schema (see `schemaService.js`). The full list with matcher and blocking metadata is maintained in `src/backend/config/hooks.js`.
 
-**Important:** Only `PreToolUse`, `PostToolUse`, and `PermissionRequest` support the "matcher" field. Other events ignore matcher if present.
+**Events with matcher support:**
+`PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `Notification`, `SubagentStart`, `SubagentStop`, `SessionStart`, `SessionEnd`, `InstructionsLoaded`, `StopFailure`, `ConfigChange`, `FileChanged`, `PreCompact`, `PostCompact`, `Elicitation`, `ElicitationResult`
+
+**Events without matcher support:**
+`UserPromptSubmit`, `Stop`, `TaskCreated`, `TaskCompleted`, `TeammateIdle`, `CwdChanged`, `WorktreeCreate`, `WorktreeRemove`, `Setup`
+
+**Important:** The event list is loaded dynamically from the official schema at startup and cached for 24 hours. The embedded enrichment table in `hooks.js` provides fallback metadata (hasMatcher, canBlock, supportsPrompt) for offline/startup scenarios and for events not yet documented in the schema.
 
 ### Level 2 - Matcher Entries
 
@@ -83,18 +89,24 @@ Matcher is optional (defaults to `*`)
 
 **Array of hook objects within each matcher:**
 
-Each matcher entry contains a "hooks" array:
+Each matcher entry contains a "hooks" array. Four handler types are supported as of EPIC-010:
+
 ```json
-{
-  "type": "command",
-  "command": "npm test",
-  "enabled": true,
-  "timeout": 60
-}
+{ "type": "command", "command": "npm test", "enabled": true, "timeout": 60 }
+{ "type": "http", "url": "https://example.com/hook", "enabled": true }
+{ "type": "prompt", "prompt": "Review the changes carefully.", "enabled": true }
+{ "type": "agent", "agent": "my-reviewer-agent", "enabled": true }
 ```
 
-**Required fields:** `type`, `command`
-**Optional fields:** `enabled` (default true), `timeout` (default 60)
+**Handler types:** `command`, `http`, `prompt`, `agent`
+
+**Common optional fields:** `enabled` (default true), `timeout` (default 60)
+
+**Type-specific required fields:**
+- `command`: `command` string
+- `http`: `url` string
+- `prompt`: `prompt` string
+- `agent`: `agent` name string
 
 ---
 
@@ -114,18 +126,19 @@ The `projectDiscovery.js` service flattens this nested structure for easier cons
     "source": "settings.json"
   },
   {
-    "event": "PreToolUse",
-    "matcher": "*.ts",
-    "type": "command",
-    "command": "eslint --fix",
-    "timeout": 60,
+    "event": "UserPromptSubmit",
+    "matcher": null,
+    "type": "prompt",
+    "prompt": "Review the user request carefully.",
     "enabled": true,
     "source": "settings.json"
   }
 ]
 ```
 
-**Reference:** See `projectDiscovery.js` lines 368-383 for flattening logic
+**Reference:** See `projectDiscovery.js` for flattening logic
+
+**Dynamic event metadata:** Event properties (hasMatcher, canBlock, supportsPrompt) are served through the Schema API (`GET /api/schema/hooks`) rather than being hardcoded. The frontend schema store (`src/stores/schema.js`) fetches this at startup.
 
 ---
 
