@@ -28,12 +28,8 @@ function getMatcherEvents() { return hooks.getMatcherBasedEvents(); }
 function getPromptEvents() { return hooks.getPromptSupportedEvents(); }
 function getHandlerTypes() { return hooks.getValidHandlerTypes(); }
 
-// These names are used extensively in this file. We keep them as
-// local references to the functions — each call site evaluates fresh.
-const VALID_HOOK_EVENTS = { get length() { return getValidHookEvents().length; }, includes(v) { return getValidHookEvents().includes(v); }, join(s) { return getValidHookEvents().join(s); } };
-const MATCHER_BASED_EVENTS = { includes(v) { return getMatcherEvents().includes(v); }, join(s) { return getMatcherEvents().join(s); } };
-const PROMPT_SUPPORTED_EVENTS = { includes(v) { return getPromptEvents().includes(v); }, join(s) { return getPromptEvents().join(s); } };
-const VALID_HOOK_TYPES = { includes(v) { return getHandlerTypes().includes(v); }, join(s) { return getHandlerTypes().join(s); } };
+// No local constants — all internal usage calls the getter functions directly.
+// Exports use Object.defineProperties (at end of file) to return real arrays.
 
 /**
  * Default timeout values per hook type (in seconds)
@@ -57,7 +53,7 @@ const VALID_SHELLS = ['bash', 'powershell'];
  * @returns {boolean} True if event requires matcher
  */
 function isMatcherBasedEvent(event) {
-  return MATCHER_BASED_EVENTS.includes(event);
+  return getMatcherEvents().includes(event);
 }
 
 /**
@@ -67,7 +63,7 @@ function isMatcherBasedEvent(event) {
  * @returns {boolean} True if event supports prompt type
  */
 function supportsPromptType(event) {
-  return PROMPT_SUPPORTED_EVENTS.includes(event);
+  return getPromptEvents().includes(event);
 }
 
 /**
@@ -180,8 +176,8 @@ function validateHook(hook, expectedEvent = null) {
   const event = hook.event || expectedEvent;
   if (!event) {
     errors.push('Event type is required');
-  } else if (!VALID_HOOK_EVENTS.includes(event)) {
-    errors.push(`Invalid event type: "${event}". Valid events: ${VALID_HOOK_EVENTS.join(', ')}`);
+  } else if (!getValidHookEvents().includes(event)) {
+    errors.push(`Invalid event type: "${event}". Valid events: ${getValidHookEvents().join(', ')}`);
   }
 
   // Validate matcher for matcher-based events
@@ -193,19 +189,19 @@ function validateHook(hook, expectedEvent = null) {
 
   // Validate type if provided
   if (hook.type !== undefined) {
-    if (!VALID_HOOK_TYPES.includes(hook.type)) {
-      errors.push(`Invalid hook type: "${hook.type}". Valid types: ${VALID_HOOK_TYPES.join(', ')}`);
+    if (!getHandlerTypes().includes(hook.type)) {
+      errors.push(`Invalid hook type: "${hook.type}". Valid types: ${getHandlerTypes().join(', ')}`);
     }
 
     // Validate prompt/agent type constraint
     if ((hook.type === 'prompt' || hook.type === 'agent') && event && !supportsPromptType(event)) {
-      errors.push(`Type "${hook.type}" is only supported for ${PROMPT_SUPPORTED_EVENTS.join(' and ')} events`);
+      errors.push(`Type "${hook.type}" is only supported for ${getPromptEvents().join(' and ')} events`);
     }
   }
 
   // Validate type-specific required fields
   const hookType = hook.type || 'command';
-  if (VALID_HOOK_TYPES.includes(hookType)) {
+  if (getHandlerTypes().includes(hookType)) {
     errors.push(...validateTypeSpecificFields(hook, hookType));
   }
 
@@ -252,13 +248,13 @@ function validateHookUpdate(updates, existingHook, event) {
 
   // Validate type update
   if (updates.type !== undefined) {
-    if (!VALID_HOOK_TYPES.includes(updates.type)) {
-      errors.push(`Invalid hook type: "${updates.type}". Valid types: ${VALID_HOOK_TYPES.join(', ')}`);
+    if (!getHandlerTypes().includes(updates.type)) {
+      errors.push(`Invalid hook type: "${updates.type}". Valid types: ${getHandlerTypes().join(', ')}`);
     }
 
     // Validate prompt/agent type constraint
     if ((updates.type === 'prompt' || updates.type === 'agent') && !supportsPromptType(event)) {
-      errors.push(`Type "${updates.type}" is only supported for ${PROMPT_SUPPORTED_EVENTS.join(' and ')} events`);
+      errors.push(`Type "${updates.type}" is only supported for ${getPromptEvents().join(' and ')} events`);
     }
   }
 

@@ -43,9 +43,8 @@
       "description": "List of skills available to this agent"
     },
     "mcpServers": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "List of MCP servers available to this agent"
+      "type": ["object", "array"],
+      "description": "MCP servers available to this agent. Can be an object with server name keys and config values, or an array mixing inline definitions and string references."
     },
     "hooks": {
       "type": "object",

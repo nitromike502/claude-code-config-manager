@@ -14,9 +14,8 @@ const fs = require('fs').promises;
 const path = require('path');
 const config = require('../config/config');
 
-// Schema URLs
+// Schema URL
 const SCHEMA_URL = config.urls.SCHEMA_SETTINGS;
-const SCHEMA_REDIRECT_URL = 'https://www.schemastore.org/claude-code-settings.json';
 
 // Cache paths
 const CACHE_DIR = path.join(__dirname, '../../../data/schemas');

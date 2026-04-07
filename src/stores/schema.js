@@ -87,14 +87,19 @@ export const useSchemaStore = defineStore('schema', () => {
       if (hooksData?.success && hooksData.data) {
         const { events, hookTypes: types } = hooksData.data
 
-        // Map schema events to the format components expect
+        // Map schema events to the format components expect.
+        // Look up hasMatcher from the hardcoded fallback constants, since the
+        // official JSON schema doesn't encode this metadata per event.
         if (events?.length > 0) {
-          hookEvents.value = events.map(e => ({
-            value: e.name,
-            label: e.name,
-            description: e.description || '',
-            hasMatcher: true // default; enriched by backend /api/hooks/events
-          }))
+          hookEvents.value = events.map(e => {
+            const known = HOOK_EVENT_OPTIONS.find(opt => opt.value === e.name)
+            return {
+              value: e.name,
+              label: e.name,
+              description: e.description || '',
+              hasMatcher: known?.hasMatcher ?? false
+            }
+          })
         } else {
           hookEvents.value = HOOK_EVENT_OPTIONS
         }
