@@ -1,80 +1,81 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$comment": "Source: https://code.claude.com/docs/en/sub-agents#supported-frontmatter-fields — Check this page periodically for new fields.",
   "title": "Agent Frontmatter Schema",
   "description": "Schema for Claude Code agent (.claude/agents/*.md) YAML frontmatter fields",
   "type": "object",
   "properties": {
     "name": {
       "type": "string",
-      "description": "Display name for the agent"
+      "description": "Unique identifier using lowercase letters and hyphens"
     },
     "description": {
       "type": "string",
-      "description": "Brief description of the agent's purpose and capabilities"
+      "description": "When Claude should delegate to this subagent"
     },
     "tools": {
-      "type": "array",
+      "type": ["array", "string"],
       "items": { "type": "string" },
-      "description": "List of tools the agent is allowed to use (e.g., Read, Write, Bash)"
+      "description": "Tools the subagent can use. Inherits all tools if omitted. Comma-separated string or array."
     },
     "disallowedTools": {
-      "type": "array",
+      "type": ["array", "string"],
       "items": { "type": "string" },
-      "description": "List of tools the agent is NOT allowed to use"
+      "description": "Tools to deny, removed from inherited or specified list"
     },
     "model": {
       "type": "string",
-      "description": "Model override for this agent (e.g., sonnet, opus, haiku)",
-      "enum": ["sonnet", "opus", "haiku"]
+      "description": "Model to use: 'sonnet', 'opus', 'haiku', a full model ID (e.g. claude-opus-4-6), or 'inherit'. Defaults to 'inherit'."
     },
     "permissionMode": {
       "type": "string",
-      "description": "Permission mode for the agent",
-      "enum": ["acceptEdits", "bypassPermissions", "default", "dontAsk", "plan", "auto"]
+      "description": "Permission mode for the subagent",
+      "enum": ["default", "acceptEdits", "dontAsk", "bypassPermissions", "plan"]
     },
     "maxTurns": {
       "type": "integer",
-      "description": "Maximum number of turns the agent can take before stopping",
+      "description": "Maximum number of agentic turns before the subagent stops",
       "minimum": 1
     },
     "skills": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "List of skills available to this agent"
+      "description": "Skills to preload into the subagent's context at startup. Full content is injected, not just made available."
     },
     "mcpServers": {
       "type": ["object", "array"],
-      "description": "MCP servers available to this agent. Can be an object with server name keys and config values, or an array mixing inline definitions and string references."
+      "description": "MCP servers available to this subagent. Each entry is either an inline server definition (object with server name key) or a string referencing an already-configured server."
     },
     "hooks": {
       "type": "object",
-      "description": "Hook configuration specific to this agent"
+      "description": "Lifecycle hooks scoped to this subagent. Supports PreToolUse, PostToolUse, Stop events."
     },
     "memory": {
-      "type": "boolean",
-      "description": "Whether the agent has access to memory"
+      "type": "string",
+      "description": "Persistent memory scope. Enables cross-session learning.",
+      "enum": ["user", "project", "local"]
     },
     "background": {
       "type": "boolean",
-      "description": "Whether the agent runs in the background"
+      "description": "Set to true to always run this subagent as a background task. Default: false."
     },
     "effort": {
       "type": "string",
-      "description": "Reasoning effort level for the agent",
-      "enum": ["low", "medium", "high"]
+      "description": "Effort level when this subagent is active. Overrides session effort level.",
+      "enum": ["low", "medium", "high", "max"]
     },
     "isolation": {
       "type": "string",
-      "description": "Isolation mode for the agent",
+      "description": "Set to 'worktree' to run in a temporary git worktree for an isolated copy of the repository.",
       "enum": ["worktree"]
     },
     "initialPrompt": {
       "type": "string",
-      "description": "Initial prompt sent to the agent when it starts"
+      "description": "Auto-submitted as the first user turn when this agent runs as the main session agent (via --agent or the agent setting)."
     },
     "color": {
       "type": "string",
-      "description": "Display color for the agent in terminal UI"
+      "description": "Background color for the subagent in the UI."
     }
   },
   "additionalProperties": false
