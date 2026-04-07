@@ -4,24 +4,49 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 ## Project Overview
 
-**Purpose:** Centralized interface to view and manage Claude Code configurations across all projects on a local machine.
+**Purpose:** Centralized interface to view and manage Claude Code configurations across all projects on a local machine.  
+**Deployment:** Local web server at `http://localhost:5173` (dev) / `http://localhost:8420` (backend)  
+**Current Release:** v3.1.0 — Released March 14, 2026
 
-**Deployment:** Local web server accessible at `http://localhost:5173`
+## IMPORTANT: Rules
 
-**Current Release:** v3.1.0 - Released March 14, 2026
+These rules apply to all development work on this project:
 
-**Key Features:**
-- Copy configuration between projects (agents, commands, skills, hooks, MCP servers, rules)
-- Smart conflict resolution with skip/overwrite/rename strategies
-- Modern PrimeVue UI components with Aura theme
-- Tailwind CSS v4 integration for responsive design
-- WCAG 2.1 AA accessibility compliance
+- **Test projects only:** Use `/home/training/test-1` and `/home/training/test-2` for testing. NEVER test on this project.
+- **Subagent debugging:** Do not give subagents explicit files to review. Instruct them to review recent commits and investigate.
+- **Production file safety:** Always create a backup before testing on a production file.
+- **Deleting files:** Move files to the `.deleted/` directory (e.g., `git mv docs/old.md .deleted/docs/old.md`). Do NOT use `rm` or `git rm`. This allows manual review before permanent deletion.
+
+## Commands
+
+```bash
+# Development
+npm run dev              # Start Vite frontend (port 5173)
+npm run dev:backend      # Start backend with hot-reload (port 8420)
+npm start                # Start backend (production)
+npm run build            # Build frontend for production
+
+# Testing
+npm test                 # Run all backend tests (Jest)
+npm run test:backend     # Backend tests only
+npm run test:frontend    # All Playwright tests
+npm run test:frontend:unit       # Vitest unit tests
+npm run test:frontend:e2e        # E2E tests only
+npm run test:frontend:component  # Component tests only
+npm run test:full        # Backend + unit + Playwright (full suite)
+npm run test:coverage    # Jest with coverage report
+
+# Server management
+npm run server:check     # Check if server is running
+npm run server:restart   # Restart server
+```
+
+**Prerequisites:** Node.js 18+ and npm. See `docs/guides/SETUP-GUIDE.md` for first-time setup.
 
 ## Tech Stack
 
 - **Backend:** Node.js + Express (port 8420)
-- **Frontend:** Vite + Vue 3 + Vue Router + Pinia + PrimeVue + Tailwind CSS (SPA on port 5173 in dev)
-- **Styling:** Tailwind CSS v4 with tailwindcss-primeui plugin
+- **Frontend:** Vite + Vue 3 + Vue Router + Pinia + PrimeVue + Tailwind CSS v4 (SPA on port 5173 in dev)
 - **Data Source:** Live file system reads (no database)
 
 ## Project Structure
@@ -38,7 +63,7 @@ manager/
 │   └── schemas/                      # Cached official Claude Code JSON schema (auto-populated)
 ├── docs/
 │   ├── prd/                          # Phase Requirements Documents
-│   ├── guides/                       # Development guides (see Quick Reference below)
+│   ├── guides/                       # Development guides
 │   ├── sessions/                     # Development history & lessons learned
 │   └── testing/                      # Test reports and documentation
 ├── src/
@@ -61,96 +86,40 @@ manager/
 └── CLAUDE.md                          # This file
 ```
 
-**Templates Location:** `.claude/templates/`
-- `session-tracking-template.md` - Template for SWARM workflow session tracking documents
-- `test-template.md` - Template for creating new test files
-- `test-creation-checklist.md` - Checklist for comprehensive test creation
-- `spec-review-checklist.md` - Checklist for reviewing official specifications
-- `development-strategies.md` - Guide for selecting development approaches
+## Gotchas
 
-**Note on Legacy Code:**
-- `/src/frontend/` (CDN-based code) has been removed
-- All active code now uses Vite + Vue 3 SPA architecture
-
-## Current Features
-
-### Configuration Viewing
-- **Project Discovery** - Automatically discovers all Claude Code projects from `~/.claude.json`
-- **Subagent Viewing** - Browse and view project and user-level subagents with full frontmatter specs
-- **Slash Command Viewing** - View all custom slash commands across projects
-- **Skills Viewing** - Browse and view skills (directory-based configurations with SKILL.md)
-- **Hooks Viewing** - Display configured hooks from settings files
-- **MCP Server Viewing** - View MCP server configurations
-- **Rules Viewing** - Browse and view rules with conditional/unconditional indicators and path pattern display
-- **Search & Filter** - Quickly find specific configurations
-- **Detail Sidebar** - View full content with markdown rendering and file tree for skills
-
-### Configuration Management
-- **Copy Configuration** - Copy agents, commands, skills, hooks, MCP servers, and rules between projects
-- **Delete Configuration** - Delete agents, commands, skills, hooks, and rules from projects or user-level
-- **Conflict Resolution** - Smart conflict detection with skip/overwrite/rename strategies
-- **Cross-Scope Copy** - Copy between user-level and project-level configurations
-- **Smart Merging** - Intelligent merge for hooks and MCP configurations
-- **External Reference Detection** - Warns when skills reference files outside their directory
-
-### User Experience
-- **SPA Navigation** - Client-side routing with no page reloads
-- **Dark/Light Mode** - Toggle between themes
-- **Responsive Design** - Works on desktop, tablet, and mobile
-- **WCAG 2.1 AA Accessibility** - Keyboard navigation, screen reader support
-- **Toast Notifications** - Success/error feedback
-
-## Future Enhancements
-
-**Upcoming Features:**
-- **MCP Server Management** - Enable/disable MCP servers from UI
-- **Team Builder** - Create groups of agents, commands, and configurations to copy as a unit
-- **Subagent CRUD** - Create, edit, and delete subagent definitions
-- **Command Management** - Create, edit, and delete slash commands
-- **Hooks Configuration** - Visual editor for configuring hooks
-
-**See:** `docs/guides/ROADMAP.md` for detailed planning and timelines
+- **`projectId` encoding:** Project path with all slashes removed. `/home/user/projects/myapp` → `homeuserprojectsmyapp`
+- **Safe development:** Always set `USE_DEV_PATHS=true` when running locally. This remaps `.claude` → `.claude-dev`, `.claude.json` → `.claude-dev.json`, `.mcp.json` → `.mcp-dev.json` to prevent modifying production Claude Code config.
+- **Ports:** Backend runs on 8420; Vite dev server on 5173. API calls from the frontend proxy to the backend.
+- **File deletion:** Never use `rm`. Use `git mv <file> .deleted/<file>` to preserve git history.
+- **Test projects:** `/home/training/test-1` and `/home/training/test-2` — use these for all manual testing.
+- **Hook delete ID format:** `event::matcher::index` (e.g., `PreToolUse::Bash::0`)
 
 ## Data Sources
 
 ### Project List
-- `~/.claude.json` - Contains all Claude Code project paths (paths are keys in `projects` object)
+- `~/.claude.json` — All Claude Code project paths (paths are keys in `projects` object)
 
 ### Per-Project Configurations
-- `.claude/agents/*.md` - Subagents (markdown with YAML frontmatter)
-- `.claude/commands/**/*.md` - Slash commands (markdown, supports nested directories)
-- `.claude/skills/*/SKILL.md` - Skills (directory-based configurations with SKILL.md and supporting files)
-- `.claude/rules/**/*.md` - Rules (markdown with optional YAML frontmatter, paths field for conditional loading)
-- `.claude/settings.json` - Project settings including hooks
-- `.claude/settings.local.json` - Local project settings
-- `.mcp.json` - Project MCP servers
+- `.claude/agents/*.md` — Subagents (markdown with YAML frontmatter)
+- `.claude/commands/**/*.md` — Slash commands (supports nested directories)
+- `.claude/skills/*/SKILL.md` — Skills (directory-based configurations)
+- `.claude/rules/**/*.md` — Rules (markdown with optional YAML frontmatter, `paths` field for conditional loading)
+- `.claude/settings.json` / `.claude/settings.local.json` — Project settings including hooks
+- `.mcp.json` — Project MCP servers
 
 ### User-Level Configurations
-- `~/.claude/agents/*.md` - User subagents
-- `~/.claude/commands/**/*.md` - User commands
-- `~/.claude/skills/*/SKILL.md` - User skills
-- `~/.claude/rules/**/*.md` - User rules
-- `~/.claude/settings.json` - User settings including hooks and MCP servers
+- `~/.claude/agents/*.md`, `~/.claude/commands/**/*.md`, `~/.claude/skills/*/SKILL.md`
+- `~/.claude/rules/**/*.md`, `~/.claude/settings.json` (includes hooks and MCP servers)
 
 ## Backend Configuration Module
 
-The backend uses a centralized configuration module at `src/backend/config/config.js` that provides:
+Centralized config at `src/backend/config/config.js`:
 
-### Configuration Sections
-
-- **`config.server`** - Server settings (port, host, protocol, URL)
-- **`config.paths`** - File path getters for user and project configurations
-- **`config.timeouts`** - Timeout values (API requests, reference checks, hooks)
-- **`config.urls`** - External URLs (documentation, schemas); `config.urls.SCHEMA_SETTINGS` is the schemastore.org URL used by the Schema Service
-
-### Development Mode
-
-Set `USE_DEV_PATHS=true` to use development paths:
-- `.claude` becomes `.claude-dev`
-- `.claude.json` becomes `.claude-dev.json`
-- `.mcp.json` becomes `.mcp-dev.json`
-
-This prevents accidental modification of production Claude Code configuration during development.
+- **`config.server`** — Server settings (port, host, protocol, URL)
+- **`config.paths`** — File path getters for user and project configurations
+- **`config.timeouts`** — Timeout values (API requests, reference checks, hooks)
+- **`config.urls`** — External URLs; `config.urls.SCHEMA_SETTINGS` is the schemastore.org URL used by Schema Service
 
 ### Path Getter Functions
 
@@ -183,304 +152,103 @@ paths.isDevelopmentMode()          // Returns true if USE_DEV_PATHS=true
 ## API Endpoints
 
 ```
-GET    /api/projects                         - List all projects from ~/.claude.json
-GET    /api/projects/:projectId/agents       - Get project subagents
-GET    /api/projects/:projectId/commands     - Get project commands
-GET    /api/projects/:projectId/skills       - Get project skills
-GET    /api/projects/:projectId/hooks        - Get project hooks
-GET    /api/projects/:projectId/mcp          - Get project MCP servers
-GET    /api/projects/:projectId/rules        - Get project rules
-GET    /api/user/agents                      - Get user subagents
-GET    /api/user/commands                    - Get user commands
-GET    /api/user/skills                      - Get user skills
-GET    /api/user/hooks                       - Get user hooks
-GET    /api/user/mcp                         - Get user MCP servers
-GET    /api/user/rules                       - Get user rules
-POST   /api/projects/scan                    - Trigger project list refresh
-POST   /api/copy/agent                       - Copy agent between projects
-POST   /api/copy/command                     - Copy command between projects
-POST   /api/copy/skill                       - Copy skill directory between projects
-POST   /api/copy/hook                        - Copy hook between projects
-POST   /api/copy/mcp                         - Copy MCP server between projects
-POST   /api/copy/rule                        - Copy rule between projects
-DELETE /api/projects/:projectId/agents/:name - Delete project agent
-DELETE /api/projects/:projectId/commands/:path - Delete project command
-DELETE /api/projects/:projectId/skills/:name - Delete project skill
-DELETE /api/projects/:projectId/hooks/:id   - Delete project hook (id: event::matcher::index)
-DELETE /api/user/agents/:name               - Delete user agent
-DELETE /api/user/commands/:path             - Delete user command
-DELETE /api/user/skills/:name               - Delete user skill
-DELETE /api/user/hooks/:id                  - Delete user hook (id: event::matcher::index)
-DELETE /api/projects/:projectId/rules/:path - Delete project rule
-DELETE /api/user/rules/:path                - Delete user rule
-PUT    /api/projects/:projectId/rules/:path - Update project rule
-PUT    /api/user/rules/:path                - Update user rule
+GET    /api/projects                              - List all projects
+GET    /api/projects/:projectId/agents            - Get project subagents
+GET    /api/projects/:projectId/commands          - Get project commands
+GET    /api/projects/:projectId/skills            - Get project skills
+GET    /api/projects/:projectId/hooks             - Get project hooks
+GET    /api/projects/:projectId/mcp               - Get project MCP servers
+GET    /api/projects/:projectId/rules             - Get project rules
+GET    /api/user/agents                           - Get user subagents
+GET    /api/user/commands                         - Get user commands
+GET    /api/user/skills                           - Get user skills
+GET    /api/user/hooks                            - Get user hooks
+GET    /api/user/mcp                              - Get user MCP servers
+GET    /api/user/rules                            - Get user rules
+POST   /api/projects/scan                         - Trigger project list refresh
+POST   /api/copy/agent                            - Copy agent between projects
+POST   /api/copy/command                          - Copy command between projects
+POST   /api/copy/skill                            - Copy skill directory between projects
+POST   /api/copy/hook                             - Copy hook between projects
+POST   /api/copy/mcp                              - Copy MCP server between projects
+POST   /api/copy/rule                             - Copy rule between projects
+DELETE /api/projects/:projectId/agents/:name      - Delete project agent
+DELETE /api/projects/:projectId/commands/:path    - Delete project command
+DELETE /api/projects/:projectId/skills/:name      - Delete project skill
+DELETE /api/projects/:projectId/hooks/:id         - Delete project hook (id: event::matcher::index)
+DELETE /api/user/agents/:name                     - Delete user agent
+DELETE /api/user/commands/:path                   - Delete user command
+DELETE /api/user/skills/:name                     - Delete user skill
+DELETE /api/user/hooks/:id                        - Delete user hook (id: event::matcher::index)
+DELETE /api/projects/:projectId/rules/:path       - Delete project rule
+DELETE /api/user/rules/:path                      - Delete user rule
+PUT    /api/projects/:projectId/rules/:path       - Update project rule
+PUT    /api/user/rules/:path                      - Update user rule
 
-# Schema API (EPIC-010)
-GET    /api/schema/hooks                     - Hook events, handler types, and field definitions
-GET    /api/schema/settings                  - All Claude Code settings keys with metadata
-GET    /api/schema/agents                    - Agent frontmatter field definitions
-GET    /api/schema/skills                    - Skill frontmatter field definitions
-GET    /api/schema/rules                     - Rule frontmatter field definitions
-POST   /api/schema/refresh                   - Force re-fetch of official schema from schemastore.org
-GET    /api/schema/status                    - Schema cache status (loaded, last fetch time, staleness)
+# Schema API
+GET    /api/schema/hooks                          - Hook events, handler types, and field definitions
+GET    /api/schema/settings                       - All Claude Code settings keys with metadata
+GET    /api/schema/agents                         - Agent frontmatter field definitions
+GET    /api/schema/skills                         - Skill frontmatter field definitions
+GET    /api/schema/rules                          - Rule frontmatter field definitions
+POST   /api/schema/refresh                        - Force re-fetch of official schema from schemastore.org
+GET    /api/schema/status                         - Schema cache status (loaded, last fetch time, staleness)
 ```
 
 **Note:** `projectId` = project path with slashes removed (e.g., `/home/user/projects/myapp` → `homeuserprojectsmyapp`)
 
-## UI Design Principles
-
-- Clean, minimal interface
-- Card-based layout for config sections (all on one page)
-- Fast navigation between projects
-- Dark mode support
-- Responsive design for laptop/desktop
-
-**Wireframes:** ✅ Complete - See `docs/wireframes/` directory
-
 ## Implementation Approach
 
-Building with **SWARM architecture** (Specialized Workflow with Autonomous Resource Management):
+Built with **SWARM architecture** (Specialized Workflow with Autonomous Resource Management):
 
-- **Main Agent Coordination:** Only main agent invokes subagents
-- **Orchestrator Role:** Creates execution plans, recommends parallelization
-- **Ticket Manager:** Acts as API for ticket operations (like Jira/Azure DevOps)
-- **7-Phase Workflow:** Session Init → Git Setup → Implementation → Code Commit → Docs Commit → PR/Review → User Approval/Merge
+- Only the main agent invokes subagents — subagents cannot invoke other subagents
+- Orchestrator creates execution plans and recommends parallelization
+- 7-Phase Workflow: Session Init → Git Setup → Implementation → Code Commit → Docs Commit → PR/Review → User Approval/Merge
+- Testing is integrated into development (Phase 3), not a separate phase
 
-**Architecture Principle:** Subagents cannot invoke other subagents. Main agent coordinates all work based on orchestrator's recommendations.
-
-See `docs/guides/SWARM-WORKFLOW.md` for complete workflow documentation.
-
-**Note:** Testing is integrated into development, not a separate phase. Each developer tests their implementation immediately before code review.
-
-See subagent proposals in project `.claude/agents/` directory.
+**Full workflow:** `docs/guides/SWARM-WORKFLOW.md`  
+**Subagents:** `.claude/agents/` directory
 
 ## Ticketing Workflow
 
-**Agile Ticketing System:** SQLite Database at `/home/tickets/databases/claude-manager.db`
+SQLite database at `/home/tickets/databases/claude-manager.db`. Tickets follow an Epic → Story → Task hierarchy with statuses: `backlog → todo → in-progress → review → done`.
 
-The project uses a SQLite-based Agile ticketing system managed by the `agile-ticket-manager` subagent. This system functions like enterprise tools (Jira, Azure DevOps, Linear) but stores tickets in a relational database accessed through the `ticket-system` user-level skill.
+- `/ba` command — Business Analyst creates PRDs (does NOT create tickets)
+- `project-manager` subagent — Creates all tickets from PRDs
+- `agile-ticket-manager` subagent — Executes all database operations (API interface to the ticket system)
+- `/swarm <ticket-id>` — Executes a ticket via the full SWARM workflow
 
-### Ticket Hierarchy
-```
-Epics → Stories → Tasks
-  ↓        ↓        ↓
-EPIC-001  STORY-2.1  TASK-2.1.1
-```
+**Full integration guide:** `docs/guides/TICKET-MANAGER-INTEGRATION.md`
 
-### Status Workflow
-```
-backlog → todo → in-progress → review → done
-```
+## Development Guides
 
-### Roles & Responsibilities
+All guides are indexed at `docs/guides/DOCUMENTATION-INDEX.md`. Key references:
 
-**Business Analyst (`/ba` command):**
-- Creates PRDs and requirements documentation
-- Designs UI/UX wireframes
-- Provides implementation recommendations
-- **Does NOT create tickets**
+| Need | Guide |
+|------|-------|
+| First-time setup | `docs/guides/SETUP-GUIDE.md` |
+| Running a ticket | `docs/guides/SWARM-WORKFLOW.md` |
+| Git / commits / PRs | `docs/guides/GIT-WORKFLOW.md` |
+| Testing | `docs/guides/TESTING-GUIDE.md` |
+| Coding standards | `docs/guides/CODING-STANDARDS.md` |
+| Feature parity work | `docs/guides/FEATURE-PARITY-IMPLEMENTATION-GUIDE.md` |
+| Spec-based implementation | `docs/guides/SPEC-IMPLEMENTATION-GUIDE.md` |
+| Roadmap | `docs/guides/ROADMAP.md` |
+| Technical specs | `docs/technical/README.md` |
 
-**Project Manager (`project-manager` subagent):**
-- **Creates ALL tickets** (Epics, Stories, Tasks, Bugs)
-- Uses `agile-ticket-manager` to add tickets to the database
-- Sets priorities and dependencies
-- Defines ticket relationships and metadata
+**Development history:** `docs/sessions/INDEX.md`
 
-**Ticket Manager (`agile-ticket-manager` subagent):**
-- Executes database operations via `ticket-system` skill scripts
-- Provides ticket retrieval and querying from SQLite database
-- Manages status transitions in the database
-- Maintains Epic/Story/Task relationships
-- Acts as API interface to the ticketing system
+## Future Enhancements
 
-**Orchestrator (`subagent-orchestrator` subagent):**
-- Queries ticket manager for available work
-- Assigns tickets to developers
-- Requests status updates throughout workflow
-- **Does NOT create tickets**
+- MCP Server Management — Enable/disable MCP servers from UI
+- Team Builder — Create groups of agents, commands, and configurations to copy as a unit
+- Subagent CRUD — Create, edit, and delete subagent definitions
+- Command Management — Create, edit, and delete slash commands
+- Hooks Configuration — Visual editor for configuring hooks
 
-### Workflow Integration
-
-1. **Feature Request** → User runs `/ba` command
-2. **Analysis** → BA creates PRD in `docs/ba-sessions/`
-3. **Planning** → User invokes `project-manager` to create tickets from PRD
-4. **Database Storage** → Project manager invokes `agile-ticket-manager` to add tickets to SQLite database
-5. **Execution** → User runs `/swarm <ticket-id>`
-   - See `docs/guides/SWARM-WORKFLOW.md` for complete execution workflow
-   - Main agent coordinates all subagents (orchestrator creates plans only)
-   - Session tracking document maintained at `docs/sessions/tracking/`
-6. **Coordination** → Orchestrator queries ticket manager (via database scripts), assigns work, updates statuses
-7. **Completion** → Tickets marked as `done` in database after PR merge
-
-**See:** `docs/guides/TICKET-MANAGER-INTEGRATION.md` for complete integration patterns
-
-## Current Status
-
-**Release:** v3.1.0 (March 14, 2026)
-
-**Latest Updates:**
-- Dynamic Schema System added (EPIC-010): live hook events, frontmatter schemas, and schema API
-- Hook system expanded from 10 to 27 events with 4 handler types (command, http, prompt, agent)
-- Agent frontmatter parser extended with 10 additional fields (disallowedTools, skills, permissionMode, maxTurns, mcpServers, hooks, memory, background, effort, isolation, initialPrompt)
-- Rules support added as 6th configuration type (EPIC-009)
-- Full CRUD operations for all 6 configuration types
-- WCAG 2.1 AA accessibility compliance achieved
-- PrimeVue UI components integrated
-
-**Quality Metrics:**
-- WCAG 2.1 AA compliant (96%, 0 critical violations)
-- Performance: Grade A+
-
-## Quick Reference - Development Guides
-
-**Read these documents when you need them:**
-
-### 📚 Documentation Navigation
-- **Documentation index:** `docs/guides/DOCUMENTATION-INDEX.md`
-  - When: Starting any task, need to find the right guide quickly
-  - Contains: Decision tree, guide quick reference, common scenarios, context efficiency strategy
-  - Key benefit: Helps you find exactly the right documentation for your current task
-
-### 🎯 SWARM Workflow
-- **Complete workflow guide:** `docs/guides/SWARM-WORKFLOW.md`
-  - When: Implementing any ticket (Story/Task/Bug)
-  - Contains: Complete 7-phase workflow from ticket selection through PR merge
-  - Key commands: /project-status (ticket selection), /swarm <ticket-id> (execution)
-
-- **Parallelization guide:** `docs/guides/PARALLEL-EXECUTION-GUIDE.md`
-  - When: Orchestrator recommends parallel execution
-  - Contains: Decision criteria, examples, troubleshooting
-  - Performance: 40-62% time reduction demonstrated in real sessions
-
-### 🚀 Starting Development
-- **Choose your workflow:** `docs/guides/DEVELOPMENT-STRATEGIES.md`
-  - When: Beginning a new session or task
-  - Contains: Strategy selection (Approved/Rapid/Parallel/SWARM), real-world evidence, decision criteria
-
-### 📝 Git & Commits
-- **Feature branch workflow:** `docs/guides/GIT-WORKFLOW.md`
-  - When: Creating commits, PRs, or managing branches
-  - Contains: Mandatory rules, commit format, branch naming, one-commit-per-task policy
-
-- **Code review best practices:** `docs/guides/CODE-REVIEW-BEST-PRACTICES.md`
-  - When: Reviewing pull requests, especially feature parity work
-  - Contains: UX consistency verification, review checklists, response templates
-  - Critical for: Preventing bugs when implementing features across entity types
-
-### 📐 Implementation Patterns
-- **Implementation outlining:** `docs/guides/IMPLEMENTATION-OUTLINE-GUIDE.md`
-  - When: End of Phase 1, before Phase 3 implementation (complex features, feature parity work)
-  - Contains: Outline template, comparative analysis for feature parity, real-world case studies
-  - Key benefit: 15 minutes of outlining prevents 2+ hours of debugging
-
-- **Feature parity implementation:** `docs/guides/FEATURE-PARITY-IMPLEMENTATION-GUIDE.md`
-  - When: Implementing features that already work for another entity type (e.g., Commands after Agents)
-  - Contains: Comparative analysis workflow, structural difference detection, 16:1 ROI demonstrated
-
-- **Spec-based implementation:** `docs/guides/SPEC-IMPLEMENTATION-GUIDE.md`
-  - When: Implementing from official specifications (Claude Code, Playwright, Vue, etc.)
-  - Contains: 5-step pattern, BUG-030 case study, common pitfalls
-
-- **Coding standards:** `docs/guides/CODING-STANDARDS.md`
-  - When: Writing code, creating tests, or updating documentation
-  - Contains: Test data standards, import paths, documentation placement, CHANGELOG guidelines
-
-### 🧪 Testing
-- **Test workflow & conventions:** `docs/guides/TESTING-GUIDE.md`
-  - When: Running tests, creating new tests, or debugging test failures
-  - Contains: Automated quality gate, naming conventions, test types, test data standards, troubleshooting
-
-### 🔧 Technical Specifications
-- **Technical documentation index:** `docs/technical/README.md`
-  - When: Understanding complex algorithms, data structures, or architecture
-  - Contains: Hook structure specs, merge algorithms, edge case documentation
-
-### ⚙️ Setup & Operations
-- **First-time setup:** `docs/guides/SETUP-GUIDE.md`
-  - When: Installing project, onboarding new developers
-  - Contains: Prerequisites, installation steps, server restart protocol, troubleshooting
-
-### 🗺️ Planning
-- **Feature roadmap:** `docs/guides/ROADMAP.md`
-  - When: Planning future features or understanding project direction
-  - Contains: Phase 2.1-7+ plans, timelines, dependencies
-
-### 📚 Historical Reference
-- **Phase 1 achievements:** `docs/guides/archives/PHASE1-SUCCESS-CRITERIA.md`
-- **Phase 2 completion:** `docs/guides/archives/PHASE2-COMPLETION-SUMMARY.md`
-- **Development history:** `docs/sessions/INDEX.md` - Full session history, lessons learned, workflow best practices
-
-## Development History
-
-This project has undergone continuous improvement since Phase 1 MVP. Key sessions and workflow analyses provide critical insights into best practices:
-
-**Session Summaries:**
-- [October 24, 2025](docs/sessions/summaries/SESSION-SUMMARY-20251024.md) - Fixed 4 critical display bugs with 100% test coverage
-
-**Workflow Analyses:**
-- [October 7, 2025](docs/sessions/workflow-analyses/workflow-analysis-20251007.md) - Critical incident analysis: established mandatory workflow improvements
-- [October 12, 2025](docs/sessions/workflow-analyses/workflow-analysis-20251012-session-c6d23edd.md) - Exemplary execution: 100% task completion, zero errors
-- [October 22, 2025](docs/sessions/workflow-analyses/workflow-analysis-20251022.md) - Best-practice bug sprint: 16 bugs fixed systematically
-
-**Complete Archive:** See [docs/sessions/INDEX.md](docs/sessions/INDEX.md) for full development history.
+**See:** `docs/guides/ROADMAP.md` for detailed planning and timelines
 
 ## Contributing
 
-This project uses Claude Code with specialized subagents. See `.claude/agents/` for team structure.
-
-**All contributions must follow the Git Workflow** - See `docs/guides/GIT-WORKFLOW.md` for complete details.
-- Move files to delete to the `.deleted/` directory, so I can review and delete them manually
-
----
-
-## Developer Documentation
-
-This section contains detailed development workflow information for contributors.
-
-### Development History
-
-**Completed Development Phases:**
-- **Phase 1 (MVP):** Core viewing functionality (October 2025)
-- **Phase 2 (Vite Migration):** Modern Vue 3 + Vite architecture (October 2025)
-- **Phase 2.1 (Component Refactoring):** Created reusable components, reduced duplication by 83% (October 26, 2025)
-- **Phase 2.2 (Bug Fixes):** Fixed agent display and memory leak issues (October 27, 2025)
-- **Phase 2.3 (Production Readiness):** Added LICENSE, favicon, security updates (November 1, 2025)
-- **Phase 3 (Copy Configuration):** Complete copy feature with conflict resolution (November 2-13, 2025)
-- **Phase 3.1 (UI Modernization):** PrimeVue migration and Tailwind CSS integration (November 13-26, 2025)
-
-**Phase Documentation:**
-- `docs/guides/archives/PHASE1-SUCCESS-CRITERIA.md` - Phase 1 complete requirements
-- `docs/guides/archives/PHASE2-COMPLETION-SUMMARY.md` - Phase 2 achievements
-- `docs/prd/` - Phase Requirements Documents for historical reference
-
-### Test Coverage Details
-
-**Total: 1,548 tests across 52 test suites (100% pass rate)**
-
-**Backend Tests (includes EPIC-010 additions):**
-- Schema service: 600 tests (`schemaService.test.js`)
-- Schema routes: 322 tests (`routes/schema.test.js`)
-- Hook validation: expanded suite
-- Parsers: extended for new frontmatter fields (agents, commands, skills)
-- Copy service: updated for corrected hook matcher metadata
-- Performance: Grade A+, 200x-500x faster than targets
-
-**Frontend Tests:**
-- Schema store: 261 tests (`stores/schema.test.js`)
-- Detail sidebar components: 204 tests (`detail-sidebars.spec.js`)
-- E2E workflows, component tests, responsive design
-- 31 accessibility tests (WCAG 2.1 AA compliance verified)
-
-### Future Phase Planning
-
-**Next Phases (Not Yet Started):**
-- Subagent CRUD operations
-- Command management features
-- Visual hooks configuration
-- Advanced MCP server management
-
-**See:** `docs/guides/ROADMAP.md` for complete future feature planning
-- For testing, use projects `/home/training/test-1` and `/home/training/test-2`. NEVER test on this project
-- When invoking subagents to debug, don't give them explicit files to review, instead instruct them to review recent commits and investigate.
-- Always create a backup if testing on a production file
+This project uses Claude Code with specialized subagents. See `.claude/agents/` for team structure.  
+All contributions must follow the Git Workflow — see `docs/guides/GIT-WORKFLOW.md` for complete details.
