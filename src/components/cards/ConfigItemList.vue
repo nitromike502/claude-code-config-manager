@@ -10,7 +10,36 @@
       <!-- Header: Name (left) + Buttons (right) -->
       <template #header>
         <div class="flex items-center justify-between gap-3 px-4 py-3">
-          <span class="font-semibold text-[0.95rem] text-text-primary truncate">{{ getItemName(item) }}</span>
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-semibold text-[0.95rem] text-text-primary truncate">{{ getItemName(item) }}</span>
+            <!-- MCP scope and status badges -->
+            <template v-if="itemType === 'mcp'">
+              <Tag
+                v-if="item.scope === 'project'"
+                severity="info"
+                value="Project"
+                class="mcp-tag"
+              />
+              <Tag
+                v-else-if="item.scope === 'user'"
+                severity="secondary"
+                value="User"
+                class="mcp-tag"
+              />
+              <Tag
+                v-if="item.status === 'enabled'"
+                severity="success"
+                value="Enabled"
+                class="mcp-tag"
+              />
+              <Tag
+                v-else-if="item.status === 'disabled'"
+                severity="danger"
+                value="Disabled"
+                class="mcp-tag"
+              />
+            </template>
+          </div>
           <div class="flex items-center gap-2 shrink-0" @click.stop>
             <!-- Delete Button (agents, commands, skills, hooks, MCP) -->
             <Button
@@ -27,7 +56,7 @@
             <!-- Copy Button -->
             <CopyButton
               :configItem="item"
-              :disabled="item.location === 'plugin'"
+              :disabled="item.location === 'plugin' || (itemType === 'mcp' && item.scope === 'user' && pageScope === 'project')"
               :showLabel="false"
               @copy-clicked="handleCopyClick"
             />
@@ -62,6 +91,7 @@
 import { defineProps, defineEmits, computed } from 'vue';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
+import Tag from 'primevue/tag';
 import CopyButton from '@/components/copy/CopyButton.vue';
 
 // Pass-through configuration for PrimeVue Card component
@@ -100,6 +130,15 @@ const props = defineProps({
   enableCrud: {
     type: Boolean,
     default: false
+  },
+  /**
+   * Page context scope — used to restrict actions on user-scope items in project view
+   * null = unknown context, 'project' = project page, 'user' = user page
+   */
+  pageScope: {
+    type: String,
+    default: null,
+    validator: (value) => value === null || ['project', 'user'].includes(value)
   }
 });
 
@@ -117,9 +156,13 @@ const emit = defineEmits({
 
 /**
  * Check if delete button should be shown for an item
- * Show for agents, commands, skills, hooks, and MCP that are not plugins
+ * Show for agents, commands, skills, hooks, and MCP that are not plugins.
+ * Never show delete for user-scope MCP items — they are inherited and not owned by the project.
  */
 const canDelete = (item) => {
+  if (props.itemType === 'mcp' && item.scope === 'user') {
+    return false;
+  }
   return props.enableCrud &&
          (props.itemType === 'agents' || props.itemType === 'commands' || props.itemType === 'skills' || props.itemType === 'hooks' || props.itemType === 'mcp' || props.itemType === 'rules') &&
          item.location !== 'plugin';
@@ -285,6 +328,19 @@ const getItemDescription = (item, type) => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* MCP Tag badges - compact sizing */
+.mcp-tag {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+:deep(.mcp-tag .p-tag) {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
 }
 
 /* Responsive Design - Mobile adjustments */

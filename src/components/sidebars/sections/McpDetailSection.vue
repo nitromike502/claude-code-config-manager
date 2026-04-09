@@ -4,6 +4,30 @@
     <div class="mb-6">
       <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Metadata</h4>
 
+      <!-- Scope and Status Badges -->
+      <div v-if="selectedItem?.scope" class="flex gap-2 mb-3">
+        <Tag
+          v-if="selectedItem.scope === 'project'"
+          severity="info"
+          value="Project"
+        />
+        <Tag
+          v-else-if="selectedItem.scope === 'user'"
+          severity="secondary"
+          value="User"
+        />
+        <Tag
+          v-if="selectedItem.status === 'enabled'"
+          severity="success"
+          value="Enabled"
+        />
+        <Tag
+          v-else-if="selectedItem.status === 'disabled'"
+          severity="danger"
+          value="Disabled"
+        />
+      </div>
+
       <!-- Name Field -->
       <LabeledEditField
       v-model="mcpData.name"
@@ -135,6 +159,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import Tag from 'primevue/tag'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import ArgsArrayEditor from '@/components/forms/ArgsArrayEditor.vue'
 import KeyValueEditor from '@/components/forms/KeyValueEditor.vue'

@@ -161,6 +161,7 @@
                 :items="items"
                 item-type="mcp"
                 :enable-crud="enableMcpCrud"
+                :page-scope="scope"
                 @item-selected="(item) => $emit('show-detail', item, 'mcp', mcpServers)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
                 @delete-clicked="(item) => $emit('mcp-delete', item)"

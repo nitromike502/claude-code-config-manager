@@ -587,9 +587,8 @@ async function getProjectHooks(projectPath) {
 }
 
 /**
- * Gets MCP servers for a specific project (from .mcp.json only)
- * Per Claude Code spec: project MCP servers are stored in .mcp.json
- * User-level MCP servers are stored in ~/.claude/settings.json
+ * Gets MCP servers for a specific project, merging project-scoped (.mcp.json)
+ * and user-scoped (~/.claude.json root mcpServers) servers with scope and status.
  * @param {string} projectPath - Absolute project path
  * @returns {Promise<Object>} Object with mcp array and warnings array
  */
@@ -599,21 +598,22 @@ async function getProjectMCP(projectPath) {
   const mcp = [];
   const warnings = [];
 
-  // Try reading .mcp.json
+  // STEP 1a: Read project-scoped servers from .mcp.json
   try {
-    const config = await readJSON(mcpPath);
+    const mcpJson = await readJSON(mcpPath);
 
-    if (config && config.mcpServers) {
+    if (mcpJson && mcpJson.mcpServers) {
       // Type check before Object.entries()
-      if (typeof config.mcpServers === 'object' && !Array.isArray(config.mcpServers)) {
-        mcp.push(...Object.entries(config.mcpServers).map(([name, serverConfig]) => ({
+      if (typeof mcpJson.mcpServers === 'object' && !Array.isArray(mcpJson.mcpServers)) {
+        mcp.push(...Object.entries(mcpJson.mcpServers).map(([name, serverConfig]) => ({
           name,
           ...serverConfig,
-          source: '.mcp.json'
+          source: '.mcp.json',
+          scope: 'project'
         })));
       } else {
         // Unexpected type
-        const actualType = Array.isArray(config.mcpServers) ? 'array' : typeof config.mcpServers;
+        const actualType = Array.isArray(mcpJson.mcpServers) ? 'array' : typeof mcpJson.mcpServers;
         console.warn(`Unexpected mcpServers format in ${mcpPath}: ${actualType}`);
         warnings.push({
           file: mcpPath,
@@ -632,6 +632,102 @@ async function getProjectMCP(projectPath) {
         skipped: true
       });
     }
+  }
+
+  // STEP 1b: Get user-scoped servers (already have scope: 'user' from getUserMCP)
+  const userMcpResult = await getUserMCP();
+  const userServers = userMcpResult.mcp;
+  warnings.push(...userMcpResult.warnings);
+
+  // STEP 2: Gather MCP status data from three sources
+
+  // Source 1: .claude/settings.local.json (highest precedence)
+  let localSettings = null;
+  try {
+    localSettings = await readJSON(config.paths.getProjectLocalSettingsPath(projectPath));
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      console.warn(`Failed to parse project local settings: ${error.message}`);
+    }
+  }
+
+  // Source 2: .claude/settings.json
+  let projectSettings = null;
+  try {
+    projectSettings = await readJSON(config.paths.getProjectSettingsPath(projectPath));
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      console.warn(`Failed to parse project settings: ${error.message}`);
+    }
+  }
+
+  // Source 3: ~/.claude.json -> projects[projectPath] entry
+  let claudeJsonProjectEntry = null;
+  try {
+    const claudeJson = await readJSON(config.paths.getUserClaudeJsonPath());
+    if (claudeJson && claudeJson.projects) {
+      claudeJsonProjectEntry = claudeJson.projects[projectPath] || null;
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      console.warn(`Failed to parse ~/.claude.json for project entry: ${error.message}`);
+    }
+  }
+
+  // STEP 3: Resolve status values with precedence rules
+
+  // enableAllProjectMcpServers: settings.local.json > settings.json (no entry in ~/.claude.json)
+  let enableAll = false;
+  if (localSettings !== null && localSettings.enableAllProjectMcpServers !== undefined) {
+    enableAll = localSettings.enableAllProjectMcpServers === true;
+  } else if (projectSettings !== null && projectSettings.enableAllProjectMcpServers !== undefined) {
+    enableAll = projectSettings.enableAllProjectMcpServers === true;
+  }
+
+  // enabledMcpjsonServers: union from all sources
+  const enabledSet = new Set();
+  for (const src of [localSettings, projectSettings, claudeJsonProjectEntry]) {
+    if (src && Array.isArray(src.enabledMcpjsonServers)) {
+      src.enabledMcpjsonServers.forEach(name => enabledSet.add(name));
+    }
+  }
+
+  // disabledMcpjsonServers: from ~/.claude.json project entry
+  const disabledMcpJsonSet = new Set(
+    (claudeJsonProjectEntry && Array.isArray(claudeJsonProjectEntry.disabledMcpjsonServers))
+      ? claudeJsonProjectEntry.disabledMcpjsonServers
+      : []
+  );
+
+  // disabledMcpServers: from ~/.claude.json project entry (applies to user-scoped servers)
+  const disabledMcpSet = new Set(
+    (claudeJsonProjectEntry && Array.isArray(claudeJsonProjectEntry.disabledMcpServers))
+      ? claudeJsonProjectEntry.disabledMcpServers
+      : []
+  );
+
+  // Apply status to project-scoped servers
+  for (const server of mcp) {
+    if (enableAll || enabledSet.has(server.name)) {
+      server.status = 'enabled';
+    } else if (disabledMcpJsonSet.has(server.name)) {
+      server.status = 'disabled';
+    } else {
+      // Unapproved — not yet active
+      server.status = 'disabled';
+    }
+  }
+
+  // STEP 4: Apply status to user-scoped servers, deduplicate against project servers
+  const projectServerNames = new Set(mcp.map(s => s.name));
+
+  for (const server of userServers) {
+    if (projectServerNames.has(server.name)) {
+      // Project server with same name takes precedence — skip user server
+      continue;
+    }
+    server.status = disabledMcpSet.has(server.name) ? 'disabled' : 'enabled';
+    mcp.push(server);
   }
 
   return { mcp, warnings };
@@ -1008,7 +1104,8 @@ async function getUserMCP() {
         mcp.push(...Object.entries(claudeJson.mcpServers).map(([name, serverConfig]) => ({
           name,
           ...serverConfig,
-          source: '~/.claude.json'
+          source: '~/.claude.json',
+          scope: 'user'
         })));
       } else {
         // Unexpected type

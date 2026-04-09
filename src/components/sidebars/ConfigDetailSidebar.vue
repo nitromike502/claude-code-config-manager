@@ -122,7 +122,7 @@
 
         <Button
           @click="handleCopy"
-          :disabled="!selectedItem"
+          :disabled="!selectedItem || (selectedType === 'mcp' && selectedItem?.scope === 'user' && scope === 'project')"
           icon="pi pi-copy"
           outlined
           aria-label="Copy"
@@ -267,10 +267,11 @@ const canEditHook = computed(() => {
          props.selectedType === 'hooks'
 })
 
-// Computed: Can edit MCP servers (only if enableCrud is true)
+// Computed: Can edit MCP servers (only if enableCrud is true and not a user-scope item viewed from project page)
 const canEditMcp = computed(() => {
   return props.enableCrud &&
-         props.selectedType === 'mcp'
+         props.selectedType === 'mcp' &&
+         !(props.selectedItem?.scope === 'user' && props.scope === 'project')
 })
 
 // Computed: Can edit rules (only if enableCrud is true)
