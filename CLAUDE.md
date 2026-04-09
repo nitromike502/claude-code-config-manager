@@ -106,7 +106,7 @@ manager/
 - `.claude/skills/*/SKILL.md` — Skills (directory-based configurations)
 - `.claude/rules/**/*.md` — Rules (markdown with optional YAML frontmatter, `paths` field for conditional loading)
 - `.claude/settings.json` / `.claude/settings.local.json` — Project settings including hooks
-- `.mcp.json` — Project MCP servers
+- `.mcp.json` — Project MCP servers (also merged with user-level servers via GET /api/projects/:projectId/mcp; status resolved from settings.local.json, settings.json, and ~/.claude.json)
 
 ### User-Level Configurations
 - `~/.claude/agents/*.md`, `~/.claude/commands/**/*.md`, `~/.claude/skills/*/SKILL.md`
@@ -157,7 +157,7 @@ GET    /api/projects/:projectId/agents            - Get project subagents
 GET    /api/projects/:projectId/commands          - Get project commands
 GET    /api/projects/:projectId/skills            - Get project skills
 GET    /api/projects/:projectId/hooks             - Get project hooks
-GET    /api/projects/:projectId/mcp               - Get project MCP servers
+GET    /api/projects/:projectId/mcp               - Get merged project + user MCP servers (each has scope: 'project'|'user', status: 'enabled'|'disabled')
 GET    /api/projects/:projectId/rules             - Get project rules
 GET    /api/user/agents                           - Get user subagents
 GET    /api/user/commands                         - Get user commands
