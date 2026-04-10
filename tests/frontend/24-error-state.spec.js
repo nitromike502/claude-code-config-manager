@@ -11,14 +11,14 @@ import { test, expect } from '@playwright/test'
 
 const BASE_URL = 'http://localhost:5173'
 
-test.describe('ErrorState Component', () => {
+test.describe('24.001: ErrorState Component', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to Dashboard where we can trigger error states
     await page.goto(BASE_URL)
     await page.waitForLoadState('networkidle')
   })
 
-  test('renders with required props (title and message)', async ({ page }) => {
+  test('24.001.001: renders with required props (title and message)', async ({ page }) => {
     // To test ErrorState, we need to trigger an error state
     // We'll do this by intercepting the API and returning an error
     await page.route('**/api/projects', route => {
@@ -46,7 +46,7 @@ test.describe('ErrorState Component', () => {
     await expect(message).toContainText('Error')
   })
 
-  test('displays error icon correctly', async ({ page }) => {
+  test('24.001.002: displays error icon correctly', async ({ page }) => {
     await page.route('**/api/projects', route => {
       route.fulfill({
         status: 500,
@@ -69,7 +69,7 @@ test.describe('ErrorState Component', () => {
     expect(iconClass).toContain('pi')
   })
 
-  test('displays title and message correctly', async ({ page }) => {
+  test('24.001.003: displays title and message correctly', async ({ page }) => {
     await page.route('**/api/projects', route => {
       route.fulfill({
         status: 500,
@@ -91,7 +91,7 @@ test.describe('ErrorState Component', () => {
     await expect(message).toContainText('HTTP 500: Internal Server Error')
   })
 
-  test('shows retry button when retryText is provided', async ({ page }) => {
+  test('24.001.004: shows retry button when retryText is provided', async ({ page }) => {
     await page.route('**/api/projects', route => {
       route.fulfill({
         status: 500,
@@ -115,7 +115,7 @@ test.describe('ErrorState Component', () => {
     expect(buttonClass).toContain('p-button')
   })
 
-  test('retry button emits retry event on click', async ({ page }) => {
+  test('24.001.005: retry button emits retry event on click', async ({ page }) => {
     let requestCount = 0
 
     await page.route('**/api/projects', route => {
@@ -157,7 +157,7 @@ test.describe('ErrorState Component', () => {
     expect(requestCount).toBe(2)
   })
 
-  test('retry button has correct icon', async ({ page }) => {
+  test('24.001.006: retry button has correct icon', async ({ page }) => {
     await page.route('**/api/projects', route => {
       route.fulfill({
         status: 500,
@@ -177,7 +177,7 @@ test.describe('ErrorState Component', () => {
     await expect(buttonIcon).toBeVisible()
   })
 
-  test('error state is responsive on mobile', async ({ page }) => {
+  test('24.001.007: error state is responsive on mobile', async ({ page }) => {
     // Set viewport to mobile size
     await page.setViewportSize({ width: 375, height: 667 })
 
@@ -206,7 +206,7 @@ test.describe('ErrorState Component', () => {
     expect(box.width).toBeGreaterThan(0)
   })
 
-  test('error icon has correct color (danger/error color)', async ({ page }) => {
+  test('24.001.008: error icon has correct color (danger/error color)', async ({ page }) => {
     await page.route('**/api/projects', route => {
       route.fulfill({
         status: 500,
