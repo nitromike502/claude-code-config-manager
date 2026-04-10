@@ -157,10 +157,12 @@ const emit = defineEmits({
 /**
  * Check if delete button should be shown for an item
  * Show for agents, commands, skills, hooks, and MCP that are not plugins.
- * Never show delete for user-scope MCP items — they are inherited and not owned by the project.
+ * On the project page, never show delete for user-scope MCP items — they are
+ * inherited from the user config and not owned by the project.
+ * On the user page, user-scope MCP items can be deleted (they are the user's own).
  */
 const canDelete = (item) => {
-  if (props.itemType === 'mcp' && item.scope === 'user') {
+  if (props.itemType === 'mcp' && item.scope === 'user' && props.pageScope === 'project') {
     return false;
   }
   return props.enableCrud &&
