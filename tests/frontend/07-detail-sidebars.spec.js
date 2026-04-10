@@ -15,10 +15,11 @@ const { test, expect } = require('@playwright/test');
 // Helper: Navigate to a project's configuration page
 async function navigateToProject(page) {
   await page.goto('/');
-  await page.waitForSelector('.project-card', { timeout: 10000 });
-  // Click first project
-  await page.locator('.project-card').first().click();
-  await page.waitForURL(/\/project\//);
+  // Wait for project cards to load, excluding the user config card which is always first
+  await page.waitForSelector('.project-card:not(.user-card)', { timeout: 10000 });
+  // Click first real project card (not the user config card)
+  await page.locator('.project-card:not(.user-card)').first().click();
+  await page.waitForURL(/\/project\//, { timeout: 15000 });
 }
 
 // Helper: Wait for loading to complete

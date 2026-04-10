@@ -610,6 +610,20 @@ test.describe('110.003: Conditional Field Visibility', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       })
     })
+    await page.route('**/api/projects/testproject/skills', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      })
+    })
+    await page.route('**/api/projects/testproject/rules', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      })
+    })
 
     // Navigate to project detail page
     await page.goto(`${BASE_URL}/project/testproject`)
@@ -618,7 +632,7 @@ test.describe('110.003: Conditional Field Visibility', () => {
 
   test('110.003.001: should show matcher field for PreToolUse hooks', async ({ page }) => {
     // Click View on PreToolUse hook (first hook)
-    await page.locator('.view-btn').first().click()
+    await page.locator('.hooks-panel .view-btn').first().click()
 
     const sidebar = page.locator('.p-drawer')
     await sidebar.waitFor({ state: 'visible' })
@@ -627,9 +641,9 @@ test.describe('110.003: Conditional Field Visibility', () => {
     await expect(sidebar.locator('.labeled-edit-field').filter({ hasText: 'Matcher:' })).toBeVisible()
   })
 
-  test('110.003.002: should hide matcher field for SessionEnd hooks', async ({ page }) => {
+  test('110.003.002: should show matcher field for SessionEnd hooks', async ({ page }) => {
     // Click View on SessionEnd hook (second hook)
-    await page.locator('.view-btn').nth(1).click()
+    await page.locator('.hooks-panel .view-btn').nth(1).click()
 
     const sidebar = page.locator('.p-drawer')
     await sidebar.waitFor({ state: 'visible' })
@@ -638,13 +652,13 @@ test.describe('110.003: Conditional Field Visibility', () => {
     const eventField = sidebar.locator('p').filter({ hasText: 'Event:' })
     await expect(eventField).toContainText('SessionEnd')
 
-    // Verify matcher field is NOT visible
-    await expect(sidebar.locator('.labeled-edit-field').filter({ hasText: 'Matcher:' })).not.toBeVisible()
+    // SessionEnd is now a matcher-based event per the schema, so Matcher field IS shown
+    await expect(sidebar.locator('.labeled-edit-field').filter({ hasText: 'Matcher:' })).toBeVisible()
   })
 
   test('110.003.003: should show prompt type option for Stop hooks', async ({ page }) => {
     // Click View on Stop hook (third hook)
-    await page.locator('.view-btn').nth(2).click()
+    await page.locator('.hooks-panel .view-btn').nth(2).click()
 
     const sidebar = page.locator('.p-drawer')
     await sidebar.waitFor({ state: 'visible' })
@@ -670,9 +684,9 @@ test.describe('110.003: Conditional Field Visibility', () => {
     await typeField.locator('button[aria-label="Cancel editing"]').click()
   })
 
-  test('110.003.004: should show both type options for PreToolUse hooks', async ({ page }) => {
+  test('110.003.004: should show all type options for PreToolUse hooks', async ({ page }) => {
     // Click View on PreToolUse hook (first hook)
-    await page.locator('.view-btn').first().click()
+    await page.locator('.hooks-panel .view-btn').first().click()
 
     const sidebar = page.locator('.p-drawer')
     await sidebar.waitFor({ state: 'visible' })
@@ -684,24 +698,23 @@ test.describe('110.003: Conditional Field Visibility', () => {
     // Wait for edit mode to activate
     await page.waitForTimeout(300)
 
-    // Verify BOTH "Command" and "Prompt" options are available for PreToolUse
-    // (PreToolUse supports prompt type per official Claude Code spec)
+    // PreToolUse supports prompt type, so extended options are shown: Command, HTTP, Prompt, Agent
     const selectButtonGroup = typeField.locator('.p-selectbutton')
     await expect(selectButtonGroup).toBeVisible()
     await expect(selectButtonGroup.getByRole('button', { name: 'Command' })).toBeVisible()
     await expect(selectButtonGroup.getByRole('button', { name: 'Prompt' })).toBeVisible()
 
-    // Verify there are exactly 2 buttons
+    // Verify there are exactly 4 buttons (Command, HTTP, Prompt, Agent)
     const buttons = selectButtonGroup.getByRole('button')
-    await expect(buttons).toHaveCount(2)
+    await expect(buttons).toHaveCount(4)
 
     // Cancel edit
     await typeField.locator('button[aria-label="Cancel editing"]').click()
   })
 
-  test('110.003.005: should only show command type option for hooks that do not support prompt', async ({ page }) => {
+  test('110.003.005: should only show command and http type options for hooks that do not support prompt', async ({ page }) => {
     // Click View on SessionEnd hook (second hook - does NOT support prompt type)
-    const viewButtons = page.locator('.view-btn')
+    const viewButtons = page.locator('.hooks-panel .view-btn')
     await viewButtons.nth(1).click()
 
     const sidebar = page.locator('.p-drawer')
@@ -714,14 +727,15 @@ test.describe('110.003: Conditional Field Visibility', () => {
     // Wait for edit mode to activate
     await page.waitForTimeout(300)
 
-    // Verify only "Command" option is available (SessionEnd does NOT support prompt)
+    // SessionEnd does NOT support prompt, so only Command and HTTP are available
     const selectButtonGroup = typeField.locator('.p-selectbutton')
     await expect(selectButtonGroup).toBeVisible()
     await expect(selectButtonGroup.getByRole('button', { name: 'Command' })).toBeVisible()
+    await expect(selectButtonGroup.getByRole('button', { name: 'HTTP' })).toBeVisible()
 
-    // Verify "Prompt" option is NOT available (count buttons - should only be 1)
+    // Verify "Prompt" option is NOT available (count buttons - should only be 2)
     const buttons = selectButtonGroup.getByRole('button')
-    await expect(buttons).toHaveCount(1)
+    await expect(buttons).toHaveCount(2)
 
     // Cancel edit
     await typeField.locator('button[aria-label="Cancel editing"]').click()
@@ -938,6 +952,20 @@ test.describe('110.005: User-Level Hooks', () => {
         body: JSON.stringify({ success: true, mcp: [] })
       })
     })
+    await page.route('**/api/user/skills', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, skills: [] })
+      })
+    })
+    await page.route('**/api/user/rules', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, rules: [] })
+      })
+    })
 
     await page.route('**/api/projects/testproject/**', async (route) => {
       await route.fulfill({
@@ -970,9 +998,8 @@ test.describe('110.005: User-Level Hooks', () => {
       }
     })
 
-    // Wait for a hook card to appear (simpler approach that works for both project and user pages)
-    // Find the View button next to PreToolUse text directly
-    const viewButton = page.locator('text=PreToolUse').locator('..').locator('button', { hasText: 'View' }).first()
+    // Find the View button in the hooks panel
+    const viewButton = page.locator('.hooks-panel .view-btn').first()
     await viewButton.waitFor({ state: 'visible', timeout: 15000 })
     await viewButton.click()
 
@@ -993,8 +1020,8 @@ test.describe('110.005: User-Level Hooks', () => {
   })
 
   test('110.005.002: should display user-level hook with correct event', async ({ page }) => {
-    // Find the View button next to PreToolUse text directly
-    const viewButton = page.locator('text=PreToolUse').locator('..').locator('button', { hasText: 'View' }).first()
+    // Find the View button in the hooks panel
+    const viewButton = page.locator('.hooks-panel .view-btn').first()
     await viewButton.waitFor({ state: 'visible', timeout: 15000 })
     await viewButton.click()
 
@@ -1027,8 +1054,8 @@ test.describe('110.005: User-Level Hooks', () => {
       }
     })
 
-    // Find the View button next to PreToolUse text directly
-    const viewButton = page.locator('text=PreToolUse').locator('..').locator('button', { hasText: 'View' }).first()
+    // Find the View button in the hooks panel
+    const viewButton = page.locator('.hooks-panel .view-btn').first()
     await viewButton.waitFor({ state: 'visible', timeout: 15000 })
     await viewButton.click()
 

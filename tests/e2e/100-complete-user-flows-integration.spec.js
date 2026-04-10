@@ -168,8 +168,8 @@ test.describe('100.001: E2E Integration: Complete User Flows', () => {
     // The title is in the drawer header (PrimeVue Drawer structure)
     await expect(sidebar).toContainText('backend-architect');
 
-    // Verify metadata section is visible
-    await expect(sidebar).toContainText('Metadata');
+    // Verify identity section is visible
+    await expect(sidebar).toContainText('Identity');
 
     // STEP 6: Close sidebar
     // PrimeVue Drawer uses button with aria-label for close
