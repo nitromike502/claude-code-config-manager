@@ -6,6 +6,12 @@
  * - Status badges (Enabled/Disabled) for MCP items
  * - Copy/delete restrictions for user-scope MCP items in project view
  *
+ * Tests for STORY-11.2 frontend changes (MCP toggle feature):
+ * - Toggle button visible for MCP items in project view
+ * - Toggle button NOT visible in user view or for non-MCP items
+ * - McpScopeBadges toggleable prop and toggle-status event
+ * - MCP store toggleMcpStatus action
+ *
  * Testing approach:
  * - Component mounting via @vue/test-utils with PrimeVue configured
  * - Logic functions (canDelete, copy disabled) verified through rendered output
@@ -16,6 +22,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { createApp } from 'vue'
+
+// ---------------------------------------------------------------------------
+// Mock the API module for store tests
+// ---------------------------------------------------------------------------
+
+vi.mock('@/api', () => ({
+  toggleProjectMcpStatus: vi.fn()
+}))
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -363,5 +377,410 @@ describe('ConfigItemList — copy disabled logic (unit)', () => {
 
   it('enabled for project-scope MCP in user view', () => {
     expect(isCopyDisabled({ scope: 'project', name: 'fs' }, 'mcp', 'user')).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// MCP Toggle Button visibility (STORY-11.2)
+// ---------------------------------------------------------------------------
+
+describe('ConfigItemList — MCP toggle button visibility', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
+
+  it('renders toggle button for MCP items in project view (pageScope=project)', async () => {
+    const wrapper = await mountConfigItemList({
+      items: [projectScopedMcpItem],
+      itemType: 'mcp',
+      pageScope: 'project',
+      projectId: 'test'
+    })
+
+    // Toggle button has aria-label "Disable" (since item is enabled) or "Enable"
+    const toggleBtns = wrapper
+      .findAll('.p-button-stub')
+      .filter(btn => {
+        const label = btn.attributes('aria-label')
+        return label === 'Disable' || label === 'Enable'
+      })
+
+    expect(toggleBtns.length).toBe(1)
+  })
+
+  it('renders "Enable" label on toggle button for disabled MCP server in project view', async () => {
+    const wrapper = await mountConfigItemList({
+      items: [disabledMcpItem],
+      itemType: 'mcp',
+      pageScope: 'project',
+      projectId: 'test'
+    })
+
+    const enableBtn = wrapper
+      .findAll('.p-button-stub')
+      .find(btn => btn.attributes('aria-label') === 'Enable')
+
+    expect(enableBtn).toBeDefined()
+  })
+
+  it('does NOT render toggle button for MCP items in user view (pageScope=user)', async () => {
+    const wrapper = await mountConfigItemList({
+      items: [projectScopedMcpItem],
+      itemType: 'mcp',
+      pageScope: 'user',
+      projectId: null
+    })
+
+    const toggleBtns = wrapper
+      .findAll('.p-button-stub')
+      .filter(btn => {
+        const label = btn.attributes('aria-label')
+        return label === 'Disable' || label === 'Enable'
+      })
+
+    expect(toggleBtns.length).toBe(0)
+  })
+
+  it('does NOT render toggle button for MCP items when pageScope is null', async () => {
+    const wrapper = await mountConfigItemList({
+      items: [projectScopedMcpItem],
+      itemType: 'mcp',
+      pageScope: null
+    })
+
+    const toggleBtns = wrapper
+      .findAll('.p-button-stub')
+      .filter(btn => {
+        const label = btn.attributes('aria-label')
+        return label === 'Disable' || label === 'Enable'
+      })
+
+    expect(toggleBtns.length).toBe(0)
+  })
+
+  it('does NOT render toggle button for non-MCP items (agents)', async () => {
+    const wrapper = await mountConfigItemList({
+      items: [agentItem],
+      itemType: 'agents',
+      pageScope: 'project'
+    })
+
+    const toggleBtns = wrapper
+      .findAll('.p-button-stub')
+      .filter(btn => {
+        const label = btn.attributes('aria-label')
+        return label === 'Disable' || label === 'Enable'
+      })
+
+    expect(toggleBtns.length).toBe(0)
+  })
+
+  it('does NOT render toggle button for hooks in project view', async () => {
+    const hookItem = {
+      name: 'PreToolUse',
+      event: 'PreToolUse',
+      pattern: 'Bash',
+      command: 'echo test'
+    }
+
+    const wrapper = await mountConfigItemList({
+      items: [hookItem],
+      itemType: 'hooks',
+      pageScope: 'project'
+    })
+
+    const toggleBtns = wrapper
+      .findAll('.p-button-stub')
+      .filter(btn => {
+        const label = btn.attributes('aria-label')
+        return label === 'Disable' || label === 'Enable'
+      })
+
+    expect(toggleBtns.length).toBe(0)
+  })
+
+  it('renders toggle button for user-scope MCP in project view', async () => {
+    // User-scope MCP servers can be toggled (disabled) from a project view
+    const wrapper = await mountConfigItemList({
+      items: [userScopedMcpItem],
+      itemType: 'mcp',
+      pageScope: 'project',
+      projectId: 'test'
+    })
+
+    const toggleBtns = wrapper
+      .findAll('.p-button-stub')
+      .filter(btn => {
+        const label = btn.attributes('aria-label')
+        return label === 'Disable' || label === 'Enable'
+      })
+
+    expect(toggleBtns.length).toBe(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// McpScopeBadges component — toggleable prop (STORY-11.2)
+// ---------------------------------------------------------------------------
+
+describe('McpScopeBadges — toggleable prop', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+  })
+
+  async function mountMcpScopeBadges(props) {
+    setActivePinia(createPinia())
+
+    const { default: McpScopeBadges } = await import(
+      '@/components/common/McpScopeBadges.vue'
+    )
+
+    return mount(McpScopeBadges, {
+      props,
+      global: {
+        stubs: {
+          // Use a real stub that exposes the class attribute so we can inspect it
+          Tag: {
+            props: ['value', 'severity'],
+            template: `<span class="p-tag-stub" :data-severity="severity" :data-value="value">{{ value }}</span>`
+          }
+        }
+      }
+    })
+  }
+
+  it('applies mcp-tag-toggleable class to status tag when toggleable=true', async () => {
+    const wrapper = await mountMcpScopeBadges({
+      scope: 'project',
+      status: 'enabled',
+      toggleable: true
+    })
+
+    // The component applies mcp-tag-toggleable class to the Tag wrapping the status
+    // We verify via the rendered HTML that the class is present on the tag element
+    expect(wrapper.html()).toContain('mcp-tag-toggleable')
+  })
+
+  it('does NOT apply mcp-tag-toggleable class when toggleable is false (default)', async () => {
+    const wrapper = await mountMcpScopeBadges({
+      scope: 'project',
+      status: 'enabled'
+      // toggleable defaults to false
+    })
+
+    expect(wrapper.html()).not.toContain('mcp-tag-toggleable')
+  })
+
+  it('emits toggle-status when status tag is clicked and toggleable=true (enabled server)', async () => {
+    const wrapper = await mountMcpScopeBadges({
+      scope: 'project',
+      status: 'enabled',
+      toggleable: true
+    })
+
+    // Find the enabled status tag and click it
+    const enabledTag = wrapper.findAll('.p-tag-stub').find(t => t.attributes('data-value') === 'Enabled')
+    expect(enabledTag).toBeDefined()
+
+    await enabledTag.trigger('click')
+
+    expect(wrapper.emitted('toggle-status')).toBeTruthy()
+    expect(wrapper.emitted('toggle-status').length).toBe(1)
+  })
+
+  it('emits toggle-status when status tag is clicked and toggleable=true (disabled server)', async () => {
+    const wrapper = await mountMcpScopeBadges({
+      scope: 'project',
+      status: 'disabled',
+      toggleable: true
+    })
+
+    const disabledTag = wrapper.findAll('.p-tag-stub').find(t => t.attributes('data-value') === 'Disabled')
+    expect(disabledTag).toBeDefined()
+
+    await disabledTag.trigger('click')
+
+    expect(wrapper.emitted('toggle-status')).toBeTruthy()
+    expect(wrapper.emitted('toggle-status').length).toBe(1)
+  })
+
+  it('does NOT emit toggle-status on scope tag click even when toggleable=true', async () => {
+    const wrapper = await mountMcpScopeBadges({
+      scope: 'project',
+      status: 'enabled',
+      toggleable: true
+    })
+
+    // Scope tag (Project) should not be clickable
+    const scopeTag = wrapper.findAll('.p-tag-stub').find(t => t.attributes('data-value') === 'Project')
+    expect(scopeTag).toBeDefined()
+
+    await scopeTag.trigger('click')
+
+    // No toggle-status event from the scope badge
+    expect(wrapper.emitted('toggle-status')).toBeFalsy()
+  })
+
+  it('does NOT emit toggle-status when toggleable=false and status tag is clicked', async () => {
+    const wrapper = await mountMcpScopeBadges({
+      scope: 'project',
+      status: 'enabled',
+      toggleable: false
+    })
+
+    const enabledTag = wrapper.findAll('.p-tag-stub').find(t => t.attributes('data-value') === 'Enabled')
+    expect(enabledTag).toBeDefined()
+
+    await enabledTag.trigger('click')
+
+    // Should not have emitted toggle-status
+    expect(wrapper.emitted('toggle-status')).toBeFalsy()
+  })
+
+  it('renders nothing when scope is null', async () => {
+    const wrapper = await mountMcpScopeBadges({
+      scope: null,
+      status: 'enabled'
+    })
+
+    expect(wrapper.find('.p-tag-stub').exists()).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// MCP store — toggleMcpStatus action (STORY-11.2)
+// ---------------------------------------------------------------------------
+
+describe('MCP Store — toggleMcpStatus action', () => {
+  // Import api mock after vi.mock() hoisting
+  let api
+
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+    api = await import('@/api')
+  })
+
+  it('calls toggleProjectMcpStatus API with correct arguments', async () => {
+    api.toggleProjectMcpStatus.mockResolvedValue({
+      success: true,
+      serverName: 'filesystem',
+      enabled: false,
+      status: 'disabled'
+    })
+
+    const { useMcpStore } = await import('@/stores/mcp')
+    const store = useMcpStore()
+
+    await store.toggleMcpStatus('testproject', 'filesystem', false)
+
+    expect(api.toggleProjectMcpStatus).toHaveBeenCalledWith('testproject', 'filesystem', false)
+  })
+
+  it('updates cached server status on success', async () => {
+    api.toggleProjectMcpStatus.mockResolvedValue({
+      success: true,
+      serverName: 'filesystem',
+      enabled: false,
+      status: 'disabled'
+    })
+
+    const { useMcpStore } = await import('@/stores/mcp')
+    const store = useMcpStore()
+
+    // Seed the cache with an enabled server
+    store.projectMcpServers.set('testproject', [
+      { name: 'filesystem', status: 'enabled', scope: 'project', transport: 'stdio' }
+    ])
+
+    const result = await store.toggleMcpStatus('testproject', 'filesystem', false)
+
+    expect(result.success).toBe(true)
+    expect(result.status).toBe('disabled')
+
+    // Verify in-memory cache was updated
+    const cached = store.getProjectMcpCache('testproject')
+    const server = cached.find(s => s.name === 'filesystem')
+    expect(server.status).toBe('disabled')
+  })
+
+  it('returns success result with new status', async () => {
+    api.toggleProjectMcpStatus.mockResolvedValue({
+      success: true,
+      serverName: 'context7',
+      enabled: true,
+      status: 'enabled'
+    })
+
+    const { useMcpStore } = await import('@/stores/mcp')
+    const store = useMcpStore()
+
+    store.projectMcpServers.set('proj1', [
+      { name: 'context7', status: 'disabled', scope: 'project', transport: 'stdio' }
+    ])
+
+    const result = await store.toggleMcpStatus('proj1', 'context7', true)
+
+    expect(result.success).toBe(true)
+    expect(result.status).toBe('enabled')
+  })
+
+  it('returns failure result when API call fails', async () => {
+    api.toggleProjectMcpStatus.mockRejectedValue(new Error('Network error'))
+
+    const { useMcpStore } = await import('@/stores/mcp')
+    const store = useMcpStore()
+
+    const result = await store.toggleMcpStatus('testproject', 'filesystem', false)
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBe('Network error')
+  })
+
+  it('does not mutate cache when API call fails', async () => {
+    api.toggleProjectMcpStatus.mockRejectedValue(new Error('Server error'))
+
+    const { useMcpStore } = await import('@/stores/mcp')
+    const store = useMcpStore()
+
+    store.projectMcpServers.set('testproject', [
+      { name: 'filesystem', status: 'enabled', scope: 'project', transport: 'stdio' }
+    ])
+
+    await store.toggleMcpStatus('testproject', 'filesystem', false)
+
+    // Cache should remain unchanged
+    const cached = store.getProjectMcpCache('testproject')
+    const server = cached.find(s => s.name === 'filesystem')
+    expect(server.status).toBe('enabled')
+  })
+
+  it('handles missing server in cache gracefully (no crash)', async () => {
+    api.toggleProjectMcpStatus.mockResolvedValue({
+      success: true,
+      serverName: 'nonexistent',
+      enabled: false,
+      status: 'disabled'
+    })
+
+    const { useMcpStore } = await import('@/stores/mcp')
+    const store = useMcpStore()
+
+    // Cache is empty — server not preloaded
+    const result = await store.toggleMcpStatus('testproject', 'nonexistent', false)
+
+    // Should succeed without throwing
+    expect(result.success).toBe(true)
+    expect(result.status).toBe('disabled')
+  })
+
+  it('returns empty array from getProjectMcpCache when projectId not loaded', async () => {
+    const { useMcpStore } = await import('@/stores/mcp')
+    const store = useMcpStore()
+
+    const result = store.getProjectMcpCache('neverloaded')
+    expect(result).toEqual([])
   })
 })
