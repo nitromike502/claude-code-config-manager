@@ -10,7 +10,15 @@
       <!-- Header: Name (left) + Buttons (right) -->
       <template #header>
         <div class="flex items-center justify-between gap-3 px-4 py-3">
-          <span class="font-semibold text-[0.95rem] text-text-primary truncate">{{ getItemName(item) }}</span>
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-semibold text-[0.95rem] text-text-primary truncate">{{ getItemName(item) }}</span>
+            <!-- MCP scope and status badges -->
+            <McpScopeBadges
+              v-if="itemType === 'mcp'"
+              :scope="item.scope"
+              :status="item.status"
+            />
+          </div>
           <div class="flex items-center gap-2 shrink-0" @click.stop>
             <!-- Delete Button (agents, commands, skills, hooks, MCP) -->
             <Button
@@ -27,7 +35,7 @@
             <!-- Copy Button -->
             <CopyButton
               :configItem="item"
-              :disabled="item.location === 'plugin'"
+              :disabled="item.location === 'plugin' || (itemType === 'mcp' && item.scope === 'user' && pageScope === 'project')"
               :showLabel="false"
               @copy-clicked="handleCopyClick"
             />
@@ -62,6 +70,7 @@
 import { defineProps, defineEmits, computed } from 'vue';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
+import McpScopeBadges from '@/components/common/McpScopeBadges.vue';
 import CopyButton from '@/components/copy/CopyButton.vue';
 
 // Pass-through configuration for PrimeVue Card component
@@ -100,6 +109,15 @@ const props = defineProps({
   enableCrud: {
     type: Boolean,
     default: false
+  },
+  /**
+   * Page context scope — used to restrict actions on user-scope items in project view
+   * null = unknown context, 'project' = project page, 'user' = user page
+   */
+  pageScope: {
+    type: String,
+    default: null,
+    validator: (value) => value === null || ['project', 'user'].includes(value)
   }
 });
 
@@ -117,9 +135,15 @@ const emit = defineEmits({
 
 /**
  * Check if delete button should be shown for an item
- * Show for agents, commands, skills, hooks, and MCP that are not plugins
+ * Show for agents, commands, skills, hooks, and MCP that are not plugins.
+ * On the project page, never show delete for user-scope MCP items — they are
+ * inherited from the user config and not owned by the project.
+ * On the user page, user-scope MCP items can be deleted (they are the user's own).
  */
 const canDelete = (item) => {
+  if (props.itemType === 'mcp' && item.scope === 'user' && props.pageScope === 'project') {
+    return false;
+  }
   return props.enableCrud &&
          (props.itemType === 'agents' || props.itemType === 'commands' || props.itemType === 'skills' || props.itemType === 'hooks' || props.itemType === 'mcp' || props.itemType === 'rules') &&
          item.location !== 'plugin';

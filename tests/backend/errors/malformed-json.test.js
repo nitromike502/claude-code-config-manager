@@ -324,12 +324,18 @@ describe('Malformed JSON Error Handling - MCP', () => {
 
   describe('Edge Cases', () => {
     test('should handle missing .mcp.json file gracefully', async () => {
-      // minimal-project has no .mcp.json
+      // minimal-project has no .mcp.json — user-level servers are still returned
       const result = await getProjectMCP(MINIMAL_PROJECT_PATH);
 
       expect(result).toBeDefined();
-      expect(result.mcp).toEqual([]);
+      expect(Array.isArray(result.mcp)).toBe(true);
+      expect(Array.isArray(result.warnings)).toBe(true);
+      // No file errors should be generated when .mcp.json is simply absent
       expect(result.warnings).toEqual([]);
+      // User-level servers are merged in; all should have scope: 'user'
+      result.mcp.forEach(server => {
+        expect(server.scope).toBe('user');
+      });
     });
 
     test('should handle non-existent project directory gracefully', async () => {
@@ -337,10 +343,16 @@ describe('Malformed JSON Error Handling - MCP', () => {
       const nonExistentPath = path.join(__dirname, '../../fixtures/projects/nonexistent-project');
       const result = await getProjectMCP(nonExistentPath);
 
-      // Should return empty arrays, not throw
+      // Should not throw, should return structured response
       expect(result).toBeDefined();
-      expect(result.mcp).toEqual([]);
+      expect(Array.isArray(result.mcp)).toBe(true);
+      expect(Array.isArray(result.warnings)).toBe(true);
+      // No warnings — missing files are handled gracefully
       expect(result.warnings).toEqual([]);
+      // User-level servers are still returned even for non-existent project paths
+      result.mcp.forEach(server => {
+        expect(server.scope).toBe('user');
+      });
     });
   });
 });

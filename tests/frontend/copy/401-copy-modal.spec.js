@@ -2,29 +2,29 @@ const { test, expect } = require('@playwright/test');
 const { setupMocks } = require('../../fixtures/mock-data');
 
 /**
- * Frontend Component Tests: 08-CopyModal Component
+ * Frontend Component Tests: 401-CopyModal Component
  *
- * Test Suite: 08.001 - Modal Rendering
- * Test Suite: 08.002 - Source Configuration Display
- * Test Suite: 08.003 - Destination Cards
- * Test Suite: 08.004 - User Interactions
- * Test Suite: 08.005 - Scrolling and Layout
- * Test Suite: 08.006 - Keyboard Navigation
- * Test Suite: 08.007 - Accessibility
+ * Test Suite: 401.001 - Modal Rendering
+ * Test Suite: 401.002 - Source Configuration Display
+ * Test Suite: 401.003 - Destination Cards
+ * Test Suite: 401.004 - User Interactions
+ * Test Suite: 401.005 - Scrolling and Layout
+ * Test Suite: 401.006 - Keyboard Navigation
+ * Test Suite: 401.007 - Accessibility
  *
- * Numbering Format: 08.GROUP.TEST
+ * Numbering Format: 401.GROUP.TEST
  *
  * Tests the CopyModal component which displays destination selection dialog
  * for copying configuration items to User Global or project locations.
  */
 
-// Test Suite 08.001: Modal Rendering
-test.describe('08.001: CopyModal Rendering', () => {
+// Test Suite 401.001: Modal Rendering
+test.describe('401.001: CopyModal Rendering', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page);
   });
 
-  test('08.001.001: modal opens when copy button clicked', async ({ page }) => {
+  test('401.001.001: modal opens when copy button clicked', async ({ page }) => {
     await page.goto('/');
 
     // Wait for Vue app and projects to load
@@ -54,7 +54,7 @@ test.describe('08.001: CopyModal Rendering', () => {
     }
   });
 
-  test('08.001.002: modal displays header with copy icon', async ({ page }) => {
+  test('401.001.002: modal displays header with copy icon', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -95,7 +95,7 @@ test.describe('08.001: CopyModal Rendering', () => {
     }
   });
 
-  test('08.001.003: modal closes when close button clicked', async ({ page }) => {
+  test('401.001.003: modal closes when close button clicked', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -137,13 +137,13 @@ test.describe('08.001: CopyModal Rendering', () => {
   });
 });
 
-// Test Suite 08.002: Source Configuration Display
-test.describe('08.002: CopyModal Source Configuration Display', () => {
+// Test Suite 401.002: Source Configuration Display
+test.describe('401.002: CopyModal Source Configuration Display', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page);
   });
 
-  test('08.002.001: displays source configuration filename', async ({ page }) => {
+  test('401.002.001: displays source configuration filename', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -184,7 +184,7 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
     }
   });
 
-  test('08.002.002: displays source configuration type with icon', async ({ page }) => {
+  test('401.002.002: displays source configuration type with icon', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -236,7 +236,7 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
     }
   });
 
-  test('08.002.003: displays source configuration path', async ({ page }) => {
+  test('401.002.003: displays source configuration path', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -274,13 +274,13 @@ test.describe('08.002: CopyModal Source Configuration Display', () => {
   });
 });
 
-// Test Suite 08.003: Destination Cards
-test.describe('08.003: CopyModal Destination Cards', () => {
+// Test Suite 401.003: Destination Cards
+test.describe('401.003: CopyModal Destination Cards', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page);
   });
 
-  test('08.003.001: User Global card renders first', async ({ page }) => {
+  test('401.003.001: User Global card renders first', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -319,7 +319,7 @@ test.describe('08.003: CopyModal Destination Cards', () => {
     }
   });
 
-  test('08.003.002: project cards render in list', async ({ page }) => {
+  test('401.003.002: project cards render in list', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -355,7 +355,7 @@ test.describe('08.003: CopyModal Destination Cards', () => {
     }
   });
 
-  test('08.003.003: destination cards show name, path, and icon', async ({ page }) => {
+  test('401.003.003: destination cards show name, path, and icon', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -403,7 +403,7 @@ test.describe('08.003: CopyModal Destination Cards', () => {
     }
   });
 
-  test('08.003.004: destination cards have "Copy Here" button', async ({ page }) => {
+  test('401.003.004: destination cards have "Copy Here" button', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -438,13 +438,13 @@ test.describe('08.003: CopyModal Destination Cards', () => {
   });
 });
 
-// Test Suite 08.004: User Interactions
-test.describe('08.004: CopyModal User Interactions', () => {
+// Test Suite 401.004: User Interactions
+test.describe('401.004: CopyModal User Interactions', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page);
   });
 
-  test('08.004.001: clicking card selects destination', async ({ page }) => {
+  test('401.004.001: clicking card selects destination', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -482,7 +482,7 @@ test.describe('08.004: CopyModal User Interactions', () => {
     }
   });
 
-  test('08.004.002: clicking "Copy Here" button triggers selection', async ({ page }) => {
+  test('401.004.002: clicking "Copy Here" button triggers selection', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -520,7 +520,7 @@ test.describe('08.004: CopyModal User Interactions', () => {
     }
   });
 
-  test('08.004.003: modal closes after destination selection', async ({ page }) => {
+  test('401.004.003: modal closes after destination selection', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -558,13 +558,13 @@ test.describe('08.004: CopyModal User Interactions', () => {
   });
 });
 
-// Test Suite 08.005: Scrolling and Layout
-test.describe('08.005: CopyModal Scrolling and Layout', () => {
+// Test Suite 401.005: Scrolling and Layout
+test.describe('401.005: CopyModal Scrolling and Layout', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page);
   });
 
-  test('08.005.001: project list is scrollable when > 300px', async ({ page }) => {
+  test('401.005.001: project list is scrollable when > 300px', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -610,7 +610,7 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
     }
   });
 
-  test('08.005.002: all project cards are accessible via scroll', async ({ page }) => {
+  test('401.005.002: all project cards are accessible via scroll', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -656,13 +656,13 @@ test.describe('08.005: CopyModal Scrolling and Layout', () => {
   });
 });
 
-// Test Suite 08.006: Keyboard Navigation
-test.describe('08.006: CopyModal Keyboard Navigation', () => {
+// Test Suite 401.006: Keyboard Navigation
+test.describe('401.006: CopyModal Keyboard Navigation', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page);
   });
 
-  test('08.006.001: Tab cycles through destination cards', async ({ page }) => {
+  test('401.006.001: Tab cycles through destination cards', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -701,7 +701,7 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
     }
   });
 
-  test('08.006.002: Enter key on card triggers selection', async ({ page }) => {
+  test('401.006.002: Enter key on card triggers selection', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -742,7 +742,7 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
     }
   });
 
-  test('08.006.003: Escape key closes modal', async ({ page }) => {
+  test('401.006.003: Escape key closes modal', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -779,13 +779,13 @@ test.describe('08.006: CopyModal Keyboard Navigation', () => {
   });
 });
 
-// Test Suite 08.007: Accessibility
-test.describe('08.007: CopyModal Accessibility', () => {
+// Test Suite 401.007: Accessibility
+test.describe('401.007: CopyModal Accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page);
   });
 
-  test('08.007.001: ARIA labels present on destination cards', async ({ page }) => {
+  test('401.007.001: ARIA labels present on destination cards', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -821,7 +821,7 @@ test.describe('08.007: CopyModal Accessibility', () => {
     }
   });
 
-  test('08.007.002: focus indicators visible on cards', async ({ page }) => {
+  test('401.007.002: focus indicators visible on cards', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });
@@ -869,7 +869,7 @@ test.describe('08.007: CopyModal Accessibility', () => {
     }
   });
 
-  test('08.007.003: dialog has proper role', async ({ page }) => {
+  test('401.007.003: dialog has proper role', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
     await page.waitForSelector('h2:has-text("Projects")', { timeout: 10000 });

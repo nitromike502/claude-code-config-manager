@@ -2,28 +2,28 @@ const { test, expect } = require('@playwright/test');
 const { setupMocks } = require('../../fixtures/mock-data');
 
 /**
- * Frontend Component Tests: 07-CopyButton Component
+ * Frontend Component Tests: 400-CopyButton Component
  *
- * Test Suite: 07.001 - Rendering Tests
- * Test Suite: 07.002 - Props and Variants
- * Test Suite: 07.003 - Event Handling
- * Test Suite: 07.004 - Tooltips
- * Test Suite: 07.005 - Accessibility
+ * Test Suite: 400.001 - Rendering Tests
+ * Test Suite: 400.002 - Props and Variants
+ * Test Suite: 400.003 - Event Handling
+ * Test Suite: 400.004 - Tooltips
+ * Test Suite: 400.005 - Accessibility
  *
- * Numbering Format: 07.GROUP.TEST
+ * Numbering Format: 400.GROUP.TEST
  *
  * Tests the CopyButton component which provides a "Copy to..." action button
  * for configuration items (agents, commands, hooks, MCP servers).
  */
 
-// Test Suite 07.001: Rendering Tests
-test.describe('07.001: CopyButton Rendering', () => {
+// Test Suite 400.001: Rendering Tests
+test.describe('400.001: CopyButton Rendering', () => {
   test.beforeEach(async ({ page }) => {
     // Setup mock data BEFORE navigating
     await setupMocks(page);
   });
 
-  test('07.001.001: renders with default props (label visible)', async ({ page }) => {
+  test('400.001.001: renders with default props (label visible)', async ({ page }) => {
     await page.goto('/');
 
     // Wait for app to load
@@ -68,7 +68,7 @@ test.describe('07.001: CopyButton Rendering', () => {
     }
   });
 
-  test('07.001.002: renders icon (pi pi-copy)', async ({ page }) => {
+  test('400.001.002: renders icon (pi pi-copy)', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
@@ -100,7 +100,7 @@ test.describe('07.001: CopyButton Rendering', () => {
     }
   });
 
-  test('07.001.003: renders icon-only mode when showLabel=false', async ({ page }) => {
+  test('400.001.003: renders icon-only mode when showLabel=false', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
@@ -130,13 +130,13 @@ test.describe('07.001: CopyButton Rendering', () => {
   });
 });
 
-// Test Suite 07.002: Props and Variants
-test.describe('07.002: CopyButton Props and Variants', () => {
+// Test Suite 400.002: Props and Variants
+test.describe('400.002: CopyButton Props and Variants', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page);
   });
 
-  test('07.002.001: disabled state applies correctly', async ({ page }) => {
+  test('400.002.001: disabled state applies correctly', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
@@ -173,7 +173,7 @@ test.describe('07.002: CopyButton Props and Variants', () => {
     }
   });
 
-  test('07.002.002: configItem prop validation', async ({ page }) => {
+  test('400.002.002: configItem prop validation', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
@@ -210,13 +210,13 @@ test.describe('07.002: CopyButton Props and Variants', () => {
   });
 });
 
-// Test Suite 07.003: Event Handling
-test.describe('07.003: CopyButton Event Handling', () => {
+// Test Suite 400.003: Event Handling
+test.describe('400.003: CopyButton Event Handling', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page);
   });
 
-  test('07.003.001: emits copy-clicked event on button click', async ({ page }) => {
+  test('400.003.001: emits copy-clicked event on button click', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
@@ -256,7 +256,7 @@ test.describe('07.003: CopyButton Event Handling', () => {
     }
   });
 
-  test('07.003.002: disabled button does NOT emit event', async ({ page }) => {
+  test('400.003.002: disabled button does NOT emit event', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
@@ -290,7 +290,7 @@ test.describe('07.003: CopyButton Event Handling', () => {
     }
   });
 
-  test('07.003.003: passes configItem in event payload', async ({ page }) => {
+  test('400.003.003: passes configItem in event payload', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
@@ -337,13 +337,13 @@ test.describe('07.003: CopyButton Event Handling', () => {
   });
 });
 
-// Test Suite 07.004: Tooltips
-test.describe('07.004: CopyButton Tooltips', () => {
+// Test Suite 400.004: Tooltips
+test.describe('400.004: CopyButton Tooltips', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page);
   });
 
-  test('07.004.001: shows default tooltip for regular configs', async ({ page }) => {
+  test('400.004.001: shows default tooltip for regular configs', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
@@ -381,7 +381,7 @@ test.describe('07.004: CopyButton Tooltips', () => {
     }
   });
 
-  test('07.004.002: shows plugin tooltip when disabled + location=plugin', async ({ page }) => {
+  test('400.004.002: shows plugin tooltip when disabled + location=plugin', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
@@ -420,13 +420,13 @@ test.describe('07.004: CopyButton Tooltips', () => {
   });
 });
 
-// Test Suite 07.005: Accessibility
-test.describe('07.005: CopyButton Accessibility', () => {
+// Test Suite 400.005: Accessibility
+test.describe('400.005: CopyButton Accessibility', () => {
   test.beforeEach(async ({ page }) => {
     await setupMocks(page);
   });
 
-  test('07.005.001: ARIA label present with config name', async ({ page }) => {
+  test('400.005.001: ARIA label present with config name', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
@@ -456,7 +456,7 @@ test.describe('07.005: CopyButton Accessibility', () => {
     }
   });
 
-  test('07.005.002: focus indicator visible when focused', async ({ page }) => {
+  test('400.005.002: focus indicator visible when focused', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 
@@ -500,7 +500,7 @@ test.describe('07.005: CopyButton Accessibility', () => {
     }
   });
 
-  test('07.005.003: keyboard accessible (Enter/Space triggers click)', async ({ page }) => {
+  test('400.005.003: keyboard accessible (Enter/Space triggers click)', async ({ page }) => {
     await page.goto('/');
     await page.waitForSelector('#app[data-theme]', { timeout: 10000 });
 

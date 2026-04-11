@@ -15,10 +15,11 @@ const { test, expect } = require('@playwright/test');
 // Helper: Navigate to a project's configuration page
 async function navigateToProject(page) {
   await page.goto('/');
-  await page.waitForSelector('.project-card', { timeout: 10000 });
-  // Click first project
-  await page.locator('.project-card').first().click();
-  await page.waitForURL(/\/project\//);
+  // Wait for project cards to load, excluding the user config card which is always first
+  await page.waitForSelector('.project-card:not(.user-card)', { timeout: 10000 });
+  // Click first real project card (not the user config card)
+  await page.locator('.project-card:not(.user-card)').first().click();
+  await page.waitForURL(/\/project\//, { timeout: 15000 });
 }
 
 // Helper: Wait for loading to complete
@@ -29,8 +30,8 @@ async function waitForLoading(page) {
   }, { timeout: 10000 });
 }
 
-test.describe('Agent Detail Sidebar Fields', () => {
-  test('displays identity section with name, description, color fields', async ({ page }) => {
+test.describe('07.001: Agent Detail Sidebar Fields', () => {
+  test('07.001.001: displays identity section with name, description, color fields', async ({ page }) => {
     await navigateToProject(page);
     await waitForLoading(page);
 
@@ -56,7 +57,7 @@ test.describe('Agent Detail Sidebar Fields', () => {
     }
   });
 
-  test('displays capabilities section with tools', async ({ page }) => {
+  test('07.001.002: displays capabilities section with tools', async ({ page }) => {
     await navigateToProject(page);
     await waitForLoading(page);
 
@@ -80,7 +81,7 @@ test.describe('Agent Detail Sidebar Fields', () => {
     }
   });
 
-  test('displays execution section with model and permission mode', async ({ page }) => {
+  test('07.001.003: displays execution section with model and permission mode', async ({ page }) => {
     await navigateToProject(page);
     await waitForLoading(page);
 
@@ -108,7 +109,7 @@ test.describe('Agent Detail Sidebar Fields', () => {
     }
   });
 
-  test('displays system prompt section', async ({ page }) => {
+  test('07.001.004: displays system prompt section', async ({ page }) => {
     await navigateToProject(page);
     await waitForLoading(page);
 
@@ -128,8 +129,8 @@ test.describe('Agent Detail Sidebar Fields', () => {
   });
 });
 
-test.describe('Hook Detail Sidebar Fields', () => {
-  test('displays event and type fields for hooks', async ({ page }) => {
+test.describe('07.002: Hook Detail Sidebar Fields', () => {
+  test('07.002.001: displays event and type fields for hooks', async ({ page }) => {
     await navigateToProject(page);
     await waitForLoading(page);
 
@@ -155,7 +156,7 @@ test.describe('Hook Detail Sidebar Fields', () => {
     }
   });
 
-  test('displays common fields: timeout, enabled, suppress output, continue', async ({ page }) => {
+  test('07.002.002: displays common fields: timeout, enabled, suppress output, continue', async ({ page }) => {
     await navigateToProject(page);
     await waitForLoading(page);
 
@@ -178,8 +179,8 @@ test.describe('Hook Detail Sidebar Fields', () => {
   });
 });
 
-test.describe('Skill Detail Sidebar Fields', () => {
-  test('displays name, description, and allowed tools for skills', async ({ page }) => {
+test.describe('07.003: Skill Detail Sidebar Fields', () => {
+  test('07.003.001: displays name, description, and allowed tools for skills', async ({ page }) => {
     await navigateToProject(page);
     await waitForLoading(page);
 

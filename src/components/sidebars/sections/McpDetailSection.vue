@@ -4,6 +4,13 @@
     <div class="mb-6">
       <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Metadata</h4>
 
+      <!-- Scope and Status Badges -->
+      <McpScopeBadges
+        :scope="selectedItem?.scope"
+        :status="selectedItem?.status"
+        class="mb-3"
+      />
+
       <!-- Name Field -->
       <LabeledEditField
       v-model="mcpData.name"
@@ -135,6 +142,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import McpScopeBadges from '@/components/common/McpScopeBadges.vue'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import ArgsArrayEditor from '@/components/forms/ArgsArrayEditor.vue'
 import KeyValueEditor from '@/components/forms/KeyValueEditor.vue'
