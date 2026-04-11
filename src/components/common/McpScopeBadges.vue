@@ -7,16 +7,12 @@
       severity="success"
       value="Enabled"
       class="mcp-tag"
-      :class="{ 'mcp-tag-toggleable': toggleable }"
-      @click="toggleable ? emit('toggle-status') : undefined"
     />
     <Tag
       v-else-if="status === 'disabled'"
       severity="danger"
       value="Disabled"
       class="mcp-tag"
-      :class="{ 'mcp-tag-toggleable': toggleable }"
-      @click="toggleable ? emit('toggle-status') : undefined"
     />
   </div>
 </template>
@@ -32,14 +28,8 @@ defineProps({
   status: {
     type: String,
     default: null
-  },
-  toggleable: {
-    type: Boolean,
-    default: false
   }
 })
-
-const emit = defineEmits(['toggle-status'])
 </script>
 
 <style scoped>
@@ -53,15 +43,5 @@ const emit = defineEmits(['toggle-status'])
 :deep(.p-tag) {
   font-size: 0.7rem;
   padding: 0.1rem 0.4rem;
-}
-
-.mcp-tag-toggleable {
-  cursor: pointer;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-.mcp-tag-toggleable:hover {
-  opacity: 0.8;
-  transform: translateY(-1px);
 }
 </style>

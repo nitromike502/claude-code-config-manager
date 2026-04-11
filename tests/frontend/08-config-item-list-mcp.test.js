@@ -521,10 +521,10 @@ describe('ConfigItemList — MCP toggle button visibility', () => {
 })
 
 // ---------------------------------------------------------------------------
-// McpScopeBadges component — toggleable prop (STORY-11.2)
+// McpScopeBadges component — scope and status badge rendering (STORY-11.1)
 // ---------------------------------------------------------------------------
 
-describe('McpScopeBadges — toggleable prop', () => {
+describe('McpScopeBadges — badge rendering', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
@@ -541,7 +541,6 @@ describe('McpScopeBadges — toggleable prop', () => {
       props,
       global: {
         stubs: {
-          // Use a real stub that exposes the class attribute so we can inspect it
           Tag: {
             props: ['value', 'severity'],
             template: `<span class="p-tag-stub" :data-severity="severity" :data-value="value">{{ value }}</span>`
@@ -551,92 +550,13 @@ describe('McpScopeBadges — toggleable prop', () => {
     })
   }
 
-  it('applies mcp-tag-toggleable class to status tag when toggleable=true', async () => {
-    const wrapper = await mountMcpScopeBadges({
-      scope: 'project',
-      status: 'enabled',
-      toggleable: true
-    })
-
-    // The component applies mcp-tag-toggleable class to the Tag wrapping the status
-    // We verify via the rendered HTML that the class is present on the tag element
-    expect(wrapper.html()).toContain('mcp-tag-toggleable')
-  })
-
-  it('does NOT apply mcp-tag-toggleable class when toggleable is false (default)', async () => {
+  it('does NOT apply mcp-tag-toggleable class (toggleable prop removed)', async () => {
     const wrapper = await mountMcpScopeBadges({
       scope: 'project',
       status: 'enabled'
-      // toggleable defaults to false
     })
 
     expect(wrapper.html()).not.toContain('mcp-tag-toggleable')
-  })
-
-  it('emits toggle-status when status tag is clicked and toggleable=true (enabled server)', async () => {
-    const wrapper = await mountMcpScopeBadges({
-      scope: 'project',
-      status: 'enabled',
-      toggleable: true
-    })
-
-    // Find the enabled status tag and click it
-    const enabledTag = wrapper.findAll('.p-tag-stub').find(t => t.attributes('data-value') === 'Enabled')
-    expect(enabledTag).toBeDefined()
-
-    await enabledTag.trigger('click')
-
-    expect(wrapper.emitted('toggle-status')).toBeTruthy()
-    expect(wrapper.emitted('toggle-status').length).toBe(1)
-  })
-
-  it('emits toggle-status when status tag is clicked and toggleable=true (disabled server)', async () => {
-    const wrapper = await mountMcpScopeBadges({
-      scope: 'project',
-      status: 'disabled',
-      toggleable: true
-    })
-
-    const disabledTag = wrapper.findAll('.p-tag-stub').find(t => t.attributes('data-value') === 'Disabled')
-    expect(disabledTag).toBeDefined()
-
-    await disabledTag.trigger('click')
-
-    expect(wrapper.emitted('toggle-status')).toBeTruthy()
-    expect(wrapper.emitted('toggle-status').length).toBe(1)
-  })
-
-  it('does NOT emit toggle-status on scope tag click even when toggleable=true', async () => {
-    const wrapper = await mountMcpScopeBadges({
-      scope: 'project',
-      status: 'enabled',
-      toggleable: true
-    })
-
-    // Scope tag (Project) should not be clickable
-    const scopeTag = wrapper.findAll('.p-tag-stub').find(t => t.attributes('data-value') === 'Project')
-    expect(scopeTag).toBeDefined()
-
-    await scopeTag.trigger('click')
-
-    // No toggle-status event from the scope badge
-    expect(wrapper.emitted('toggle-status')).toBeFalsy()
-  })
-
-  it('does NOT emit toggle-status when toggleable=false and status tag is clicked', async () => {
-    const wrapper = await mountMcpScopeBadges({
-      scope: 'project',
-      status: 'enabled',
-      toggleable: false
-    })
-
-    const enabledTag = wrapper.findAll('.p-tag-stub').find(t => t.attributes('data-value') === 'Enabled')
-    expect(enabledTag).toBeDefined()
-
-    await enabledTag.trigger('click')
-
-    // Should not have emitted toggle-status
-    expect(wrapper.emitted('toggle-status')).toBeFalsy()
   })
 
   it('renders nothing when scope is null', async () => {

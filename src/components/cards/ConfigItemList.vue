@@ -224,8 +224,6 @@ const handleMcpToggle = async (item) => {
     const result = await mcpStore.toggleMcpStatus(props.projectId, item.name, newEnabled);
 
     if (result.success) {
-      // Update the item's status in place so the badge flips immediately
-      item.status = result.status;
       emit('mcp-toggled', item);
     }
   } finally {
