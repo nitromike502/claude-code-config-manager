@@ -191,6 +191,95 @@ router.put('/:projectId/mcp/:serverName', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/projects/:projectId/mcp/:serverName/toggle
+ * Enables or disables an MCP server by updating disabledMcpServers in ~/.claude.json
+ */
+router.post('/:projectId/mcp/:serverName/toggle', async (req, res) => {
+  try {
+    const { projectId, serverName } = req.params;
+    const { enabled } = req.body;
+
+    // 1. Validate request body
+    if (typeof enabled !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        error: 'Request body must include "enabled" as a boolean'
+      });
+    }
+
+    // 2. URL-decode serverName
+    const decodedName = decodeURIComponent(serverName);
+
+    // 3. Resolve project path
+    const projectPath = await resolveProjectPath(projectId);
+    if (!projectPath) {
+      return res.status(404).json({ success: false, error: 'Project not found' });
+    }
+
+    // 4. Read ~/.claude.json
+    const claudeJsonPath = config.paths.getUserClaudeJsonPath();
+    let claudeJson = {};
+    try {
+      const content = await fs.readFile(claudeJsonPath, 'utf8');
+      claudeJson = JSON.parse(content);
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
+    }
+
+    // 5. Ensure projects object and project entry exist
+    if (!claudeJson.projects) {
+      claudeJson.projects = {};
+    }
+    if (!claudeJson.projects[projectPath]) {
+      claudeJson.projects[projectPath] = {};
+    }
+
+    const projectEntry = claudeJson.projects[projectPath];
+
+    // 6. Ensure disabledMcpServers array exists
+    if (!Array.isArray(projectEntry.disabledMcpServers)) {
+      projectEntry.disabledMcpServers = [];
+    }
+
+    // 7. Update the disabled list based on desired state
+    if (enabled === false) {
+      // Add to disabled list if not already present
+      if (!projectEntry.disabledMcpServers.includes(decodedName)) {
+        projectEntry.disabledMcpServers.push(decodedName);
+      }
+    } else {
+      // Remove from disabled list
+      projectEntry.disabledMcpServers = projectEntry.disabledMcpServers.filter(
+        name => name !== decodedName
+      );
+    }
+
+    // 8. Write back ~/.claude.json atomically
+    const tempPath = `${claudeJsonPath}.tmp`;
+    await fs.writeFile(tempPath, JSON.stringify(claudeJson, null, 2), 'utf8');
+    await fs.rename(tempPath, claudeJsonPath);
+
+    // 9. Return success
+    res.json({
+      success: true,
+      serverName: decodedName,
+      enabled,
+      status: enabled ? 'enabled' : 'disabled'
+    });
+
+  } catch (error) {
+    console.error('Error toggling MCP server:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to toggle MCP server',
+      details: error.message
+    });
+  }
+});
+
 // User-level routes
 const userRouter = express.Router();
 

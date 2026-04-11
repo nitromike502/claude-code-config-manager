@@ -215,6 +215,45 @@ export const useMcpStore = defineStore('mcp', () => {
   }
 
   /**
+   * Toggle the enabled/disabled status of an MCP server for a project
+   * Works for both project-scope and user-scope servers (disabledMcpServers in ~/.claude.json)
+   * @param {string} projectId - Project identifier
+   * @param {string} serverName - MCP server name
+   * @param {boolean} enabled - Whether to enable (true) or disable (false)
+   * @returns {Promise<Object>} - { success: boolean, status?: string, error?: string }
+   */
+  async function toggleMcpStatus(projectId, serverName, enabled) {
+    try {
+      const result = await api.toggleProjectMcpStatus(projectId, serverName, enabled)
+
+      if (result.success) {
+        // Update local state: flip the status on the cached server
+        const servers = projectMcpServers.value.get(projectId) || []
+        const index = servers.findIndex(s => s.name === serverName)
+        if (index !== -1) {
+          servers[index] = { ...servers[index], status: result.status }
+          projectMcpServers.value.set(projectId, [...servers])
+        }
+
+        const label = result.status === 'enabled' ? 'enabled' : 'disabled'
+        notifications.success(`MCP server "${serverName}" ${label}`)
+
+        return { success: true, status: result.status }
+      } else {
+        throw new Error(result.error || result.message || 'Failed to toggle MCP server status')
+      }
+    } catch (err) {
+      notifications.error(`Failed to toggle MCP server: ${err.message}`)
+
+      if (!err.isExpected) {
+        console.error('Error toggling MCP server status:', err)
+      }
+
+      return { success: false, error: err.message }
+    }
+  }
+
+  /**
    * Get cached project MCP servers
    * @param {string} projectId - Project identifier
    * @returns {Array} - MCP servers array (empty if not loaded)
@@ -244,6 +283,7 @@ export const useMcpStore = defineStore('mcp', () => {
     deleteMcpServer,
     loadProjectMcp,
     loadUserMcp,
+    toggleMcpStatus,
     getProjectMcpCache,
     clearCache
   }

@@ -162,9 +162,11 @@
                 item-type="mcp"
                 :enable-crud="enableMcpCrud"
                 :page-scope="scope"
+                :project-id="projectId"
                 @item-selected="(item) => $emit('show-detail', item, 'mcp', mcpServers)"
                 @copy-clicked="(item) => $emit('copy-clicked', item)"
                 @delete-clicked="(item) => $emit('mcp-delete', item)"
+                @mcp-toggled="$emit('mcp-toggled', $event)"
               />
             </template>
           </ConfigPanel>
@@ -226,6 +228,7 @@
       @hook-updated="$emit('hook-updated')"
       @hook-delete="(item) => $emit('hook-delete', item)"
       @mcp-delete="(item) => $emit('mcp-delete', item)"
+      @mcp-updated="$emit('mcp-updated')"
       @rule-delete="(item) => $emit('rule-delete', item)"
     />
 
@@ -450,6 +453,8 @@ defineEmits([
   'hook-updated',
   'hook-delete',
   'mcp-delete',
+  'mcp-toggled',
+  'mcp-updated',
   'rule-delete'
 ])
 </script>

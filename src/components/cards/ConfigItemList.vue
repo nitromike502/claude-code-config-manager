@@ -20,6 +20,19 @@
             />
           </div>
           <div class="flex items-center gap-2 shrink-0" @click.stop>
+            <!-- MCP Toggle Button (project view only) -->
+            <Button
+              v-if="itemType === 'mcp' && pageScope === 'project'"
+              :icon="item.status === 'enabled' ? 'pi pi-ban' : 'pi pi-check-circle'"
+              outlined
+              size="small"
+              :severity="item.status === 'enabled' ? 'secondary' : 'success'"
+              :aria-label="item.status === 'enabled' ? 'Disable' : 'Enable'"
+              :title="item.status === 'enabled' ? 'Disable MCP server' : 'Enable MCP server'"
+              class="mcp-toggle-btn"
+              :loading="toggleLoadingMap[item.name]"
+              @click.stop="handleMcpToggle(item)"
+            />
             <!-- Delete Button (agents, commands, skills, hooks, MCP) -->
             <Button
               v-if="canDelete(item)"
@@ -67,11 +80,12 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed } from 'vue';
+import { defineProps, defineEmits, computed, reactive } from 'vue';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
 import McpScopeBadges from '@/components/common/McpScopeBadges.vue';
 import CopyButton from '@/components/copy/CopyButton.vue';
+import { useMcpStore } from '@/stores/mcp';
 
 // Pass-through configuration for PrimeVue Card component
 const cardPt = computed(() => ({
@@ -118,6 +132,13 @@ const props = defineProps({
     type: String,
     default: null,
     validator: (value) => value === null || ['project', 'user'].includes(value)
+  },
+  /**
+   * Project ID — required for MCP toggle functionality in project view
+   */
+  projectId: {
+    type: String,
+    default: null
   }
 });
 
@@ -130,8 +151,17 @@ const emit = defineEmits({
   },
   'delete-clicked': (item) => {
     return item !== null && typeof item === 'object';
+  },
+  'mcp-toggled': (item) => {
+    return item !== null && typeof item === 'object';
   }
 });
+
+// MCP store for toggle operations
+const mcpStore = useMcpStore();
+
+// Track per-server loading state for toggle buttons
+const toggleLoadingMap = reactive({});
 
 /**
  * Check if delete button should be shown for an item
@@ -178,6 +208,29 @@ const handleCopyClick = (item) => {
   };
 
   emit('copy-clicked', itemWithType);
+};
+
+/**
+ * Handle MCP server toggle (enable/disable) from the list
+ * Only available in project view (pageScope === 'project')
+ */
+const handleMcpToggle = async (item) => {
+  if (!props.projectId || props.pageScope !== 'project') return;
+
+  const newEnabled = item.status !== 'enabled';
+  toggleLoadingMap[item.name] = true;
+
+  try {
+    const result = await mcpStore.toggleMcpStatus(props.projectId, item.name, newEnabled);
+
+    if (result.success) {
+      // Update the item's status in place so the badge flips immediately
+      item.status = result.status;
+      emit('mcp-toggled', item);
+    }
+  } finally {
+    toggleLoadingMap[item.name] = false;
+  }
 };
 
 /**
@@ -274,6 +327,17 @@ const getItemDescription = (item, type) => {
 }
 
 .crud-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-card);
+}
+
+/* MCP Toggle Button */
+.mcp-toggle-btn {
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.mcp-toggle-btn:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-card);
 }
