@@ -33,7 +33,7 @@ async function mountConfigItemList(props) {
 
   // Dynamic import after Pinia is ready
   const { default: ConfigItemList } = await import(
-    '../../../src/components/cards/ConfigItemList.vue'
+    '@/components/cards/ConfigItemList.vue'
   )
 
   return mount(ConfigItemList, {
@@ -49,7 +49,19 @@ async function mountConfigItemList(props) {
             </div>
           `
         },
-        // Stub PrimeVue Tag — render a span with the value text
+        // Stub McpScopeBadges — render the same tag spans the tests assert on
+        McpScopeBadges: {
+          props: ['scope', 'status'],
+          template: `
+            <div v-if="scope">
+              <span v-if="scope === 'project'" class="p-tag-stub" data-severity="info">Project</span>
+              <span v-else-if="scope === 'user'" class="p-tag-stub" data-severity="secondary">User</span>
+              <span v-if="status === 'enabled'" class="p-tag-stub" data-severity="success">Enabled</span>
+              <span v-else-if="status === 'disabled'" class="p-tag-stub" data-severity="danger">Disabled</span>
+            </div>
+          `
+        },
+        // Stub PrimeVue Tag — render a span with the value text (used by other components)
         Tag: {
           props: ['value', 'severity'],
           template: `<span class="p-tag-stub" :data-severity="severity">{{ value }}</span>`
@@ -186,11 +198,12 @@ describe('ConfigItemList — MCP scope and status badges', () => {
 
   // --- Delete button restrictions ---
 
-  it('hides delete button for user-scope MCP items even with enableCrud true', async () => {
+  it('hides delete button for user-scope MCP items even with enableCrud true (in project view)', async () => {
     const wrapper = await mountConfigItemList({
       items: [userScopedMcpItem],
       itemType: 'mcp',
-      enableCrud: true
+      enableCrud: true,
+      pageScope: 'project'
     })
 
     // Delete button is a p-button-stub with data-icon="pi pi-trash"

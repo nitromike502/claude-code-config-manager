@@ -13,32 +13,11 @@
           <div class="flex items-center gap-2 min-w-0">
             <span class="font-semibold text-[0.95rem] text-text-primary truncate">{{ getItemName(item) }}</span>
             <!-- MCP scope and status badges -->
-            <template v-if="itemType === 'mcp'">
-              <Tag
-                v-if="item.scope === 'project'"
-                severity="info"
-                value="Project"
-                class="mcp-tag"
-              />
-              <Tag
-                v-else-if="item.scope === 'user'"
-                severity="secondary"
-                value="User"
-                class="mcp-tag"
-              />
-              <Tag
-                v-if="item.status === 'enabled'"
-                severity="success"
-                value="Enabled"
-                class="mcp-tag"
-              />
-              <Tag
-                v-else-if="item.status === 'disabled'"
-                severity="danger"
-                value="Disabled"
-                class="mcp-tag"
-              />
-            </template>
+            <McpScopeBadges
+              v-if="itemType === 'mcp'"
+              :scope="item.scope"
+              :status="item.status"
+            />
           </div>
           <div class="flex items-center gap-2 shrink-0" @click.stop>
             <!-- Delete Button (agents, commands, skills, hooks, MCP) -->
@@ -91,7 +70,7 @@
 import { defineProps, defineEmits, computed } from 'vue';
 import Button from 'primevue/button';
 import Card from 'primevue/card';
-import Tag from 'primevue/tag';
+import McpScopeBadges from '@/components/common/McpScopeBadges.vue';
 import CopyButton from '@/components/copy/CopyButton.vue';
 
 // Pass-through configuration for PrimeVue Card component
@@ -330,19 +309,6 @@ const getItemDescription = (item, type) => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-/* MCP Tag badges - compact sizing */
-.mcp-tag {
-  font-size: 0.7rem;
-  padding: 0.1rem 0.4rem;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-:deep(.mcp-tag .p-tag) {
-  font-size: 0.7rem;
-  padding: 0.1rem 0.4rem;
 }
 
 /* Responsive Design - Mobile adjustments */
