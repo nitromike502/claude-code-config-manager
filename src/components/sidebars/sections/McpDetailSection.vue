@@ -13,11 +13,11 @@
         <!-- Enable/Disable toggle (project view only) -->
         <Button
           v-if="projectId"
-          :icon="selectedItem?.status === 'enabled' ? 'pi pi-ban' : 'pi pi-check-circle'"
-          :label="selectedItem?.status === 'enabled' ? 'Disable' : 'Enable'"
+          :icon="selectedItem?.status === 'enabled' ? 'pi pi-check-circle' : 'pi pi-ban'"
+          :label="selectedItem?.status === 'enabled' ? 'Enabled' : 'Disabled'"
           outlined
           size="small"
-          :severity="selectedItem?.status === 'enabled' ? 'secondary' : 'success'"
+          :severity="selectedItem?.status === 'enabled' ? 'success' : 'danger'"
           :loading="isToggling"
           class="mcp-sidebar-toggle-btn"
           @click="handleToggle"
@@ -249,6 +249,8 @@ const handleToggle = async () => {
 
     if (result.success) {
       emit('mcp-updated')
+      // Update local state immediately so sidebar reflects the change
+      mcpData.value.status = newEnabled ? 'enabled' : 'disabled'
     }
   } finally {
     isToggling.value = false

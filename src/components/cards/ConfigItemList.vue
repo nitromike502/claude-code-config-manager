@@ -23,12 +23,12 @@
             <!-- MCP Toggle Button (project view only) -->
             <Button
               v-if="itemType === 'mcp' && pageScope === 'project'"
-              :icon="item.status === 'enabled' ? 'pi pi-ban' : 'pi pi-check-circle'"
+              :icon="item.status === 'enabled' ? 'pi pi-check-circle' : 'pi pi-ban'"
               outlined
               size="small"
-              :severity="item.status === 'enabled' ? 'secondary' : 'success'"
+              :severity="item.status === 'enabled' ? 'success' : 'danger'"
               :aria-label="item.status === 'enabled' ? 'Disable' : 'Enable'"
-              :title="item.status === 'enabled' ? 'Disable MCP server' : 'Enable MCP server'"
+              :title="item.status === 'enabled' ? 'Click to disable' : 'Click to enable'"
               class="mcp-toggle-btn"
               :loading="toggleLoadingMap[item.name]"
               @click.stop="handleMcpToggle(item)"
