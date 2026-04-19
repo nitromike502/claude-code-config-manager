@@ -62,6 +62,7 @@
     @skill-delete="handleSkillDelete"
     @mcp-delete="handleMcpDelete"
     @mcp-updated="handleMcpUpdated"
+    @mcp-toggled="handleMcpUpdated"
     @rule-delete="handleRuleDelete"
   >
     <template #copy-modal>
