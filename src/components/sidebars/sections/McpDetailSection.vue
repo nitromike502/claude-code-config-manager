@@ -13,11 +13,11 @@
         <!-- Enable/Disable toggle (project view only) -->
         <Button
           v-if="projectId"
-          :icon="selectedItem?.status === 'enabled' ? 'pi pi-check-circle' : 'pi pi-ban'"
-          :label="selectedItem?.status === 'enabled' ? 'Enabled' : 'Disabled'"
+          :icon="mcpData.status === 'enabled' ? 'pi pi-check-circle' : 'pi pi-ban'"
+          :label="mcpData.status === 'enabled' ? 'Enabled' : 'Disabled'"
           outlined
           size="small"
-          :severity="selectedItem?.status === 'enabled' ? 'success' : 'danger'"
+          :severity="mcpData.status === 'enabled' ? 'success' : 'danger'"
           :loading="isToggling"
           class="mcp-sidebar-toggle-btn"
           @click="handleToggle"
@@ -206,6 +206,7 @@ const mcpData = ref({
   url: '',
   headers: {},
   enabled: true,
+  status: null,
   timeout: null,
   retries: null
 })
@@ -225,6 +226,7 @@ watch(() => props.selectedItem, (newItem) => {
       url: newItem.url || '',
       headers: newItem.headers || {},
       enabled: newItem.enabled !== false, // Default to true
+      status: newItem.status || null,
       timeout: newItem.timeout || null,
       retries: newItem.retries || null
     }
