@@ -243,7 +243,7 @@ watch(() => props.editingField, (newValue) => {
 const handleToggle = async () => {
   if (!props.projectId || !props.selectedItem) return
 
-  const newEnabled = props.selectedItem.status !== 'enabled'
+  const newEnabled = mcpData.value.status !== 'enabled'
   isToggling.value = true
 
   try {
