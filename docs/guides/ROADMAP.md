@@ -27,7 +27,9 @@ Claude Code Config Manager follows a phased development approach, building incre
 | Subagent CRUD | 📅 Planned | Q1 2026 | Medium |
 | Command Management | 📅 Planned | Q1 2026 | Medium |
 | Hooks Configuration | 📅 Planned | Q1 2026 | Medium |
-| MCP Server Management | 📅 Planned | Q1 2026 | Medium |
+| EPIC-011 - MCP Scope Tags & Status | ✅ Complete | Completed (Apr 10, 2026) | High |
+| EPIC-011 - MCP Toggle | ✅ Complete | Completed (Apr 10, 2026) | High |
+| MCP Server Management (full CRUD) | 📅 Planned | Q2 2026 | Medium |
 | Advanced Features | 🔮 Future | Q2+ 2026 | Low |
 
 ---
@@ -330,6 +332,41 @@ Modernize the UI with PrimeVue Aura theme components and Tailwind CSS v4 integra
 
 ---
 
+## EPIC-011 - MCP Server Scope Tags, Status & Toggle
+
+**Status:** Complete
+**Completed:** April 10, 2026
+**Priority:** High (MCP server management improvements)
+
+### Objective
+
+Extend MCP server management with two related features: (1) visual scope tags showing whether each server originates from the project or user level, with status resolution via `disabledMcpServers`; (2) an enable/disable toggle that writes to `disabledMcpServers` in `~/.claude.json` per project.
+
+### STORY-11.1 - MCP Server Scope Tags & Status Resolution
+
+**Achievements:**
+
+1. **Merged project + user MCP servers** — `GET /api/projects/:projectId/mcp` now returns servers from both `.mcp.json` and `~/.claude/settings.json`, each with a `scope` field (`'project'` or `'user'`)
+2. **Status resolution** — Each server includes a `status` field (`'enabled'` or `'disabled'`) derived from the `disabledMcpServers` array in the project's `~/.claude.json` entry
+3. **Scope tag UI** — Visual badges in the MCP panel distinguish project-level from user-level servers
+
+### STORY-11.2 - MCP Server Enable/Disable Toggle
+
+**Achievements:**
+
+1. **Toggle endpoint** — `POST /api/projects/:projectId/mcp/:serverName/toggle` accepts `{ "enabled": true|false }` and atomically updates `disabledMcpServers` in `~/.claude.json`
+2. **Universal mechanism** — Works for both project-scoped and user-scoped servers; `disabledMcpServers` is the canonical per-project disable mechanism for all server types
+3. **Frontend toggle** — Toggle switch in the MCP panel reflects live status and refreshes the list on change
+4. **Tests** — Backend route and service tests plus frontend component tests added
+
+### User Value
+
+- **Visibility:** Users can see at a glance whether each MCP server is project-scoped or user-level
+- **Control:** Per-project enable/disable of any MCP server without editing config files manually
+- **Consistency:** Status reads from the same `disabledMcpServers` field Claude Code itself uses
+
+---
+
 ## Future Work
 
 ### Planned Features (Q1 2026)
@@ -349,8 +386,8 @@ Modernize the UI with PrimeVue Aura theme components and Tailwind CSS v4 integra
 - Pre-built hook templates
 - Hook dependency management
 
-**MCP Server Management**
-- Add, edit, and remove MCP servers
+**MCP Server Management (full CRUD)**
+- Add, edit, and remove MCP servers (enable/disable toggle already shipped in v3.2.0)
 - Server configuration validation and connection testing
 - Server discovery and recommendations
 
@@ -422,6 +459,6 @@ Have ideas for features or improvements? See the following resources:
 
 ---
 
-**Last Updated:** 2026-03-14
-**Roadmap Version:** 2.2
-**Status:** All core viewing and copy features complete (including Skills and Rules -- all 6 config types). CRUD features planned for Q2 2026.
+**Last Updated:** 2026-04-10
+**Roadmap Version:** 2.3
+**Status:** All core viewing and copy features complete (all 6 config types). MCP scope tags and per-project enable/disable toggle added in v3.2.0. Full MCP CRUD (add/edit/remove) and other CRUD features planned for Q2 2026.

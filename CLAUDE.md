@@ -6,7 +6,7 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Purpose:** Centralized interface to view and manage Claude Code configurations across all projects on a local machine.  
 **Deployment:** Local web server at `http://localhost:5173` (dev) / `http://localhost:8420` (backend)  
-**Current Release:** v3.1.0 — Released March 14, 2026
+**Current Release:** v3.2.0 — Released April 10, 2026
 
 ## IMPORTANT: Rules
 

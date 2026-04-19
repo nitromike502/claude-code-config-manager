@@ -8,7 +8,7 @@
       <div class="flex items-center gap-3 mb-3">
         <McpScopeBadges
           :scope="selectedItem?.scope"
-          :status="selectedItem?.status"
+          :status="mcpData.status"
         />
         <!-- Enable/Disable toggle (project view only) -->
         <Button
