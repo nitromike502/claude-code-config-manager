@@ -6,7 +6,7 @@ A web-based tool for managing Claude Code projects, subagents, slash commands, h
 
 **Purpose:** Centralized interface to view and manage Claude Code configurations across all projects on a local machine.  
 **Deployment:** Local web server at `http://localhost:5173` (dev) / `http://localhost:8420` (backend)  
-**Current Release:** v3.1.0 — Released March 14, 2026
+**Current Release:** v3.2.0 — Released April 10, 2026
 
 ## IMPORTANT: Rules
 
@@ -106,7 +106,7 @@ manager/
 - `.claude/skills/*/SKILL.md` — Skills (directory-based configurations)
 - `.claude/rules/**/*.md` — Rules (markdown with optional YAML frontmatter, `paths` field for conditional loading)
 - `.claude/settings.json` / `.claude/settings.local.json` — Project settings including hooks
-- `.mcp.json` — Project MCP servers (also merged with user-level servers via GET /api/projects/:projectId/mcp; status resolved from settings.local.json, settings.json, and ~/.claude.json)
+- `.mcp.json` — Project MCP servers (also merged with user-level servers via GET /api/projects/:projectId/mcp; status resolved via `disabledMcpServers` array in the project's `~/.claude.json` entry — the universal per-project disable mechanism for all server types)
 
 ### User-Level Configurations
 - `~/.claude/agents/*.md`, `~/.claude/commands/**/*.md`, `~/.claude/skills/*/SKILL.md`
@@ -158,6 +158,7 @@ GET    /api/projects/:projectId/commands          - Get project commands
 GET    /api/projects/:projectId/skills            - Get project skills
 GET    /api/projects/:projectId/hooks             - Get project hooks
 GET    /api/projects/:projectId/mcp               - Get merged project + user MCP servers (each has scope: 'project'|'user', status: 'enabled'|'disabled')
+POST   /api/projects/:projectId/mcp/:serverName/toggle - Toggle MCP server enabled/disabled per project. Body: { "enabled": true|false }. Writes to disabledMcpServers in ~/.claude.json projects entry
 GET    /api/projects/:projectId/rules             - Get project rules
 GET    /api/user/agents                           - Get user subagents
 GET    /api/user/commands                         - Get user commands
@@ -240,7 +241,6 @@ All guides are indexed at `docs/guides/DOCUMENTATION-INDEX.md`. Key references:
 
 ## Future Enhancements
 
-- MCP Server Management — Enable/disable MCP servers from UI
 - Team Builder — Create groups of agents, commands, and configurations to copy as a unit
 - Subagent CRUD — Create, edit, and delete subagent definitions
 - Command Management — Create, edit, and delete slash commands

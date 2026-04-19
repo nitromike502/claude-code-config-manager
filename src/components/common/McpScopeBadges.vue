@@ -2,8 +2,18 @@
   <div v-if="scope" class="flex items-center gap-2">
     <Tag v-if="scope === 'project'" severity="info" value="Project" class="mcp-tag" />
     <Tag v-else-if="scope === 'user'" severity="secondary" value="User" class="mcp-tag" />
-    <Tag v-if="status === 'enabled'" severity="success" value="Enabled" class="mcp-tag" />
-    <Tag v-else-if="status === 'disabled'" severity="danger" value="Disabled" class="mcp-tag" />
+    <Tag
+      v-if="status === 'enabled'"
+      severity="success"
+      value="Enabled"
+      class="mcp-tag"
+    />
+    <Tag
+      v-else-if="status === 'disabled'"
+      severity="danger"
+      value="Disabled"
+      class="mcp-tag"
+    />
   </div>
 </template>
 

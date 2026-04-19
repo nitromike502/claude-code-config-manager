@@ -4,12 +4,25 @@
     <div class="mb-6">
       <h4 class="mb-3 text-sm font-semibold text-text-primary uppercase tracking-wider">Metadata</h4>
 
-      <!-- Scope and Status Badges -->
-      <McpScopeBadges
-        :scope="selectedItem?.scope"
-        :status="selectedItem?.status"
-        class="mb-3"
-      />
+      <!-- Scope and Status Badges + Toggle -->
+      <div class="flex items-center gap-3 mb-3">
+        <McpScopeBadges
+          :scope="selectedItem?.scope"
+          :status="mcpData.status"
+        />
+        <!-- Enable/Disable toggle (project view only) -->
+        <Button
+          v-if="projectId"
+          :icon="mcpData.status === 'enabled' ? 'pi pi-check-circle' : 'pi pi-ban'"
+          :label="mcpData.status === 'enabled' ? 'Enabled' : 'Disabled'"
+          outlined
+          size="small"
+          :severity="mcpData.status === 'enabled' ? 'success' : 'danger'"
+          :loading="isToggling"
+          class="mcp-sidebar-toggle-btn"
+          @click="handleToggle"
+        />
+      </div>
 
       <!-- Name Field -->
       <LabeledEditField
@@ -142,6 +155,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import Button from 'primevue/button'
 import McpScopeBadges from '@/components/common/McpScopeBadges.vue'
 import LabeledEditField from '@/components/forms/LabeledEditField.vue'
 import ArgsArrayEditor from '@/components/forms/ArgsArrayEditor.vue'
@@ -179,6 +193,9 @@ const mcpStore = useMcpStore()
 // Local editing field state
 const editingField = ref(props.editingField)
 
+// Toggle loading state
+const isToggling = ref(false)
+
 // MCP data ref
 const mcpData = ref({
   name: '',
@@ -189,6 +206,7 @@ const mcpData = ref({
   url: '',
   headers: {},
   enabled: true,
+  status: null,
   timeout: null,
   retries: null
 })
@@ -208,6 +226,7 @@ watch(() => props.selectedItem, (newItem) => {
       url: newItem.url || '',
       headers: newItem.headers || {},
       enabled: newItem.enabled !== false, // Default to true
+      status: newItem.status || null,
       timeout: newItem.timeout || null,
       retries: newItem.retries || null
     }
@@ -219,6 +238,26 @@ watch(() => props.selectedItem, (newItem) => {
 watch(() => props.editingField, (newValue) => {
   editingField.value = newValue
 })
+
+// Handle MCP enable/disable toggle from sidebar
+const handleToggle = async () => {
+  if (!props.projectId || !props.selectedItem) return
+
+  const newEnabled = mcpData.value.status !== 'enabled'
+  isToggling.value = true
+
+  try {
+    const result = await mcpStore.toggleMcpStatus(props.projectId, props.selectedItem.name, newEnabled)
+
+    if (result.success) {
+      emit('mcp-updated')
+      // Update local state immediately so sidebar reflects the change
+      mcpData.value.status = newEnabled ? 'enabled' : 'disabled'
+    }
+  } finally {
+    isToggling.value = false
+  }
+}
 
 // Handle edit start
 const handleEditStart = (fieldName) => {
@@ -261,3 +300,14 @@ const handleMcpFieldUpdate = async (fieldName, newValue) => {
   }
 }
 </script>
+
+<style scoped>
+.mcp-sidebar-toggle-btn {
+  font-size: 0.75rem;
+  transition: all 0.2s;
+}
+
+.mcp-sidebar-toggle-btn:hover {
+  transform: translateY(-1px);
+}
+</style>

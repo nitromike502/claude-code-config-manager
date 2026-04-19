@@ -6,14 +6,18 @@
  *   servers with scope and status fields
  * - getUserMCP: add scope:'user' to each returned server
  *
+ * Updated in STORY-11.2: Status resolution simplified to use only disabledMcpServers
+ * from ~/.claude.json projects[path] as the universal per-project disable list.
+ * All servers (project and user scoped) are enabled by default unless their name
+ * appears in disabledMcpServers.
+ *
  * Test Coverage:
  * - scope field tagging (project vs user)
  * - Ordering: project servers first, then user servers
  * - Deduplication: project server name takes precedence over same-named user server
- * - Status resolution from settings.local.json, settings.json, ~/.claude.json project entry
- * - Settings precedence (settings.local.json overrides settings.json)
- * - enableAllProjectMcpServers, enabledMcpjsonServers, disabledMcpjsonServers
- * - disabledMcpServers (user-scoped servers)
+ * - Status resolution using disabledMcpServers from ~/.claude.json project entry
+ * - Servers enabled by default unless in disabledMcpServers
+ * - disabledMcpServers applies to both project-scoped and user-scoped servers
  * - Graceful handling of missing files
  * - Stale/unknown entries in disabledMcpServers silently ignored
  */
@@ -311,7 +315,7 @@ describe('getProjectMCP()', () => {
       projectServers.forEach(s => expect(s.status).toBe('enabled'));
     });
 
-    test('enabledMcpjsonServers enables specific project servers', async () => {
+    test('project server enabled by default when not in disabledMcpServers', async () => {
       fs.readFile = buildReadFileMock({
         ...noFiles,
         [MCP_JSON_PATH]: {
@@ -320,9 +324,6 @@ describe('getProjectMCP()', () => {
             'beta': { command: 'node', args: ['b.js'] },
             'gamma': { command: 'node', args: ['g.js'] }
           }
-        },
-        [SETTINGS_LOCAL_PATH]: {
-          enabledMcpjsonServers: ['alpha', 'beta']
         }
       });
 
@@ -332,12 +333,13 @@ describe('getProjectMCP()', () => {
       const beta = mcp.find(s => s.name === 'beta');
       const gamma = mcp.find(s => s.name === 'gamma');
 
+      // All enabled by default — not in disabledMcpServers
       expect(alpha.status).toBe('enabled');
       expect(beta.status).toBe('enabled');
-      expect(gamma.status).toBe('disabled');
+      expect(gamma.status).toBe('enabled');
     });
 
-    test('disabledMcpjsonServers disables specific project servers', async () => {
+    test('disabledMcpServers disables specific project servers', async () => {
       fs.readFile = buildReadFileMock({
         ...noFiles,
         [MCP_JSON_PATH]: {
@@ -349,7 +351,7 @@ describe('getProjectMCP()', () => {
         [CLAUDE_JSON_PATH]: {
           projects: {
             [PROJECT_PATH]: {
-              disabledMcpjsonServers: ['alpha']
+              disabledMcpServers: ['alpha']
             }
           }
         }
@@ -361,54 +363,25 @@ describe('getProjectMCP()', () => {
       const beta = mcp.find(s => s.name === 'beta');
 
       expect(alpha.status).toBe('disabled');
-      // beta has no enablement signal so also disabled (unapproved)
-      expect(beta.status).toBe('disabled');
+      // beta not in disabledMcpServers → enabled
+      expect(beta.status).toBe('enabled');
     });
 
-    test('enabledMcpjsonServers wins over disabledMcpjsonServers when server is in both', async () => {
-      // In the implementation enabledSet is checked first (if), disabledMcpJsonSet is else-if,
-      // so enabledSet wins when a server appears in both lists.
+    test('project server not in disabledMcpServers gets status:"enabled"', async () => {
       fs.readFile = buildReadFileMock({
         ...noFiles,
         [MCP_JSON_PATH]: {
           mcpServers: {
-            'conflict-server': { command: 'node', args: ['c.js'] }
-          }
-        },
-        [SETTINGS_LOCAL_PATH]: {
-          enabledMcpjsonServers: ['conflict-server']
-        },
-        [CLAUDE_JSON_PATH]: {
-          projects: {
-            [PROJECT_PATH]: {
-              disabledMcpjsonServers: ['conflict-server']
-            }
+            'any-server': { command: 'node', args: ['s.js'] }
           }
         }
       });
 
       const { mcp } = await getProjectMCP(PROJECT_PATH);
 
-      const server = mcp.find(s => s.name === 'conflict-server');
-      expect(server).toBeDefined();
-      // enabledSet check (if) fires before disabledMcpJsonSet (else-if)
+      const server = mcp.find(s => s.name === 'any-server');
+      // Not in disabledMcpServers → enabled by default
       expect(server.status).toBe('enabled');
-    });
-
-    test('project server with no enablement signal gets status:"disabled" (unapproved)', async () => {
-      fs.readFile = buildReadFileMock({
-        ...noFiles,
-        [MCP_JSON_PATH]: {
-          mcpServers: {
-            'unapproved': { command: 'node', args: ['u.js'] }
-          }
-        }
-      });
-
-      const { mcp } = await getProjectMCP(PROJECT_PATH);
-
-      const server = mcp.find(s => s.name === 'unapproved');
-      expect(server.status).toBe('disabled');
     });
   });
 
@@ -493,70 +466,22 @@ describe('getProjectMCP()', () => {
   // Settings precedence
   // -------------------------------------------------------------------------
 
-  describe('settings precedence', () => {
-    test('settings.local.json overrides settings.json for enableAllProjectMcpServers', async () => {
+  describe('status resolution — disabledMcpServers applies to all scopes', () => {
+    test('disabledMcpServers disables both project and user servers', async () => {
       fs.readFile = buildReadFileMock({
         ...noFiles,
         [MCP_JSON_PATH]: {
           mcpServers: {
-            'my-server': { command: 'node', args: ['s.js'] }
+            'proj-server': { command: 'node', args: ['p.js'] }
           }
-        },
-        // local says false — should win over settings.json true
-        [SETTINGS_LOCAL_PATH]: {
-          enableAllProjectMcpServers: false
-        },
-        [SETTINGS_JSON_PATH]: {
-          enableAllProjectMcpServers: true
-        }
-      });
-
-      const { mcp } = await getProjectMCP(PROJECT_PATH);
-
-      const server = mcp.find(s => s.name === 'my-server');
-      // local=false wins, so no enableAll, no enabledSet entry → disabled
-      expect(server.status).toBe('disabled');
-    });
-
-    test('settings.json enableAllProjectMcpServers used when settings.local.json absent', async () => {
-      fs.readFile = buildReadFileMock({
-        ...noFiles,
-        [MCP_JSON_PATH]: {
-          mcpServers: {
-            'my-server': { command: 'node', args: ['s.js'] }
-          }
-        },
-        [SETTINGS_JSON_PATH]: {
-          enableAllProjectMcpServers: true
-        }
-      });
-
-      const { mcp } = await getProjectMCP(PROJECT_PATH);
-
-      const server = mcp.find(s => s.name === 'my-server');
-      expect(server.status).toBe('enabled');
-    });
-
-    test('enabledMcpjsonServers from multiple sources are unioned', async () => {
-      fs.readFile = buildReadFileMock({
-        ...noFiles,
-        [MCP_JSON_PATH]: {
-          mcpServers: {
-            'local-server': { command: 'node', args: ['l.js'] },
-            'settings-server': { command: 'node', args: ['s.js'] },
-            'claude-json-server': { command: 'node', args: ['c.js'] }
-          }
-        },
-        [SETTINGS_LOCAL_PATH]: {
-          enabledMcpjsonServers: ['local-server']
-        },
-        [SETTINGS_JSON_PATH]: {
-          enabledMcpjsonServers: ['settings-server']
         },
         [CLAUDE_JSON_PATH]: {
+          mcpServers: {
+            'user-server': { command: 'node', args: ['u.js'] }
+          },
           projects: {
             [PROJECT_PATH]: {
-              enabledMcpjsonServers: ['claude-json-server']
+              disabledMcpServers: ['proj-server', 'user-server']
             }
           }
         }
@@ -564,9 +489,62 @@ describe('getProjectMCP()', () => {
 
       const { mcp } = await getProjectMCP(PROJECT_PATH);
 
-      expect(mcp.find(s => s.name === 'local-server').status).toBe('enabled');
-      expect(mcp.find(s => s.name === 'settings-server').status).toBe('enabled');
-      expect(mcp.find(s => s.name === 'claude-json-server').status).toBe('enabled');
+      const projServer = mcp.find(s => s.name === 'proj-server');
+      const userServer = mcp.find(s => s.name === 'user-server');
+
+      // Both disabled via disabledMcpServers
+      expect(projServer.status).toBe('disabled');
+      expect(userServer.status).toBe('disabled');
+    });
+
+    test('servers not in disabledMcpServers are enabled regardless of scope', async () => {
+      fs.readFile = buildReadFileMock({
+        ...noFiles,
+        [MCP_JSON_PATH]: {
+          mcpServers: {
+            'proj-server': { command: 'node', args: ['p.js'] }
+          }
+        },
+        [CLAUDE_JSON_PATH]: {
+          mcpServers: {
+            'user-server': { command: 'node', args: ['u.js'] }
+          }
+        }
+      });
+
+      const { mcp } = await getProjectMCP(PROJECT_PATH);
+
+      const projServer = mcp.find(s => s.name === 'proj-server');
+      const userServer = mcp.find(s => s.name === 'user-server');
+
+      expect(projServer.status).toBe('enabled');
+      expect(userServer.status).toBe('enabled');
+    });
+
+    test('disabledMcpServers from ~/.claude.json project entry is the single source of truth', async () => {
+      fs.readFile = buildReadFileMock({
+        ...noFiles,
+        [MCP_JSON_PATH]: {
+          mcpServers: {
+            'server-a': { command: 'node', args: ['a.js'] },
+            'server-b': { command: 'node', args: ['b.js'] },
+            'server-c': { command: 'node', args: ['c.js'] }
+          }
+        },
+        [CLAUDE_JSON_PATH]: {
+          projects: {
+            [PROJECT_PATH]: {
+              disabledMcpServers: ['server-a']
+            }
+          }
+        }
+      });
+
+      const { mcp } = await getProjectMCP(PROJECT_PATH);
+
+      expect(mcp.find(s => s.name === 'server-a').status).toBe('disabled');
+      expect(mcp.find(s => s.name === 'server-b').status).toBe('enabled');
+      expect(mcp.find(s => s.name === 'server-c').status).toBe('enabled');
     });
   });
 
@@ -603,7 +581,7 @@ describe('getProjectMCP()', () => {
       expect(mcp).toHaveLength(0);
     });
 
-    test('handles missing settings files — falls back to defaults', async () => {
+    test('handles missing settings files — server enabled by default', async () => {
       fs.readFile = buildReadFileMock({
         ...noFiles,
         [MCP_JSON_PATH]: {
@@ -619,8 +597,8 @@ describe('getProjectMCP()', () => {
       const proj = mcp.find(s => s.name === 'proj');
       expect(proj).toBeDefined();
       expect(proj.scope).toBe('project');
-      // No enableAll, no enabledSet → unapproved → disabled
-      expect(proj.status).toBe('disabled');
+      // Not in disabledMcpServers (no ~/.claude.json) → enabled by default
+      expect(proj.status).toBe('enabled');
     });
   });
 });

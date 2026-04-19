@@ -639,29 +639,8 @@ async function getProjectMCP(projectPath) {
   const userServers = userMcpResult.mcp;
   warnings.push(...userMcpResult.warnings);
 
-  // STEP 2: Gather MCP status data from three sources
-
-  // Source 1: .claude/settings.local.json (highest precedence)
-  let localSettings = null;
-  try {
-    localSettings = await readJSON(config.paths.getProjectLocalSettingsPath(projectPath));
-  } catch (error) {
-    if (error.code !== 'ENOENT') {
-      console.warn(`Failed to parse project local settings: ${error.message}`);
-    }
-  }
-
-  // Source 2: .claude/settings.json
-  let projectSettings = null;
-  try {
-    projectSettings = await readJSON(config.paths.getProjectSettingsPath(projectPath));
-  } catch (error) {
-    if (error.code !== 'ENOENT') {
-      console.warn(`Failed to parse project settings: ${error.message}`);
-    }
-  }
-
-  // Source 3: ~/.claude.json -> projects[projectPath] entry
+  // STEP 2: Read disabledMcpServers from ~/.claude.json projects[projectPath] entry
+  // This is the universal per-project disable list for ALL server types (project and user scoped)
   let claudeJsonProjectEntry = null;
   try {
     const claudeJson = await readJSON(config.paths.getUserClaudeJsonPath());
@@ -674,32 +653,7 @@ async function getProjectMCP(projectPath) {
     }
   }
 
-  // STEP 3: Resolve status values with precedence rules
-
-  // enableAllProjectMcpServers: settings.local.json > settings.json (no entry in ~/.claude.json)
-  let enableAll = false;
-  if (localSettings !== null && localSettings.enableAllProjectMcpServers !== undefined) {
-    enableAll = localSettings.enableAllProjectMcpServers === true;
-  } else if (projectSettings !== null && projectSettings.enableAllProjectMcpServers !== undefined) {
-    enableAll = projectSettings.enableAllProjectMcpServers === true;
-  }
-
-  // enabledMcpjsonServers: union from all sources
-  const enabledSet = new Set();
-  for (const src of [localSettings, projectSettings, claudeJsonProjectEntry]) {
-    if (src && Array.isArray(src.enabledMcpjsonServers)) {
-      src.enabledMcpjsonServers.forEach(name => enabledSet.add(name));
-    }
-  }
-
-  // disabledMcpjsonServers: from ~/.claude.json project entry
-  const disabledMcpJsonSet = new Set(
-    (claudeJsonProjectEntry && Array.isArray(claudeJsonProjectEntry.disabledMcpjsonServers))
-      ? claudeJsonProjectEntry.disabledMcpjsonServers
-      : []
-  );
-
-  // disabledMcpServers: from ~/.claude.json project entry (applies to user-scoped servers)
+  // STEP 3: Build disabled set — a server is disabled if its name is in disabledMcpServers
   const disabledMcpSet = new Set(
     (claudeJsonProjectEntry && Array.isArray(claudeJsonProjectEntry.disabledMcpServers))
       ? claudeJsonProjectEntry.disabledMcpServers
@@ -708,14 +662,7 @@ async function getProjectMCP(projectPath) {
 
   // Apply status to project-scoped servers
   for (const server of mcp) {
-    if (enableAll || enabledSet.has(server.name)) {
-      server.status = 'enabled';
-    } else if (disabledMcpJsonSet.has(server.name)) {
-      server.status = 'disabled';
-    } else {
-      // Unapproved — not yet active
-      server.status = 'disabled';
-    }
+    server.status = disabledMcpSet.has(server.name) ? 'disabled' : 'enabled';
   }
 
   // STEP 4: Apply status to user-scoped servers, deduplicate against project servers

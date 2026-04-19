@@ -61,6 +61,8 @@
     @hook-delete="handleHookDelete"
     @skill-delete="handleSkillDelete"
     @mcp-delete="handleMcpDelete"
+    @mcp-updated="handleMcpUpdated"
+    @mcp-toggled="handleMcpUpdated"
     @rule-delete="handleRuleDelete"
   >
     <template #copy-modal>
@@ -813,6 +815,11 @@ export default {
       openDeleteModal('mcp', mcp)
     }
 
+    const handleMcpUpdated = async () => {
+      // Refresh MCP list after toggle or sidebar edit
+      await loadMCP()
+    }
+
     const handleRuleDelete = (rule) => {
       openDeleteModal('rule', rule)
     }
@@ -972,6 +979,7 @@ export default {
       handleHookDelete,
       handleSkillDelete,
       handleMcpDelete,
+      handleMcpUpdated,
       handleRuleDelete
     }
   }

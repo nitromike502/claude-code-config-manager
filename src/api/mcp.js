@@ -125,6 +125,27 @@ export async function deleteUserMcpServer(serverName) {
   return response.json()
 }
 
+// ========================================
+// MCP Toggle Operations
+// ========================================
+
+/**
+ * Toggle the enabled/disabled status of a project MCP server
+ * Modifies ~/.claude.json disabledMcpServers for the project
+ * @param {string} projectId - Project identifier
+ * @param {string} serverName - MCP server name
+ * @param {boolean} enabled - Whether to enable (true) or disable (false) the server
+ * @returns {Promise<Object>} - { success: boolean, serverName: string, enabled: boolean, status: 'enabled'|'disabled' }
+ */
+export async function toggleProjectMcpStatus(projectId, serverName, enabled) {
+  const encodedName = encodeURIComponent(serverName)
+  const response = await fetchWithTimeout(`${BASE_URL}/api/projects/${projectId}/mcp/${encodedName}/toggle`, {
+    method: 'POST',
+    body: JSON.stringify({ enabled })
+  })
+  return response.json()
+}
+
 // Default export with all MCP functions
 export default {
   getProjectMcp,
@@ -133,5 +154,6 @@ export default {
   updateProjectMcp,
   updateUserMcp,
   deleteProjectMcpServer,
-  deleteUserMcpServer
+  deleteUserMcpServer,
+  toggleProjectMcpStatus
 }
